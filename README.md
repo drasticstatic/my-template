@@ -16,8 +16,8 @@ Use the **"Use this template"** button to create a new repo pre-loaded with this
 | `.augmentignore` | Controls what Augment Code indexes — includes dependency context, excludes noise |
 | `CLAUDE.md` | Stub for Claude Code CLI persistent instructions — fill in per-repo |
 | `.github/dependabot.yml` | Grouped Dependabot version updates — npm + GitHub Actions |
-| `.github/workflows/sync-public-allowlist.yml` | Sync private → public via **allowlist** (strict — everything private by default) |
-| `.github/workflows/sync-public-excludelist.yml` | Sync private → public via **exclude list** (open — everything public except named paths) |
+| `workflow-templates/sync-public-allowlist.yml` | Sync private → public via **allowlist** (strict — everything private by default) — copy to `.github/workflows/` in your repo |
+| `workflow-templates/sync-public-excludelist.yml` | Sync private → public via **exclude list** (open — everything public except named paths) — copy to `.github/workflows/` in your repo |
 | `gitexporter.config.json` | Local gitexporter config — selective commit-history-preserving public preview |
 | `scripts/deployTest.sh` | Deploy a dated static snapshot of a Vite app to a new GitHub Pages repo |
 | `scripts/syncDocs.sh` | Selectively rsync documentation from a private repo to a public docs repo |
