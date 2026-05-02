@@ -1,0 +1,108 @@
+name: 🌐 Sync Public Preview (Allowlist Model)
+
+# ALLOWLIST MODEL — strict, everything private by default.
+# Only paths named in public_allowlist are synced to the public repo.
+# Any new root-level path not in either list will fail CI until classified.
+# Use this model when most of your repo is private.
+#
+# See also: sync-public-excludelist.yml for the inverse (open) model.
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Private Repo (Full History)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install git-filter-repo
+        run: pip install git-filter-repo
+
+      - name: Validate root path classification
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # ── ADD YOUR PUBLIC FILES/DIRS HERE ──────────────────────────────
+          public_allowlist=(
+            "README.md"
+            "index.html"
+            "LICENSE"
+            "CONTRIBUTING.md"
+            "SECURITY.md"
+            # "docs"
+            # "examples"
+          )
+
+          # ── ADD YOUR PRIVATE FILES/DIRS HERE ─────────────────────────────
+          private_allowlist=(
+            ".augmentignore"
+            ".claude"
+            ".github"
+            ".gitignore"
+            "CLAUDE.md"
+            "AGENT-SYNC"
+            "gitexporter.config.json"
+            "specs"
+            # Add more private dirs/files here
+          )
+
+          is_listed() {
+            local entry="$1"
+            shift
+            for item in "$@"; do
+              if [[ "$item" == "$entry" ]]; then return 0; fi
+            done
+            return 1
+          }
+
+          unclassified=()
+          while IFS= read -r entry; do
+            if [[ "$entry" == ".git" ]]; then continue; fi
+            if is_listed "$entry" "${public_allowlist[@]}"; then continue; fi
+            if is_listed "$entry" "${private_allowlist[@]}"; then continue; fi
+            unclassified+=("$entry")
+          done < <(find . -maxdepth 1 -mindepth 1 | sed 's|^\./||' | sort)
+
+          if ((${#unclassified[@]} > 0)); then
+            echo "Unclassified root paths — add to public_allowlist or private_allowlist:"
+            printf ' - %s\n' "${unclassified[@]}"
+            exit 1
+          fi
+
+      - name: Filter out private content
+        run: |
+          # ── LIST EVERY PRIVATE PATH TO STRIP ─────────────────────────────
+          git filter-repo \
+            --path "CLAUDE.md" \
+            --path ".augmentignore" \
+            --path ".gitignore" \
+            --path ".github/" \
+            --path "AGENT-SYNC/" \
+            --path "specs/" \
+            --path "gitexporter.config.json" \
+            --invert-paths \
+            --filename-callback 'return None if filename is None or filename.startswith(b".claude/") else filename' \
+            --force
+
+      - name: Configure Git Identity
+        run: |
+          git config user.name "Public Mirror Bot"
+          git config user.email "actions@github.com"
+
+      - name: Push to Public Repo
+        env:
+          TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
+        run: |
+          # ── REPLACE with your public repo: OWNER/REPO ─────────────────────
+          git remote add origin https://x-access-token:${TOKEN}@github.com/YOUR_USERNAME/YOUR_PUBLIC_REPO.git
+          git push origin main --force

@@ -1,0 +1,140 @@
+# ======= .augmentignore TEMPLATE =======
+# Controls what Augment Code indexes from your workspace.
+# See: https://docs.augmentcode.com/setup-augment/workspace-indexing
+#
+# Augment indexes all files EXCEPT those matching .gitignore AND this file.
+# Use ! prefix to re-include files excluded by .gitignore.
+# Remove sections that don't apply to your stack.
+# =========================================
+
+# ========================================
+# SECTION 1 — INCLUDE (override .gitignore)
+# ========================================
+# Provides dependency context for better AI suggestions.
+!node_modules
+!package-lock.json
+!yarn.lock
+!pnpm-lock.yaml
+!requirements.txt
+
+# ========================================
+# SECTION 2 — SENSITIVE DATA (never index)
+# ========================================
+.env*
+secrets/
+keys/
+*.key
+*.pem
+*.p12
+*.pfx
+credentials.json
+service_account.json
+*.json.secret
+wallets/
+keystore/
+mnemonic*
+seed*
+
+# ========================================
+# SECTION 3 — BUILD ARTIFACTS
+# ========================================
+dist/
+build/
+out/
+target/
+bin/
+obj/
+*.min.js
+*.min.css
+*.class
+*.o
+*.so
+*.dll
+
+# ========================================
+# SECTION 4 — LOGS AND TEMPORARY FILES
+# ========================================
+*.log
+logs/
+log/
+tmp/
+temp/
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# ========================================
+# SECTION 5 — CACHE DIRECTORIES
+# ========================================
+.cache/
+.next/
+.nuxt/
+.vuepress/
+.docusaurus/
+node_modules/.cache/
+.npm/
+.yarn/
+
+# ========================================
+# SECTION 6 — IDE AND OS FILES
+# ========================================
+.vscode/
+.idea/
+*.sublime-*
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ========================================
+# SECTION 7 — TEST DATA AND FIXTURES
+# ========================================
+fixtures/
+__snapshots__/
+coverage/
+.nyc_output/
+*.lcov
+
+# ========================================
+# SECTION 8 — DOCUMENTATION BUILDS
+# ========================================
+docs/build/
+site/
+_site/
+public/
+
+# ========================================
+# SECTION 9 — LARGE MEDIA AND BINARY FILES
+# ========================================
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.svg
+*.mp4
+*.avi
+*.mov
+*.mp3
+*.wav
+*.zip
+*.tar.gz
+*.rar
+
+# ========================================
+# SECTION 10 — WEB3 / SOLIDITY (remove if not applicable)
+# ========================================
+artifacts/
+cache/
+typechain-types/
+typechain/
+deployments/
+*.abi
+coverage.json
+.hardhat-cache/
+.openzeppelin/
+
+# ========================================
+# SECTION 11 — REPO-SPECIFIC
+# ========================================
+# Add project-specific exclusions below.

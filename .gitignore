@@ -1,0 +1,216 @@
+# ============================================================
+# MASTER .gitignore TEMPLATE
+# ============================================================
+# Copy to repo root and remove sections that don't apply.
+# Keep the "REPO-SPECIFIC" section at the bottom and add
+# any paths unique to your project there.
+#
+# Rule of thumb:
+#   - Secrets/credentials → always ignored, no exceptions
+#   - Generated build artifacts → always ignored
+#   - Personal/OS metadata → always ignored
+#   - Working data (CSVs, logs) → decide per repo below
+# ============================================================
+
+
+# -----------------------------------------------
+# macOS system files
+# -----------------------------------------------
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+.fseventsd
+
+
+# -----------------------------------------------
+# macOS / iCloud aliases
+# -----------------------------------------------
+*alias
+*alias/
+*.icloud
+
+
+# -----------------------------------------------
+# Windows & Linux system files
+# -----------------------------------------------
+Thumbs.db
+desktop.ini
+ehthumbs.db
+$RECYCLE.BIN/
+
+
+# -----------------------------------------------
+# Credentials, API keys, secrets
+# (absolute — no exceptions)
+# -----------------------------------------------
+.env
+.env.*
+!.env.example
+!.env.template
+*.key
+*.pem
+*.p12
+*.pfx
+credentials/
+secrets/
+keys/
+*service_account*
+*service-account*
+*google-credentials*
+*google_credentials*
+
+# JSON: blocked by default to prevent accidental credential commits.
+# Add named exceptions below for config files your project needs.
+*.json
+!package.json
+!package-lock.json
+!tsconfig*.json
+!.eslintrc.json
+!.prettierrc.json
+# Uncomment as needed:
+# !hardhat.config.json
+# !gitexporter.config.json
+
+
+# -----------------------------------------------
+# Web3 wallet & on-chain secrets
+# -----------------------------------------------
+wallets/
+keystore/
+mnemonic*
+seed*
+*.json.secret
+
+
+# -----------------------------------------------
+# Python
+# -----------------------------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+env/
+ENV/
+*.egg-info/
+*.egg
+dist/
+build/
+*.so
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.mypy_cache/
+
+
+# -----------------------------------------------
+# Node.js / npm / yarn
+# -----------------------------------------------
+node_modules/
+.npm/
+.yarn/
+.pnp
+.pnp.js
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.node_repl_history
+
+
+# -----------------------------------------------
+# Web3 / Solidity / Hardhat / Foundry
+# -----------------------------------------------
+artifacts/
+cache/
+typechain/
+typechain-types/
+.openzeppelin/
+.hardhat-cache/
+coverage/
+coverage.json
+ignition/deployments/chain-31337
+out/
+forge-cache/
+*.abi
+
+
+# -----------------------------------------------
+# React / Next.js / Vite / Docusaurus
+# -----------------------------------------------
+.next/
+.nuxt/
+.docusaurus/
+.vuepress/
+public/build/
+docs/build/
+site/
+_site/
+build/
+dist/
+out/
+
+
+# -----------------------------------------------
+# Editor / IDE
+# -----------------------------------------------
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+*.swp
+*.swo
+*~
+
+
+# -----------------------------------------------
+# Logs & temp files
+# -----------------------------------------------
+*.log
+*.tmp
+*.temp
+*.bak
+log/
+tmp/
+temp/
+
+
+# -----------------------------------------------
+# Test / coverage output
+# -----------------------------------------------
+/coverage
+coverage/
+.nyc_output/
+*.lcov
+__snapshots__/
+
+
+# -----------------------------------------------
+# Misc generated / binary
+# -----------------------------------------------
+*.class
+*.o
+*.so
+*.dll
+*.bin
+*.exe
+
+
+# -----------------------------------------------
+# Claude Code local config
+# Skills are tracked; everything else stays local
+# -----------------------------------------------
+.claude/*
+!.claude/skills/
+
+
+# ============================================================
+# REPO-SPECIFIC SECTION
+# ============================================================
+# Add paths unique to this project below.
+# Remove sections above that don't apply to your stack.
