@@ -2,9 +2,10 @@
 
 > **Reusable repo scaffolding — `.gitignore`, `.augmentignore`, `CLAUDE.md`, sync workflows, gitexporter config, deploy scripts, and branch protection.**
 
+[![Use this template](https://img.shields.io/badge/Use_this_template-2ea44f?style=flat)](https://github.com/drasticstatic/my-template/generate)
 [![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey?style=flat)](https://github.com/drasticstatic/.github)
 
-Use the **"Use this template"** button to create a new repo pre-loaded with this scaffolding, or copy individual files as needed.
+Click **Use this template** above (or the green button at the top of this page) to create a new repo pre-loaded with all scaffolding. Or copy individual files as needed.
 
 ---
 
@@ -47,6 +48,26 @@ Use `sync-public.yml` for automated continuous sync. Use `gitexporter` for a one
 
 ---
 
+## Making Your Own Repo a Template
+
+Once you've customised this scaffolding for your own use, you can share it the same way — mark your repo as a GitHub Template Repository so others get the green **"Use this template"** button too.
+
+**Via GitHub CLI (one command):**
+```bash
+gh api repos/YOUR_USERNAME/YOUR_REPO --method PATCH --field is_template=true
+```
+
+**Via UI:** Repo → Settings → General → check **Template repository**
+
+Then add this badge to your README (swap in your own repo URL):
+```markdown
+[![Use this template](https://img.shields.io/badge/Use_this_template-2ea44f?style=flat)](https://github.com/YOUR_USERNAME/YOUR_REPO/generate)
+```
+
+The `/generate` path takes visitors directly to the "create repo from template" screen — useful to link from docs, READMEs, or share with peers.
+
+---
+
 ## Related How-To Guides
 
 Full setup walkthroughs live in the [`drasticstatic` profile repo](https://github.com/drasticstatic/drasticstatic):
@@ -54,7 +75,7 @@ Full setup walkthroughs live in the [`drasticstatic` profile repo](https://githu
 - [`how-to-setup-GITEXPORTER.md`](https://github.com/drasticstatic/drasticstatic/blob/main/how-to-setup-GITEXPORTER.md) — GitExporter + sync-public.yml full pipeline
 - [`how-to-establish-a-github-PROFILE-README.md`](https://github.com/drasticstatic/drasticstatic/blob/main/how-to-establish-a-github-PROFILE-README.md) — Profile README setup
 - [`how-to-establish-cross_repo_CONTRIBUTORS_SECURITY_LICENSING.md`](https://github.com/drasticstatic/drasticstatic/blob/main/how-to-establish-cross_repo_CONTRIBUTORS_SECURITY_LICENSING.md) — Community health files at scale
-- [`how-to-publish-react-apps-to-ghpages.md`](https://github.com/drasticstatic/drasticstatic/blob/main/how-to-publish-react-apps-to-ghpages.md) — CRA and Vite apps to GitHub Pages
+- [`how-to-publish-react-APPS-to-ghPAGES.md`](https://github.com/drasticstatic/drasticstatic/blob/main/how-to-publish-react-APPS-to-ghPAGES.md) — CRA and Vite apps to GitHub Pages
 
 ---
 
