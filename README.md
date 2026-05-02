@@ -2,7 +2,7 @@
 
 > **Reusable repo scaffolding — `.gitignore`, `.augmentignore`, `CLAUDE.md`, sync workflows, gitexporter config, deploy scripts, and branch protection.**
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey?style=flat-square)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey?style=flat)](https://github.com/drasticstatic/.github)
 
 Use the **"Use this template"** button to create a new repo pre-loaded with this scaffolding, or copy individual files as needed.
 
