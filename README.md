@@ -1,6 +1,6 @@
 # my-template
 
-> **Reusable repo scaffolding — `.gitignore`, `.augmentignore`, `CLAUDE.md`, sync workflows, gitexporter config, deploy scripts, and branch protection.**
+> **Reusable repo scaffolding — `.gitignore`, `.augmentignore`, `CLAUDE.md`, sync workflows, gitexporter config, deploy scripts, and branch protection rulesets.**
 
 [![Use this template](https://img.shields.io/badge/Use_this_template-2ea44f?style=flat)](https://github.com/drasticstatic/my-template/generate)
 [![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey?style=flat)](https://github.com/drasticstatic/.github)
