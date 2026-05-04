@@ -10,6 +10,11 @@
 #   - Generated build artifacts → always ignored
 #   - Personal/OS metadata → always ignored
 #   - Working data (CSVs, logs) → decide per repo below
+#
+# Sources merged: trading-assistant · pir-devine-news ·
+#   divorce-custody-assistant · dao · crowdsale · amm ·
+#   nft_dappu-punks · gratitude-token-project ·
+#   tradingview-mcp-jackson · robinhood-mcp
 # ============================================================
 
 
@@ -51,6 +56,11 @@ $RECYCLE.BIN/
 .env.*
 !.env.example
 !.env.template
+# CRA / framework-generated env variants
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 *.key
 *.pem
 *.p12
@@ -62,6 +72,21 @@ keys/
 *service-account*
 *google-credentials*
 *google_credentials*
+*gspread*
+
+# GWS CLI auth cache (Google Workspace CLI)
+.gws/
+gws-credentials*
+
+# Robin stocks / brokerage session tokens
+.tokens/
+
+# MCP registry tokens
+.mcpregistry_github_token
+.mcpregistry_registry_token
+
+# GitGuardian scan cache
+.cache_ggshield
 
 # JSON: blocked by default to prevent accidental credential commits.
 # Add named exceptions below for config files your project needs.
@@ -74,6 +99,7 @@ keys/
 # Uncomment as needed:
 # !hardhat.config.json
 # !gitexporter.config.json
+# !dashboard/data.json
 
 
 # -----------------------------------------------
@@ -91,6 +117,7 @@ seed*
 # -----------------------------------------------
 __pycache__/
 *.py[cod]
+*$py.class
 *.pyo
 *.pyd
 .Python
@@ -100,13 +127,42 @@ env/
 ENV/
 *.egg-info/
 *.egg
+# Python packaging / distribution
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+.installed.cfg
 dist/
 build/
 *.so
+# Pip
 pip-log.txt
 pip-delete-this-directory.txt
+# Package managers
+Pipfile
+Pipfile.lock
+poetry.lock
+uv.lock
+.python-version
+# Testing & coverage
 .pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+*.cover
+# Type checking
 .mypy_cache/
+.dmypy.json
+dmypy.json
+# Linting
+.ruff_cache/
 
 
 # -----------------------------------------------
@@ -166,6 +222,9 @@ out/
 *.swp
 *.swo
 *~
+.project
+.classpath
+.settings/
 
 
 # -----------------------------------------------
@@ -175,6 +234,7 @@ out/
 *.tmp
 *.temp
 *.bak
+temp_*
 log/
 tmp/
 temp/
@@ -207,6 +267,7 @@ __snapshots__/
 # -----------------------------------------------
 .claude/*
 !.claude/skills/
+!.claude/skills-ran-through-makemyskill.com/
 
 
 # ============================================================

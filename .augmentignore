@@ -1,11 +1,24 @@
-# ======= .augmentignore TEMPLATE =======
+# ======= .augmentignore — MASTER TEMPLATE =======
 # Controls what Augment Code indexes from your workspace.
 # See: https://docs.augmentcode.com/setup-augment/workspace-indexing
+#
+# Sources merged: trading-assistant · pir-devine-news ·
+#   divorce-custody-assistant · dappu (web3 repos) ·
+#   tradingview-mcp-jackson · robinhood-mcp
 #
 # Augment indexes all files EXCEPT those matching .gitignore AND this file.
 # Use ! prefix to re-include files excluded by .gitignore.
 # Remove sections that don't apply to your stack.
-# =========================================
+# ================================================
+
+# ======= SYNTAX GUIDE =======
+# Uses .gitignore syntax: https://git-scm.com/docs/gitignore
+# Lines starting with # are comments (ignored)
+# Blank lines are ignored
+# Use ! to include files/directories that would otherwise be excluded
+# Use * as a wildcard to match any characters (except /)
+# Use ** to match any characters including /
+# =============================
 
 # ========================================
 # SECTION 1 — INCLUDE (override .gitignore)
@@ -15,7 +28,10 @@
 !package-lock.json
 !yarn.lock
 !pnpm-lock.yaml
+!Gemfile.lock
 !requirements.txt
+!go.mod
+!go.sum
 
 # ========================================
 # SECTION 2 — SENSITIVE DATA (never index)
@@ -29,6 +45,19 @@ keys/
 *.pfx
 credentials.json
 service_account.json
+*service_account*
+*service-account*
+*google-credentials*
+*google_credentials*
+# GWS CLI auth cache
+.gws/
+gws-credentials*
+# Brokerage session tokens
+.tokens/
+# MCP registry tokens
+.mcpregistry_github_token
+.mcpregistry_registry_token
+# Web3 wallet and on-chain secrets
 *.json.secret
 wallets/
 keystore/
@@ -59,6 +88,7 @@ logs/
 log/
 tmp/
 temp/
+temp_*
 *.tmp
 *.temp
 *.swp
@@ -68,6 +98,7 @@ temp/
 # SECTION 5 — CACHE DIRECTORIES
 # ========================================
 .cache/
+.cache_ggshield
 .next/
 .nuxt/
 .vuepress/
@@ -75,6 +106,11 @@ temp/
 node_modules/.cache/
 .npm/
 .yarn/
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+.vscode/settings.json
+.idea/workspace.xml
 
 # ========================================
 # SECTION 6 — IDE AND OS FILES
@@ -94,6 +130,10 @@ __snapshots__/
 coverage/
 .nyc_output/
 *.lcov
+htmlcov/
+coverage.xml
+*.cover
+.coverage
 
 # ========================================
 # SECTION 8 — DOCUMENTATION BUILDS
@@ -120,10 +160,12 @@ public/
 *.zip
 *.tar.gz
 *.rar
+*.pdf
 
 # ========================================
 # SECTION 10 — WEB3 / SOLIDITY (remove if not applicable)
 # ========================================
+# Stack: Ethereum · Solidity · React · Hardhat · MetaMask
 artifacts/
 cache/
 typechain-types/
@@ -135,6 +177,28 @@ coverage.json
 .openzeppelin/
 
 # ========================================
-# SECTION 11 — REPO-SPECIFIC
+# SECTION 11 — PYTHON (remove if not applicable)
+# ========================================
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+develop-eggs/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+wheels/
+*.egg-info/
+uv.lock
+Pipfile.lock
+poetry.lock
+
+# ========================================
+# SECTION 12 — REPO-SPECIFIC
 # ========================================
 # Add project-specific exclusions below.
