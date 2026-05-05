@@ -68,6 +68,7 @@ When these exist in this repo, they are the **source of truth** — do not dupli
 | File pattern | Purpose |
 |---|---|
 | `AGENTS.md` | Root-level config for all AI agents (Claude Code, Cursor, Copilot) — read this first |
+| `AGENTS.override.md` | Temporary task-specific overrides — delete when done; fill-in template in this repo |
 | `PENDING-TASKS.md` / `tasks.md` / `task-list.md` | Open and completed tasks — check before creating new tasks; update when tasks complete |
 | `.claude/skills/` | Skill definitions for repeatable workflows — use skill triggers instead of re-explaining procedures |
 | `specs/` | Detailed workflow specs — reference section numbers rather than copying content here |
