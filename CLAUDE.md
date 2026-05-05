@@ -61,6 +61,22 @@ Skills live in `.claude/skills/`. Triggers are natural-language phrases.
 
 ---
 
+## Canonical Reference Files
+
+When these exist in this repo, they are the **source of truth** — do not duplicate their content in CLAUDE.md or memory files. Reference by path instead.
+
+| File pattern | Purpose |
+|---|---|
+| `AGENTS.md` | Root-level config for all AI agents (Claude Code, Cursor, Copilot) — read this first |
+| `PENDING-TASKS.md` / `tasks.md` / `task-list.md` | Open and completed tasks — check before creating new tasks; update when tasks complete |
+| `.claude/skills/` | Skill definitions for repeatable workflows — use skill triggers instead of re-explaining procedures |
+| `specs/` | Detailed workflow specs — reference section numbers rather than copying content here |
+| `AGENT-SYNC/AGENT_SYNC.md` | Current agent handoff state — read at session start (if using multi-agent pattern) |
+
+**Pattern:** When skills and specs exist, follow them as canonical. CLAUDE.md and memory files hold identity, pointers, and short rules — not full procedure text.
+
+---
+
 ## Agent-Specific Notes
 
 [Any other persistent instructions for Claude in this repo.]
