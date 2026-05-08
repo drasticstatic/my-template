@@ -1,0 +1,110 @@
+# ============================================================
+# MASTER .claudeignore TEMPLATE
+# ============================================================
+# Claude Code CLI reads files in your workspace to build context.
+# This file tells it which files to SKIP — keeping the context
+# window lean and focused on what Claude can actually use.
+#
+# Key difference from .gitignore:
+#   .gitignore    → controls what git tracks
+#   .claudeignore → controls what Claude reads (independent of git)
+#
+# Syntax: same as .gitignore (gitignore patterns)
+# Scope:  Claude Code CLI only — does not affect git, Augment, etc.
+#
+# Note: Claude Code already respects .gitignore automatically.
+# This file adds an extra layer — use it for:
+#   • Belt-and-suspenders on secrets (belt = .gitignore, suspenders = here)
+#   • Files that ARE committed but are too large/noisy for context
+#   • Things not gitignored that you still want out of Claude's view
+#
+# Rule of thumb — skip if Claude can't meaningfully USE it:
+#   ✗ Secrets and credentials — NEVER read directly; use .env.example
+#   ✗ Binary files (images, video, compiled binaries, binary lock files)
+#   ✗ Large generated outputs (build dirs, bundled HTML)
+#   ✗ High-volume historical data (CSVs, session JSONL logs)
+#   ✓ Source files, configs, docs, markdown — anything agents reason about
+#
+# Sources merged: trading-assistant · divorce-custody-assistant ·
+#   pir-devine-news · anthropas-argus-alfred · dappu web3 repos
+# ============================================================
+
+
+# Secrets — belt-and-suspenders on top of .gitignore
+# NEVER read directly — use .env.example / .env.template instead
+.env
+.env.*
+!.env.example
+!.env.template
+*.key
+*.pem
+*.p12
+*.pfx
+service_account.json
+credentials.json
+*google-credentials*
+*google_credentials*
+
+
+# Node / Python dependencies and environments
+node_modules/
+.npm/
+.yarn/
+bun.lockb
+venv/
+.venv/
+env/
+__pycache__/
+*.egg-info/
+*.pyc
+
+
+# Build and dist outputs
+dist/
+build/
+out/
+.next/
+.nuxt/
+
+
+# Runtime logs
+*.log
+logs/
+
+
+# Binary media — Claude cannot use without explicit vision calls
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.mp4
+*.mov
+*.avi
+*.mp3
+*.wav
+
+
+# Agent session and conversation backups
+# Large JSONL files — agents load these selectively when needed
+AGENT-SYNC/app-data-*/
+
+
+# Generated HTML presentations (Marp renders)
+# Source .marp.md files are the editable canonical versions
+*.marp.html
+
+
+# Web3 / Hardhat / Foundry compiled outputs
+artifacts/
+cache/
+forge-cache/
+typechain/
+typechain-types/
+
+
+# ============================================================
+# REPO-SPECIFIC SECTION
+# ============================================================
+# Add paths unique to this project below.
+# Remove sections above that don't apply to your stack.
