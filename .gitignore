@@ -263,11 +263,13 @@ __snapshots__/
 
 # -----------------------------------------------
 # Claude Code local config
-# Skills are tracked; everything else stays local
+# Skills and .claude/*.md docs are tracked; everything else stays local
 # -----------------------------------------------
 .claude/*
 !.claude/skills/
 !.claude/skills-ran-through-makemyskill.com/
+!.claude/POINTER.md
+!.claude/settings.local.json.md
 
 
 # ============================================================
