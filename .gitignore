@@ -99,6 +99,7 @@ gws-credentials*
 # Uncomment as needed:
 # !hardhat.config.json
 # !gitexporter.config.json
+!graphify-out/graph.json
 # !dashboard/data.json
 
 
@@ -268,6 +269,7 @@ __snapshots__/
 .claude/*
 !.claude/skills/
 !.claude/skills-ran-through-makemyskill.com/
+!.claude/settings.json
 !.claude/POINTER.md
 !.claude/settings.local.json.md
 
@@ -277,3 +279,8 @@ __snapshots__/
 # ============================================================
 # Add paths unique to this project below.
 # Remove sections above that don't apply to your stack.
+
+# Graphify — local-only outputs (graph.json, GRAPH_REPORT.md, graph.html are committed)
+graphify-out/manifest.json
+graphify-out/cost.json
+graphify-out/cache/
