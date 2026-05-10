@@ -122,20 +122,17 @@ Thumbs.db
 # ==============================================================================
 # REPO-SPECIFIC OVERRIDES — add below when deploying to a specific repo
 # ==============================================================================
-
-# --- Agent-heavy / private repos (trading-assistant, divorce-custody) ---
-# specs/              ← internal workflow specs
-# sessions/           ← raw session transcripts
-# strategies/         ← proprietary strategy reference material
-# data/imports/       ← raw trade/financial data imports
-# child-support/      ← sensitive case documents
-# custody/            ← sensitive case documents
-
-# --- AI / Claude Code repos ---
-# .claude/projects/   ← local project state
-# .claude/memory/     ← local memory files
-# AGENT-SYNC/         ← cross-agent handoff files
-
+# NOTE: Agent coordination files (AGENT-SYNC/, specs/, logs/, strategies/,
+# memory/, case documents) should generally STAY in the graph — that is the
+# whole point. Graphify helps agents navigate the ecosystem consistently and
+# efficiently without re-reading everything. Only exclude truly raw/noisy
+# local-only content that adds no navigation value.
+#
+# Things worth excluding per repo:
+#   sessions/           ← raw session transcripts (local-only, gitignored, too noisy)
+#   .claude/projects/   ← local project state (machine-specific, not meaningful to graph)
+#   data/imports/       ← raw CSV/trade data dumps (volume, not logic)
+#
 # ==============================================================================
 # WHITELIST EXCEPTIONS — uncomment/add as needed
 # Use ! prefix to force-include paths excluded above.
@@ -144,9 +141,4 @@ Thumbs.db
 #   !contracts/**/*.sol
 #   !src/**/*.js
 #   !src/**/*.html
-#
-# For high-sensitivity repos — invert and only index source:
-#   *
-#   !src/
-#   !src/**
 # ==============================================================================
