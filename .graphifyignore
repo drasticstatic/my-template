@@ -1,0 +1,152 @@
+# .graphifyignore
+# Mirrors .gitignore syntax — tells graphify what NOT to index when building
+# the knowledge graph. Excludes noisy/large/sensitive paths to keep token
+# usage efficient and the graph focused on your actual business logic.
+#
+# WHY THIS MATTERS:
+#   - Bytecode stripping: Hardhat/Foundry output massive metadata files per
+#     compiled contract. Hiding artifacts/ + out/ stops Claude from parsing
+#     thousands of lines of raw cryptographic bytecode.
+#   - Token economy: Pruning node_modules/ + framework caches ensures graphify
+#     builds its memory map exclusively on your custom logic — reduces initial
+#     startup time and costs during active Claude Code sessions.
+#   - Security: Never let .env files or credential paths enter the graph.
+#
+# VERSION NOTES (for awareness when upgrading graphifyy):
+#   v0.4.1:  Fixed indexing engine crashes caused by tracking skipped ignore rules
+#   v0.4.26: Resolved relative path matching bugs with ./raw directory expressions
+#   v0.6.8:  Corrected strict behavior for folder-nested whitelist patterns (!src/**)
+#
+# USAGE: place in repo root. Use !path to whitelist exceptions to the rules above.
+# Deploy from: ~/code/my-template/.graphifyignore (canonical source)
+
+# ==============================================================================
+# 1. DEPENDENCY TREES — biggest token savers
+#    These directories contain thousands of third-party files that add zero
+#    signal about your custom logic and will bloat the graph significantly.
+# ==============================================================================
+node_modules/
+bower_components/
+jspm_packages/
+vendor/
+.pnp
+.pnp.js
+
+# ==============================================================================
+# 2. BUILD ARTIFACTS & OUTPUT BINARIES
+#    Compiled output belongs in the graph only if it IS your primary artifact.
+#    For most repos, strip it — source code tells the story better.
+# ==============================================================================
+dist/
+build/
+out/
+target/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# ==============================================================================
+# 3. SMART CONTRACT BUILD ARTIFACTS (Web3 / Blockchain / DApp)
+#    Hardhat and Foundry output massive metadata files containing raw bytecode,
+#    ABI data, and ASTs for each compiled contract. These stop Claude from
+#    parsing thousands of lines of raw cryptographic bytecode.
+#
+#    ABI PRESERVATION NOTE: when Claude needs an ABI to connect your JS
+#    frontend to Solidity backend, reference the specific file path directly
+#    in your prompt rather than indexing the entire cache directory.
+# ==============================================================================
+artifacts/
+cache/
+typechain/
+typechain-types/
+crytic-export/
+.openzeppelin/
+
+# ==============================================================================
+# 4. FRONTEND CACHE & FRAMEWORK OUTPUT
+#    Framework build caches, SSR output, and bundler artifacts add no signal.
+# ==============================================================================
+.next/
+.nuxt/
+.parcel-cache/
+.cache/
+.svelte-kit/
+
+# ==============================================================================
+# 5. SENSITIVE ENVIRONMENTS & LOCAL DATA
+#    Never index secrets, credentials, or environment configs.
+#    For agent-heavy / private repos this is the most critical section.
+# ==============================================================================
+.env
+.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+*.key
+*.p12
+secrets/
+.secrets/
+
+# ==============================================================================
+# 6. LOG FILES — high noise, low signal
+# ==============================================================================
+*.log
+logs/
+*.log.*
+
+# ==============================================================================
+# 7. GRAPHIFY OWN OUTPUT — prevents circular self-reference
+#    Always exclude graphify-out/ from its own indexing to avoid graph loops.
+#
+#    .GITIGNORE NOTE: separately add the following to .gitignore (not here):
+#      graphify-out/manifest.json   ← file mtimes, breaks after git clone
+#      graphify-out/cost.json       ← local API cost log only
+#    These ARE worth committing: graph.json, GRAPH_REPORT.md, graph.html
+# ==============================================================================
+graphify-out/
+.graphify_python
+manifest.json
+cost.json
+
+# ==============================================================================
+# 8. OS / EDITOR ARTIFACTS
+# ==============================================================================
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/settings.json
+
+# ==============================================================================
+# REPO-SPECIFIC OVERRIDES — add below when deploying to a specific repo
+# ==============================================================================
+
+# --- Agent-heavy / private repos (trading-assistant, divorce-custody) ---
+# specs/              ← internal workflow specs
+# sessions/           ← raw session transcripts
+# strategies/         ← proprietary strategy reference material
+# data/imports/       ← raw trade/financial data imports
+# child-support/      ← sensitive case documents
+# custody/            ← sensitive case documents
+
+# --- AI / Claude Code repos ---
+# .claude/projects/   ← local project state
+# .claude/memory/     ← local memory files
+# AGENT-SYNC/         ← cross-agent handoff files
+
+# ==============================================================================
+# WHITELIST EXCEPTIONS — uncomment/add as needed
+# Use ! prefix to force-include paths excluded above.
+#
+# Keep core Solidity source visible:
+#   !contracts/**/*.sol
+#   !src/**/*.js
+#   !src/**/*.html
+#
+# For high-sensitivity repos — invert and only index source:
+#   *
+#   !src/
+#   !src/**
+# ==============================================================================
