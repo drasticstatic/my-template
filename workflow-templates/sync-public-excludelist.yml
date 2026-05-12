@@ -5,6 +5,21 @@ name: 🌐 Sync Public Preview (Exclude List Model)
 # Use this model when most of your repo is public and you have
 # a small set of private files/dirs to strip.
 #
+# Example repos using DENYLIST logic (this template):
+# - trading-assistant
+# - anthropas-argus-alfred
+# - pir-devine-news
+# - wilson-lawn-ai-assist
+# - trading-bot_arbitrage_DAPPUv3_hardhat_UNI-CAKE
+# - dpnelson
+#
+# Example repos using ALLOWLIST logic (sync-public-allowlist.yml):
+# - divorce-custody-assistant
+#
+# .nojekyll: Store in my-template repo until needed. Only add when Jekyll processing
+# interferes with content (files with underscores, certain directory names, etc.).
+# React/Vite sites don't need it. Add on as-needed basis.
+#
 # See also: sync-public-allowlist.yml for the strict (closed) model.
 
 on:

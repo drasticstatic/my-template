@@ -5,6 +5,21 @@ name: 🌐 Sync Public Preview (Allowlist Model)
 # Any new root-level path not in either list will fail CI until classified.
 # Use this model when most of your repo is private.
 #
+# Example repos using ALLOWLIST logic:
+# - divorce-custody-assistant
+#
+# Example repos using DENYLIST logic (sync-public-excludelist.yml):
+# - trading-assistant
+# - anthropas-argus-alfred
+# - pir-devine-news
+# - wilson-lawn-ai-assist
+# - trading-bot_arbitrage_DAPPUv3_hardhat_UNI-CAKE
+# - dpnelson
+#
+# .nojekyll: Store in my-template repo until needed. Only add when Jekyll processing
+# interferes with content (files with underscores, certain directory names, etc.).
+# React/Vite sites don't need it. Add on as-needed basis.
+#
 # See also: sync-public-excludelist.yml for the inverse (open) model.
 
 on:
