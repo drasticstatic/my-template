@@ -10,11 +10,11 @@ name: 🌐 Sync Public Preview (Exclude List Model)
 # - anthropas-argus-alfred
 # - pir-devine-news
 # - wilson-lawn-ai-assist
-# - trading-bot_arbitrage_DAPPUv3_hardhat_UNI-CAKE
 # - dpnelson
 #
 # Example repos using ALLOWLIST logic (sync-public-allowlist.yml):
 # - divorce-custody-assistant
+# - trading-bot_arbitrage_DAPPUv3_hardhat_UNI-CAKE
 #
 # .nojekyll: Store in my-template repo until needed. Only add when Jekyll processing
 # interferes with content (files with underscores, certain directory names, etc.).
@@ -49,16 +49,20 @@ jobs:
           # Add more --path lines for any additional private files/dirs.
           git filter-repo \
             --path "CLAUDE.md" \
+            --path "AGENTS.md" \
+            --path "AGENTS.override.md" \
             --path ".augmentignore" \
             --path ".gitignore" \
+            --path ".graphifyignore" \
             --path ".github/" \
             --path "AGENT-SYNC/" \
             --path "specs/" \
             --path "gitexporter.config.json" \
             --path "logs/" \
             --path "strategies/" \
+            --path "graphify-out/" \
             --invert-paths \
-            --filename-callback 'return None if filename is None or filename.startswith(b".claude/") else filename' \
+            --filename-callback 'return None if filename is None or (filename.startswith(b".claude/") and not filename.startswith(b".claude/skills/")) else filename' \
             --force
 
       - name: Configure Git Identity

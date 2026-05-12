@@ -7,13 +7,13 @@ name: 🌐 Sync Public Preview (Allowlist Model)
 #
 # Example repos using ALLOWLIST logic:
 # - divorce-custody-assistant
+# - trading-bot_arbitrage_DAPPUv3_hardhat_UNI-CAKE
 #
 # Example repos using DENYLIST logic (sync-public-excludelist.yml):
 # - trading-assistant
 # - anthropas-argus-alfred
 # - pir-devine-news
 # - wilson-lawn-ai-assist
-# - trading-bot_arbitrage_DAPPUv3_hardhat_UNI-CAKE
 # - dpnelson
 #
 # .nojekyll: Store in my-template repo until needed. Only add when Jekyll processing
@@ -106,7 +106,7 @@ jobs:
             --path "specs/" \
             --path "gitexporter.config.json" \
             --invert-paths \
-            --filename-callback 'return None if filename is None or filename.startswith(b".claude/") else filename' \
+            --filename-callback 'return None if filename is None or (filename.startswith(b".claude/") and not filename.startswith(b".claude/skills/")) else filename' \
             --force
 
       - name: Configure Git Identity
