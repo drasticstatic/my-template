@@ -7,13 +7,13 @@ name: 🌐 Sync Public Preview (Exclude List Model)
 #
 # Example repos using DENYLIST logic (this template):
 # - trading-assistant
-# - anthropas-argus-alfred
 # - pir-devine-news
 # - wilson-lawn-ai-assist
 # - dpnelson
 #
 # Example repos using ALLOWLIST logic (sync-public-allowlist.yml):
 # - divorce-custody-assistant
+# - anthropas-argus-alfred
 # - trading-bot_arbitrage_DAPPUv3_hardhat_UNI-CAKE
 #
 # .nojekyll: Store in my-template repo until needed. Only add when Jekyll processing
