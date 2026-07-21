@@ -21,6 +21,27 @@ name: 🌐 Sync Public Preview (Exclude List Model)
 # React/Vite sites don't need it. Add on as-needed basis.
 #
 # See also: sync-public-allowlist.yml for the strict (closed) model.
+#
+# ── GOTCHAS (excludelist / denylist model) ─────────────────────────────────────
+# 1. SILENT LEAK RISK (no tripwire here): there is NO validate step in this
+#    model — everything is public unless you --path it into the strip list. So a
+#    NEW private root file/dir you add will LEAK to the public repo until you add
+#    it to the filter-repo --path list. Audit the root tree on every new entry.
+#    (The allowlist model fails-safe by blocking; this model fails-open by
+#    leaking. Mirror inverse.) Real-world: trading-assistant strips strategies/,
+#    taxes/, tradingview/, "MCP Servers/", logs/ — anything new of comparable
+#    sensitivity must be added too.
+# 2. EMPTY-COMMIT PRUNING: git filter-repo drops commits that become empty after
+#    --invert-paths strips their private paths. So a commit touching ONLY private
+#    paths will NOT appear on the public HEAD — correct, not a failure. "Success"
+#    = sync green + public HEAD reflects the latest PUBLIC-touching commit.
+# 3. PAT `workflow` SCOPE: classic `PUBLIC_REPO_TOKEN` must have `workflow` scope
+#    (not just `repo`) IF this sync injects/updates a `.github/workflows/` file in
+#    the public repo — otherwise push 403s ("refusing to allow a PAT to create
+#    or update workflow files without workflow scope"). Adding `workflow` later =
+#    edit the existing token at github.com/settings/tokens; value unchanged, no
+#    need to re-set the secret. See ~/code/drasticstatic/how-to-setup-GITEXPORTER.md
+#    (Step 1) + PAT table. See also: ~/code/anthropas-argus-alfred/REPO-RESURRECTION-PLAYBOOK.md.
 
 on:
   push:

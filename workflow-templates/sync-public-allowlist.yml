@@ -21,6 +21,29 @@ name: 🌐 Sync Public Preview (Allowlist Model)
 # React/Vite sites don't need it. Add on as-needed basis.
 #
 # See also: sync-public-excludelist.yml for the inverse (open) model.
+#
+# ── GOTCHAS (allowlist / validate-step model) ─────────────────────────────────
+# 1. VALIDATE TRIPWIRE: the "Validate root path classification" step FAILS the
+#    build if ANY root-level path is on neither public_allowlist nor
+#    private_allowlist. So when you add a new root file/dir, classify it in the
+#    matching list IN THE SAME COMMIT — or the next push's sync breaks. (This is
+#    exactly what stalled anthropas-argus-alfred on 2026-07-03: `memory/` +
+#    `index copy 2.html` were unclassified.) Reflex: new root entry → one-line
+#    allowlist addition in the same commit.
+# 2. EMPTY-COMMIT PRUNING: git filter-repo drops commits that become empty after
+#    filter-repo strips their private paths. So a commit touching ONLY private
+#    paths will NOT appear on the public HEAD — and that's correct, not a
+#    failure. "Success" = sync green + public HEAD reflects the latest
+#    PUBLIC-touching commit. (For a compliance/audit narrative this is desirable:
+#    only genuine public content surfaces on the record.)
+# 3. PAT `workflow` SCOPE: the classic `PUBLIC_REPO_TOKEN` must have `workflow`
+#    scope (not just `repo`) IF this sync injects/updates a `.github/workflows/`
+#    file in the public repo — otherwise push 403s with "refusing to allow a PAT
+#    to create or update workflow files without workflow scope". Adding
+#    `workflow` later = edit the existing token at github.com/settings/tokens;
+#    the token value does NOT change, so no need to re-set the secret. See
+#    ~/code/drasticstatic/how-to-setup-GITEXPORTER.md (Step 1) + PAT table.
+#    See also: ~/code/anthropas-argus-alfred/REPO-RESURRECTION-PLAYBOOK.md.
 
 on:
   push:
