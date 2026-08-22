@@ -298,3 +298,60 @@ Future option: have `sync-public.yml` read from `gitexporter.config.json` progra
 - [ ] Verify `next.config.ts` has correct `basePath` for the public preview URL
 - [ ] Push to private repo → watch both workflows go green
 - [ ] Keep `gitexporter.config.json` for documentation but pipeline no longer depends on it
+
+---
+
+## Update — 2026-08-22: Fleet confirmation sweep + a new pitfall
+
+Prompted by Christopher noticing a failed public-sync email during an unrelated fleet-wide Dependabot
+triage pass (same day). Two things came out of it:
+
+### Token table above was stale, not actually broken
+
+Re-checked all 5 repos this doc's Token Setup table flagged as "⚠️ Needs `workflow` scope added"
+(`dpnelson`, `anthropas-argus-alfred`, `divorce-custody-assistant`, `pir-devine-news`,
+`trading-assistant`). Every one of them is green end-to-end today — both the private repo's
+`sync-public.yml` *and* the corresponding public repo's Pages deploy. The table reflected an earlier
+provisioning snapshot, not current reality. Lesson: this doc's proven-working state can drift out from
+under its own tables — worth a periodic re-check rather than trusting the table at face value.
+
+### Pitfall #13: npm version mismatch causes false `EBADPLATFORM` in injected deploy workflows
+
+**Symptom:** `wilson-lawn-ai-assist-public`'s "Build and Deploy to GitHub Pages" run failed 5 times in a
+row with:
+```
+npm error code EBADPLATFORM
+npm error notsup Unsupported platform for @esbuild/aix-ppc64@0.28.2: wanted {"os":"aix","cpu":"ppc64"} (current: {"os":"linux","cpu":"x64"})
+```
+during `npm ci` — a completely unrelated architecture's optional dependency, which `npm ci` should
+silently skip.
+
+**Root cause:** `package-lock.json` had just been regenerated locally with npm 11.12.1 (during the
+same day's Dependabot PR triage — several lockfile-conflict rebases needed a full
+`rm package-lock.json && npm install` regen). The injected `deploy.yml`'s `actions/setup-node@v4`
+pins `node-version: "20"`, which bundles **npm 10.8.2**. npm 10.8.x mis-parses the optional-dependency
+platform metadata that npm 11.x writes, and instead of skipping the foreign-platform package, throws
+`EBADPLATFORM` on it. Confirmed by reproducing locally: `npm ci` on the exact same lockfile succeeds
+with npm 11.12.1, fails under npm 10.8.2's behavior.
+
+**Fix:** added `- run: npm install -g npm@11` as a step between `actions/setup-node@v4` and `npm ci` in
+the injected `deploy.yml` template (inside `wilson-lawn-ai-assist`'s `sync-public.yml` heredoc). Pins
+the npm version explicitly rather than relying on whatever a given Node major happens to bundle.
+
+**How to apply going forward:** any repo whose sync pipeline regenerates `package-lock.json` on a
+machine with a newer npm than the deploy workflow's pinned Node version bundles is at risk of this same
+false-positive `EBADPLATFORM`. Either (a) pin an explicit npm version in the deploy workflow that's
+`>=` whatever generated the lockfile, or (b) bump the deploy workflow's Node version so its bundled npm
+matches more closely. The `iamoneself`/`findyourfeathers` variant of this pipeline (Node 22 in its
+build step, not Node 20) hasn't hit this — worth aligning `wilson-lawn-ai-assist`'s pinned Node version
+up from 20 at some point too, not just papering over it with an npm pin.
+
+### On GitExporter's badge/branding (open question, not yet decided)
+
+Christopher asked whether GitExporter (the tool) still has portfolio value given it's fully dead here.
+Current framing across repo READMEs — "Synced via GitExporter" badges linking to the upstream tool — is
+now misleading: none of these repos actually depend on it anymore. Proposed but **not yet applied**:
+reword badges to something like "Actions-based Sync Pipeline (GitExporter-inspired)," and consider
+publishing a trimmed version of this doc's pitfalls/iterations table as a standalone writeup — the
+"broken native-dependency tool → built a dependency-free Actions replacement" story is a stronger
+portfolio artifact than the tool name itself. Holding until Christopher picks a direction.
