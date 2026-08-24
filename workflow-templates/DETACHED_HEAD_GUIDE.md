@@ -11,11 +11,13 @@ This is a pointer, not a copy. The full guide — what detached HEAD means, why 
 keeps a checkout deliberately detached as a hands-on git-learning sandbox (not an oversight), and the
 quick-check commands to tell an attached checkout from a detached one — lives at:
 
-**`divorce-custody-assistant/DETACHED_HEAD_GUIDE.md`**
+**[`divorce-custody-assistant/DETACHED_HEAD_GUIDE.md`](https://github.com/drasticstatic/divorce-custody-assistant/blob/main/DETACHED_HEAD_GUIDE.md)**
 
-Read it there for the full explanation, including the 2026-08-23 update on how Christopher actually uses
-the split (Intent workspace = durable `main`, detached home-repo worktree = safe sandbox for practicing
-git concepts).
+Read it there for the full explanation, including the 2026-08-24 update (checked against actual git
+history, correcting an earlier draft) on how Christopher actually uses the split: this checkout is where
+real work has been landing and pushing successfully via Claude Code CLI; the Augment Intent worktree's
+`main` has been sitting stale/behind. VS Code's push flow doesn't reliably handle pushing a detached HEAD
+to a named remote branch, so Alfred fixes it with `git push origin HEAD:main` when that happens.
 
 If any repo in the ecosystem finds itself in an unexpected detached-HEAD state, check that file's "Quick
 check commands" section before assuming something's wrong — `git status --short --branch` and
