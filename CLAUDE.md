@@ -80,4 +80,12 @@ When these exist in this repo, they are the **source of truth** — do not dupli
 
 ## Agent-Specific Notes
 
+**Before this repo is considered "shipped"**, run the checklist in this repo's
+own `README.md` ("New Repo Checklist") — most importantly a real `LICENSE`
+file in the public repo (not covered by the `drasticstatic/.github` fallback,
+unlike `SECURITY.md`/`CONTRIBUTING.md`) and an accurate README License
+section. See [`how-to-establish-cross_repo_CONTRIBUTORS_SECURITY_LICENSING.md`](https://github.com/drasticstatic/drasticstatic/blob/main/how-to-establish-cross_repo_CONTRIBUTORS_SECURITY_LICENSING.md)
+for the full walkthrough. If you're an agent scaffolding a new repo from this
+template, don't let this get silently skipped.
+
 [Any other persistent instructions for Claude in this repo.]

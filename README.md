@@ -9,6 +9,14 @@ Click **Use this template** above (or the green button at the top of this page) 
 
 ---
 
+## ✅ New Repo Checklist
+
+Don't skip this — it's the step that gets missed most often (see `anthropas-argus-alfred`, which shipped without it for months):
+
+1. **License, security & contributors** — follow [`how-to-establish-cross_repo_CONTRIBUTORS_SECURITY_LICENSING.md`](https://github.com/drasticstatic/drasticstatic/blob/main/how-to-establish-cross_repo_CONTRIBUTORS_SECURITY_LICENSING.md) end to end: a real `LICENSE` file in every *public* repo (the global `.github` fallback covers `SECURITY.md`/`CONTRIBUTING.md`, but **not** `LICENSE` — that one is per-repo, always), an accurate README License section (especially if this repo has a private-source + public-preview pair — the same README gets copied to both, so word it so it's true in either context), and topics/description set via `gh repo edit`.
+2. Fill in `CLAUDE.md` and `.github/dependabot.yml` for the new repo's stack.
+3. Wire up the sync workflow (allowlist or excludelist) if this repo has a public-preview counterpart.
+
 ## What's Included
 
 | File | Purpose |
