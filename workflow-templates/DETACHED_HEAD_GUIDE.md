@@ -8,17 +8,16 @@ metadata:
 # Detached HEAD Guide — see canonical file
 
 This is a pointer, not a copy. The full guide — what detached HEAD means, why one particular repo
-keeps a checkout deliberately detached as a hands-on git-learning sandbox (not an oversight), and the
-quick-check commands to tell an attached checkout from a detached one — lives at:
+runs a detached checkout as its primary working environment on purpose, and the quick-reference
+commands to tell an attached checkout from a detached one — lives at:
 
 **[`divorce-custody-assistant/DETACHED_HEAD_GUIDE.md`](https://github.com/drasticstatic/divorce-custody-assistant/blob/main/DETACHED_HEAD_GUIDE.md)**
 
-Read it there for the full explanation, including the 2026-08-24 update (checked against actual git
-history, correcting an earlier draft) on how Christopher actually uses the split: this checkout is where
-real work has been landing and pushing successfully via Claude Code CLI; the Augment Intent worktree's
-`main` has been sitting stale/behind. VS Code's push flow doesn't reliably handle pushing a detached HEAD
-to a named remote branch, so Alfred fixes it with `git push origin HEAD:main` when that happens.
+Short version: that checkout is where real work has been landing and pushing successfully; a separate
+Augment Intent worktree has drifted stale by comparison. The one command the whole setup exists to
+explain: when a push from a detached checkout fails (common with editor git UIs, including VS Code),
+run `git push origin HEAD:main` directly.
 
-If any repo in the ecosystem finds itself in an unexpected detached-HEAD state, check that file's "Quick
-check commands" section before assuming something's wrong — `git status --short --branch` and
+If any repo in the ecosystem finds itself in an unexpected detached-HEAD state, check that file's
+Quick Reference table before assuming something's wrong — `git status --short --branch` and
 `git worktree list --porcelain` will tell you whether it's a deliberate setup like this one.
