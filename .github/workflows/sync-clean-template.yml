@@ -1,0 +1,67 @@
+name: 🧹 Sync my-template-clean
+
+# Mirrors this repo (my-template) into my-template-clean on every push to main,
+# minus the paths listed in workflow-templates/.clean-template-denylist.yml.
+# Unlike sync-public.yml, this is a public → public content mirror (both repos
+# are already public template repos) — no history rewriting needed, just an
+# rsync + commit. See workflow-templates/.clean-template-denylist.yml to add
+# or remove excluded paths.
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout my-template
+        uses: actions/checkout@v4
+        with:
+          path: source
+
+      - name: Checkout my-template-clean
+        uses: actions/checkout@v4
+        with:
+          repository: drasticstatic/my-template-clean
+          token: ${{ secrets.CLEAN_TEMPLATE_TOKEN }}
+          path: clean
+
+      - name: Build rsync exclude list from denylist
+        id: excludes
+        run: |
+          python3 - <<'PY'
+          import yaml
+          with open("source/workflow-templates/.clean-template-denylist.yml") as f:
+              data = yaml.safe_load(f)
+          paths = (data.get("strip") or []) + (data.get("preserve") or [])
+          with open("rsync-excludes.txt", "w") as out:
+              for p in paths:
+                  out.write(p.rstrip("/") + "\n")
+          PY
+          cat rsync-excludes.txt
+
+      - name: Mirror source into clean
+        run: |
+          rsync -a --delete \
+            --exclude ".git/" \
+            --exclude-from rsync-excludes.txt \
+            source/ clean/
+
+      - name: Commit and push if changed
+        working-directory: clean
+        env:
+          GH_TOKEN: ${{ secrets.CLEAN_TEMPLATE_TOKEN }}
+        run: |
+          git config user.name "Template Sync Bot"
+          git config user.email "actions@github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to sync."
+            exit 0
+          fi
+          git commit -m "chore: sync from my-template ($(cd ../source && git rev-parse --short HEAD))"
+          git push origin main

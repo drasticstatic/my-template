@@ -1,0 +1,24 @@
+# Paths the sync-clean-template.yml workflow excludes when mirroring
+# my-template → my-template-clean. Edit this list — the workflow reads it
+# directly and turns each entry into an rsync --exclude.
+#
+#   strip:    dropped entirely — not present in my-template-clean
+#   preserve: my-template-clean's own version stays untouched by the sync
+#             (these exist in my-template-clean but diverge intentionally —
+#             a generic fill-in-the-blank README/POINTER for new repos,
+#             plus the setup/ scripts that only exist in the -clean fork)
+strip:
+  # this workflow itself — it must never propagate into my-template-clean,
+  # or a push there would trigger it self-referentially (checkout-and-push
+  # to itself, on every push, indefinitely)
+  - .github/workflows/sync-clean-template.yml
+  - workflow-templates/DETACHED_HEAD_GUIDE.md
+  - workflow-templates/GITEXPORTER-TO-ACTIONS-SYNC.md
+  - workflow-templates/GRAPHIFY_SETUP.md
+  - workflow-templates/nextjs-ssg-ghpages-deploy.md
+  - workflow-templates/react-cra-ghpages-deploy.md
+
+preserve:
+  - README.md
+  - .claude/POINTER.md
+  - setup/
