@@ -102,6 +102,8 @@ jobs:
             ".claude"
             ".github"
             ".gitignore"
+            ".graphifyignore"
+            "graphify-out"
             "CLAUDE.md"
             "AGENT-SYNC"
             "gitexporter.config.json"
