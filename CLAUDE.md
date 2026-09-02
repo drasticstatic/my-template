@@ -89,3 +89,9 @@ for the full walkthrough. If you're an agent scaffolding a new repo from this
 template, don't let this get silently skipped.
 
 [Any other persistent instructions for Claude in this repo.]
+
+---
+
+## Commit Convention
+
+Footer: `Co-Authored-By: Alfred · Claude · [model] <noreply@anthropic.com>`
