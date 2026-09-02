@@ -236,6 +236,8 @@ gh secret set PUBLIC_REPO_TOKEN --repo OWNER/PRIVATE-REPO
 | pir-devine-news-auth | public_repo | ❌ Expired May 2026 |
 | pir-devine-news-sync | repo | ⚠️ Needs `workflow` scope added |
 | trading-assistant-sync | repo | ⚠️ Needs `workflow` scope added |
+| astro-public-sync | repo, workflow | ✅ Working (`gratitude-token-project_astro` → `_astro-public`) |
+| littlebird-sync | repo, workflow | ⏳ Pending — Christopher to create + `gh secret set PUBLIC_REPO_TOKEN --repo drasticstatic/littlebird-ambassador` |
 
 ---
 
