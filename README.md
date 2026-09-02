@@ -16,6 +16,9 @@ Don't skip this — it's the step that gets missed most often (see `anthropas-ar
 1. **License, security & contributors** — follow [`how-to-establish-cross_repo_CONTRIBUTORS_SECURITY_LICENSING.md`](https://github.com/drasticstatic/drasticstatic/blob/main/how-to-establish-cross_repo_CONTRIBUTORS_SECURITY_LICENSING.md) end to end: a real `LICENSE` file in every *public* repo (the global `.github` fallback covers `SECURITY.md`/`CONTRIBUTING.md`, but **not** `LICENSE` — that one is per-repo, always), an accurate README License section (especially if this repo has a private-source + public-preview pair — the same README gets copied to both, so word it so it's true in either context), and topics/description set via `gh repo edit`.
 2. Fill in `CLAUDE.md` and `.github/dependabot.yml` for the new repo's stack.
 3. Wire up the sync workflow (allowlist or excludelist) if this repo has a public-preview counterpart.
+4. Run `./scripts/init-graphify.sh` from the new repo's root — deploys `.graphifyignore` and wires
+   the Claude Code hook (both free/keyless). See `workflow-templates/GRAPHIFY_SETUP.md` for the
+   pointer to the full guide and the keyed extraction step.
 
 ## What's Included
 
@@ -30,6 +33,7 @@ Don't skip this — it's the step that gets missed most often (see `anthropas-ar
 | `gitexporter.config.json` | Local gitexporter config — selective commit-history-preserving public preview |
 | `scripts/deployTest.sh` | Deploy a dated static snapshot of a Vite app to a new GitHub Pages repo |
 | `scripts/syncDocs.sh` | Selectively rsync documentation from a private repo to a public docs repo |
+| `scripts/init-graphify.sh` | Deploy `.graphifyignore` + install the Claude Code hook (keyless graphify setup) |
 | `branch-protection/ruleset.json` | GitHub branch protection ruleset — prevents force-push and deletion on `main` |
 
 ---
