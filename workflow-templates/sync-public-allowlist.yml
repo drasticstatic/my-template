@@ -9,6 +9,7 @@ name: 🌐 Sync Public Preview (Allowlist Model)
 # - divorce-custody-assistant
 # - anthropas-argus-alfred
 # - trading-bot_arbitrage_DAPPUv3_hardhat_UNI-CAKE
+# - gratitude-token-project_astro (added 2026-09-01, syncs to gratitude-token-project_astro-public)
 #
 # Example repos using DENYLIST logic (sync-public-excludelist.yml):
 # - trading-assistant
@@ -23,13 +24,21 @@ name: 🌐 Sync Public Preview (Allowlist Model)
 # See also: sync-public-excludelist.yml for the inverse (open) model.
 #
 # ── GOTCHAS (allowlist / validate-step model) ─────────────────────────────────
-# 1. VALIDATE TRIPWIRE: the "Validate root path classification" step FAILS the
+# 1. VALIDATE TRIPWIRE: the "Validate + filter private content" step FAILS the
 #    build if ANY root-level path is on neither public_allowlist nor
 #    private_allowlist. So when you add a new root file/dir, classify it in the
 #    matching list IN THE SAME COMMIT — or the next push's sync breaks. (This is
 #    exactly what stalled anthropas-argus-alfred on 2026-07-03: `memory/` +
 #    `index copy 2.html` were unclassified.) Reflex: new root entry → one-line
 #    allowlist addition in the same commit.
+# 1b. SINGLE SOURCE OF TRUTH: earlier versions of this template had the validation
+#    check and the actual `git filter-repo --path` strip list as two SEPARATE
+#    hand-maintained lists — easy to update one and forget the other, which is
+#    exactly what leaked `.graphifyignore` and a private planning doc to
+#    littlebird-ambassador-public-preview and augment-intent-properties-public-preview
+#    on 2026-09-02 (private_allowlist got a new entry, the filter-repo --path list
+#    didn't). Fixed by generating the --path args FROM private_allowlist
+#    programmatically in the same step — there is now only one list to edit.
 # 2. EMPTY-COMMIT PRUNING: git filter-repo drops commits that become empty after
 #    filter-repo strips their private paths. So a commit touching ONLY private
 #    paths will NOT appear on the public HEAD — and that's correct, not a
@@ -65,7 +74,7 @@ jobs:
       - name: Install git-filter-repo
         run: pip install git-filter-repo
 
-      - name: Validate root path classification
+      - name: Validate + filter private content
         shell: bash
         run: |
           set -euo pipefail
@@ -82,6 +91,12 @@ jobs:
           )
 
           # ── ADD YOUR PRIVATE FILES/DIRS HERE ─────────────────────────────
+          # Single source of truth: this SAME array drives both the validation
+          # tripwire below AND the git filter-repo --path strip list — no
+          # second list to keep in sync. .claude is listed here for validation
+          # purposes but excluded from the auto-generated --path args below
+          # since it's handled separately by --filename-callback (strips
+          # .claude/ except .claude/skills/, which stays public).
           private_allowlist=(
             ".augmentignore"
             ".claude"
@@ -117,17 +132,19 @@ jobs:
             exit 1
           fi
 
-      - name: Filter out private content
-        run: |
-          # ── LIST EVERY PRIVATE PATH TO STRIP ─────────────────────────────
+          # ── Build git filter-repo --path args FROM private_allowlist ─────
+          filter_args=()
+          for entry in "${private_allowlist[@]}"; do
+            if [[ "$entry" == ".claude" ]]; then continue; fi  # handled by --filename-callback below
+            if [[ -d "$entry" ]]; then
+              filter_args+=(--path "${entry}/")
+            else
+              filter_args+=(--path "$entry")
+            fi
+          done
+
           git filter-repo \
-            --path "CLAUDE.md" \
-            --path ".augmentignore" \
-            --path ".gitignore" \
-            --path ".github/" \
-            --path "AGENT-SYNC/" \
-            --path "specs/" \
-            --path "gitexporter.config.json" \
+            "${filter_args[@]}" \
             --invert-paths \
             --filename-callback 'return None if filename is None or (filename.startswith(b".claude/") and not filename.startswith(b".claude/skills/")) else filename' \
             --force
