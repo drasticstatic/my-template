@@ -1,0 +1,21 @@
+{
+  "_note": "Local gitexporter config — for on-demand preview before sync-public.yml is live. Replace all YOUR_* placeholders. Run: npx gitexporter gitexporter.config.json",
+  "_docs": "https://github.com/open-condo-software/gitexporter",
+  "forceReCreateRepo": true,
+  "sourceRepoPath": ".",
+  "targetRepoPath": "../YOUR_REPO_NAME-public-preview",
+  "ignoredPaths": [
+    "CLAUDE.md",
+    ".augmentignore",
+    ".gitignore",
+    ".github/",
+    "AGENT-SYNC/",
+    "specs/",
+    "logs/",
+    "strategies/",
+    "gitexporter.config.json",
+    ".claude/memory/",
+    ".claude/projects/",
+    ".claude/settings.local.json"
+  ]
+}

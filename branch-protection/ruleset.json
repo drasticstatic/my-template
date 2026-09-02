@@ -1,0 +1,21 @@
+{
+  "_note": "GitHub branch protection ruleset for a repo you push to normally. Apply via: gh api repos/OWNER/REPO/rulesets --method POST --input branch-protection/ruleset.json. WARNING: do NOT apply this to a -public-preview/-public repo whose main is force-pushed by sync-public.yml's git filter-repo step — non_fast_forward blocks that force-push and breaks the sync (hit 2026-09-02). Use ruleset-public-preview.json (deletion-only) for those instead.",
+  "_docs": "https://docs.github.com/en/rest/repos/rules",
+  "name": "main-branch-protection",
+  "target": "branch",
+  "enforcement": "active",
+  "conditions": {
+    "ref_name": {
+      "include": ["refs/heads/main"],
+      "exclude": []
+    }
+  },
+  "rules": [
+    {
+      "type": "deletion"
+    },
+    {
+      "type": "non_fast_forward"
+    }
+  ]
+}

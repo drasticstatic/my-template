@@ -96,10 +96,12 @@ gws-credentials*
 !tsconfig*.json
 !.eslintrc.json
 !.prettierrc.json
+!gitexporter.config.json
+!branch-protection/ruleset.json
+!branch-protection/ruleset-public-preview.json
+!graphify-out/graph.json
 # Uncomment as needed:
 # !hardhat.config.json
-# !gitexporter.config.json
-!graphify-out/graph.json
 # !dashboard/data.json
 
 

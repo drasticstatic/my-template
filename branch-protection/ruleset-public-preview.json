@@ -1,0 +1,18 @@
+{
+  "_note": "Branch protection for a -public-preview/-public repo that receives FORCE-PUSHED syncs from git filter-repo (sync-public.yml). Deletion-only — the non_fast_forward rule in ruleset.json would block the sync's required force-push and break it (hit this exact failure 2026-09-02 on littlebird-ambassador-public-preview and augment-intent-properties-public-preview). Apply via: gh api repos/OWNER/REPO/rulesets --method POST --input branch-protection/ruleset-public-preview.json",
+  "_docs": "https://docs.github.com/en/rest/repos/rules",
+  "name": "main-branch-protection",
+  "target": "branch",
+  "enforcement": "active",
+  "conditions": {
+    "ref_name": {
+      "include": ["refs/heads/main"],
+      "exclude": []
+    }
+  },
+  "rules": [
+    {
+      "type": "deletion"
+    }
+  ]
+}
