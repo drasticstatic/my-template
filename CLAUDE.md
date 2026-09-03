@@ -94,4 +94,7 @@ template, don't let this get silently skipped.
 
 ## Commit Convention
 
-Footer: `Co-Authored-By: Alfred · Claude · [model] <noreply@anthropic.com>`
+- Anthropic: `Co-Authored-By: Alfred · ClaudeCodeCLI · Anthropic [Sonnet-5/Opus-#/Haiku-#]`
+- NVIDIA NIM: `Co-Authored-By: Alfred · ClaudeCodeCLI · NVIDIA NIM [model]`
+
+Full identity model: `anthropas-argus-alfred/sandbox/AGENT_IDENTITY_REFERENCE.md`
