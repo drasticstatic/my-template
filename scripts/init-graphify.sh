@@ -54,8 +54,10 @@ if [ -f "$REPO_ROOT/.gitignore" ] && ! grep -q "graphify-out/manifest.json" "$RE
     echo "# graphify — local-only outputs (see graphify-out/graph.json, GRAPH_REPORT.md, graph.html to commit)"
     echo "graphify-out/manifest.json"
     echo "graphify-out/cost.json"
+    echo "graphify-out/.graphify_analysis.json"
+    echo "graphify-out/.graphify_labels.json"
   } >> "$REPO_ROOT/.gitignore"
-  echo "✅ Added graphify-out/manifest.json + cost.json to .gitignore"
+  echo "✅ Added graphify-out local-only files to .gitignore"
 fi
 
 echo ""
