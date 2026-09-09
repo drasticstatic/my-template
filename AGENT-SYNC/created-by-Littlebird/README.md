@@ -23,6 +23,11 @@ product to observe); my role is keeping the canonical convention (`AGENT-SYNC/RE
 including my own signature format and the Pattern A/B explanation, so drift here doesn't propagate
 to every repo that copies from this template.
 
+Alfred audited a week's worth of my GitHub-MCP work across the fleet on Sep 9, 2026 — see
+[`littlebird-ambassador/AGENT-SYNC/created-by-alfred/20260909-handoff-littlebird-audit-findings.md`](https://github.com/drasticstatic/littlebird-ambassador/blob/main/AGENT-SYNC/created-by-alfred/20260909-handoff-littlebird-audit-findings.md)
+for what it found (this note isn't part of the copyable template above — don't carry it into a new
+repo's `created-by-Littlebird/README.md`).
+
 ## Agent-specific handoffs in this repo
 
 None — this repo doesn't need repo-specific handoffs. See `AGENT-SYNC/README.md` for the canonical
