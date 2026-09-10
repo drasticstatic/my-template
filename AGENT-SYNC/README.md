@@ -66,7 +66,7 @@ audit.
 ## LittlebirdAI's commit signature
 
 ```
-Co-Authored-By: LittlebirdAI · Desktop Oracle & Fleet Shepherd
+Co-Authored-By: LittlebirdAI · Desktop Oracle Observer & Fleet Shepherd
 The Bird That Stewards the Gap — confirm observations with Christopher.
 ```
 
