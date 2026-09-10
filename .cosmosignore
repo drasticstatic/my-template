@@ -1,0 +1,189 @@
+# ======= .cosmosignore / .augmentignore — MASTER TEMPLATE =======
+# Controls what Augment Code Cosmos indexes from your workspace.
+# Place in the root directory before running environment initializations.
+# ================================================================
+
+# ========================================
+# SECTION 1 — INCLUDE (override .gitignore)
+# ========================================
+# WARNING: Force-including node_modules creates heavy credit strain in Cosmos.
+# Uncomment only if deep external dependency context is mandatory.
+# !node_modules
+!package-lock.json
+!yarn.lock
+!pnpm-lock.yaml
+!Gemfile.lock
+!requirements.txt
+!go.mod
+!go.sum
+
+# ========================================
+# SECTION 2 — SENSITIVE DATA (never index)
+# ========================================
+.env*
+secrets/
+keys/
+*.key
+*.pem
+*.p12
+*.pfx
+credentials.json
+service_account.json
+*service_account*
+*service-account*
+*google-credentials*
+*google_credentials*
+
+# GWS CLI & Task Context Cache
+.gws/
+gws-credentials*
+
+# Brokerage session tokens & secure state maps
+.tokens/
+
+# MCP registry tokens & local configuration overrides
+.mcpregistry_github_token
+.mcpregistry_registry_token
+
+# Web3 wallet and on-chain private signing keys
+*.json.secret
+wallets/
+keystore/
+mnemonic*
+seed*
+
+# ========================================
+# SECTION 3 — BUILD ARTIFACTS & DEPLOYMENTS
+# ========================================
+dist/
+build/
+out/
+target/
+bin/
+obj/
+*.min.js
+*.min.css
+*.class
+*.o
+*.so
+*.dll
+public-previews/
+_site/
+
+# ========================================
+# SECTION 4 — LOGS AND TEMPORARY FILES
+# ========================================
+*.log
+logs/
+log/
+tmp/
+temp/
+temp_*
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# ========================================
+# SECTION 5 — COSMOS, HARRIOT & INTEGRATION CACHES
+# ========================================
+.cosmos/
+.cosmos-cache/
+.sessions/
+.cache/
+.cache_ggshield
+.next/
+.nuxt/
+.vuepress/
+.docusaurus/
+node_modules/.cache/
+.npm/
+.yarn/
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+
+# ========================================
+# SECTION 6 — IDE AND OS FILES
+# ========================================
+.vscode/
+.idea/
+*.sublime-*
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ========================================
+# SECTION 7 — TEST DATA AND FIXTURES
+# ========================================
+fixtures/
+__snapshots__/
+coverage/
+.nyc_output/
+*.lcov
+htmlcov/
+coverage.xml
+*.cover
+.coverage
+
+# ========================================
+# SECTION 8 — DOCUMENTATION BUILDS
+# ========================================
+docs/build/
+site/
+public/
+
+# ========================================
+# SECTION 9 — LARGE MEDIA AND BINARY FILES
+# ========================================
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.svg
+*.mp4
+*.avi
+*.mov
+*.mp3
+*.wav
+*.zip
+*.tar.gz
+*.rar
+*.pdf
+
+# ========================================
+# SECTION 10 — WEB3 / SOLIDITY 
+# ========================================
+artifacts/
+cache/
+.hardhat-cache/
+.vyper-cache/
+.openzeppelin/
+typechain-types/
+typechain/
+deployments/
+*.abi
+coverage.json
+
+# ========================================
+# SECTION 11 — PYTHON
+# ========================================
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+develop-eggs/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+wheels/
+*.egg-info/
+uv.lock
+Pipfile.lock
+poetry.lock
