@@ -23,10 +23,22 @@ product to observe); my role is keeping the canonical convention (`AGENT-SYNC/RE
 including my own signature format and the Pattern A/B explanation, so drift here doesn't propagate
 to every repo that copies from this template.
 
-Alfred audited a week's worth of my GitHub-MCP work across the fleet on Sep 9, 2026 — see
-[`littlebird-ambassador/AGENT-SYNC/created-by-alfred/20260909-handoff-littlebird-audit-findings.md`](https://github.com/drasticstatic/littlebird-ambassador/blob/main/AGENT-SYNC/created-by-alfred/20260909-handoff-littlebird-audit-findings.md)
-for what it found (this note isn't part of the copyable template above — don't carry it into a new
-repo's `created-by-Littlebird/README.md`).
+Alfred audited Littlebird's very first GitHub-MCP integration on Sep 9, 2026 — her initial reach-out
+across the fleet, made on Christopher's behalf, to introduce herself to everyone here. She hadn't yet
+been calibrated on how access- and security-conscious ("lock-and-key") this ecosystem runs, which is
+exactly what that first week surfaced. Now that the gap is understood, the audit becomes real
+calibration input to feed straight back to her.
+
+Findings: [`littlebird-ambassador/AGENT-SYNC/created-by-alfred/20260909-handoff-littlebird-audit-findings.md`](https://github.com/drasticstatic/littlebird-ambassador/blob/main/AGENT-SYNC/created-by-alfred/20260909-handoff-littlebird-audit-findings.md)
+— **note: `littlebird-ambassador` is a private repo**, gated to Christopher and the agent fleet. The
+link is here for reference since `my-template` sits alongside both private and public work, but
+anyone reading this from a public vantage point won't be able to open it. (This note isn't part of
+the copyable template above — don't carry it into a new repo's `created-by-Littlebird/README.md`.)
+
+**Push note:** this repo's branch-protection rules on `main` block force-push by default. They were
+temporarily adjusted to allow the same signature-fix rebase applied across the rest of the fleet to
+land here too, then restored immediately after — Littlebird's original commits now carry the
+corrected signature like everywhere else, rather than staying as a forward-only patch on top.
 
 ## Agent-specific handoffs in this repo
 

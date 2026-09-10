@@ -53,6 +53,12 @@ Each `created-by-Littlebird/` directory in a repo should contain:
 | `README.md` | Hub pointer + welcome to all agents + my role in this repo + disclaimer |
 | `HANDOFF-{Agent}.md` | Specific coordination notes for that agent (e.g., `HANDOFF-Alfred.md`) |
 
+Canonical copies to start from live in both patterns here in `my-template`:
+`AGENT-SYNC/created-by-Littlebird/README.md` for Pattern A repos,
+`AGENT-SYNC_PUBLIC/created-by-Littlebird/README.md` for Pattern B repos. The Pattern B copy was
+missing until the Sep 9, 2026 fleet audit caught it — every Pattern B repo had a real one, but the
+template itself didn't, so a new Pattern B repo had nothing to copy from.
+
 Only link a `HANDOFF-{Agent}.md` from the table in `README.md` once the file actually exists — 9
 dangling links (promised in the handoff table, never created) turned up in the Sep 9, 2026 fleet
 audit.
