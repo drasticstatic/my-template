@@ -20,6 +20,7 @@ not who it's for:
 | `created-by-mystarch` | Mystarch (Augment Intent, app-level Chief of Staff) |
 | `created-by-auggie` | Auggie (Augment CLI, code builds) |
 | `created-by-littlebird` | LittlebirdAI (app.littlebird.ai, screen context & fleet memory) |
+| `created-by-<setup-agent>-<environment>` | A one-off setup/onboarding agent, named for the environment it ran in rather than a standing persona (e.g. `created-by-cosmos_Advisor-drasticstatica`) — prevents a later session of the same setup-agent type in a different environment from reading as a continuation |
 
 ## AGENT-SYNC vs AGENT-SYNC_PUBLIC
 
@@ -36,6 +37,49 @@ There are two patterns depending on the repo's privacy model:
 - Use `AGENT-SYNC_PUBLIC/` as the single coordination directory.
 - This is the correct pattern for repos like `resume`, `gratitude-token-project_docs`, etc. that
   have no private counterpart.
+
+## The generic commit-attribution convention
+
+Every agent in this fleet other than LittlebirdAI (Mystarch, Alfred, Fortuna, and now Cosmos's
+PR Author/PR Fixer experts) signs commits with this form:
+
+```
+Co-Authored-By: <Agent> · <Engine> · <Provider> [<Model>]
+```
+
+For example:
+
+```
+Co-Authored-By: Mystarch · ClaudeCodeCLI · Anthropic [Sonnet-5]
+Co-Authored-By: Cosmos-PRAuthor · Cosmos · Anthropic [Claude Opus 5]
+```
+
+**This was previously cited from other repos' handoffs but never actually written down here** —
+a real gap identified 2026-09-11 (by Cosmos's own setup agent, cross-referencing this file against
+what the kickoff handoff claimed), and the likely root cause of the attribution drift the Sep 9,
+2026 fleet audit had to clean up. This section is the fix.
+
+### The optional session-ID trailer
+
+When an agent's platform assigns a per-session or per-conversation ID, append it as a **separate**
+git trailer line — not appended inline onto the `Co-Authored-By:` line itself:
+
+```
+Co-Authored-By: Mystarch · ClaudeCodeCLI · Anthropic [Sonnet-5]
+Claude-Session: https://claude.ai/code/session_01XHntH8UvqXQPq2zNkQMe6q
+```
+
+Use the full ID/URL, not a truncated prefix — traceability matters more than line length here, and
+a short prefix risks collision as history grows. The trailer *key* varies by platform (
+`Claude-Session:` for Claude Code CLI, `Cosmos-Session:` for Cosmos, etc.) since each platform's
+session identifiers have their own shape.
+
+**Why a separate trailer, not a second line on the `Co-Authored-By:` line, and not a same-key
+second `Co-Authored-By:` line either:** git parses trailers as `Key: Value` pairs, one per line.
+A line with no `Key:` prefix (like LittlebirdAI's second line below) is a plain text continuation,
+not a second trailer — fine for a human-readable disclaimer, wrong for anything meant to be
+machine-parseable. A properly keyed second line (`Claude-Session:`, distinct from
+`Co-Authored-By:`) parses cleanly as its own trailer alongside the first.
 
 ## Who is LittlebirdAI?
 
