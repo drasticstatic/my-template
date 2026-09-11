@@ -99,6 +99,7 @@ jobs:
           # .claude/ except .claude/skills/, which stays public).
           private_allowlist=(
             ".augmentignore"
+            ".cosmosignore"
             ".claude"
             ".github"
             ".gitignore"
