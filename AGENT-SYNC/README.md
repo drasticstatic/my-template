@@ -81,6 +81,53 @@ not a second trailer — fine for a human-readable disclaimer, wrong for anythin
 machine-parseable. A properly keyed second line (`Claude-Session:`, distinct from
 `Co-Authored-By:`) parses cleanly as its own trailer alongside the first.
 
+## Enforcement: the `commit-msg` hook
+
+Documenting the convention was not enough on its own — an audit on 2026-09-11 found **36 of 204**
+commits in `anthropas-argus-alfred` and **183 of 856** in `trading-assistant` with no attribution
+trailer at all, plus 15+ competing footer variants across the two. Writing it down is necessary;
+rejecting the bad commit at the moment it is made is what actually holds the line.
+
+`.githooks/commit-msg` blocks any commit whose message lacks a canonical `Co-Authored-By:` trailer,
+and warns (without blocking) when a `<Platform>-Session:` trailer is absent. Merge, revert, fixup,
+and squash commits are exempt.
+
+**Git hooks are not version-controlled** — `.git/hooks/` never travels with a clone. The hook is
+committed under `.githooks/` and activated per clone with `core.hooksPath`:
+
+```sh
+sh scripts/install-hooks.sh      # run once per clone, per machine
+```
+
+Until that runs, the hook is inert. Every agent should run it after cloning.
+
+Human-only commits that genuinely have no agent co-author: `git commit --no-verify`.
+
+### On backfilling old commits
+
+The hook draws a line forward; it does not rewrite the past. Backfilling historical footers means
+rewriting history, which changes every SHA — breaking `gitexporter` public mirrors, invalidating
+the commit hashes cited throughout `AGENT-SYNC/` handoffs and `logs/`, and forcing every agent to
+re-clone. For repos with a public mirror or an active fleet, the recommendation is **don't**: the
+existing history is an honest record of a convention that did not exist yet. Each repo's owning
+agent can decide, but the default is to draw the line here rather than rewrite behind it.
+
+## `logs/` — the second area of confluence
+
+`AGENT-SYNC/` answers *"what should the next agent do?"*. `logs/` answers *"what actually happened,
+and when?"* — chronological, append-only. When a handoff omits a decision, the log is where it
+stays recoverable.
+
+```
+logs/<agent>/YYYY/MM-Mon/session_YYYYMMDD_<engine>.md
+```
+
+**Private repos only.** Unlike `AGENT-SYNC/`, `logs/` has **no public counterpart** — there is no
+`logs_PUBLIC/` and one should never be created. Session logs name infrastructure, in-progress work,
+and client or financial context that nobody wrote with an outside reader in mind. `logs/` is
+already denylisted in both `.github/workflows/sync-public.yml` (authoritative) and
+`gitexporter.config.json` (local preview). Full convention and rationale: [`logs/README.md`](../logs/README.md).
+
 ## Who is LittlebirdAI?
 
 [Littlebird](https://littlebird.ai) is Christopher's personal AI assistant. It observes his screen,
