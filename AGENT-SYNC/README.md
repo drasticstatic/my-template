@@ -167,6 +167,32 @@ than rejects on purpose: the footer's job is to record what actually happened, a
 blocks an honest record teaches agents to write a dishonest one. If the warning fires, the problem
 is the session that was launched, not the commit being written.
 
+### Forked harnesses and outside collaborators
+
+`aunt-harriot` forks the Claude Code harness so an outside collaborator can run a scoped agent on
+**their own Anthropic API key** instead of Christopher's subscription. It needs no new field:
+
+```
+Co-Authored-By: Kenney · AuntHarriot · Anthropic [Sonnet-5]
+```
+
+- **Agent** carries the operator. The harness is shared; the person driving it is not.
+- **Engine** is `AuntHarriot` — the portal they actually typed into, exactly as `ClaudeMent` is its
+  own engine rather than a flavour of Claude Code.
+- **Provider stays `Anthropic`.** Whose key paid is a *billing* fact, not a provenance one. The same
+  company ran the same weights, so putting `API-key` or a collaborator's name in that slot would
+  repeat the gateway mistake in the opposite direction — overloading a field with something it does
+  not mean.
+
+Cost attribution is a real question, but it is a question for the billing account, not for `git
+log`. The footer answers *which model wrote this code*, and the answer is unchanged by who was
+billed for it.
+
+One practical consequence: an outside collaborator meets this convention as a **rejected commit**,
+possibly before they have read anything. The hook's error message therefore prints the public URL of
+this spec rather than a repo-relative path, because the repo they are committing to may not contain
+a copy.
+
 ### Why this matters
 
 When a commit later turns out to be subtly wrong — a misread requirement, a plausible-looking but

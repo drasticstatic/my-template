@@ -35,59 +35,31 @@ its first commit rather than discovering the convention through a rejection.
 `.githooks/commit-msg` rejects any commit whose message lacks the fleet attribution footer:
 
 ```
-Co-Authored-By: <Agent> · <Engine> · <Provider> [<Model>]
+Co-Authored-By: <Agent> · <Engine> · <Provider> [<Model>]                  # direct
+Co-Authored-By: <Agent> · <Engine> · <Gateway> · <Provider> [<Model>]      # proxied
 <Platform>-Session: <full session URL>
 ```
 
-Four fields, model in square brackets, separator `·` (U+00B7 MIDDLE DOT — not a hyphen). Real
-examples:
+**The field definitions live in exactly one place and are deliberately not repeated here:**
+[`AGENT-SYNC/README.md`](../AGENT-SYNC/README.md). That file documents the *convention*; this one
+documents the *scripts*.
 
-```
-Co-Authored-By: Fortuna · ClaudeCodeCLI · Anthropic [Sonnet-5]
-Claude-Session: https://claude.ai/code/session_01XHntH8UvqXQPq2zNkQMe6q
+The split is not tidiness. This file used to restate the whole field table, and when the convention
+gained a Gateway field, this copy was missed — it spent a release telling readers to write
+`NVIDIA NIM` in the Provider slot, which credits a router for work it did not do. A second copy of a
+spec is a second thing to forget.
 
-Co-Authored-By: Cosmos-Advisor · Cosmos · Anthropic [Claude Opus 5]
-Cosmos-Session: https://cosmos.augmentcode.com/session?agentId=01M27N...
-```
+What the hook *does*, as distinct from what the convention *says*:
 
-Two rules people get wrong:
+| Outcome | Trigger |
+|---|---|
+| **Reject** | The shape is wrong — no footer, hyphens instead of `·`, missing `[Model]`, too few fields |
+| **Warn** | The shape is fine but the content looks wrong — five semantic checks |
+| **Pass** | Merge, revert, fixup and squash commits are exempt |
 
-- **The session must be its own line.** Folding it onto the `Co-Authored-By:` line stops both from
-  parsing as git trailers, which defeats the point — the footer exists so `git log` can be queried by
-  author and session, not just read by humans.
-- **Use the full session URL**, never a truncated prefix. A prefix is not resolvable later.
-
-The `Co-Authored-By:` trailer is **required**. The `<Platform>-Session:` trailer is **advisory** —
-the hook warns but allows, since not every engine assigns a session ID. If yours does, include it.
-
-### Proxied inference (`free-claude-code`)
-
-The four fields answer different questions, which only becomes visible when inference is routed
-through a proxy:
-
-- `<Engine>` — the harness you typed into.
-- `<Provider>` — **who actually ran the weights.**
-- `<Model>` — which weights answered.
-
-So routing Claude Code through [`free-claude-code`](https://github.com/drasticstatic/free-claude-code)
-changes the Provider and Model and leaves the Engine alone:
-
-```
-Co-Authored-By: Alfred · ClaudeCodeCLI · NVIDIA NIM [GLM-4.7]
-Co-Authored-By: Fortuna · ClaudeCodeCLI · OpenRouter [DeepSeek-V3]
-Co-Authored-By: Alfred · ClaudeCodeCLI · Ollama [Llama-3.3-70B]
-```
-
-You were still in Claude Code; a different company's hardware answered. Both are true, and the
-footer records both.
-
-The reason to bother: when a commit later turns out to be subtly wrong, the first useful question is
-which model produced it. Attribution that flattens every route to `Anthropic` destroys that signal —
-and destroys it silently, because the line still reads correctly.
-
-Which is the one mistake the hook watches for. Switch to a proxied model, forget the Provider, and
-nothing looks amiss because the Engine legitimately didn't change. The hook warns (and still allows)
-when the Provider says `Anthropic` but the Model is recognisably not Anthropic's.
+It rejects on shape and only warns on meaning, deliberately. The footer's job is to record what
+happened; a hook that blocks an honest-but-unusual record just teaches agents to write a tidy false
+one.
 
 ### Escape hatches
 
