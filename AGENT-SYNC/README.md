@@ -20,7 +20,32 @@ not who it's for:
 | `created-by-mystarch` | Mystarch (Augment Intent, app-level Chief of Staff) |
 | `created-by-auggie` | Auggie (Augment CLI, code builds) |
 | `created-by-littlebird` | LittlebirdAI (app.littlebird.ai, screen context & fleet memory) |
-| `created-by-<setup-agent>-<environment>` | A one-off setup/onboarding agent, named for the environment it ran in rather than a standing persona (e.g. `created-by-cosmos_Advisor-drasticstatica`) — prevents a later session of the same setup-agent type in a different environment from reading as a continuation |
+| `created-by-cosmos` | Any Cosmos agent — Cosmos Advisor and the code-review experts it runs |
+
+### One lane for all Cosmos agents
+
+Cosmos briefly used per-environment lanes (`created-by-cosmos_Advisor-drasticstatic` and
+`…-drasticstatica`). That was a mistake worth recording, because the reasoning behind it was
+superficially sound: two environments see different things, so a reader should be able to tell which
+one authored a claim.
+
+The flaw is that it encoded the distinction in the **path** rather than the **document**, and the two
+paths differed by one trailing letter — unreadable at a glance and easy to mistake for a typo. The
+better fix is a provenance header inside each handoff:
+
+```markdown
+**From:** Cosmos Advisor · environment `drasticstatic`
+**Session:** https://cosmos.augmentcode.com/session?agentId=<id>
+```
+
+That keeps the fact where a reader encounters it in context, and collapses the directory listing to
+one obvious place to look. The same applies to the code-review experts (PR Author, Deep Code
+Reviewer, PR Risk Analyzer, and the rest) — they do not get their own lanes. Cosmos Advisor is the
+coordination liaison; whichever expert did the work, the handoff lands in `created-by-cosmos/` and
+names its author in the header.
+
+**General rule:** if a distinction can be stated clearly in a document header, do not encode it in a
+directory name. Paths are for finding things; documents are for explaining them.
 
 ## AGENT-SYNC vs AGENT-SYNC_PUBLIC
 
