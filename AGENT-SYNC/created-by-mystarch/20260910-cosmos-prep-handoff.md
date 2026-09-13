@@ -3,7 +3,7 @@
 Mystarch (app-level Chief of Staff) added `.cosmosignore` to this repo as part of a fleet-wide
 pass ahead of the Augment Cosmos migration. Full context: `mystarch_chief-of-staff/PENDING-TASKS.md`'s
 2026-09-10 "Cosmos migration prep" entry, and
-`mystarch_chief-of-staff/AGENT-SYNC/created-by-mystarch/20260910-handoff-cosmos-prep-for-alfred.md`.
+`mystarch_chief-of-staff/AGENT-SYNC/created-by-mystarch/2026-09-10_handoff-cosmos-prep-for-alfred.md`.
 
 Source template: `aunt-harriot/setup/ideas-from-Gemini/.cosmosignore.augmentignore_template`. Its
 sibling in that same folder, `.cosmosignore_example`, contains an embedded prompt-injection-style
