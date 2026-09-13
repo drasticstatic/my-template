@@ -161,7 +161,8 @@ the full rule.
 - Alfred-Anthropic: `Co-Authored-By: Alfred · ClaudeCodeCLI · Anthropic [Sonnet-5/Opus-#/Haiku-#]`
 - Alfred-NIM: `Co-Authored-By: Alfred-NIM · ClaudeCodeCLI · NVIDIA NIM · Z.ai [GLM-4.7]`
   (gateway then provider — `NVIDIA NIM` routes, `Z.ai` makes GLM; `Moonshot AI` for Kimi,
-  `MiniMax` for MiniMax. Only those three have ever served through the proxy.)
+  `MiniMaxAI` for MiniMax. Only those three have ever served through the proxy, and the proxy
+  is Alfred's alone — Fortuna and Mystarch run on Anthropic.)
 - Kavanah-AugmentIntentUI-AuggieLogin: `Co-Authored-By: Kavanah · AugmentIntent · [model]`
 - Kavanah-AugmentIntentUI-AnthropicLogin ("ClaudeMent"): `Co-Authored-By: Kavanah · ClaudeMent · Anthropic [model]`
 - Kavanah-TerminalUI(macOS/Intent/VSCode standard terminal instance)-AnthropicLogin: `Co-Authored-By: Kavanah · ClaudeCodeCLI · Anthropic [model]`
@@ -180,7 +181,7 @@ Co-Authored-By: <Agent> · <Engine> · <Gateway> · <Provider> [<Model>]      # 
 
 Model in **square brackets**, separator is U+00B7 MIDDLE DOT ( · ). Add `<Gateway>` **only when
 inference is proxied** — it names what *routed* the request (`NVIDIA NIM`, `OpenRouter`), never who
-made the model (`Z.ai`, `Moonshot AI`, `MiniMax`). The field order mirrors the `/model` selector
+made the model (`Z.ai`, `Moonshot AI`, `MiniMaxAI`). The field order mirrors the `/model` selector
 string, so `anthropic/nvidia_nim/z-ai/glm4.7` transcribes to `NVIDIA NIM · Z.ai [GLM-4.7]` —
 read it left to right rather than memorising it. Local runtimes (`Ollama`, `llama.cpp`,
 `LM Studio`) have no gateway: the weights ran on your machine, so the runtime is the Provider. The session

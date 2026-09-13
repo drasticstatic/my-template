@@ -96,11 +96,11 @@ only become visible when inference is proxied through
 | `<Agent>` | Which persona was working | `Alfred`, `Fortuna`, `Mystarch`, `Cosmos-Advisor` |
 | `<Engine>` | Which harness was it typed into | `ClaudeCodeCLI`, `Cosmos`, `AugmentIntent`, `ClaudeMent` |
 | `<Gateway>` | What routed the request — **omit when direct** | `NVIDIA NIM`, `OpenRouter` |
-| `<Provider>` | **Whose weights ran** | `Anthropic`, `Z.ai`, `Moonshot AI`, `MiniMax`, `DeepSeek` |
+| `<Provider>` | **Whose weights ran** | `Anthropic`, `Z.ai`, `Moonshot AI`, `MiniMaxAI`, `DeepSeek` |
 | `<Model>` | Which weights | `Sonnet-5`, `Claude Opus 5`, `GLM-4.7`, `Kimi-K2.5` |
 
 **The gateway is not the provider.** NVIDIA NIM routes; it has never made a model. Z.ai makes
-GLM-4.7, Moonshot AI makes Kimi, MiniMax makes MiniMax. Collapsing the two into one field credits
+GLM-4.7, Moonshot AI makes Kimi, MiniMaxAI makes MiniMax. Collapsing the two into one field credits
 the wrong party and loses the routing fact at the same time.
 
 ### Field order mirrors the model selector string
@@ -131,7 +131,7 @@ Co-Authored-By: Mystarch · ClaudeCodeCLI · Anthropic [Sonnet-5]
 Co-Authored-By: Cosmos-Advisor · Cosmos · Anthropic [Claude Opus 5]
 Co-Authored-By: Alfred-NIM · ClaudeCodeCLI · NVIDIA NIM · Z.ai [GLM-4.7]
 Co-Authored-By: Alfred-NIM · ClaudeCodeCLI · NVIDIA NIM · Moonshot AI [Kimi-K2.5]
-Co-Authored-By: Alfred-NIM · ClaudeCodeCLI · NVIDIA NIM · MiniMax [MiniMax-M2]
+Co-Authored-By: Alfred-NIM · ClaudeCodeCLI · NVIDIA NIM · MiniMaxAI [MiniMax-M2]
 Co-Authored-By: Alfred · ClaudeCodeCLI · Ollama [Llama-3.3-70B]
 ```
 
@@ -147,10 +147,25 @@ implications.
 
 ### What is actually known to work
 
-On this fleet, through NVIDIA NIM, only **GLM**, **Kimi** and **MiniMax** have ever served
-successfully. Anthropic models behind the gateway have never worked — the session falls back to
-direct. So a footer naming a gateway *and* Anthropic describes a combination that has not happened;
-the hook says so.
+On this fleet, through NVIDIA NIM, only **GLM** (Z.ai), **Kimi** (Moonshot AI) and **MiniMax**
+(MiniMaxAI) have ever served successfully. Anthropic models behind the gateway have never worked —
+the session falls back to direct. So a footer naming a gateway *and* Anthropic describes a
+combination that has not happened; the hook says so.
+
+### The proxy belongs to Alfred
+
+`NVIDIA NIM` is scoped to **Alfred alone**. `Fortuna` and `Mystarch` run on Anthropic, always.
+
+Fortuna's reason is the load-bearing one: it touches live trading, where quality is not a thing you
+trade away for free inference. Mystarch coordinates the fleet, so a degraded judgement there
+propagates into every repo it touches. A `Fortuna_nvidia-nim` variant was considered for
+non-live exploratory research and **deliberately dropped** — a second Fortuna that is
+sometimes-proxied is a footgun the moment someone forgets which one is open.
+
+The hook warns when a `Fortuna`- or `Mystarch`-authored commit records a gateway. It warns rather
+than rejects on purpose: the footer's job is to record what actually happened, and a hook that
+blocks an honest record teaches agents to write a dishonest one. If the warning fires, the problem
+is the session that was launched, not the commit being written.
 
 ### Why this matters
 
