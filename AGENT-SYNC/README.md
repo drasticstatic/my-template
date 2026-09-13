@@ -84,6 +84,44 @@ a real gap identified 2026-09-11 (by Cosmos's own setup agent, cross-referencing
 what the kickoff handoff claimed), and the likely root cause of the attribution drift the Sep 9,
 2026 fleet audit had to clean up. This section is the fix.
 
+### What each field means (and why it matters under a proxy)
+
+The four fields are not interchangeable labels. Each answers a different question, and the
+distinction only becomes visible when inference is proxied through
+[`free-claude-code`](https://github.com/drasticstatic/free-claude-code):
+
+| Field | Question it answers | Examples |
+|---|---|---|
+| `<Agent>` | Which persona was working | `Alfred`, `Fortuna`, `Mystarch`, `Cosmos-Advisor` |
+| `<Engine>` | Which harness was it typed into | `ClaudeCodeCLI`, `Cosmos`, `AugmentIntent`, `ClaudeMent` |
+| `<Provider>` | **Who actually ran the weights** | `Anthropic`, `NVIDIA NIM`, `OpenRouter`, `DeepSeek`, `LM Studio`, `llama.cpp`, `Ollama` |
+| `<Model>` | Which weights answered | `Sonnet-5`, `Claude Opus 5`, `GLM-4.7`, `Kimi-K2.5` |
+
+**Routing Claude Code through a proxy changes the Provider and the Model, never the Engine.** You
+were still sitting in Claude Code; a different company's hardware answered. Both facts are true and
+the footer records both:
+
+```
+Co-Authored-By: Alfred · ClaudeCodeCLI · NVIDIA NIM [GLM-4.7]
+Co-Authored-By: Alfred · ClaudeCodeCLI · NVIDIA NIM [Kimi-K2.5]
+Co-Authored-By: Fortuna · ClaudeCodeCLI · OpenRouter [DeepSeek-V3]
+Co-Authored-By: Alfred · ClaudeCodeCLI · Ollama [Llama-3.3-70B]
+```
+
+This is not bookkeeping for its own sake. When a commit later turns out to be subtly wrong — a
+misread requirement, a plausible-looking but incorrect refactor — the first useful question is which
+model produced it. Attribution that collapses every route into `Anthropic` destroys exactly the
+signal you need, and it destroys it silently, because the line still looks correct.
+
+That is also the one mistake worth guarding: switching to a proxied model and leaving the Provider
+at `Anthropic`. The Engine genuinely didn't change, so nothing looks off. `.githooks/commit-msg`
+warns (but still allows) when the Provider reads `Anthropic` while the Model is recognisably not an
+Anthropic model.
+
+For local backends (`LM Studio`, `llama.cpp`, `Ollama`) the Provider is the runtime, not the
+model's original publisher — it records where the weights ran, which for a local model is the
+honest answer and the one with privacy implications.
+
 ### The optional session-ID trailer
 
 When an agent's platform assigns a per-session or per-conversation ID, append it as a **separate**

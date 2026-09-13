@@ -60,6 +60,35 @@ Two rules people get wrong:
 The `Co-Authored-By:` trailer is **required**. The `<Platform>-Session:` trailer is **advisory** —
 the hook warns but allows, since not every engine assigns a session ID. If yours does, include it.
 
+### Proxied inference (`free-claude-code`)
+
+The four fields answer different questions, which only becomes visible when inference is routed
+through a proxy:
+
+- `<Engine>` — the harness you typed into.
+- `<Provider>` — **who actually ran the weights.**
+- `<Model>` — which weights answered.
+
+So routing Claude Code through [`free-claude-code`](https://github.com/drasticstatic/free-claude-code)
+changes the Provider and Model and leaves the Engine alone:
+
+```
+Co-Authored-By: Alfred · ClaudeCodeCLI · NVIDIA NIM [GLM-4.7]
+Co-Authored-By: Fortuna · ClaudeCodeCLI · OpenRouter [DeepSeek-V3]
+Co-Authored-By: Alfred · ClaudeCodeCLI · Ollama [Llama-3.3-70B]
+```
+
+You were still in Claude Code; a different company's hardware answered. Both are true, and the
+footer records both.
+
+The reason to bother: when a commit later turns out to be subtly wrong, the first useful question is
+which model produced it. Attribution that flattens every route to `Anthropic` destroys that signal —
+and destroys it silently, because the line still reads correctly.
+
+Which is the one mistake the hook watches for. Switch to a proxied model, forget the Provider, and
+nothing looks amiss because the Engine legitimately didn't change. The hook warns (and still allows)
+when the Provider says `Anthropic` but the Model is recognisably not Anthropic's.
+
 ### Escape hatches
 
 ```sh
