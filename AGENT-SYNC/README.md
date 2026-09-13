@@ -69,7 +69,8 @@ Every agent in this fleet other than LittlebirdAI (Mystarch, Alfred, Fortuna, an
 PR Author/PR Fixer experts) signs commits with this form:
 
 ```
-Co-Authored-By: <Agent> · <Engine> · <Provider> [<Model>]
+Co-Authored-By: <Agent> · <Engine> · <Provider> [<Model>]                  # direct
+Co-Authored-By: <Agent> · <Engine> · <Gateway> · <Provider> [<Model>]      # proxied
 ```
 
 For example:
@@ -86,41 +87,82 @@ what the kickoff handoff claimed), and the likely root cause of the attribution 
 
 ### What each field means (and why it matters under a proxy)
 
-The four fields are not interchangeable labels. Each answers a different question, and the
-distinction only becomes visible when inference is proxied through
+The fields are not interchangeable labels. Each answers a different question, and the distinctions
+only become visible when inference is proxied through
 [`free-claude-code`](https://github.com/drasticstatic/free-claude-code):
 
 | Field | Question it answers | Examples |
 |---|---|---|
 | `<Agent>` | Which persona was working | `Alfred`, `Fortuna`, `Mystarch`, `Cosmos-Advisor` |
 | `<Engine>` | Which harness was it typed into | `ClaudeCodeCLI`, `Cosmos`, `AugmentIntent`, `ClaudeMent` |
-| `<Provider>` | **Who actually ran the weights** | `Anthropic`, `NVIDIA NIM`, `OpenRouter`, `DeepSeek`, `LM Studio`, `llama.cpp`, `Ollama` |
-| `<Model>` | Which weights answered | `Sonnet-5`, `Claude Opus 5`, `GLM-4.7`, `Kimi-K2.5` |
+| `<Gateway>` | What routed the request — **omit when direct** | `NVIDIA NIM`, `OpenRouter` |
+| `<Provider>` | **Whose weights ran** | `Anthropic`, `Z.ai`, `Moonshot AI`, `MiniMax`, `DeepSeek` |
+| `<Model>` | Which weights | `Sonnet-5`, `Claude Opus 5`, `GLM-4.7`, `Kimi-K2.5` |
 
-**Routing Claude Code through a proxy changes the Provider and the Model, never the Engine.** You
-were still sitting in Claude Code; a different company's hardware answered. Both facts are true and
-the footer records both:
+**The gateway is not the provider.** NVIDIA NIM routes; it has never made a model. Z.ai makes
+GLM-4.7, Moonshot AI makes Kimi, MiniMax makes MiniMax. Collapsing the two into one field credits
+the wrong party and loses the routing fact at the same time.
+
+### Field order mirrors the model selector string
+
+You do not have to remember this. The order is taken from the string you already select in
+`/model`, so the footer is a transcription:
 
 ```
-Co-Authored-By: Alfred · ClaudeCodeCLI · NVIDIA NIM [GLM-4.7]
-Co-Authored-By: Alfred · ClaudeCodeCLI · NVIDIA NIM [Kimi-K2.5]
-Co-Authored-By: Fortuna · ClaudeCodeCLI · OpenRouter [DeepSeek-V3]
+anthropic  /  nvidia_nim  /  z-ai   /  glm4.7
+  dialect       Gateway     Provider    Model
+```
+
+```
+Co-Authored-By: Alfred-NIM · ClaudeCodeCLI · NVIDIA NIM · Z.ai [GLM-4.7]
+```
+
+Read the selector left to right and you have the footer. Both forms:
+
+```
+Co-Authored-By: <Agent> · <Engine> · <Provider> [<Model>]                  # direct
+Co-Authored-By: <Agent> · <Engine> · <Gateway> · <Provider> [<Model>]      # proxied
+```
+
+Worked examples:
+
+```
+Co-Authored-By: Mystarch · ClaudeCodeCLI · Anthropic [Sonnet-5]
+Co-Authored-By: Cosmos-Advisor · Cosmos · Anthropic [Claude Opus 5]
+Co-Authored-By: Alfred-NIM · ClaudeCodeCLI · NVIDIA NIM · Z.ai [GLM-4.7]
+Co-Authored-By: Alfred-NIM · ClaudeCodeCLI · NVIDIA NIM · Moonshot AI [Kimi-K2.5]
+Co-Authored-By: Alfred-NIM · ClaudeCodeCLI · NVIDIA NIM · MiniMax [MiniMax-M2]
 Co-Authored-By: Alfred · ClaudeCodeCLI · Ollama [Llama-3.3-70B]
 ```
 
-This is not bookkeeping for its own sake. When a commit later turns out to be subtly wrong — a
-misread requirement, a plausible-looking but incorrect refactor — the first useful question is which
-model produced it. Attribution that collapses every route into `Anthropic` destroys exactly the
-signal you need, and it destroys it silently, because the line still looks correct.
+**Routing changes the Gateway, Provider and Model — never the Engine.** You were still sitting in
+Claude Code; someone else's hardware answered. Both facts are true and the footer records both.
 
-That is also the one mistake worth guarding: switching to a proxied model and leaving the Provider
-at `Anthropic`. The Engine genuinely didn't change, so nothing looks off. `.githooks/commit-msg`
-warns (but still allows) when the Provider reads `Anthropic` while the Model is recognisably not an
-Anthropic model.
+### Local runtimes have no gateway
 
-For local backends (`LM Studio`, `llama.cpp`, `Ollama`) the Provider is the runtime, not the
-model's original publisher — it records where the weights ran, which for a local model is the
-honest answer and the one with privacy implications.
+For `Ollama`, `llama.cpp` and `LM Studio`, nothing routed the request — the weights ran on your own
+machine. Use the direct three-field form with the runtime as the Provider. It records where the
+weights ran, which for a local model is both the honest answer and the one with privacy
+implications.
+
+### What is actually known to work
+
+On this fleet, through NVIDIA NIM, only **GLM**, **Kimi** and **MiniMax** have ever served
+successfully. Anthropic models behind the gateway have never worked — the session falls back to
+direct. So a footer naming a gateway *and* Anthropic describes a combination that has not happened;
+the hook says so.
+
+### Why this matters
+
+When a commit later turns out to be subtly wrong — a misread requirement, a plausible-looking but
+incorrect refactor — the first useful question is which model produced it. Attribution that
+collapses every route into `Anthropic` destroys exactly that signal, and destroys it silently,
+because the line still looks correct.
+
+`.githooks/commit-msg` rejects malformed footers and warns (without blocking) on four semantic
+errors: naming a gateway in the Provider slot, omitting the Gateway for a model that only arrives
+through one, leaving Provider at `Anthropic` while the Model plainly is not, and pairing a gateway
+with Anthropic weights.
 
 ### The optional session-ID trailer
 
