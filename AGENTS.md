@@ -5,6 +5,36 @@
 
 ---
 
+---
+
+## ⚠ FIRST: is this repo private or public?
+
+Get this wrong and session logs leak to a public mirror. The rule:
+
+| | **Private repo** | **Public repo** |
+|---|---|---|
+| Coordination lane | `AGENT-SYNC/` | `AGENT-SYNC_PUBLIC/` |
+| `logs/` | ✅ yes | ❌ **never** |
+
+There is **no `logs_PUBLIC/`** and one must never be created. `AGENT-SYNC/` has a public
+counterpart; `logs/` deliberately does not. Session logs name infrastructure, in-progress work, and
+client or financial context that nobody writes for an outside reader.
+
+Don't decide by hand — the script decides and builds it:
+
+```sh
+sh scripts/scaffold-agent-sync.sh          # detect visibility, create the right layout
+sh scripts/scaffold-agent-sync.sh --check  # verify an existing repo, change nothing
+```
+
+**If this repo syncs to a public mirror,** any NEW root directory must be classified in
+`.github/workflows/sync-public.yml` **in the same commit** — or the next sync fails (allowlist
+model) or silently publishes it (exclude model). This has bitten the fleet before.
+
+`gitexporter` is **deprecated** — never run `npx gitexporter`. The Actions pipeline replaced it.
+`gitexporter.config.json` is kept as documentation only. Canonical spec:
+`workflow-templates/GITEXPORTER-TO-ACTIONS-SYNC.md`.
+
 ## About This Standard
 
 `AGENTS.md` is an open, markdown-based standard that acts as a **README for AI agents** — providing build steps, conventions, and constraints that differ from human-centric docs. It reduces hallucination and inconsistent behavior by giving every AI tool a single source of truth.
