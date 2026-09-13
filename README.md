@@ -1,6 +1,6 @@
 # my-template
 
-> **Reusable repo scaffolding — `.gitignore`, `.augmentignore`, `CLAUDE.md`, sync workflows, gitexporter config, deploy scripts, and branch protection rulesets.**
+> **Reusable repo scaffolding — ignore rules, agent guidance files, commit-attribution hooks, cross-agent coordination lanes, private→public sync workflows, deploy scripts, and branch protection rulesets.**
 
 [![Use this template](https://img.shields.io/badge/Use_this_template-2ea44f?style=flat)](https://github.com/drasticstatic/my-template/generate)
 [![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey?style=flat)](https://github.com/drasticstatic/.github)
@@ -9,10 +9,39 @@ Click **Use this template** above (or the green button at the top of this page) 
 
 ---
 
+## Two commands per clone
+
+Everything else here is optional. These are not:
+
+```sh
+sh scripts/install-hooks.sh        # activate the commit-attribution hook
+sh scripts/scaffold-agent-sync.sh  # create the right coordination lanes for this repo's visibility
+```
+
+Both write local or first-time state that cannot be committed on your behalf. Git deliberately
+refuses to version-control hooks — a repo that shipped code which ran automatically on `git commit`
+would be an attack vector — so a committed hook is inert until a human points the clone at it.
+
+And at the **start of every session**, before reading deeply or editing:
+
+```sh
+git pull --rebase --autostash
+```
+
+Several agents and a human push to these repos, including unattended ones. A stale clone does not
+fail early; it fails at push time as a non-fast-forward rejection, after the work is done, when the
+tempting fix is a force-push that discards someone else's commit. `--autostash` makes this safe on a
+dirty tree.
+
+---
+
 ## ✅ New Repo Checklist
 
 Don't skip this — it's the step that gets missed most often (see `anthropas-argus-alfred`, which shipped without it for months):
 
+0. **Run the two commands above.** Then decide visibility *before* the first commit, because
+   `AGENT-SYNC/` and `logs/` must never exist in a public repo and un-publishing is not a thing
+   deletion can do — see [`AGENT-SYNC_PUBLIC/README.md`](./AGENT-SYNC_PUBLIC/README.md).
 1. **License, security & contributors** — follow [`how-to-establish-cross_repo_CONTRIBUTORS_SECURITY_LICENSING.md`](https://github.com/drasticstatic/drasticstatic/blob/main/how-to-establish-cross_repo_CONTRIBUTORS_SECURITY_LICENSING.md) end to end: a real `LICENSE` file in every *public* repo (the global `.github` fallback covers `SECURITY.md`/`CONTRIBUTING.md`, but **not** `LICENSE` — that one is per-repo, always), an accurate README License section (especially if this repo has a private-source + public-preview pair — the same README gets copied to both, so word it so it's true in either context), and topics/description set via `gh repo edit`.
 2. Fill in `CLAUDE.md` and `.github/dependabot.yml` for the new repo's stack.
 3. Wire up the sync workflow (allowlist or excludelist) if this repo has a public-preview counterpart.
@@ -26,11 +55,18 @@ Don't skip this — it's the step that gets missed most often (see `anthropas-ar
 |------|---------|
 | `.gitignore` | Master ignore rules — secrets, OS files, build artifacts, Node, Python, Solidity, React/Vite |
 | `.augmentignore` | Controls what Augment Code indexes — includes dependency context, excludes noise |
-| `CLAUDE.md` | Stub for Claude Code CLI persistent instructions — fill in per-repo |
+| `CLAUDE.md` | Claude Code CLI persistent instructions — fill in per-repo |
+| `AGENTS.md` | Cross-harness agent instructions (Codex, Cursor, Copilot and others read this) — keep in step with `CLAUDE.md` |
+| `.githooks/commit-msg` | Enforces the commit-attribution footer; inert until `scripts/install-hooks.sh` runs |
+| `AGENT-SYNC/` | Cross-agent coordination lanes — **private repos only** |
+| `AGENT-SYNC_PUBLIC/` | Coordination safe to publish — the only lane a public repo gets |
+| `logs/` | Chronological session timeline — **private repos only**, no public counterpart exists |
+| `scripts/install-hooks.sh` | Points this clone at `.githooks/` (one-time, per clone) |
+| `scripts/scaffold-agent-sync.sh` | Detects repo visibility and creates the correct lanes |
 | `.github/dependabot.yml` | Grouped Dependabot version updates — npm + GitHub Actions |
 | `workflow-templates/sync-public-allowlist.yml` | Sync private → public via **allowlist** (strict — everything private by default) — copy to `.github/workflows/` in your repo |
 | `workflow-templates/sync-public-excludelist.yml` | Sync private → public via **exclude list** (open — everything public except named paths) — copy to `.github/workflows/` in your repo |
-| `gitexporter.config.json` | Local gitexporter config — selective commit-history-preserving public preview |
+| `gitexporter.config.json` | **Deprecated** — kept as a documentation manifest of what is public. Do not run it; the sync workflows own this now |
 | `scripts/deployTest.sh` | Deploy a dated static snapshot of a Vite app to a new GitHub Pages repo |
 | `scripts/syncDocs.sh` | Selectively rsync documentation from a private repo to a public docs repo |
 | `scripts/init-graphify.sh` | Deploy `.graphifyignore` + install the Claude Code hook (keyless graphify setup) |
@@ -49,14 +85,18 @@ Don't skip this — it's the step that gets missed most often (see `anthropas-ar
 
 Both use `git filter-repo --invert-paths` under the hood. The allowlist model adds a validation step that fails CI if an unclassified root-level path appears — forces an explicit privacy decision on every new file.
 
-### gitexporter vs sync-public.yml
+Whichever model a repo uses, **any new root-level entry must be classified in `sync-public.yml` in
+the same commit that introduces it.** Under the allowlist model CI enforces this; under the exclude
+list nothing will stop you, which is precisely why the habit has to be the same in both.
 
-| Tool | Mechanism | History |
-|------|-----------|---------|
-| `sync-public.yml` (GitHub Actions) | Runs on push, rewrites and force-pushes to public repo | Preserved via filter-repo |
-| `gitexporter` | Local CLI tool, run manually | Preserved — traverses full commit tree |
+### gitexporter is deprecated
 
-Use `sync-public.yml` for automated continuous sync. Use `gitexporter` for a one-time or on-demand local preview before the workflow is set up.
+`gitexporter` was the original local path to a public preview. It is no longer used anywhere in this
+fleet — **do not run `npx gitexporter`.** The GitHub Actions workflows own the pipeline end to end,
+and a manual local export competing with them produces divergent history on the mirror.
+
+`gitexporter.config.json` is retained deliberately, as a readable manifest of which paths are
+intended to be public. Treat it as documentation, not as a tool.
 
 ---
 
@@ -77,6 +117,28 @@ Then add this badge to your README (swap in your own repo URL):
 ```
 
 The `/generate` path takes visitors directly to the "create repo from template" screen — useful to link from docs, READMEs, or share with peers.
+
+---
+
+## Agent coordination and commit attribution
+
+Every commit in this fleet carries a footer naming the agent, the harness, who ran the weights, and
+which model:
+
+```
+Co-Authored-By: <Agent> · <Engine> · <Provider> [<Model>]                  # direct
+Co-Authored-By: <Agent> · <Engine> · <Gateway> · <Provider> [<Model>]      # proxied
+<Platform>-Session: <full session URL>
+```
+
+The reason is narrow and practical: when a commit later turns out to be subtly wrong, the first
+useful question is which model produced it, and a footer that flattens every route into `Anthropic`
+destroys that signal *silently*, because the line still reads correctly.
+
+**[`AGENT-SYNC/README.md`](./AGENT-SYNC/README.md) is the single source of truth** for the field
+definitions, the engine roster, and the coordination-lane convention. It is deliberately the only
+copy — an earlier second copy in `scripts/README.md` went stale and spent a release teaching the
+wrong thing. If you need to state the convention somewhere, link it instead.
 
 ---
 

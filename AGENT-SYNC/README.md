@@ -138,6 +138,59 @@ Co-Authored-By: Alfred · ClaudeCodeCLI · Ollama [Llama-3.3-70B]
 **Routing changes the Gateway, Provider and Model — never the Engine.** You were still sitting in
 Claude Code; someone else's hardware answered. Both facts are true and the footer records both.
 
+### The engine roster
+
+**Engine is the interface you typed into.** Not the window it was inside, not the account that
+authenticated it, not the company whose model answered. That last point is the same distinction the
+Gateway field makes one column over, and it has been got wrong in both directions.
+
+| Engine | What it means |
+|---|---|
+| `ClaudeCodeCLI` | Claude Code in a real terminal, wherever that terminal happens to be running |
+| `ClaudeMent` | Claude Code reached **through the Augment Intent UI** on an Anthropic login |
+| `AugmentIntent` | The Intent UI on an Augment (Auggie) login |
+| `Cosmos` | Augment Cosmos — cloud sessions, event triggers, unattended runs |
+| `AuntHarriot` | The Aunt Harriot portal, once someone is actually typing into the portal |
+| `AugmentCLI` | Native Auggie CLI — hibernating, may return |
+
+#### A terminal inside a UI is still a terminal
+
+Opening a standard terminal instance *inside* the Intent UI and running Claude Code in it is
+`ClaudeCodeCLI`, not `ClaudeMent` — exactly as a terminal inside VS Code is not "VS Code". The
+surrounding application is a container, not the harness. The first Aunt Harriot conversations
+happened this way, which is why they are `ClaudeCodeCLI` sessions despite occurring inside Intent.
+
+`ClaudeMent` is specifically the case where the **Intent UI itself is the interface**. Under the
+hood it declares itself as Claude Code, but the Intent surface adds behaviour on top, and with
+workspace-app Chief-of-Staff tooling it adds considerably more. It earns its own name because
+what you could do in it differed, not because it was branded differently.
+
+#### Why so much history is `ClaudeMent`
+
+Not preference — necessity. After the Augment OAuth persistence failure, Augment could not be
+logged in again until Cosmos existed. Everything done inside Intent from that point on ran on an
+Anthropic login, so it was `ClaudeMent` by default. Mystarch, the Claude Code Chief of Staff
+counterpart to Kavanah's workspace-app one, was never able to use Augment either.
+
+The arc worth remembering, because the attribution is the only remaining index into it:
+
+1. Kavanah working the DEX arbitrage bot under the Intent UI — where the OAuth persistence problem
+   first surfaced.
+2. A period on NVIDIA NIM while Intent work paused.
+3. Back inside Intent, now necessarily `ClaudeMent`.
+4. A short-lived Chief of Staff living inside `gratitude-token-project`, retired into the real
+   Chief of Staff once it became clear it lacked global workspace-app tools.
+5. Intent's ACP failing repeatedly — consuming tokens and returning nothing — which turned
+   "improve this" into "evacuate". `mystarch_chief-of-staff_acp-spoof` came out of that attempt,
+   then the approach was pivoted away from.
+6. Kavanah retired; Mystarch working in both `ClaudeMent` and native `ClaudeCodeCLI` to get the
+   fleet out of Intent; Cosmos Advisor picking up Kavanah's worktrees afterwards.
+
+`acp-spoof` may one day be built out far enough to supersede that tooling and bring Kavanah back.
+Until then she is retired, not deleted — and the same is true of the `divorce-custody-assistant`
+worktree left checked out on a detached HEAD. That one is **deliberate**: it is kept as a standing
+teaching case, not an oversight to tidy up.
+
 ### Local runtimes have no gateway
 
 For `Ollama`, `llama.cpp` and `LM Studio`, nothing routed the request — the weights ran on your own
@@ -187,6 +240,40 @@ Co-Authored-By: Kenney · AuntHarriot · Anthropic [Sonnet-5]
 Cost attribution is a real question, but it is a question for the billing account, not for `git
 log`. The footer answers *which model wrote this code*, and the answer is unchanged by who was
 billed for it.
+
+#### The Agent field is a seat, not a person
+
+Aunt Harriot is not only Kenney's. It is also worked on by Christopher and by the fleet's own
+agents, and that is not an inconsistency to resolve — it is what the Agent field is for:
+
+```
+Co-Authored-By: Kenney · AuntHarriot · Anthropic [Sonnet-5]           # outside collaborator, own key
+Co-Authored-By: Mystarch · ClaudeCodeCLI · Anthropic [Sonnet-5]       # fleet agent building the harness
+Co-Authored-By: Cosmos-Advisor · Cosmos · Anthropic [Claude Opus 5]   # unattended, event-triggered
+```
+
+Note the Engine changes with them, and that is the point. **`AuntHarriot` is the Engine only when
+someone is typing into the Harriot portal.** Building Harriot from a terminal is `ClaudeCodeCLI`;
+building it from a Cosmos session is `Cosmos`. Constructing a harness is not the same act as using
+it, and the footer should not blur the two — the same rule that keeps a terminal inside Intent from
+becoming `ClaudeMent`.
+
+#### When the harness is not Anthropic-only
+
+Harriot is intended to start on Anthropic, because that is what the fleet's agents and skills are
+shaped around. If it later fronts OpenAI, or Augment's API, or whatever replaces them, **the footer
+needs no change at all**:
+
+```
+Co-Authored-By: Kenney · AuntHarriot · OpenAI [<model>]
+Co-Authored-By: Kenney · AuntHarriot · Anthropic [<model>]
+```
+
+Engine stays `AuntHarriot` because the interface did not change. Provider and Model absorb the
+difference, which is exactly the division of labour those fields were given. A harness that fronts
+several providers is the case this schema was built for, not a strain on it — and it is why the
+footer is worth more on a multi-provider harness than on a single-provider one, since there the
+question *which model wrote this* has a non-obvious answer.
 
 One practical consequence: an outside collaborator meets this convention as a **rejected commit**,
 possibly before they have read anything. The hook's error message therefore prints the public URL of
