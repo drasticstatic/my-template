@@ -37,12 +37,19 @@ jobs:
           import yaml
           with open("source/workflow-templates/.clean-template-denylist.yml") as f:
               data = yaml.safe_load(f)
-          paths = (data.get("strip") or []) + (data.get("preserve") or [])
+          strip = data.get("strip") or []
+          preserve = data.get("preserve") or []
           with open("rsync-excludes.txt", "w") as out:
-              for p in paths:
+              for p in strip + preserve:
+                  out.write(p.rstrip("/") + "\n")
+          with open("strip-paths.txt", "w") as out:
+              for p in strip:
                   out.write(p.rstrip("/") + "\n")
           PY
+          echo "-- rsync excludes (strip + preserve) --"
           cat rsync-excludes.txt
+          echo "-- strip only (explicitly removed from clean/ below) --"
+          cat strip-paths.txt
 
       - name: Mirror source into clean
         run: |
@@ -50,6 +57,24 @@ jobs:
             --exclude ".git/" \
             --exclude-from rsync-excludes.txt \
             source/ clean/
+
+      - name: Remove strip-listed paths from clean (in case they pre-existed)
+        run: |
+          # rsync's --exclude only stops FUTURE copying; it does not delete a
+          # destination file that already existed before a strip rule was
+          # added (that needs --delete-excluded, which would also wipe out
+          # the `preserve` list's intentionally-diverged files -- too blunt).
+          # Explicit removal here is what actually enforces "strip means
+          # never present in my-template-clean," found necessary 2026-09-14
+          # after adding 2 paths to `strip` that had already synced over
+          # under an earlier, over-broad `preserve` pattern.
+          while IFS= read -r p; do
+            [ -z "$p" ] && continue
+            if [ -e "clean/$p" ]; then
+              echo "Removing pre-existing stripped path: $p"
+              rm -rf "clean/$p"
+            fi
+          done < strip-paths.txt
 
       - name: Commit and push if changed
         working-directory: clean
