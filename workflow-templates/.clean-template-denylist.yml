@@ -7,6 +7,16 @@
 #             (these exist in my-template-clean but diverge intentionally —
 #             a generic fill-in-the-blank README/POINTER for new repos,
 #             plus the setup/ scripts that only exist in the -clean fork)
+#
+# IMPORTANT — anchor every entry to the repo root with a leading `/`, unless
+# you deliberately want it to match at every depth. rsync's exclude-pattern
+# matching treats a bare name (no leading `/`) as matching that basename
+# ANYWHERE in the tree. Found 2026-09-14: the bare `README.md` entry below
+# was silently excluding *every* README.md in the whole source tree, not
+# just the root one — meaning AGENT-SYNC/created-by-Littlebird/ (and its
+# README) never synced to my-template-clean at all, and
+# AGENT-SYNC/README.md there was frozen on a stale early version, since
+# every subsequent update to the canonical copy got silently excluded too.
 strip:
   # this workflow itself — it must never propagate into my-template-clean,
   # or a push there would trigger it self-referentially (checkout-and-push
@@ -17,8 +27,14 @@ strip:
   - workflow-templates/GRAPHIFY_SETUP.md
   - workflow-templates/nextjs-ssg-ghpages-deploy.md
   - workflow-templates/react-cra-ghpages-deploy.md
+  # session-log debris, not template content -- kept in my-template itself
+  # as intentional pointer-style examples (Cosmos Advisor's call, commit
+  # a39f21a), but shouldn't propagate into every new repo built from the
+  # clean fork
+  - AGENT-SYNC/created-by-alfred/20260910-handoff-littlebird-fleet-audit.md
+  - AGENT-SYNC/created-by-mystarch/20260910-cosmos-prep-handoff.md
 
 preserve:
-  - README.md
+  - /README.md
   - .claude/POINTER.md
-  - setup/
+  - /setup/

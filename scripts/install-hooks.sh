@@ -8,6 +8,17 @@
 #     sh scripts/install-hooks.sh
 #
 # Safe to re-run. Every agent working in this repo should run it after cloning.
+#
+# IMPORTANT — ggshield interaction, found 2026-09-14: ggshield (if you use it)
+# installs its own secret-scanning pre-commit hook via a GLOBAL
+# `core.hooksPath` (~/Library/Application Support/ggshield/git-hooks/ on
+# macOS). Setting core.hooksPath to `.githooks` here OVERRIDES that global
+# setting at the repo level. If `.githooks/` doesn't also carry its own
+# `pre-commit` file that re-chains to ggshield, activating this fleet's
+# attribution hook silently disables ggshield's secret scan in this repo,
+# with no warning at commit time. `.githooks/pre-commit` in this template
+# already does that chaining — if you're vendoring just `.githooks/commit-msg`
+# without its sibling `pre-commit`, copy both, not just one.
 
 set -e
 
