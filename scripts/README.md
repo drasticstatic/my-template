@@ -61,6 +61,27 @@ It rejects on shape and only warns on meaning, deliberately. The footer's job is
 happened; a hook that blocks an honest-but-unusual record just teaches agents to write a tidy false
 one.
 
+### The ggshield interaction — why there are two hooks
+
+`.githooks/` carries a `pre-commit` as well as a `commit-msg`, and the second one exists for a
+reason worth knowing before you vendor these files piecemeal.
+
+ggshield installs its secret scanner via a **global** `core.hooksPath`. Setting a **local**
+`core.hooksPath` — which is exactly what `install-hooks.sh` does — does not merge with that, it
+replaces it. Git then looks for every hook in `.githooks/` and nowhere else. With no `pre-commit`
+file there, git stops looking for one at all.
+
+The net effect, found the hard way on 2026-09-14: **activating this fleet's attribution hook
+silently switched off secret scanning** in every repo it touched. No error, no warning, no output.
+The only symptom was ggshield's output going quiet, which is indistinguishable from a clean scan.
+
+`.githooks/pre-commit` re-chains to ggshield explicitly, and `install-hooks.sh` now **refuses to
+run** if ggshield is on PATH while that file is missing, rather than merely documenting the hazard
+in a comment. A comment protects whoever reads it; a check protects whoever doesn't.
+
+If you are copying hooks into a repo by hand, **copy both files.** One without the other is worse
+than neither.
+
 ### Escape hatches
 
 ```sh
