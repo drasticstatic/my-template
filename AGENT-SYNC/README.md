@@ -22,6 +22,13 @@ not who it's for:
 | `created-by-littlebird` | LittlebirdAI (app.littlebird.ai, screen context & fleet memory) |
 | `created-by-cosmos` | Any Cosmos agent — Cosmos Advisor and the code-review experts it runs |
 
+For who each of these personas actually is — surface, model, commit attribution, and how they
+relate to each other — see
+[`AGENT_IDENTITY_REFERENCE.md`](https://github.com/drasticstatic/anthropas-argus-alfred-public-preview/blob/main/sandbox/AGENT_IDENTITY_REFERENCE.md)
+(canonical copy in the private `anthropas-argus-alfred/sandbox/`, mirrored here since this repo is
+public). This table tells you which directory an agent's handoffs live in; that doc tells you who
+the agent is.
+
 ### One lane for all Cosmos agents
 
 Cosmos briefly used per-environment lanes (`created-by-cosmos_Advisor-drasticstatic` and
