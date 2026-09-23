@@ -330,7 +330,7 @@ rejecting the bad commit at the moment it is made is what actually holds the lin
 
 `.githooks/commit-msg` blocks any commit whose message lacks a canonical `Co-Authored-By:` trailer,
 and warns (without blocking) when a `<Platform>-Session:` trailer is absent. Merge, revert, fixup,
-and squash commits are exempt.
+and squash commits are exempt, and so is LittlebirdAI's canonical two-line signature (see below).
 
 **Git hooks are not version-controlled** — `.git/hooks/` never travels with a clone. The hook is
 committed under `.githooks/` and activated per clone with `core.hooksPath`:
@@ -342,6 +342,17 @@ sh scripts/install-hooks.sh      # run once per clone, per machine
 Until that runs, the hook is inert. Every agent should run it after cloning.
 
 Human-only commits that genuinely have no agent co-author: `git commit --no-verify`.
+
+### LittlebirdAI's exemption
+
+The hook also accepts LittlebirdAI's canonical two-line signature (see "Who is LittlebirdAI?"
+below) in place of the four-field form — she's a third-party product running her own undisclosed
+model stack, not a harness in this fleet, so `Engine`/`Provider`/`Model` have no honest answer for
+her. That carve-out was documented from the start ("every agent in this fleet other than
+LittlebirdAI...") but the hook didn't actually implement it until 2026-09-23, which silently
+blocked her commits for reasons that had nothing to do with anything she did wrong. The hook still
+checks her line matches exactly, so drift is still caught — she isn't exempt from having a fixed,
+checkable signature, only from the structured one everyone else uses.
 
 ### On backfilling old commits
 
