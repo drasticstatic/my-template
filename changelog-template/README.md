@@ -165,6 +165,45 @@ THEF now use — copy it wholesale rather than reinventing:
   automated fallback mechanism anywhere in this fleet, this is a manual convention to follow, not a
   build step to invoke.
 
+## 🌟 Wave 2, proven out 2026-09-24 — matched entry portal, social previews, TL;DR entries
+
+A second round on top of the pattern above, once PIR and THEF's sites were live enough to actually
+use. All of this is copy-paste-ready:
+
+- **TL;DR + expandable `<details>` shape for every entry.** A `<div class="tldr">` (icon + 1-2
+  sentence summary, always visible) followed by `<details><summary>...</summary>...full detail...
+  </details>` — the real, complete story, not a re-sanitized version, up to the point something must
+  stay private. Applies to both `changelog` and `library` entries. CSS lives in each entry template's
+  `<style>` block (`.tldr`, `details`, `summary`, plus a `.ph-caret-right` rotate-on-open rule) —
+  copy the block from either site's `[slug].astro` rather than re-deriving it.
+- **Real social-preview images, not generated ones.** If the project owner already has (or can get)
+  a proper 1200-1731px-wide landscape raster, use it directly as `og:image`/`twitter:image` with
+  `twitter:card = "summary_large_image"` — don't build a favicon-padding fallback unless no real
+  image exists yet. Resize/compress with `sips -Z 1200 -s format jpeg -s formatOptions 85` (built
+  into macOS, no ImageMagick needed) to keep the file under ~500KB for fast crawler fetches.
+- **A universal, always-visible footer across every surface of a project** (entry portal + changelog
+  site's porch/changelog/library, which already share one `Base.astro`). `position: fixed; bottom:
+  0`, blurred/translucent background, with matching `padding-bottom` on `body` so content doesn't
+  sit behind it. Same link set everywhere: brand/attribution, a link to each of the other surfaces,
+  a "reach out" link. Acts as both attribution and a navigation hub, so the actual page content stays
+  just page content.
+- **Light/dark toggle in the header** (not the footer), defaulting to **dark regardless of OS
+  preference** — an explicit `data-theme` attribute on `<html>`, set by an inline `<script>` in
+  `<head>` (before first paint, to avoid a flash) that reads `localStorage` and falls back to
+  `"dark"` rather than checking `prefers-color-scheme`. A `@media (prefers-color-scheme: dark)` block
+  can stay as a no-JS fallback, but the explicit attribute always wins once JS runs.
+- **An interactive cursor-tracking star field + comet-dust trail**, `astro/src/components/
+  Starfield.astro` — canvas-based, zero dependencies, colors passed as props so one component works
+  for every project. Ported from `littlebird-ambassador`'s `Constellation.astro` (star-repel-from-
+  cursor mechanic, already framework-free) plus the comet-dust spark mechanic from a React reference
+  implementation (spawn-on-mousemove, drag+gravity, life-based fade) — see that component's own
+  header comment for the full attribution. For a zero-build entry portal, hand-port the same script
+  as inline `<canvas>`+`<script>`, identical logic, just no Astro wrapper.
+- **Icons far more broadly than the first pass** — every nav item, every footer link, every
+  changelog/library section, not just a couple of accent spots. Colored via the project's own
+  `--signature`/`--accent` token rather than left neutral, wherever a splash of color reads better
+  than monochrome.
+
 ## Future enhancement, not required (can simmer)
 
 `divorce-custody-assistant/vocational-compliance/build_vocational_log.py` generates an animated,
