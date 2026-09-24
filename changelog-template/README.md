@@ -44,6 +44,7 @@ notes — not a script that dumps git log into markdown.
 title: "Header now reappears on scroll-up, mobile and desktop"
 date: "2026-09-23"
 priority: "P1-high" # P1-high | P2-medium | P3-low, default P2-medium
+repo: "wordpress" # which contributing repo this entry belongs to — powers the /changelog picker
 org: "pir" # optional — only needed for a shared multi-project site, see below
 ---
 ```
@@ -106,6 +107,63 @@ only the *push target* in `sync-public-allowlist.yml`'s final step differs.
   `~/code/README.md`'s org-vs-personal notes). Tripp (O-R-G) is a friend of Psanctuary the way
   Kenney (THEF) is a friend of PIR — worth keeping in mind if/when Psanctuary's work professionalizes
   into its own community org the way THEF and PIR already have.
+
+## 🎁 The richer pattern, proven out 2026-09-24 (PIR + THEF)
+
+Once a project outgrows a single flat changelog list, this is the real, working shape both PIR and
+THEF now use — copy it wholesale rather than reinventing:
+
+- **`/changelog` is a repo picker, not a flat list.** Add `repo` to the frontmatter schema (above).
+  `changelog/index.astro` shows one card per contributing repo; `changelog/[repo]/index.astro` is
+  the filtered listing for that repo; `changelog/[repo]/[slug].astro` is the entry, with prev/next
+  links computed at build time from that repo's own date-sorted list. Repos that don't have real
+  entries yet can still get a card — mark it `comingSoon: true` in the bucket list and it renders
+  muted/disabled instead of linking nowhere.
+- **A priority filter + search bar, client-side only.** A handful of `<button>` pills for
+  P1/P2/P3 plus a `<input type="search">`, driven by a small vanilla-JS `<script>` at the bottom of
+  `changelog/[repo]/index.astro` toggling `hidden` on list items. No backend, no build-time index —
+  fine at this scale (dozens to low hundreds of entries).
+- **`/library` is a second content collection**, same `glob()`-loader mechanism as `changelog`
+  (`library/` as a sibling of `astro/`, its own `index.astro`/`[slug].astro`), for standalone
+  technical write-ups that don't belong to one dated entry — the "how does this actually work" deep
+  dives. Schema is just `{title, description, date?}`. This is genuinely deep, full-detail content
+  (not the curated public-safe summary style changelog entries use) — the goal is letting someone
+  without private-repo access actually learn how something works, so don't over-sanitize it.
+- **The repo's own `README.md` is the site's homepage**, not a separate hand-written blurb. Add a
+  third collection:
+  ```ts
+  const home = defineCollection({
+    loader: glob({ pattern: "README.md", base: ".." }),
+    schema: z.object({}),
+  });
+  ```
+  then in `index.astro`: `const [readme] = await getCollection("home"); const { Content } = await
+  render(readme);` — render `<Content />` inside `Base`. One file serves both GitHub's own repo view
+  and the live site's front door, so write the README knowing it does both jobs.
+- **Icons work directly in plain `.md`, no MDX needed.** Confirmed empirically: Astro's default
+  markdown renderer passes raw inline HTML straight through content-collection entries. A tag like
+  `<i class="ph ph-lightbulb" style="color:#7C3AED"></i>` inside a `.md` file's body just renders —
+  don't reach for `@astrojs/mdx` unless you actually need JSX expressions in content, which this
+  pattern doesn't. Load Phosphor's web font once in `Base.astro`'s `<head>`:
+  `<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">`
+  — then `<i class="ph ph-<name>">` works anywhere on the page *or* inside rendered markdown, same
+  icon set for UI chrome and content. A light touch that's paid off: a short "TL;DR" callout (a
+  bordered `<div>` with a `ph-lightbulb` icon) at the top of a long technical doc, so a skimmer gets
+  the short version before deciding whether to read the whole thing.
+- **A shared visual language between the changelog site and its project's GitHub Pages "entry
+  portal"** (if one exists) — matching CSS custom properties (palette), the same sticky/blurred
+  header treatment, the same icon set — without merging them into one build. Two separate,
+  independently-deployable sites that just happen to look like one product. The changelog's own
+  header brand-link uses the pattern **mark → title → a small `Home`-style icon → `|` → "Home"
+  label**, an explicit affordance (borrowed from `iamoneself`/`david-amaringo`'s Next.js navbar
+  pattern) that clicking the title is real navigation back to the README-splash, not decoration.
+- **Favicon**: give the changelog site the *real* project favicon (copy `favicon.svg`/`favicon.png`
+  from the entry portal repo into `astro/public/`, reference both in `Base.astro`'s `<head>`) rather
+  than Astro's generic default. If a project genuinely doesn't have its own favicon yet, the
+  documented fleet-wide fallback is hotlinking `https://drasticstatic.github.io/favicon.svg` by
+  absolute URL (same convention already used in `drasticstatic/README.md`/`SPONSOR.md`) — there's no
+  automated fallback mechanism anywhere in this fleet, this is a manual convention to follow, not a
+  build step to invoke.
 
 ## Future enhancement, not required (can simmer)
 
