@@ -1,0 +1,134 @@
+---
+// Changelog listing page — fleet-wide template, see README.md in this directory.
+// Copy into your project's astro/src/pages/changelog/index.astro and adapt the Base import + copy
+// to your own project's layout/voice. The collection query and priority-badge logic below are the
+// reusable part; the surrounding words and styling are meant to be re-skinned per project.
+import { getCollection } from "astro:content";
+import Base from "../../layouts/Base.astro"; // adjust path to your project's layout
+
+const entries = (await getCollection("changelog")).sort((a, b) =>
+  b.data.date.localeCompare(a.data.date)
+);
+
+const priorityLabel: Record<string, string> = {
+  "P1-high": "High",
+  "P2-medium": "Medium",
+  "P3-low": "Low",
+};
+---
+
+<Base
+  title="Changelog"
+  description="What's shipped, in plain language — public-safe summaries, updated as work is confirmed done."
+  filename="changelog/index.astro"
+  active="changelog"
+>
+  <section class="content-section">
+    <h1>Changelog</h1>
+    <p>
+      A running record of confirmed, shipped work — written for anyone following along, not just
+      the team. Deeper technical detail stays in our private working notes; this is the public-safe
+      summary of what actually happened and why it mattered.
+    </p>
+
+    <ul class="changelog-list">
+      {
+        entries.map((entry) => (
+          <li>
+            <a href={`${import.meta.env.BASE_URL}/changelog/${entry.id.replace(/\.md$/, "")}`}>
+              <span class={`priority-badge priority-${entry.data.priority}`}>
+                {priorityLabel[entry.data.priority]}
+              </span>
+              <span class="entry-text">
+                <span class="entry-title">{entry.data.title}</span>
+                <span class="entry-date">{entry.data.date}</span>
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</Base>
+
+<style>
+  .content-section {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 48px 20px;
+  }
+  h1 {
+    font-weight: 600;
+    font-size: 2.2rem;
+    letter-spacing: -0.01em;
+    margin: 0 0 14px;
+  }
+  .content-section > p {
+    line-height: 1.7;
+    margin: 0 0 32px;
+    max-width: 58ch;
+    opacity: 0.75;
+  }
+  .changelog-list {
+    list-style: none;
+    margin: 24px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .changelog-list a {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid currentColor;
+    border-radius: 10px;
+    transition: transform 0.15s;
+  }
+  .changelog-list a:hover {
+    transform: translateX(2px);
+  }
+  .priority-badge {
+    flex-shrink: 0;
+    font-family: monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 999px;
+  }
+  .priority-P1-high {
+    background: rgba(220, 38, 38, 0.12);
+    color: #dc2626;
+  }
+  .priority-P2-medium {
+    background: rgba(217, 119, 6, 0.12);
+    color: #d97706;
+  }
+  .priority-P3-low {
+    background: rgba(75, 85, 99, 0.12);
+    color: #4b5563;
+  }
+  .entry-text {
+    flex: 1;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    min-width: 0;
+  }
+  .entry-title {
+    font-weight: 600;
+    font-size: 1.02rem;
+  }
+  .entry-date {
+    font-family: monospace;
+    font-size: 0.8rem;
+    opacity: 0.6;
+    white-space: nowrap;
+  }
+</style>

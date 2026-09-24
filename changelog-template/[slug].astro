@@ -1,0 +1,115 @@
+---
+// Changelog entry detail page — fleet-wide template, see README.md in this directory.
+// Copy into your project's astro/src/pages/changelog/[slug].astro and adapt the Base import.
+import { getCollection, render } from "astro:content";
+import Base from "../../layouts/Base.astro"; // adjust path to your project's layout
+
+export async function getStaticPaths() {
+  const entries = await getCollection("changelog");
+  return entries.map((entry) => ({
+    params: { slug: entry.id.replace(/\.md$/, "") },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+
+const priorityLabel: Record<string, string> = {
+  "P1-high": "High",
+  "P2-medium": "Medium",
+  "P3-low": "Low",
+};
+---
+
+<Base
+  title={`${entry.data.title} — Changelog`}
+  description={entry.data.title}
+  filename={`changelog/${entry.id}`}
+  active="changelog"
+>
+  <section class="content-section">
+    <p class="back">
+      <a href={`${import.meta.env.BASE_URL}/changelog`}>&larr; All changelog entries</a>
+    </p>
+    <header class="entry-header">
+      <span class={`priority-badge priority-${entry.data.priority}`}>
+        {priorityLabel[entry.data.priority]}
+      </span>
+      <span class="entry-date">{entry.data.date}</span>
+    </header>
+    <h1>{entry.data.title}</h1>
+    <div class="prose">
+      <Content />
+    </div>
+  </section>
+</Base>
+
+<style>
+  .content-section {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 40px 20px 60px;
+  }
+  .back {
+    margin: 0 0 24px;
+  }
+  .back a {
+    font-family: monospace;
+    font-size: 0.85rem;
+    text-decoration: none;
+    opacity: 0.7;
+  }
+  .back a:hover {
+    opacity: 1;
+  }
+  .entry-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .priority-badge {
+    font-family: monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 999px;
+  }
+  .priority-P1-high {
+    background: rgba(220, 38, 38, 0.12);
+    color: #dc2626;
+  }
+  .priority-P2-medium {
+    background: rgba(217, 119, 6, 0.12);
+    color: #d97706;
+  }
+  .priority-P3-low {
+    background: rgba(75, 85, 99, 0.12);
+    color: #4b5563;
+  }
+  .entry-date {
+    font-family: monospace;
+    font-size: 0.85rem;
+    opacity: 0.6;
+  }
+  h1 {
+    font-weight: 600;
+    font-size: 1.9rem;
+    letter-spacing: -0.01em;
+    margin: 0 0 24px;
+  }
+  .prose :global(p) {
+    line-height: 1.7;
+    margin: 0 0 16px;
+  }
+  .prose :global(h2) {
+    font-size: 1.3rem;
+    margin: 32px 0 12px;
+  }
+  .prose :global(ul) {
+    line-height: 1.7;
+  }
+</style>
