@@ -99,17 +99,26 @@ and a manual local export competing with them produces divergent history on the 
 `gitexporter.config.json` is retained deliberately, as a readable manifest of which paths are
 intended to be public. Treat it as documentation, not as a tool.
 
-### Public-facing changelogs
+### 🕰️ Public-facing changelogs & libraries
 
 **[`changelog-template/README.md`](./changelog-template/README.md) is the single source of
-truth** for this convention — same role `AGENT-SYNC/README.md` plays for attribution. It covers the
-frontmatter schema, the "confirmed-done + public-safe → straight to changelog" rule for
-`pending-tasks.md`/`PENDING-TASKS.md` files, and the org-vs-personal push-target split worth stating
-here too: a community/multi-owner GitHub org project pushes its public changelog repo *into that
-org* (`psychedelicsinrecovery/changelog-astro-public`, `theholyearthfoundation/changelog-astro-public`
-— both live), while a personal project pushes under personal `drasticstatic`, same as every other
-`-public-preview` pair. Raw markdown never leaves the private repo — only the compiled Astro build
-does, via the same `sync-public-allowlist.yml` pattern every other private→public pair here uses.
+truth** for this convention — same role `AGENT-SYNC/README.md` plays for attribution. 📋 It covers:
+
+- The frontmatter schema (`title`, `date`, `priority`, `repo`, optional `org`) and the
+  "confirmed-done + public-safe → straight to changelog" rule for
+  `pending-tasks.md`/`PENDING-TASKS.md` files — no more internal holding sections once a project has
+  a real changelog to land in.
+- 🏢 **The org-vs-personal push-target split**, worth stating here too: a community/multi-owner
+  GitHub org project pushes its public changelog repo *into that org*
+  (`psychedelicsinrecovery/changelog-astro-public`, `theholyearthfoundation/changelog-astro-public` —
+  both live 🌐), while a personal project pushes under personal `drasticstatic`, same as every other
+  `-public-preview` pair.
+- 🔒 Raw markdown never leaves the private repo — only the compiled Astro build does, via the same
+  `sync-public-allowlist.yml` pattern every other private→public pair here uses.
+- 📚 A richer pattern once a project outgrows one flat list: a repo-picker `/changelog`, a
+  `/library` collection for deep technical write-ups, the project's own `README.md` rendered as the
+  site's homepage, priority filter + search, prev/next by date, and Phosphor icons (`ph ph-*`) that
+  work directly inside plain `.md` — no MDX required. All proven out on PIR's and THEF's live sites.
 
 ---
 
