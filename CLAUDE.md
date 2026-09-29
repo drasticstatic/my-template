@@ -84,6 +84,25 @@ Agent roles (if using multiple agents):
 
 ---
 
+## Before Cloning or Installing Any External Repo / Package
+
+Before running `git clone`, `npm install`, `pip install`, `cargo build`, or adding any external dependency:
+1. **Review install/build scripts** — `package.json` (`postinstall`/`preinstall`/`prepare`), `pyproject.toml`, `build.rs`/`Cargo.toml` build scripts — flag anything that executes shell commands
+2. **Scan for credential harvesting** — look for patterns accessing `~/.ssh`, `~/.aws`, `.env`, `process.env`, or system credential paths in unexpected files
+3. **Verify provenance** — check GitHub repo age, star/fork count, recent commit activity, contributor count, and maintainer identity
+4. **Check for typosquatting** — verify package/repo names exactly match the intended one (e.g. `lodash` not `1odash`)
+5. **Audit unexpected network calls** — flag external HTTP requests in scripts, entrypoints, or install hooks
+6. **When in doubt, ask before proceeding** with any install or clone
+
+**When a repo's legitimacy is genuinely in question** (not just routine dependency hygiene — something feels off, or it was flagged by the repo owner or a third party): prefer **read-only inspection via the GitHub API over cloning**. `gh api repos/<owner>/<repo>` for metadata (age, stars, forks, contributors), `gh api repos/<owner>/<repo>/commits` for activity pattern, and — critically — `gh api repos/<owner>/<repo>/contents/<path>` to pull actual **source file contents as text** without ever cloning or running anything. Weigh these red flags specifically (a confirmed real-world case surfaced a repo shaped exactly like this):
+- A single commit-burst history (e.g. an entire project's commits landing within minutes/hours) followed by dormancy — real projects have activity spread over time
+- One contributor, inflated-looking star count relative to actual engagement (issues/forks/discussion)
+- Marketing claims in the README not matched by the actual open-sourced source — read the source as text and check
+- **Most importantly: a real "product" distributed as a separate, unreviewable compiled binary (a `.exe`/`.dmg`/`.7z`/`.zip` in Releases) that is functionally disconnected from a harmless-looking open-sourced stub.** This is the standard bait-and-switch shape — the visible source builds legitimacy while the actual behavior ships unreviewable. Never download or run the binary to "just check" — the read-only source/metadata inspection above is sufficient to form a judgment without that risk.
+- If the read-only inspection can't resolve the question either way, that's what "ask before proceeding" in step 6 is for — don't escalate to actually running anything as the next step.
+
+---
+
 ## Context Rules
 
 - [List any files Claude should read at session start]
