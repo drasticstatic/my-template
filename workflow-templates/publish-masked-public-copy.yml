@@ -1,0 +1,38 @@
+name: Publish public CONTACTS.md
+# Allowlist-style chore: private CONTACTS.md → masked public copy in psychedelicsinrecovery/.github.
+# Needs secret PUBLIC_SYNC_TOKEN: fine-grained PAT, Contents read/write on psychedelicsinrecovery/.github ONLY.
+# Without the secret the job skips (run scripts/publish-public-contacts.py locally instead).
+on:
+  push:
+    branches: [main]
+    paths: [CONTACTS.md, scripts/publish-public-contacts.py]
+  workflow_dispatch: {}
+permissions:
+  contents: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      HAS_TOKEN: ${{ secrets.PUBLIC_SYNC_TOKEN != '' }}
+    steps:
+      - if: env.HAS_TOKEN != 'true'
+        run: echo "::notice::PUBLIC_SYNC_TOKEN not set — skipping. Publish locally with scripts/publish-public-contacts.py."
+      - if: env.HAS_TOKEN == 'true'
+        uses: actions/checkout@v4
+      - if: env.HAS_TOKEN == 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: psychedelicsinrecovery/.github
+          token: ${{ secrets.PUBLIC_SYNC_TOKEN }}
+          path: public-dotgithub
+      - if: env.HAS_TOKEN == 'true'
+        run: |
+          set -euo pipefail
+          python3 scripts/publish-public-contacts.py public-dotgithub/CONTACTS.md
+          cd public-dotgithub
+          if git diff --quiet -- CONTACTS.md && git ls-files --error-unmatch CONTACTS.md >/dev/null 2>&1; then echo "No change."; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add CONTACTS.md
+          git commit -m "chore: sync public CONTACTS.md from .github-private (automated)"
+          git push
