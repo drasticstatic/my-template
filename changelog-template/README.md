@@ -104,6 +104,22 @@ only the *push target* in `sync-public-allowlist.yml`'s final step differs.
      markdown: { processor: satteri({ hastPlugins: [baseLinks(BASE)] }) } });
    ```
    Verify after building: `grep -rhoE '(href|src)="/(library|changelog)/' astro/dist` must print nothing.
+
+   **The other required pieces** (each one broke something live before it was added):
+   - **`astro/public/.nojekyll`** (an empty file). GitHub Pages runs Jekyll, which silently drops
+     any `_`-prefixed directory, and Astro emits CSS/JS past its inline threshold into `_astro/`.
+     Without this the live site loses its styles with no build error (THEF, `46ae8bf`). Check
+     `ls -a astro/dist | grep nojekyll`, and after deploy fetch one `_astro/*` file for a 200.
+   - **TL;DR card as block layout, not flex.** `.tldr { display: block; }` with the icon absolutely
+     positioned in the left padding. A flex row wraps the label and text into vertical columns on
+     narrow screens.
+   - **Footer/dock as one swipeable row on phones**: `overflow-x: auto`, hidden scrollbar,
+     `white-space: nowrap` items, short labels below ~520px. Wrapping it into several lines eats
+     the bottom of the screen on a phone.
+   - **Absolute asset and link paths on org-root pages** (`<org>.github.io` `index.html` and
+     `404.html`): `/favicon.svg`, `/`, full URLs. The org-root 404 is served for *every* missing
+     path at any depth, so a relative `index.html` or `favicon.svg` resolves under the bad path and
+     loops into another 404.
 5. Adjust the `Base` import path in `index.astro`/`[slug].astro` to your project's own layout, and
    re-skin the inline `<style>` blocks to match your project's look — the collection-query logic
    and priority-badge markup are the reusable part, the visual design is meant to differ per
