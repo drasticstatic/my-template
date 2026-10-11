@@ -87,12 +87,29 @@ only the *push target* in `sync-public-allowlist.yml`'s final step differs.
    the site, stash `dist/`, strip source (add `"changelog"` and `"astro"` to `private_allowlist`),
    restore `dist/`, push. Point the final push step at the correct target repo per the
    org-vs-personal rule above.
-4. Adjust the `Base` import path in `index.astro`/`[slug].astro` to your project's own layout, and
+4. **Required: copy `base-links.mjs` into `astro/src/plugins/` and wire it into `astro.config.mjs`.**
+   On a GitHub Pages *project* site the base is the repo path (e.g. `/changelog-astro-public`), and
+   Astro does **not** add `base` to links inside Markdown. Without this plugin, every base-less
+   internal link an author writes (`[see this](/library/some-doc)`) resolves to the **org root** and
+   404s — PIR shipped exactly that bug until 2026-10-11. The plugin prefixes the base onto
+   root-relative `<a href>`/`<img src>` in Markdown at build time and leaves external, `//`,
+   `#anchor`, relative and already-based URLs alone, so authors keep writing base-less links with
+   no trailing slash. It's a **Sätteri hast plugin**, not rehype: Astro 7's default Markdown engine
+   is Sätteri, and rehype plugins only run if you swap to the unified processor.
+   ```js
+   import { satteri } from "@astrojs/markdown-satteri"; // add it to package.json at the version
+   import { baseLinks } from "./src/plugins/base-links.mjs"; // your lockfile already resolves
+   const BASE = "/changelog-astro-public";
+   export default defineConfig({ base: BASE, trailingSlash: "never",
+     markdown: { processor: satteri({ hastPlugins: [baseLinks(BASE)] }) } });
+   ```
+   Verify after building: `grep -rhoE '(href|src)="/(library|changelog)/' astro/dist` must print nothing.
+5. Adjust the `Base` import path in `index.astro`/`[slug].astro` to your project's own layout, and
    re-skin the inline `<style>` blocks to match your project's look — the collection-query logic
    and priority-badge markup are the reusable part, the visual design is meant to differ per
    project ("front ends look a bit tastefully different in appearance, but the backend logic is
    the same" — the whole point of building this as a template).
-5. Add one entry (real, not placeholder) to prove it end-to-end before considering the setup done.
+6. Add one entry (real, not placeholder) to prove it end-to-end before considering the setup done.
 
 ## Future adopters (breadcrumbed, not built — 2026-09-23)
 
@@ -203,6 +220,41 @@ use. All of this is copy-paste-ready:
   changelog/library section, not just a couple of accent spots. Colored via the project's own
   `--signature`/`--accent` token rather than left neutral, wherever a splash of color reads better
   than monochrome.
+
+## 🌌 Wave 3, proven out 2026-10-11 (PIR) — one design system, a star chart, feeds
+
+Reference implementation: `psychedelicsinrecovery/changelog-astro` (commits `31eb463`…`2d37544`)
+and the org hub `psychedelicsinrecovery.github.io` (`bbf6343`). Copy the mechanics; give each org
+its own look.
+
+- **Share one design system across an org's GitHub pages instead of re-skinning each.** PIR loads
+  `alex.css` + `alex.js` from `/alex-desk-public/assets/` (same origin, so fonts, masks and
+  `url()` backgrounds just work) and layers a small site-specific `astrolog.css`/`astrolog.js` on
+  top. Change the shared file once and the hub, AstroLog and every desk portal move together. An
+  org without a design system yet should still split "family" CSS from "this site" CSS this way.
+- **Base-links plugin is required** (setup step 4). Also: a Pages *project* site with no
+  `src/pages/404.astro` falls back to GitHub's generic 404. Add one, and keep every link and asset
+  in any 404 (project or org root) absolute — a relative "back" link loops into another 404 when
+  the miss is at a nested path.
+- **`src/lib/projects.ts` is the single source for `repo:` buckets** (name, icon, description,
+  coming-soon/external link) plus shared helpers (entry URL, newest-first sort, month grouping,
+  reading time, TL;DR-to-summary). Every page imports it, so adding a bucket is one edit. Any
+  `repo:` value used by an entry must have a bucket or its entries never get a card.
+- **Star chart (`src/components/StarChart.astro`)**: entries drawn as a rail that fills on scroll,
+  one star per entry tinted by priority, optional month grouping and one-line summaries. Used on
+  the porch, the all-projects view and per-project pages.
+- **Feeds**: `src/pages/rss.xml.ts` (hand-rolled RSS 2.0, no dependency; works with feed readers
+  and Discord/Slack RSS bots) and `src/pages/latest.json.ts` (five newest entries), which the
+  zero-build org hub fetches same-origin to show "Latest shipped".
+- **Jump palette**: `Base.astro` sets `window.ALEX_PALETTE` from the collections, so `/` or ⌘K
+  jumps to any entry, write-up or project from anywhere.
+- **Library niceties**: table of contents from `render(entry).headings` (depth 2–3, shown at 3+),
+  an expand/collapse-all toggle for `<details>`, opening the right `<details>` when a link targets a
+  heading inside it, and a print stylesheet that opens every section.
+- **Phones**: headless Chrome enforces a minimum window width, so `--window-size=390,…` screenshots
+  are crops of a wider layout. Test mobile by loading the page inside a 390px-wide `<iframe>`.
+  Also: `padding:Xrem 0` on an element that's also `.wrap` silently erases the side gutters — use
+  `padding-block`.
 
 ## Future enhancement, not required (can simmer)
 
