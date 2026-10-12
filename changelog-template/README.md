@@ -463,6 +463,119 @@ one by hand, or add a schedule if the two drift for too long.
 - The kit's storage key can be shared deliberately: ORG uses the O-R-G dApp's `org-experience`
   key and shape, so on `drasticstatic.github.io` the lab and the dApp preview share choices.
 
+## 📜 Wave 5, proven out 2026-10-12 (ORG) — reading mode, what's new, the ledger
+
+Reference install: ORG's portal, ORG's `changelog-astro`, the lab (`drasticstatic/O-R-G-astro`) and
+the O-R-G dApp preview. Canonical files: [`arrival/`](arrival/) (`arrival.js`/`.css` are now
+**v1.1**), [`arrival/ledger/`](arrival/ledger/) and two new files in
+[`arrival/astro/`](arrival/astro/). **Porting agents: re-copy `arrival.js` + `arrival.css`
+unchanged. They are drop-in for a v1.0 `org.js`:** with no new keys, reading mode turns on with an
+automatically chosen calm light, and "what's new" reads the search sources you already have.
+
+### Reading mode (one tap, persisted)
+
+- A book button in `<arrival-controls>` (beside the pointer button), a switch at the top of the
+  drawer and of the guide's motion step, "Just let me read" on the splash, and a `/` action.
+- One tap saves the visitor's light/motion/contrast/cursor and applies the calm preset: the
+  reading light, the still motion, more contrast, cursor effects off. Another tap restores what
+  they had. It persists across visits (`reading` and `before` in the same storage key). Changing
+  any one setting by hand simply leaves reading mode, keeping the new choice.
+- `<html data-reading="on|off">` for site styling. ORG fades its marbled ink:
+  `:root[data-reading="on"] :is(.field, .hero-bg) { opacity: .28 }` (in `org.css`).
+- `org.js`: `reading: { light: "stone" }` picks the light; otherwise the first mode with
+  `calm: true`, else the first light (not dark, not time-following) mode. `reading: false` hides
+  it. `words.readingNote` may name the light ("{light}" is filled in).
+- On phones the cursor button hides at ≤480px and the book at ≤380px (both stay in the drawer).
+
+### What's new since your last visit
+
+- A visit is page views with gaps under 30 minutes (`news.gapMinutes`). Under
+  `<storage key>:visits` (every access in try/catch) the kit keeps when the last visit ended, what
+  it already knew, and whether the count was opened. **First visits show nothing.**
+- On a return visit it counts items newer than the last visit from `news.sources`
+  (`org.js`: `news: { sources: [LOG + "/latest.json"] }`; a site can override with its own
+  `news`, as the lab and dApp do). Items with `ts` (exact ISO time; ledger commits) compare
+  exactly; items with only `d` count from the end of that day, and the "already knew" list stops a
+  same-day entry the visitor saw from counting twice. Types counted: `entry`, `doc`, `ledger`.
+- Shows a subtle ✦ count chip before the search button. Clicking it opens `/` search with a
+  **New since your last visit** group on top and clears the count; opening a new page itself also
+  counts as seen. Links on the page that point at new items get `data-arr-new` (an accent bar);
+  an empty `<span data-arr-new-tag hidden></span>` inside a row becomes a "New" pill (ORG's
+  `EntryList` rows and every ledger row carry one).
+- `news: false` hides it. `window.Arrival.news()` resolves `{ since, count, items }`; an
+  `arrival:news` event fires when there's something new. `window.Arrival.reading(on?)` toggles or
+  sets reading mode.
+- **`latest.json`** (copy [`arrival/astro/latest.json.ts`](arrival/astro/latest.json.ts)): newest
+  first, absolute URLs, `{ updated, items: [{ type, t, k, i, h, d, ts?, who? }] }`: the last 30
+  entries, dated library docs, and the last 45 days of ledger commits.
+
+### The ledger (a calm, categorized record of public commits)
+
+The technique follows Christopher's activity-ledger generator (public repos only, a deny list, a
+keyword rubric, scrubbed subjects, a grouped accordion); nothing else is shared with it.
+
+- **Files:** copy `arrival/ledger/ledger.mjs` and `snapshot.mjs` to `src/ledger/`,
+  `arrival/astro/Ledger.astro` to `src/components/`, write `src/data/ledger.config.mjs` from
+  [`ledger.config.example.mjs`](arrival/ledger/ledger.config.example.mjs), add
+  `"ledger:snapshot": "node src/ledger/snapshot.mjs"`, run it once and commit
+  `src/data/ledger.snapshot.json` (the fallback when the live fetch fails). Then a page:
+  `src/pages/ledger.astro` = your layout + intro + `<Ledger ledger={await loadLedger(LEDGER)} colors={WEDGES} />`,
+  and an og card (`og/ledger.jpg.ts`).
+- **Public only, always:** it lists `orgs/<owner>/repos?type=public` (or
+  `users/<owner>/repos`), keeps only `private === false && visibility === "public"`, then the
+  config's `include`/`deny`. A private repo's commits are never requested, whatever token the build
+  holds. A user account needs `include` (the lab: `/^O-R-G-(astro-public|dapp-public-preview)$/`).
+  The snapshot script runs without a token on purpose.
+- **Noise filtered and counted:** merges; CI mirror/publish commits (`sync: rebuild from…`,
+  `Deploy Astro build`, `Deploy: <sha>`); bot authors (`[bot]`, `actions-user`, `Public Mirror Bot`)
+  and dependency bumps; a change and its `Revert "…"` cancel out. The page says how many it left out.
+- **Plain language:** subject line only, scrubbed (emails, long hex, 0x/base58 keys, `key=value`
+  secrets). `feat(nav): …` becomes kind + area "Navigation"; a short `Portal: …` prefix becomes the
+  area; long parenthetical asides drop; undescribed subjects ("IDK2", "wip") read "A small change,
+  without a description"; a first commit reads "Started <repo label>".
+- **Kinds** (first match wins; a conventional type decides except `feat`, which is sorted by what
+  it touches): Speed, Fixes, Sign-in and members, Look and feel, Words and pages, Records and docs,
+  Behind the scenes, New, else Updates. Pass `kinds` to replace the rubric.
+- **People follow the site's config:** `people: [{ name, github?, logins?, names? }]` mirrors the
+  site's PEOPLE list, so names and pictures match everywhere (ORG maps Tripp's `ORG-Spirituality`
+  login to "Tripp Aardema" without a GitHub picture, as the AstroLog shows him). Anyone not listed
+  is named by `nameStyle`: `"full"`, **`"first-last-initial"` (PIR's public pages)** or `"first"`,
+  with initials, never a picture (unless `unknownAvatars: true`). `coAuthors: ["Alfred"]` names
+  only those co-authors from trailers ("Christopher with Alfred").
+- **Grouping:** month (`<details>`, the newest two open) → day → repository (`repoLabels` give
+  friendly names), each row: kind, area, summary linked to the commit, avatar + name, time, short
+  sha. Filters: kind chips, a repository select, text search.
+- **Fresh every day:** the build workflow gets a schedule and a read-only token for the public API:
+  ```yaml
+  on: { push: { branches: [main] }, schedule: [{ cron: "17 10 * * *" }], workflow_dispatch: {} }
+  permissions: { contents: read }
+  concurrency: { group: sync-public, cancel-in-progress: false }
+  # build step:  env: { GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} }
+  ```
+  ORG's AstroLog runs at 10:17 UTC; the lab's deploy at 10:41 UTC, which also redraws the map from
+  ORG's `map.json` (approved by Christopher).
+- **Discoverable:** `org.js` `record.ledger = { name, text, href, label }` adds a third box to the
+  guide's "Changelog and library" step; also the header nav, footer, `/` search (pinned), porch,
+  404 and a changelog entry.
+
+### The dApp preview on the kit (a Next.js app)
+
+Loads `arrival.css`, `org.js` and `arrival.js` by absolute URL as synchronous `<head>` tags in the
+root layout, plus `window.ARRIVAL_SITE` (its own site entry), but **not** `org.css`: the app keeps
+its own tokens (same names) and next/font faces, and copies ORG's kit shape rules into
+`globals.css` under an `html` prefix so load order can't matter. `<arrival-controls>` is created in
+a client component's `useEffect` (React never sees the kit's children, so no hydration mismatch).
+The app's experience store shares the `org-experience` key: it re-reads on `arrival:change` and
+dispatches a `storage` event after its own writes so the kit's next write keeps them.
+
+### Gotchas found in wave 5
+
+- Astro's line-break gotcha struck again ("history of⏎<a>" rendered "history ofORG's"). Keep text
+  and its inline link on one source line.
+- More header tools: ORG's AstroLog now hides the drawer's and search's word labels below 1440px
+  and calls its portal link "Portal" in the header (the footer keeps "Entry portal").
+- "copy" and "text" are too ambiguous for the words rubric ("the map's canonical copy").
+
 ## Future enhancement, not required (can simmer)
 
 `divorce-custody-assistant/vocational-compliance/build_vocational_log.py` generates an animated,

@@ -36,7 +36,7 @@ export const DEFAULT_KINDS = [
   { id: "fix", name: "Fixes", icon: "wrench", types: ["fix", "hotfix", "bugfix"], words: /\b(fix(e[sd])?|bug|broken|repair\w*|stabili[sz]\w*|resolve[sd]?|typo|grammar|correct(ion|ions|ed)?|keep .* together)\b/i },
   { id: "access", name: "Sign-in and members", icon: "key", types: ["auth"], words: /\b(auth0?|clerk|oauth|sign[- ]?in|log[- ]?in|login|members?|membership|admin\w*|accounts?|allowlist\w*)\b/i },
   { id: "look", name: "Look and feel", icon: "palette", types: ["style", "ui", "design"], words: /\b(style[sd]?|styling|restyle\w*|ui|design\w*|colou?rs?|accents?|fonts?|typography|layout|padding|align\w*|markers?|perforat\w*|icons?|images?|art(work)?|animat\w*|spin\w*|shadows?|themes?|lights?|look|logo|banners?|badges?|tabs?|octagon|tiles?|marble|cursor|trail|ink|visual\w*)\b/i },
-  { id: "words", name: "Words and pages", icon: "article", types: ["content", "copy"], words: /\b(wording|words|copy|text|about( us)?|charter|ceremony|reference pages?|page content|beliefs?|faq|inclusive|labels?)\b/i },
+  { id: "words", name: "Words and pages", icon: "article", types: ["content", "copy"], words: /\b(wording|words|about( us)?|charter|ceremony|reference pages?|page content|beliefs?|faq|inclusive|labels?)\b/i },
   { id: "records", name: "Records and docs", icon: "notebook", types: ["docs", "doc"], words: /\b(docs?|documentation|document (the|how|backend|frontend)\b|readme|changelog|astrolog|notes?|license|ledger|link[- ]previews?|social cards?|og|map)\b/i },
   { id: "under", name: "Behind the scenes", icon: "gear-six", types: ["refactor", "chore", "test", "tests", "build", "ci", "revert"], words: /\b(refactor\w*|chores?|tests?|testing|ci|workflows?|deploy\w*|config\w*|runtime|heroku|netlify|eslint|lint\w*|renam\w*|clean\s?up|dependenc\w*|hooks?|tooling|route tree|dead code|extract\w*|decompos\w*|isolat\w*|ignore)\b/i },
   { id: "new", name: "New", icon: "sparkle", types: ["feat", "feature", "add"], words: /\b(add(s|ed)?|new|introduc\w*|launch\w*|creat\w*|build|builds|built|begin|begins|start\w*|first commit|initiali[sz]\w*|scaffold\w*|give[sn]?)\b/i },
@@ -78,7 +78,7 @@ export function scrub(s) {
     .replace(/\s+/g, " ")
     .trim();
 }
-const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+const cap = (s) => String(s || "").replace(/^([^A-Za-z]*)([a-z])/, (m, pre, c) => pre + c.toUpperCase());
 const titleCase = (s) => String(s).replace(/[-_]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 function trim(s, n = 140) {
   if (s.length <= n) return s;
