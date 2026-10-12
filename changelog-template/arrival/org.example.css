@@ -1,0 +1,207 @@
+/* ORG's look for the arrival kit, shared by every ORG page (entry portal, AstroLog, and the
+   drasticstatic ORG lab). Load after arrival.css.
+
+   The three lights are ORG's own Design Directions proposal (Night Sanctuary, Prism Light,
+   Stone & Lapis), drawn up by Renan Teixeira and shared with members for a vote. None of them is
+   "the" ORG look until members decide, so every page offers all three as modes. Tokens are set on
+   attribute selectors so a light card in the splash can preview a mode by carrying data-theme. */
+
+:root,
+[data-theme="night"] {
+  --background: #100e1c;
+  --foreground: #eee8f6;
+  --heading: #f4effc;
+  --muted: #b4abc9;
+  --surface: #1a1730;
+  --surface-muted: #221d3a;
+  --border: #352d55;
+  --accent: #e9be72;
+  --accent-strong: #f5d596;
+  --on-accent: #1b1408;
+  --perf: rgba(238, 232, 246, 0.26);
+  --ink: linear-gradient(100deg, #b39bff 0%, #f08ccf 35%, #6fe3d6 70%, #f2c97f 100%);
+  --scrim: rgba(16, 14, 28, 0.62);
+  --frame: #fff8e8;
+  --frame-glow: rgba(201, 164, 255, 0.85);
+  --halo: #c9a4ff;
+  --glow: #2a1f52;
+  --hero-from: #2a1f52;
+  --arr-backdrop: rgba(9, 7, 18, 0.58);
+  --font-heading: "Fraunces", Georgia, serif;
+  --font-body: "Manrope", system-ui, sans-serif;
+  --heading-settings: "SOFT" 60, "WONK" 1;
+  --body-leading: 1.65;
+  color-scheme: dark;
+}
+
+[data-theme="prism"] {
+  --background: #f5f3fa;
+  --foreground: #221d33;
+  --heading: #221d33;
+  --muted: #5e566e;
+  --surface: #ffffff;
+  --surface-muted: #ece8f6;
+  --border: #dcd5ea;
+  --accent: #6b4fa0;
+  --accent-strong: #553d85;
+  --on-accent: #ffffff;
+  --perf: rgba(34, 29, 51, 0.24);
+  --ink: linear-gradient(100deg, #a8417a 0%, #a4621b 30%, #2c7d67 58%, #3a5fa8 80%, #6b4fa0 100%);
+  --scrim: rgba(245, 243, 250, 0.7);
+  --frame: #ffffff;
+  --frame-glow: rgba(107, 79, 160, 0.4);
+  --halo: #6b4fa0;
+  --glow: #ffffff;
+  --hero-from: #ffffff;
+  --arr-backdrop: rgba(34, 29, 51, 0.34);
+  --font-heading: "Newsreader", Georgia, serif;
+  --font-body: "Hanken Grotesk", system-ui, sans-serif;
+  --heading-settings: normal;
+  --body-leading: 1.65;
+  color-scheme: light;
+}
+
+[data-theme="stone"] {
+  --background: #ecebe6;
+  --foreground: #1b2433;
+  --heading: #1b2433;
+  --muted: #4d5566;
+  --surface: #f7f6f2;
+  --surface-muted: #e3e1da;
+  --border: #d0ccc0;
+  --accent: #22408a;
+  --accent-strong: #18306b;
+  --on-accent: #ffffff;
+  --perf: rgba(27, 36, 51, 0.26);
+  --ink: linear-gradient(100deg, #22408a 0%, #3d5ea8 45%, #7d5a1c 100%);
+  --scrim: rgba(236, 235, 230, 0.66);
+  --frame: #f7f6f2;
+  --frame-glow: rgba(125, 90, 28, 0.45);
+  --halo: #22408a;
+  --glow: #f7f6f2;
+  --hero-from: #f7f6f2;
+  --arr-backdrop: rgba(27, 36, 51, 0.36);
+  --font-heading: "Marcellus", "Trajan Pro", Georgia, serif;
+  --font-body: "Literata", Georgia, serif;
+  --heading-settings: normal;
+  --body-leading: 1.72;
+  color-scheme: light;
+}
+
+/* ── ORG builds in octagons: every kit surface gets its corners cut at 45 degrees ───────── */
+:root {
+  --arr-radius: 0px;
+}
+/* Each kit element sets its own --arr-cut (frames 16px, buttons 8px, chips 7px…; 6px otherwise).
+   arrival.css registers it as non-inheriting, so nested pieces keep their own cut. */
+.arr-shape,
+.arr-opt,
+.arr-opt-row,
+.arr-opt-icon,
+.arr-link,
+.arr-notice,
+.arr-steps button,
+.arr-switch-track {
+  border-radius: 0;
+  clip-path: polygon(
+    var(--arr-cut) 0,
+    calc(100% - var(--arr-cut)) 0,
+    100% var(--arr-cut),
+    100% calc(100% - var(--arr-cut)),
+    calc(100% - var(--arr-cut)) 100%,
+    var(--arr-cut) 100%,
+    0 calc(100% - var(--arr-cut)),
+    0 var(--arr-cut)
+  );
+}
+.arr-drawer .arr-frame {
+  --arr-cut: 12px;
+}
+.arr-drawer .arr-frame > .arr-in {
+  --arr-cut: 11.5px;
+}
+.arr-switch-track {
+  --arr-cut: 7px;
+}
+/* Regular octagons: avatars, check badges, step dots, the switch knob. */
+.arr-avatar-img,
+arrival-avatar:not(:defined),
+.arr-card-check,
+.arr-step-dot,
+.arr-switch-track > span,
+.arr-opt:has(:checked)::after {
+  border-radius: 0;
+  clip-path: polygon(29.3% 0, 70.7% 0, 100% 29.3%, 100% 70.7%, 70.7% 100%, 29.3% 100%, 0 70.7%, 0 29.3%);
+}
+.arr-switch-track > span {
+  box-shadow: none;
+}
+
+/* ── the perforated blotter sheet, orgspirituality.org's home page motif ────────────────── */
+.arr-rule {
+  height: 3px;
+  background: linear-gradient(to right, var(--perf) 0 12px, transparent 0) 0 0 / 21px 3px repeat-x;
+}
+.arr-guide-head {
+  border-bottom: 0;
+  background: linear-gradient(to right, var(--perf) 0 12px, transparent 0) bottom left / 21px 3px repeat-x;
+}
+.arr-guide-foot {
+  border-top: 0;
+  background: linear-gradient(to right, var(--perf) 0 12px, transparent 0) top left / 21px 3px repeat-x;
+}
+.arr-people:not(.arr-people-compact),
+.arr-latest {
+  --dash: 12px;
+  --gap: 9px;
+  --w: 3px;
+  --step: calc(var(--dash) + var(--gap));
+  padding: var(--w);
+  background:
+    linear-gradient(to right, var(--perf) 0 var(--dash), transparent 0) top left / var(--step) var(--w) repeat-x,
+    linear-gradient(to right, var(--perf) 0 var(--dash), transparent 0) bottom left / var(--step) var(--w) repeat-x,
+    linear-gradient(to bottom, var(--perf) 0 var(--dash), transparent 0) top left / var(--w) var(--step) repeat-y,
+    linear-gradient(to bottom, var(--perf) 0 var(--dash), transparent 0) top right / var(--w) var(--step) repeat-y,
+    var(--surface);
+}
+.arr-people:not(.arr-people-compact) > li,
+.arr-latest > li {
+  position: relative;
+}
+.arr-people:not(.arr-people-compact) > li + li::before,
+.arr-latest > li + li::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--w);
+  background: linear-gradient(to right, var(--perf) 0 var(--dash), transparent 0) 0 0 / var(--step) var(--w) repeat-x;
+}
+.arr-latest a:hover {
+  background: var(--surface-muted);
+}
+
+/* ── ORG's motion: the ink drifts (gentle), drifts faster (vivid), or rests (still) ──────── */
+@keyframes org-ink-drift {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 100% 50%;
+  }
+}
+:root:not([data-motion="still"]) .ink-text,
+:root:not([data-motion="still"]) .arr-card-ink {
+  animation: org-ink-drift 18s ease-in-out infinite alternate;
+}
+[data-motion="vivid"] .ink-text,
+[data-motion="vivid"] .arr-card-ink {
+  animation-duration: 7s;
+}
+.arr-card-ink {
+  background-size: 220% 100%;
+}
+[data-theme="stone"] .arr-card-name {
+  letter-spacing: 0.02em;
+}

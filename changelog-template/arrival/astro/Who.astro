@@ -1,0 +1,22 @@
+---
+// The faces behind a `who` credit, drawn by the arrival kit's <arrival-avatar>: a GitHub picture
+// when a handle is known, otherwise ORG's octagon initials.
+import { peopleIn } from "../data/areas";
+
+interface Props {
+  who?: string;
+  size?: number;
+}
+const { who, size = 20 } = Astro.props;
+const people = peopleIn(who);
+---
+
+{
+  people.length > 0 && (
+    <span class="arr-stack" aria-hidden="true">
+      {people.map((p) => (
+        <arrival-avatar name={p.name} github={p.github} email={p.email} size={size} />
+      ))}
+    </span>
+  )
+}

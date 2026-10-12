@@ -133,6 +133,10 @@ only the *push target* in `sync-public-allowlist.yml`'s final step differs.
   README states "changelog-as-content... rendered as a public, browsable site" but it was never
   finished (placeholder page only, no content collection). When O-R-G is ready, finish that
   existing scaffold using this template rather than starting a second, separate site.
+  **Done differently (2026-10-11/12):** ORG got its own org-owned AstroLog
+  (`Octagon-Religious-Research-Group-ORG/changelog-astro`), and `O-R-G-astro` became the
+  *drasticstatic ORG lab*, Christopher's changelog and portfolio of work for ORG, with its
+  sidecar-era entries kept as history. See wave 4 below.
 - **dappU/Ethereal Offering** (`gratitude-token-project` — already using the sync-workflow's
   allowlist model, per `sync-public-allowlist.yml`'s own comment header) is a personal-repo
   candidate for this template "when we get there with Mystarch."
@@ -272,6 +276,131 @@ its own look.
   Also: `padding:Xrem 0` on an element that's also `.wrap` silently erases the side gutters — use
   `padding-block`.
 
+## 🧭 Wave 4, proven out 2026-10-12 (ORG) — the arrival kit
+
+Reference build: ORG's portal `Octagon-Religious-Research-Group-ORG.github.io` (`/arrival/`), ORG's
+`changelog-astro`, and the personal lab `drasticstatic/O-R-G-astro`. Canonical files live in
+[`arrival/`](arrival/). **This section is the handoff for porting the kit to PIR, THEF, psanctuary and
+psanctuarychurch.**
+
+### What a visitor gets
+
+- **First visit: "Choose how you arrive".** A modal splash (native `<dialog>`, Esc closes, focus is
+  trapped, focus returns) to pick a *mode* (light), a *motion* level and *contrast*. It preselects
+  Still when the OS asks for reduced motion and More contrast when it asks for that, and it plainly
+  teaches **Press / to search** (pressing `/` right there closes it and opens search). The answer is
+  saved in `localStorage`; every read and write is wrapped in try/catch, and if storage is blocked the
+  splash is skipped (there'd be no way to remember the answer). Off on 404s
+  (`data-arrival-splash="off"`).
+- **Navbar `<arrival-controls>`**: a search button, the *minimalist* control (one swatch per mode +
+  a pause/play motion toggle), and the *dropdown drawer* (modes with notes, motion, contrast switch,
+  "Open the welcome guide", "Search everything").
+- **Welcome guide** (onboarding panel): steps for what this site is, changelog vs library, search,
+  light, motion and contrast, who made the changes (live avatars), where the community talks, and the
+  org's main site. Each step lights one wedge of an N-sided progress glyph colored with the org's
+  `wedges` (ORG: 8 steps, an octagon). Opens from the drawer, `?`, any `[data-arrival-open="guide"]`,
+  or a `#welcome` link (shareable).
+- **"/" search** (or Ctrl/⌘ K), adapted from PIR's A.L.E.X. jump palette: word-prefix/substring/
+  subsequence ranking with highlights, recent entries and pinned links when empty, and actions
+  ("light", "still", "contrast", "guide", "copy link"). It reads `search.json` files, so the portal
+  searches the AstroLog too.
+- **Avatars** `<arrival-avatar name github email size>`: GitHub picture when a handle is known;
+  Gravatar **only** for an address at one of the org's `roleDomains` (the kit refuses anything else,
+  so personal emails are never hashed into a page); otherwise an initials SVG in the org's shape and
+  colors. `<arrival-people>` and `<arrival-latest limit>` render from `search.json`.
+
+### The mechanism: one stylesheet + one script per org, served from the org root
+
+```
+https://<org>.github.io/arrival/arrival.css   kit core, identical in every org (copy unchanged)
+https://<org>.github.io/arrival/arrival.js    kit core, identical in every org (copy unchanged)
+https://<org>.github.io/arrival/org.css       the org's modes (tokens), shape and motion styles
+https://<org>.github.io/arrival/org.js        the org's facts and config (window.ARRIVAL)
+```
+
+The portal references them root-relative (`/arrival/…`); the AstroLog and anything on another origin
+(ORG's lab on `drasticstatic.github.io`) reference them by **full URL**. Same files everywhere, so the
+portal and AstroLog can't drift; GitHub Pages sends `Access-Control-Allow-Origin: *`, so other
+origins can load them and fetch `search.json`. Changes propagate within Pages' 10-minute cache.
+**Deploy order:** push the portal's `/arrival/` first, then the sites that load it.
+
+In every page's `<head>`, in this order (the script must be in `<head>`, not deferred: it applies
+the saved mode before first paint and defines the custom elements before the parser reaches them):
+
+```html
+<html lang="en" data-arrival-site="portal">   <!-- a key of ARRIVAL.sites: portal | astrolog | … -->
+<link rel="stylesheet" href="https://<org>.github.io/arrival/arrival.css">
+<link rel="stylesheet" href="https://<org>.github.io/arrival/org.css">
+<script src="https://<org>.github.io/arrival/org.js"></script>
+<script src="https://<org>.github.io/arrival/arrival.js"></script>
+<!-- then the site's own CSS; in Astro, use <script is:inline src=…> and import global.css as usual -->
+```
+
+Then put `<arrival-controls></arrival-controls>` in the header, and optionally
+`<a href="#welcome" data-arrival-open="guide">Welcome guide</a>` in the footer. The page also needs the
+org's fonts and Phosphor icons (`@phosphor-icons/web@2.1.1` regular).
+
+### Porting to another org (wave B checklist)
+
+1. **Copy** `arrival/arrival.js` + `arrival/arrival.css` unchanged into `<org>.github.io/arrival/`.
+2. **Write `org.js`** from `arrival/org.example.js` (ORG's, fully annotated). Keys:
+   `org` {short, name, motto, about, mark.src, home {label, href, text}, welcomeNote |
+   welcomePlaceholder}, `storage` {key, legacy {light, motion}} (migrates the site's old keys; PIR
+   uses `pir-theme`), `modes` [{id, name, note, swatch [bg, accent], dark, ink?, follows?(date)→id,
+   shows?}], `defaultMode`, `motions` [{id, name, note, icon, trail?}], `defaultMotion`,
+   `stillMotion`, `contrast` (false to hide), `wedges` (guide glyph + initials colors), `avatar`
+   {shape: circle | square | octagon, colors?, roleDomains, svg?()}, `community` {name, icon, href,
+   label, text, more[]}, `record` {intro, changelog {…}, library {…}}, `sites` {<id> {name, what,
+   record?, community?, sources?, items?}}, `guide` {order?, <step> {title?, text?, more?, html?}},
+   `guideFinale`, `words` (any UI string), `search` {sources [{url, label?, people?}], items [{t, k, i,
+   h, x?, pin?}]}. A page can add or override its site with `window.ARRIVAL_SITE = {…}` before
+   `arrival.js` (the lab does).
+3. **Write `org.css`** from `arrival/org.example.css`: one token block per mode on
+   `[data-theme="<id>"]` (attribute selectors, so splash cards can preview a mode), using the token
+   names listed at the top of `arrival.css`. Shape: ORG cuts octagon corners with `clip-path` on
+   `.arr-shape` using `var(--arr-cut)`; a rounded org just sets `--arr-radius`. Add the org's motif
+   (ORG: perforated rules and sheets) and motion styles keyed on `[data-motion]`.
+4. **Facts only from the org's own materials.** PIR/THEF/psanctuary use Discord, Telegram or
+   whatever their own site links: set `community` per org (or per site). Anything unknown gets an
+   honest placeholder (`welcomePlaceholder`, `library.missing`), never a guess. PIR's public pages use
+   first name + last initial for people.
+5. **AstroLog:** add `astro/src/pages/search.json.ts` (from `arrival/astro/`; shape below), use
+   `<Who who={…}>` (`arrival/astro/Who.astro`) on rows and entry pages, a `PEOPLE` list with `match`,
+   `aliases`, `github`, optional role `email`, and `peopleIn()`/`madeBy()` helpers (see ORG's
+   `src/data/areas.ts`), plus `404.astro` (full-URL links, back button, guesses, `splash={false}`).
+   Remove the site's own theme tokens and toggle script; keep site layout CSS.
+6. **Portal:** swap inline tokens for the kit files, add `<arrival-latest>` and `<arrival-people>`,
+   and kit includes + a search button on `404.html` (links stay absolute).
+7. **Verify** with `arrival/verify.example.mjs` (Playwright + local Chrome, fresh contexts): it runs
+   against the production URLs, optionally intercepted to the local repos before deploying
+   (`--local`), and checks the splash on a genuine first visit and not the second, the focus trap,
+   reduced motion, mode persistence portal ↔ AstroLog, `/` search across sites, every page type, and
+   nested 404s with their back buttons.
+
+`search.json` shape (absolute URLs, so other origins can link into it):
+
+```json
+{ "updated": "2026-10-12",
+  "items": [{ "type": "entry|doc|page|area", "t": "title", "k": "kind label", "h": "https://…",
+              "i": "phosphor-icon", "d": "YYYY-MM-DD", "s": "one-line summary", "x": "extra match text",
+              "who": "credit", "pin": false }],
+  "people": [{ "name": "…", "role": "…", "github": "handle", "count": 5 }] }
+```
+
+### Gotchas found building it
+
+- **Astro drops the space between a line break and a following tag**: `New here?⏎<a>` renders
+  "New here?Take…". Keep text and its inline link on one source line. (The lab's footer had this live.)
+- `--cut` inherits, so a button inside a clipped frame took the frame's cut. The kit uses its own
+  `--arr-cut`, registered with `@property … inherits: false`; sites' own `--cut` is untouched.
+- Bare site selectors (`ul`, `li + li::before`, `img`) leak into the kit's dialogs. Scope them
+  (`main ul`), as ORG's portal 404 now does.
+- Headers get crowded: hide the drawer's text label at a site breakpoint with
+  `[data-arr-drawer] .arr-chip-label { display: none }` (the button keeps an `aria-label`), and on phones
+  put the tools beside the brand and the nav in one swipeable row.
+- The kit's storage key can be shared deliberately: ORG uses the O-R-G dApp's `org-experience`
+  key and shape, so on `drasticstatic.github.io` the lab and the dApp preview share choices.
+
 ## Future enhancement, not required (can simmer)
 
 `divorce-custody-assistant/vocational-compliance/build_vocational_log.py` generates an animated,
@@ -283,3 +412,4 @@ level up visually. Not part of this template's baseline; note it here so it isn'
 ---
 
 Co-Authored-By: Alfred · ClaudeCodeCLI · Anthropic [Sonnet-5]
+Co-Authored-By: Alfred · ClaudeCodeCLI · Anthropic [Opus-5.5]

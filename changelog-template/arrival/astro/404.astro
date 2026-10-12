@@ -1,0 +1,182 @@
+---
+// GitHub Pages serves this for any missing path under /changelog-astro-public, at any depth. Every
+// link here is a full URL, so it works however deep the wrong turn was. No first-visit splash on a
+// wrong turn; "/" search still works.
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+import { AREAS, SITE, WEDGES, entrySlug } from "../data/areas";
+
+const base = import.meta.env.BASE_URL;
+const at = (path: string) => `${SITE}${base}${path}`;
+const entries = await getCollection("changelog");
+const docs = await getCollection("library");
+const data = [
+  { l: "AstroLog porch", u: at("/"), k: "home porch index readme astrolog" },
+  { l: "Changelog", u: at("/changelog"), k: "changelog entries changes" },
+  { l: "Library", u: at("/library"), k: "library docs write-ups" },
+  { l: "Map", u: at("/map"), k: "map diagram" },
+  ...AREAS.map((a) => ({ l: `${a.name} changelog`, u: at(`/changelog/${a.slug}`), k: `${a.slug} ${a.name}` })),
+  ...entries.map((e) => ({ l: e.data.title, u: at(`/changelog/${e.data.repo}/${entrySlug(e.id)}`), k: `${e.id} ${e.data.title}` })),
+  ...docs.map((d) => ({ l: d.data.title, u: at(`/library/${entrySlug(d.id)}`), k: `${d.id} ${d.data.title}` })),
+].map((x) => ({ ...x, k: x.k.toLowerCase() }));
+
+// The wayfinding octagon with one wedge torn loose (not ORG's logo, which is never altered).
+const v = (r: number, k: number) => {
+  const a = ((-112.5 + 45 * k) * Math.PI) / 180;
+  return [50 + r * Math.cos(a), 50 + r * Math.sin(a)].map((n) => n.toFixed(2)).join(",");
+};
+const TORN = 3;
+---
+
+<Base title="Page not found: ORG AstroLog" description="This address doesn't lead to a page. The way back is below." splash={false}>
+  <section class="wrap lost">
+    <svg class="torn" viewBox="0 0 100 100" width="132" height="132" aria-hidden="true">
+      {
+        WEDGES.map((c, k) => (
+          <polygon
+            class={k === TORN ? "loose" : undefined}
+            points={`50,50 ${v(46, k)} ${v(46, k + 1)}`}
+            fill={c}
+            opacity={k === TORN ? 0.95 : 1}
+          />
+        ))
+      }
+    </svg>
+    <h1>This page tore off the sheet.</h1>
+    <p class="lede">
+      The link may be old, or the page hasn't been written yet. Nothing is broken on your side, and
+      every way below leads back.
+    </p>
+    <div class="guess" id="guess" hidden>
+      <p class="guess-label">Were you looking for one of these?</p>
+      <div class="guess-links" id="guess-links"></div>
+    </div>
+    <div class="ways">
+      <a class="btn oct" href={at("/")}><i class="ph ph-arrow-left" aria-hidden="true"></i>Back to the porch</a>
+      <button type="button" class="btn btn-quiet oct" data-arrival-open="search"><i class="ph ph-magnifying-glass" aria-hidden="true"></i>Search instead <kbd>/</kbd></button>
+    </div>
+    <ul class="sheet more">
+      <li><a href={at("/changelog")}><i class="ph ph-clock-counter-clockwise" aria-hidden="true"></i>Changelog</a></li>
+      <li><a href={at("/library")}><i class="ph ph-books" aria-hidden="true"></i>Library</a></li>
+      <li><a href={`${SITE}/`}><i class="ph ph-house" aria-hidden="true"></i>ORG's entry portal</a></li>
+      <li><a href="https://orgspirituality.org"><i class="ph ph-globe-hemisphere-west" aria-hidden="true"></i>orgspirituality.org</a></li>
+    </ul>
+  </section>
+</Base>
+
+<script is:inline define:vars={{ data }}>
+  (function () {
+    var stop = ["html", "changelog", "astro", "public", "library", "index", "the", "and", "www"];
+    var words = decodeURIComponent(location.pathname)
+      .toLowerCase()
+      .split(/[^a-z0-9]+/)
+      .filter(function (w) {
+        return w.length > 2 && stop.indexOf(w) < 0;
+      });
+    var scored = data
+      .map(function (e) {
+        var s = 0;
+        words.forEach(function (w) {
+          if (e.k.indexOf(w) >= 0) s += 2;
+          else if (w.length > 4 && e.k.indexOf(w.slice(0, 4)) >= 0) s += 1;
+        });
+        return { e: e, s: s };
+      })
+      .filter(function (x) {
+        return x.s > 0;
+      })
+      .sort(function (a, b) {
+        return b.s - a.s;
+      })
+      .slice(0, 3);
+    if (!scored.length) return;
+    document.getElementById("guess").hidden = false;
+    document.getElementById("guess-links").innerHTML = scored
+      .map(function (x) {
+        return '<a href="' + x.e.u + '"><i class="ph ph-arrow-right" aria-hidden="true"></i>' + x.e.l.replace(/</g, "&lt;") + "</a>";
+      })
+      .join("");
+  })();
+</script>
+
+<style>
+  .lost {
+    padding-top: 2.5rem;
+    padding-bottom: 3rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .torn {
+    margin: 0 0 1.5rem;
+    overflow: visible;
+  }
+  .torn .loose {
+    transform-origin: 50% 50%;
+    transform: translate(9px, 7px) rotate(9deg);
+  }
+  :global(:root:not([data-motion="still"])) .torn .loose {
+    animation: drift 5s ease-in-out infinite alternate;
+  }
+  @keyframes drift {
+    to {
+      transform: translate(13px, 12px) rotate(15deg);
+    }
+  }
+  h1 {
+    font-size: clamp(2rem, 6vw, 3rem);
+    margin: 0 0 0.75rem;
+  }
+  .lede {
+    max-width: 32rem;
+    margin: 0 0 1.5rem;
+  }
+  .guess {
+    margin: 0 0 1.5rem;
+  }
+  .guess-label {
+    margin: 0 0 0.5rem;
+    color: var(--muted);
+  }
+  .guess-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    align-items: center;
+  }
+  .ways {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.6rem;
+    margin: 0 0 2rem;
+  }
+  .ways kbd {
+    font: 600 0.72rem/1 ui-monospace, Menlo, monospace;
+    padding: 0.15rem 0.35rem;
+    border: 1px solid var(--border);
+    background: var(--background);
+  }
+  .more {
+    width: 100%;
+    max-width: 24rem;
+    text-align: left;
+  }
+  .more a {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.8rem 1rem;
+    color: var(--foreground);
+    text-decoration: none;
+  }
+  .more a:hover {
+    background: var(--surface-muted);
+    color: var(--accent);
+  }
+  .more .ph {
+    color: var(--accent);
+    font-size: 1.2rem;
+  }
+</style>
