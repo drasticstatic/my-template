@@ -1,0 +1,444 @@
+---
+// Arrival kit · the ledger's body: a calm, filterable record of public commits, grouped by month,
+// day and repository. Canonical copy: drasticstatic/my-template changelog-template/arrival/astro/
+// Ledger.astro. Copy unchanged; the page around it (src/pages/ledger.astro) supplies the heading,
+// the intro and the site layout. Styling uses only the kit's tokens, so it takes each org's lights.
+//
+//   ---
+//   import Ledger from "../components/Ledger.astro";
+//   import { loadLedger } from "../ledger/ledger.mjs";
+//   import { LEDGER } from "../data/ledger.config.mjs";
+//   const ledger = await loadLedger(LEDGER);
+//   ---
+//   <Ledger ledger={ledger} colors={WEDGES} openMonths={2} />
+//
+// Every row links to the commit on GitHub. Rows carry the commit URL, so the arrival kit's
+// "what's new" marks the ones newer than the visitor's last visit (and fills the New tag).
+interface Props {
+  ledger: any;
+  /** One color per kind, in the ledger's kind order (an org's wedge colors work well). */
+  colors?: string[];
+  /** How many months start open. */
+  openMonths?: number;
+  /** Words for the people who made each change, e.g. "with" in "Christopher with Alfred". */
+  withWord?: string;
+}
+const { ledger, colors = ["#7c6cf2", "#c46be0", "#e07a9b", "#e39b4e", "#c9b648", "#6fbf5a", "#45b8c9", "#7b8ba6", "#a08bd8"], openMonths = 2, withWord = "with" } = Astro.props;
+const kindColor: Record<string, string> = {};
+(ledger.kinds ?? []).forEach((k: any, i: number) => (kindColor[k.id] = colors[i % colors.length]));
+const fmt = (d?: string | null) =>
+  d ? new Date(`${d}T12:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }) : "";
+const generated = ledger.generated
+  ? new Date(ledger.generated).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", timeZone: ledger.timeZone ?? "UTC", timeZoneName: "short" })
+  : null;
+const f = ledger.filtered ?? {};
+const left = [
+  f.merges ? `${f.merges} ${f.merges === 1 ? "merge" : "merges"}` : "",
+  f.mirrors ? `${f.mirrors} automatic ${f.mirrors === 1 ? "publish" : "publishes"}` : "",
+  f.bots ? `${f.bots} bot ${f.bots === 1 ? "chore" : "chores"}` : "",
+  f.undone ? `${f.undone} ${f.undone === 1 ? "change" : "changes"} that cancelled out (a change and its undo)` : "",
+].filter(Boolean);
+---
+
+<div class="lg" data-ledger>
+  {
+    ledger.shown > 0 ? (
+      <>
+        <p class="lg-summary">
+          <strong>{ledger.shown} public {ledger.shown === 1 ? "change" : "changes"}</strong> across {ledger.repos.length}{" "}
+          {ledger.repos.length === 1 ? "repository" : "repositories"}, from {fmt(ledger.first)} to {fmt(ledger.last)}.
+          {left.length > 0 && <span> Left out as noise: {left.join(", ")}.</span>}
+          {generated && <span class="lg-fresh"> Gathered {generated}{ledger.from === "snapshot" ? " (from the saved copy; the live fetch was unavailable)" : ""}.</span>}
+        </p>
+
+        <div class="lg-filters" role="group" aria-label="Filter the ledger">
+          <div class="lg-kinds" role="group" aria-label="Kinds of change">
+            <button type="button" class="lg-chip arr-shape" data-lg-kind="all" aria-pressed="true">All kinds</button>
+            {ledger.kinds.map((k: any) => (
+              <button type="button" class="lg-chip arr-shape" data-lg-kind={k.id} aria-pressed="false" style={`--k:${kindColor[k.id]}`}>
+                <i class={`ph ph-${k.icon}`} aria-hidden="true"></i>
+                {k.name}
+                <span class="lg-n">{k.count}</span>
+              </button>
+            ))}
+          </div>
+          <div class="lg-row-tools">
+            <label class="lg-select">
+              <span class="arr-sr">Repository</span>
+              <select data-lg-repo>
+                <option value="all">Every repository</option>
+                {ledger.repos.map((r: any) => (
+                  <option value={r.name}>{r.label} ({r.count})</option>
+                ))}
+              </select>
+            </label>
+            <label class="lg-search">
+              <span class="arr-sr">Search the ledger</span>
+              <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
+              <input type="search" placeholder="Search words, people, places" data-lg-q />
+            </label>
+          </div>
+          <p class="lg-count" aria-live="polite" data-lg-count></p>
+        </div>
+
+        {ledger.months.map((m: any, mi: number) => (
+          <details class="lg-month" open={mi < openMonths} data-lg-month>
+            <summary>
+              <i class="ph ph-caret-right lg-caret" aria-hidden="true"></i>
+              <span class="lg-month-name">{m.label}</span>
+              <span class="lg-month-n" data-lg-month-n>{m.count} {m.count === 1 ? "change" : "changes"}</span>
+            </summary>
+            {m.days.map((day: any) => (
+              <section class="lg-day" data-lg-day id={`d-${day.date}`}>
+                <h3 class="lg-day-name"><time datetime={day.date}>{day.label}</time></h3>
+                {day.groups.map((g: any) => (
+                  <div class="lg-group" data-lg-group>
+                    <p class="lg-repo"><i class="ph ph-folder-simple" aria-hidden="true"></i>{g.label}</p>
+                    <ul class="lg-items">
+                      {g.items.map((it: any) => (
+                        <li
+                          class="lg-item"
+                          data-lg-item
+                          data-kind={it.kind.id}
+                          data-repo={it.repo}
+                          data-text={`${it.text} ${it.area} ${it.kind.name} ${it.who.name} ${it.with.join(" ")} ${it.repoLabel} ${it.short}`.toLowerCase()}
+                          style={`--k:${kindColor[it.kind.id]}`}
+                        >
+                          <span class="lg-kind" title={it.kind.name}>
+                            <i class={`ph ph-${it.kind.icon}`} aria-hidden="true"></i>
+                            <span class="lg-kind-name">{it.kind.name}</span>
+                          </span>
+                          <a class="lg-text" href={it.url}>
+                            {it.area && <span class="lg-area">{it.area}</span>}
+                            {it.text}
+                            <span data-arr-new-tag hidden></span>
+                          </a>
+                          <span class="lg-meta">
+                            <arrival-avatar name={it.who.name} github={it.who.github ?? undefined} size={18} />
+                            <span>{it.who.name}{it.with.length > 0 && ` ${withWord} ${it.with.join(", ")}`}</span>
+                            <span aria-hidden="true">·</span>
+                            <time datetime={it.ts}>{it.time}</time>
+                            <span aria-hidden="true">·</span>
+                            <code title="The change's id on GitHub">{it.short}</code>
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </section>
+            ))}
+          </details>
+        ))}
+        <p class="lg-empty" data-lg-empty hidden>No changes match. Choose All kinds, every repository, or clear the search.</p>
+      </>
+    ) : (
+      <p class="lg-summary">The ledger couldn't be gathered for this build. It refreshes every day; check back soon.</p>
+    )
+  }
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-ledger]").forEach((root) => {
+    const chips = root.querySelectorAll<HTMLButtonElement>("[data-lg-kind]");
+    const repo = root.querySelector<HTMLSelectElement>("[data-lg-repo]");
+    const q = root.querySelector<HTMLInputElement>("[data-lg-q]");
+    const count = root.querySelector<HTMLElement>("[data-lg-count]");
+    const empty = root.querySelector<HTMLElement>("[data-lg-empty]");
+    const items = root.querySelectorAll<HTMLElement>("[data-lg-item]");
+    if (!repo || !q) return;
+    let kinds = new Set<string>();
+    const apply = () => {
+      const text = q.value.trim().toLowerCase();
+      const words = text.split(/\s+/).filter(Boolean);
+      let shown = 0;
+      items.forEach((li) => {
+        const ok =
+          (!kinds.size || kinds.has(li.dataset.kind ?? "")) &&
+          (repo.value === "all" || li.dataset.repo === repo.value) &&
+          words.every((w) => li.dataset.text?.includes(w));
+        li.hidden = !ok;
+        if (ok) shown++;
+      });
+      root.querySelectorAll<HTMLElement>("[data-lg-group], [data-lg-day]").forEach((box) => {
+        box.hidden = !box.querySelector("[data-lg-item]:not([hidden])");
+      });
+      const filtering = kinds.size > 0 || repo.value !== "all" || words.length > 0;
+      root.querySelectorAll<HTMLDetailsElement>("[data-lg-month]").forEach((m) => {
+        const n = m.querySelectorAll("[data-lg-item]:not([hidden])").length;
+        m.hidden = n === 0;
+        const label = m.querySelector<HTMLElement>("[data-lg-month-n]");
+        if (label) label.textContent = `${n} ${n === 1 ? "change" : "changes"}`;
+        if (filtering && n) m.open = true;
+      });
+      if (count) count.textContent = filtering ? `Showing ${shown} of ${items.length}` : "";
+      if (empty) empty.hidden = shown > 0;
+    };
+    chips.forEach((b) =>
+      b.addEventListener("click", () => {
+        const k = b.dataset.lgKind ?? "all";
+        if (k === "all") kinds = new Set();
+        else if (kinds.has(k)) kinds.delete(k);
+        else kinds.add(k);
+        chips.forEach((c) => {
+          const id = c.dataset.lgKind ?? "all";
+          c.setAttribute("aria-pressed", String(id === "all" ? kinds.size === 0 : kinds.has(id)));
+        });
+        apply();
+      })
+    );
+    repo.addEventListener("change", apply);
+    q.addEventListener("input", apply);
+  });
+</script>
+
+<style>
+  .lg {
+    --lg-gap: 0.9rem;
+  }
+  .lg-summary {
+    max-width: 46rem;
+    margin: 0 0 1.4rem;
+    color: var(--foreground);
+  }
+  .lg-summary strong {
+    color: var(--heading);
+  }
+  .lg-fresh {
+    color: var(--muted);
+  }
+  .lg-filters {
+    display: grid;
+    gap: 0.75rem;
+    margin: 0 0 1.75rem;
+  }
+  .lg-kinds {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .lg-chip {
+    --arr-cut: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 34px;
+    padding: 0.35rem 0.75rem;
+    border: 0;
+    background: var(--surface-muted);
+    color: var(--foreground);
+    font: 600 0.84rem/1.2 var(--font-body);
+    cursor: pointer;
+  }
+  .lg-chip .ph {
+    color: var(--k, var(--accent));
+    font-size: 1rem;
+  }
+  .lg-chip:hover {
+    background: var(--border);
+  }
+  .lg-chip[aria-pressed="true"] {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+  .lg-chip[aria-pressed="true"] .ph {
+    color: var(--on-accent);
+  }
+  .lg-chip:focus-visible,
+  .lg-select select:focus-visible,
+  .lg-search input:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .lg-n {
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    opacity: 0.75;
+  }
+  .lg-row-tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+  .lg-select select,
+  .lg-search input {
+    min-height: 38px;
+    padding: 0.45rem 0.75rem;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--foreground);
+    font: inherit;
+    font-size: 0.92rem;
+  }
+  .lg-search {
+    position: relative;
+    flex: 1 1 16rem;
+    display: flex;
+  }
+  .lg-search .ph {
+    position: absolute;
+    left: 0.7rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+  }
+  .lg-search input {
+    width: 100%;
+    padding-left: 2.1rem;
+  }
+  .lg-count {
+    margin: 0;
+    min-height: 1.2em;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .lg-month {
+    margin: 0 0 1rem;
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .lg-month > summary {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    padding: 0.85rem 1.1rem;
+    cursor: pointer;
+    list-style: none;
+  }
+  .lg-month > summary::-webkit-details-marker {
+    display: none;
+  }
+  .lg-caret {
+    color: var(--accent);
+    transition: transform 0.2s ease;
+  }
+  .lg-month[open] .lg-caret {
+    transform: rotate(90deg);
+  }
+  .lg-month-name {
+    font-family: var(--font-heading);
+    font-variation-settings: var(--heading-settings);
+    font-size: 1.35rem;
+    color: var(--heading);
+  }
+  .lg-month-n {
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+  .lg-day {
+    padding: 0.2rem 1.1rem 0.9rem;
+  }
+  .lg-day + .lg-day {
+    border-top: 1px dashed var(--border);
+    padding-top: 0.9rem;
+  }
+  .lg-day-name {
+    margin: 0 0 0.5rem;
+    font: 700 0.74rem/1.2 var(--font-body);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .lg-group + .lg-group {
+    margin-top: 0.6rem;
+  }
+  .lg-repo {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0 0 0.25rem;
+    font-weight: 600;
+    font-size: 0.92rem;
+    color: var(--heading);
+  }
+  .lg-repo .ph {
+    color: var(--accent);
+  }
+  .lg-items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .lg-item {
+    display: grid;
+    grid-template-columns: 9.5rem minmax(0, 1fr);
+    gap: 0.1rem var(--lg-gap);
+    align-items: baseline;
+    padding: 0.4rem 0;
+  }
+  .lg-item + .lg-item {
+    border-top: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+  }
+  .lg-kind {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    grid-row: span 2;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--muted);
+  }
+  .lg-kind .ph {
+    display: inline-grid;
+    place-items: center;
+    width: 1.55rem;
+    height: 1.55rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--k) 22%, transparent);
+    color: var(--k);
+    font-size: 0.95rem;
+    flex: none;
+  }
+  .lg-text {
+    color: var(--foreground);
+    text-decoration: none;
+    line-height: 1.45;
+  }
+  .lg-text:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+  .lg-text[data-arr-new] {
+    margin-left: -0.5rem;
+    padding-left: 0.5rem;
+  }
+  .lg-area {
+    margin-right: 0.45rem;
+    padding: 0.05rem 0.4rem;
+    border-radius: 4px;
+    background: var(--surface-muted);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--heading);
+    white-space: nowrap;
+  }
+  .lg-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  .lg-meta code {
+    font: 0.76rem/1 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  .lg-empty {
+    color: var(--muted);
+  }
+  [hidden] {
+    display: none !important;
+  }
+  @media (max-width: 640px) {
+    .lg-item {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .lg-kind {
+      grid-row: auto;
+    }
+    .lg-day {
+      padding-left: 0.8rem;
+      padding-right: 0.8rem;
+    }
+  }
+</style>

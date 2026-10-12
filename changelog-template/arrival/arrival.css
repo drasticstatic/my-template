@@ -1,4 +1,4 @@
-/*! Arrival kit v1 · core stylesheet · https://github.com/drasticstatic/my-template (changelog-template/arrival)
+/*! Arrival kit v1.1 · core stylesheet · https://github.com/drasticstatic/my-template (changelog-template/arrival)
  *
  * The same file in every org. It reads only these tokens, which the org's org.css defines per
  * mode on [data-theme="<id>"] selectors (attribute selectors, so a light card can preview a mode by
@@ -143,6 +143,76 @@ html[data-motion="still"] .arr-cursor-btn .ph {
 }
 .arr-switch-cursor {
   margin-top: 0.8rem;
+}
+
+/* reading mode (wave 5): the book button is pressed while the calm preset is in effect */
+.arr-reading-btn[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.arr-reading-btn[aria-pressed="true"] .ph {
+  color: var(--on-accent);
+}
+.arr-switch-label .ph {
+  margin-right: 0.35rem;
+  color: var(--accent);
+  vertical-align: -0.12em;
+}
+.arr-field-reading {
+  margin: 0 0 1rem;
+  padding: 0 0 0.9rem;
+  border-bottom: 1px solid var(--border);
+}
+.arr-field-reading .arr-note {
+  margin-bottom: 0;
+}
+
+/* what's new (wave 5): a quiet count, only on a return visit with something newer */
+.arr-news {
+  gap: 0.3rem;
+  padding: 0 0.6rem;
+  background: color-mix(in srgb, var(--accent) 16%, var(--surface-muted));
+  color: var(--heading);
+}
+.arr-news[hidden] {
+  display: none;
+}
+.arr-news-n {
+  font-variant-numeric: tabular-nums;
+}
+.arr-news .arr-chip-label {
+  font-weight: 500;
+  color: var(--muted);
+}
+:root:not([data-motion="still"]) .arr-news:not([hidden]) .ph {
+  animation: arr-news-glint 2.4s ease-in-out 2;
+}
+@keyframes arr-news-glint {
+  50% {
+    transform: scale(1.18) rotate(12deg);
+  }
+}
+/* A link or row that points at something new since the last visit. Sites can restyle this, or put
+   an empty <span data-arr-new-tag hidden></span> inside a row for a "New" label. */
+[data-arr-new] {
+  box-shadow: inset 3px 0 0 var(--accent);
+  background-image: linear-gradient(90deg, color-mix(in srgb, var(--accent) 11%, transparent), transparent 70%);
+}
+[data-arr-new-tag]:not([hidden]) {
+  --arr-cut: 4px;
+  display: inline-block;
+  margin-left: 0.45rem;
+  padding: 0.12rem 0.42rem;
+  border-radius: 5px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font: 700 0.64rem/1.3 var(--font-body);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  vertical-align: 0.15em;
+}
+.arr-opt-new .arr-opt-meta {
+  color: var(--accent);
 }
 .arr-caret {
   font-size: 0.8rem !important;
@@ -913,6 +983,10 @@ html.arr-locked {
   gap: 0.75rem;
   margin: 0 0 1rem;
 }
+/* changelog + library on top, the ledger across the bottom */
+.arr-three > .arr-box-ledger {
+  grid-column: 1 / -1;
+}
 @media (max-width: 560px) {
   .arr-two {
     grid-template-columns: 1fr;
@@ -1326,8 +1400,25 @@ arrival-avatar:not(:defined) {
     justify-content: center;
   }
 }
+@media (max-width: 720px) {
+  .arr-news .arr-chip-label {
+    display: none;
+  }
+}
 @media (max-width: 520px) {
   .arr-swatches {
+    display: none;
+  }
+}
+/* phones: the cursor and reading switches stay in the drawer; the header keeps search, the count,
+   pause and the drawer */
+@media (max-width: 480px) {
+  .arr-cursor-btn {
+    display: none;
+  }
+}
+@media (max-width: 380px) {
+  .arr-reading-btn {
     display: none;
   }
 }

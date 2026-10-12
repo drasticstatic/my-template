@@ -25,16 +25,30 @@
  *   <arrival-avatar name github email size>   GitHub picture, else Gravatar for an org-domain role
  *                         address only, else the org's initials SVG
  *   <arrival-people>, <arrival-latest limit>  rendered from the search.json people and entries
- *   window.Arrival        { get, set, open, close, index, initials, version }
+ *   window.Arrival        { get, set, open, close, index, initials, reading(on?), news(), version }
  *   <html data-cursor="on|off">: cursor effects (the kit's trail; sites key their own pointer effects
  *                        on it). Off when the visitor turns them off or motion is still.
  *   window "arrival:change" event whenever a choice changes
+ *
+ * Wave 5 (v1.1, 2026-10-12), all additive; an org.js written for v1.0 keeps working unchanged:
+ *   Reading mode          one tap for the calmest page: ARRIVAL.reading.light (or the first mode
+ *                         marked calm: true), still motion, more contrast, cursor effects off. Tap
+ *                         again to restore what the visitor had. Persisted; <html data-reading="on|off">.
+ *                         Any other change while it's on simply leaves reading mode. ARRIVAL.reading
+ *                         = false hides it.
+ *   What's new            on a return visit, a quiet count in the header of entries, write-ups and
+ *                         ledger items newer than the last visit (ARRIVAL.news.sources, e.g. the
+ *                         AstroLog's latest.json; default: the search sources). Matching links on
+ *                         the page get data-arr-new (and fill any [data-arr-new-tag] slot inside).
+ *                         Opening the count, or the new page itself, clears it. First visits show
+ *                         nothing. ARRIVAL.news = false hides it.
+ *   record.ledger         a third box in the guide's "Changelog and library" step.
  */
 (function () {
   "use strict";
   if (window.Arrival) return;
 
-  var VERSION = "1.0.0";
+  var VERSION = "1.1.0";
   var C = window.ARRIVAL || {};
   var doc = document;
   var root = doc.documentElement;
@@ -73,6 +87,16 @@
       cursorNote: "A trail of light behind your pointer, and ink that stirs as you move. Off for anyone who'd rather not.",
       cursorOn: "Turn cursor effects off",
       cursorOff: "Turn cursor effects on",
+      reading: "Reading mode",
+      readingNote: "One tap for the calmest page: the {light} light, nothing moving, more contrast, and no cursor effects. Tap again to go back to how you had it.",
+      readingOn: "Leave reading mode",
+      readingOff: "Reading mode",
+      readEnter: "Just let me read",
+      newSince: "New since your last visit",
+      newBadge: "new",
+      newTag: "New",
+      newsGuide: "Coming back? A small count in the header shows what's new since your last visit, and new things are marked where they appear. Opening it clears it.",
+      ledger: "The ledger",
     },
     C.words || {}
   );
@@ -88,6 +112,8 @@
   var STILL = C.stillMotion || "still";
   var hasContrast = C.contrast !== false;
   var hasCursor = C.cursor !== false; // the cursor-effects switch (trail + anything a site keys on data-cursor)
+  var hasReading = C.reading !== false; // the one-tap reading-mode preset
+  var RD = C.reading && typeof C.reading === "object" ? C.reading : {};
 
   /* ── helpers ───────────────────────────────────────────────────────────────────────────── */
   function assign(t) {
@@ -181,8 +207,31 @@
       motion: prefersLess && byId(MOTIONS, STILL) ? STILL : movingDefault(),
       contrast: hasContrast && prefersMore ? "more" : "standard",
       cursor: prefersLess || !hasCursor ? "off" : "on",
+      reading: "off",
       chosen: false,
     };
+  }
+
+  // Reading mode's light: ARRIVAL.reading.light, else the first mode marked calm: true, else the
+  // first light (not dark, not time-following) mode, else the first mode.
+  function calmLight() {
+    if (RD.light && byId(MODES, RD.light)) return RD.light;
+    var i;
+    for (i = 0; i < MODES.length; i++) if (MODES[i].calm) return MODES[i].id;
+    for (i = 0; i < MODES.length; i++) if (!MODES[i].dark && !MODES[i].follows) return MODES[i].id;
+    return MODES[0].id;
+  }
+  function readingPreset() {
+    return {
+      light: calmLight(),
+      motion: byId(MOTIONS, STILL) ? STILL : MOTIONS[0].id,
+      contrast: hasContrast ? "more" : "standard",
+      cursor: "off",
+    };
+  }
+  function readingMatches(s) {
+    var p = readingPreset();
+    return s.light === p.light && s.motion === p.motion && s.contrast === p.contrast && s.cursor === p.cursor;
   }
   function read() {
     var s = defaults();
@@ -209,6 +258,8 @@
     if (!hasContrast) s.contrast = "standard";
     if (s.cursor !== "off" && s.cursor !== "on") s.cursor = defaults().cursor;
     if (!hasCursor) s.cursor = "off";
+    if (s.reading !== "on" || !hasReading || !readingMatches(s)) s.reading = "off";
+    if (!s.before || typeof s.before !== "object") s.before = null;
     return s;
   }
 
@@ -236,6 +287,7 @@
     // "off" whenever the visitor switched cursor effects off or chose a still page. Sites key their
     // own pointer effects on it (ORG's marbled ink stops stirring).
     attr("data-cursor", state.cursor === "on" && state.motion !== STILL ? "on" : "off");
+    attr("data-reading", state.reading === "on" ? "on" : "off");
     var m = byId(MODES, theme);
     var bg = m && (m.bg || (m.swatch && m.swatch[0]));
     if (bg && doc.head) {
@@ -254,6 +306,12 @@
   function set(patch, tentative) {
     state = assign({}, state, patch || {});
     if (state.motion !== STILL) state.moving = state.motion;
+    // Reading mode is a preset, not a fifth setting: any change that breaks it leaves it, and the
+    // visitor keeps what they just chose (nothing is restored behind their back).
+    if (state.reading === "on" && !readingMatches(state)) {
+      state.reading = "off";
+      state.before = null;
+    }
     if (!tentative) state.chosen = true;
     apply();
     store.set(KEY, JSON.stringify(state));
@@ -261,7 +319,28 @@
     emit("arrival:change", get());
   }
   function get() {
-    return { light: state.light, theme: themeOf(state.light), motion: state.motion, contrast: state.contrast, cursor: state.cursor, chosen: !!state.chosen };
+    return {
+      light: state.light, theme: themeOf(state.light), motion: state.motion, contrast: state.contrast,
+      cursor: state.cursor, reading: state.reading === "on", chosen: !!state.chosen,
+    };
+  }
+  // One tap: save what the visitor has, apply the calmest preset; tap again to restore it.
+  function toggleReading(tentative) {
+    if (!hasReading) return;
+    if (state.reading === "on") {
+      var b = state.before || {};
+      var d = defaults();
+      set({
+        reading: "off",
+        before: null,
+        light: byId(MODES, b.light) ? b.light : d.light,
+        motion: byId(MOTIONS, b.motion) ? b.motion : movingDefault(),
+        contrast: b.contrast === "more" ? "more" : "standard",
+        cursor: b.cursor === "on" ? "on" : "off",
+      }, tentative);
+    } else {
+      set(assign({ reading: "on", before: { light: state.light, motion: state.motion, contrast: state.contrast, cursor: state.cursor } }, readingPreset()), tentative);
+    }
   }
 
   window.addEventListener("storage", function (e) {
@@ -352,6 +431,19 @@
       '<p class="arr-note">' + esc(W.cursorNote) + "</p>"
     );
   }
+  function readingNote() {
+    var m = byId(MODES, calmLight());
+    return W.readingNote.replace("{light}", m ? m.name : "calmest");
+  }
+  function readingSwitch() {
+    if (!hasReading) return "";
+    return (
+      '<label class="arr-switch arr-switch-reading"><input class="arr-sr" type="checkbox" role="switch" data-arr-reading>' +
+      '<span class="arr-switch-track" aria-hidden="true"><span></span></span>' +
+      '<span class="arr-switch-label">' + icon("book-open-text") + esc(W.reading) + "</span></label>" +
+      '<p class="arr-note">' + esc(readingNote()) + "</p>"
+    );
+  }
   function notices() {
     var out = "";
     if (prefersLess) out += '<p class="arr-notice">' + icon("hand-palm") + esc(W.reduced) + "</p>";
@@ -390,6 +482,18 @@
       b.setAttribute("aria-label", label);
       b.setAttribute("title", label + (state.motion === STILL ? " (resting while motion is still)" : ""));
     });
+    var reading = state.reading === "on";
+    all("input[data-arr-reading]", function (i) {
+      i.checked = reading;
+      i.setAttribute("aria-checked", String(reading));
+    });
+    all("[data-arr-reading-toggle]", function (b) {
+      var label = reading ? W.readingOn : W.readingOff;
+      b.setAttribute("aria-pressed", String(reading));
+      b.setAttribute("aria-label", label);
+      b.setAttribute("title", label);
+    });
+    syncNews();
     var still = state.motion === STILL;
     all("[data-arr-motion-toggle]", function (b) {
       var label = still ? W.play : W.pause;
@@ -420,15 +524,19 @@
     }).join("");
     host.innerHTML =
       '<div class="arr-controls">' +
+      // What's new: hidden until a return visit finds something newer than the last one.
+      (hasNews ? '<button type="button" class="arr-chip arr-shape arr-news" data-arr-news hidden>' + icon("sparkle") + '<span class="arr-news-n" data-arr-news-n></span><span class="arr-chip-label">' + esc(W.newBadge) + "</span></button>" : "") +
       '<button type="button" class="arr-chip arr-shape arr-chip-search" data-arrival-open="search" aria-label="' + esc(W.search) + ' (press /)" title="' + esc(W.search) + ' (/)">' +
       icon("magnifying-glass") + '<span class="arr-chip-label">' + esc(W.search) + "</span><kbd>/</kbd></button>" +
       '<span class="arr-swatches" role="group" aria-label="' + esc(W.light) + '">' + swatches + "</span>" +
       '<button type="button" class="arr-chip arr-shape arr-chip-icon" data-arr-motion-toggle></button>' +
       (hasCursor ? '<button type="button" class="arr-chip arr-shape arr-chip-icon arr-cursor-btn" data-arr-cursor-toggle>' + icon("cursor-click") + "</button>" : "") +
+      (hasReading ? '<button type="button" class="arr-chip arr-shape arr-chip-icon arr-reading-btn" data-arr-reading-toggle>' + icon("book-open-text") + "</button>" : "") +
       '<span class="arr-drawer-wrap">' +
       '<button type="button" class="arr-chip arr-shape" data-arr-drawer aria-label="' + esc(W.drawer) + '" aria-expanded="false" aria-controls="arr-drawer-' + n + '">' +
       icon("sliders-horizontal") + '<span class="arr-chip-label">' + esc(W.drawer) + "</span>" + '<i class="ph ph-caret-down arr-caret" aria-hidden="true"></i></button>' +
       '<div class="arr-drawer arr-lift" id="arr-drawer-' + n + '" hidden><div class="arr-frame arr-shape"><div class="arr-in arr-shape">' +
+      (hasReading ? '<div class="arr-field arr-field-reading">' + readingSwitch() + "</div>" : "") +
       '<fieldset class="arr-field"><legend>' + esc(W.light) + '</legend><div class="arr-list">' + lightRadios("arr-dl-" + n, false) + "</div></fieldset>" +
       '<fieldset class="arr-field"><legend>' + esc(W.motion) + '</legend><div class="arr-seg">' + motionRadios("arr-dm-" + n) + "</div>" +
       '<p class="arr-note" data-arr-motion-note></p>' + cursorSwitch() + "</fieldset>" +
@@ -597,6 +705,7 @@
         '<div class="arr-actions">' +
         '<button type="button" class="arr-btn arr-btn-primary arr-shape" data-arr-enter>' + esc(W.enter) + icon("arrow-right") + "</button>" +
         '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-arr-tour>' + icon("compass") + esc(W.tour) + "</button>" +
+        (hasReading ? '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-arr-read-enter title="' + esc(readingNote()) + '">' + icon("book-open-text") + esc(W.readEnter) + "</button>" : "") +
         '<span class="arr-fine">' + esc(W.saved) + "</span></div>"
       );
     }
@@ -646,17 +755,24 @@
         html: function () {
           var ch = rec.changelog || {};
           var li = rec.library || {};
+          var lg = rec.ledger || null;
           return (
             para(rec.intro) +
-            '<div class="arr-two">' +
+            '<div class="arr-two' + (lg ? " arr-three" : "") + '">' +
             '<div class="arr-box arr-shape"><h3>' + icon("clock-counter-clockwise") + esc(ch.name || "The changelog") + "</h3>" +
             para(ch.text || "What changed, when, and who did it. Short dated entries, newest first, each with a one-line summary and the full story folded underneath.") +
             link(ch.href, ch.label || "Read the changelog", "arrow-right") + "</div>" +
             '<div class="arr-box arr-shape"><h3>' + icon("books") + esc(li.name || "The library") + "</h3>" +
             para(li.text || "How things work. Longer write-ups that stay true over time, rather than news of one change.") +
             (li.href ? link(li.href, li.label || "Open the library", "arrow-right") : li.missing ? placeholder(li.missing) : "") + "</div>" +
+            (lg
+              ? '<div class="arr-box arr-shape arr-box-ledger"><h3>' + icon(lg.icon || "scroll") + esc(lg.name || W.ledger) + "</h3>" +
+                para(lg.text || "Every public change to the code, in plain words, grouped by day and by kind, each one linked to the change itself. For anyone who'd rather not open GitHub.") +
+                link(lg.href, lg.label || "Open the ledger", "arrow-right") + "</div>"
+              : "") +
             "</div>" +
-            (rec.share ? '<p class="arr-notice">' + icon("share-network") + "<span>" + rec.share + "</span></p>" : "")
+            (rec.share ? '<p class="arr-notice">' + icon("share-network") + "<span>" + rec.share + "</span></p>" : "") +
+            (hasNews ? '<p class="arr-notice">' + icon("sparkle") + "<span>" + esc(W.newsGuide) + "</span></p>" : "")
           );
         },
       },
@@ -690,12 +806,14 @@
         html: function () {
           return (
             para((G.motion || {}).text) + notices() +
+            (hasReading ? '<div class="arr-field arr-field-reading">' + readingSwitch() + "</div>" : "") +
             '<div class="arr-split">' +
             '<fieldset class="arr-field"><legend>' + esc(W.motion) + '</legend><div class="arr-seg">' + motionRadios("arr-gm") + "</div>" +
             '<p class="arr-note" data-arr-motion-note aria-live="polite"></p>' + cursorSwitch() + "</fieldset>" +
             (hasContrast ? '<fieldset class="arr-field"><legend>' + esc(W.contrast) + "</legend>" + contrastSwitch() + "</fieldset>" : "") +
             "</div>" +
-            '<p class="arr-fine">In the header, the pause button switches motion off and on in one click, and the pointer button does the same for cursor effects.</p>'
+            '<p class="arr-fine">In the header, the pause button switches motion off and on in one click, the pointer button does the same for cursor effects' +
+            (hasReading ? ", and the book button is reading mode" : "") + ".</p>"
           );
         },
       },
@@ -933,6 +1051,12 @@
         run: function () { set({ cursor: state.cursor === "on" ? "off" : "on" }); },
       });
     }
+    if (hasReading) {
+      out.push({
+        t: W.reading + ": " + (state.reading === "on" ? "off, back to how I had it" : "on"), k: "reading", i: "book-open-text",
+        x: "calm read quiet focus still contrast accessibility dyslexia simple plain", run: function () { toggleReading(); },
+      });
+    }
     out.push({ t: W.openGuide, k: "guide", i: "compass", x: "help onboarding tour welcome how", run: function () { openGuide(); } });
     out.push({ t: "Copy a link to this page", k: "action", i: "link", x: "share url card preview telegram", run: copyLink });
     return out;
@@ -1061,9 +1185,9 @@
     if (on && on.scrollIntoView) on.scrollIntoView({ block: "nearest" });
   }
   function option(it, i, q) {
-    var meta = [it.from, it.k].filter(Boolean).join(" · ");
+    var meta = [isFresh(it) ? W.newTag : "", it.from, it.k].filter(Boolean).join(" · ");
     return (
-      '<li role="option" class="arr-opt-row" id="arr-opt-' + i + '" data-i="' + i + '" aria-selected="false">' +
+      '<li role="option" class="arr-opt-row' + (isFresh(it) ? " arr-opt-new" : "") + '" id="arr-opt-' + i + '" data-i="' + i + '" aria-selected="false">' +
       '<span class="arr-opt-icon">' + icon(it.i || (it.run ? "lightning" : "arrow-right")) + "</span>" +
       '<span class="arr-opt-main"><span class="arr-opt-title">' + highlight(it.t, q) + "</span>" +
       (it.s ? '<span class="arr-opt-sub">' + esc(it.s) + "</span>" : "") + "</span>" +
@@ -1078,6 +1202,7 @@
     var html = "";
     if (!norm(q)) {
       var groups = [];
+      if (fresh.length) groups.push([W.newSince + (visit && visit.since ? " · " + fmtTime(visit.since) : ""), fresh.slice(0, 12)]);
       var pinH = {};
       var pinned = content.concat(staticItems()).filter(function (x) {
         if (!x.pin || (x.h && pinH[x.h])) return false;
@@ -1090,7 +1215,7 @@
         .sort(function (a, b) { return String(b.d || "").localeCompare(String(a.d || "")); })
         .slice(0, 5);
       if (latest.length) groups.push(["Latest changes", latest]);
-      groups.push(["Try", actions().filter(function (a) { return a.k === "guide" || a.k === "contrast"; })]);
+      groups.push(["Try", actions().filter(function (a) { return a.k === "guide" || a.k === "contrast" || a.k === "reading"; })]);
       shown = [];
       groups.forEach(function (g) {
         html += '<li role="presentation" class="arr-pal-group">' + esc(g[0]) + "</li>";
@@ -1295,7 +1420,188 @@
           );
         }).join("") +
         "</ul>";
+      markNew(el);
     });
+  }
+
+  /* ── what's new since your last visit ─────────────────────────────────────────────────────
+     A visit is a run of page views with no gap longer than news.gapMinutes (30). The visits record
+     lives under its own key (<storage key>:visits), every access guarded:
+       { since: when the previous visit ended, at: last activity, prev: [keys known at the previous
+         visit], seen: [keys known now], ack: when the count was opened, opened: [new pages visited] }
+     An item is new when its time is after `since` and the previous visit didn't already know it.
+     Items carry `ts` (ISO time, exact: ledger commits) or only `d` (a date, counted as the end of
+     that day; the `prev` list stops a same-day entry the visitor already saw from counting twice).
+     The first visit records the time and shows nothing; the splash covers first visits. */
+  var NEWS_CFG = site.news !== undefined ? site.news : C.news;
+  var hasNews = NEWS_CFG !== false && store.ok && !!window.fetch;
+  var NC = NEWS_CFG && typeof NEWS_CFG === "object" ? NEWS_CFG : {};
+  var VKEY = NC.key || KEY + ":visits";
+  var GAP = (NC.gapMinutes || 30) * 60000;
+  var NEWS_TYPES = NC.types || ["entry", "doc", "ledger"];
+  var DAY = 86400000;
+  var visit = null;
+  var fresh = [];
+  var freshKeys = {};
+  var newsP = null;
+
+  function fmtTime(ms) {
+    try {
+      return new Date(ms).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    } catch (e) {
+      return "";
+    }
+  }
+  function normUrl(h) {
+    if (!h) return "";
+    try {
+      var u = new URL(h, location.href);
+      return (u.origin + u.pathname).replace(/\/+$/, "").toLowerCase();
+    } catch (e) {
+      return String(h).replace(/[#?].*$/, "").replace(/\/+$/, "").toLowerCase();
+    }
+  }
+  function keyOf(it) {
+    return fnv(normUrl(it.h) || String(it.id || it.t || "")).toString(36);
+  }
+  function itemTime(it) {
+    if (it.ts) {
+      var t = Date.parse(it.ts);
+      if (!isNaN(t)) return t;
+    }
+    var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(it.d || "");
+    return m ? new Date(+m[1], +m[2] - 1, +m[3], 23, 59, 59, 999).getTime() : NaN;
+  }
+  function uniqCap(list, n) {
+    var seenK = {};
+    var out = [];
+    for (var i = list.length - 1; i >= 0 && out.length < n; i--) {
+      if (seenK[list[i]]) continue;
+      seenK[list[i]] = 1;
+      out.unshift(list[i]);
+    }
+    return out;
+  }
+  function saveVisit() {
+    if (visit) store.set(VKEY, JSON.stringify(visit));
+  }
+  function startVisit() {
+    if (!hasNews) return;
+    var now = Date.now();
+    var v = null;
+    try {
+      v = JSON.parse(store.get(VKEY) || "null");
+    } catch (e) {}
+    if (!v || typeof v !== "object" || typeof v.at !== "number") {
+      visit = { first: true, since: now, at: now, prev: [], seen: [], ack: 0, opened: [] };
+    } else if (now - v.at > GAP || v.at > now) {
+      visit = { since: Math.min(v.at, now), at: now, prev: uniqCap([].concat(v.prev || [], v.seen || []), 400), seen: [], ack: 0, opened: [] };
+    } else {
+      visit = v;
+      visit.at = now;
+      visit.prev = visit.prev || [];
+      visit.seen = visit.seen || [];
+      visit.opened = visit.opened || [];
+    }
+    saveVisit();
+  }
+  function newsItems() {
+    var list = NC.sources;
+    if (!list || !list.length) return index().then(function (ix) { return ix.items; });
+    return Promise.all(
+      list.map(function (src) {
+        var url = typeof src === "string" ? src : src && src.url;
+        if (!url) return [];
+        return fetch(url, { credentials: "omit" })
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .catch(function () { return null; })
+          .then(function (j) {
+            var items = (j && j.items) || [];
+            return src && src.label ? items.map(function (it) { return assign({}, it, { from: src.label }); }) : items;
+          });
+      })
+    ).then(function (parts) { return [].concat.apply([], parts); });
+  }
+  function loadNews() {
+    if (!hasNews || !visit) return Promise.resolve([]);
+    if (newsP) return newsP;
+    newsP = newsItems().then(function (items) {
+      var now = Date.now();
+      var prev = {};
+      visit.prev.forEach(function (k) { prev[k] = 1; });
+      var dup = {};
+      var out = [];
+      items.forEach(function (it) {
+        if (!it || !it.t || (it.type && NEWS_TYPES.indexOf(it.type) < 0)) return;
+        var t = itemTime(it);
+        if (isNaN(t)) return;
+        var k = keyOf(it);
+        if (dup[k]) return;
+        dup[k] = 1;
+        if (t >= now - 3 * DAY) visit.seen.push(k); // what this visit knows, for the next one
+        if (!visit.first && t > visit.since && !prev[k]) out.push(assign({}, it, { _k: k, _t: t }));
+      });
+      visit.seen = uniqCap(visit.seen, 400);
+      out.sort(function (a, b) { return b._t - a._t; });
+      fresh = out;
+      freshKeys = {};
+      fresh.forEach(function (x) { freshKeys[x._k] = x; });
+      // Opening one of the new pages counts as seeing it.
+      var here = fnv(normUrl(location.href)).toString(36);
+      if (freshKeys[here] && visit.opened.indexOf(here) < 0) visit.opened.push(here);
+      saveVisit();
+      syncNews();
+      markNew();
+      if (fresh.length) emit("arrival:news", { count: unread(), items: fresh.slice(), since: visit.since });
+      return fresh;
+    });
+    return newsP;
+  }
+  function isFresh(it) {
+    return !!(it && fresh.length && freshKeys[it._k || keyOf(it)]);
+  }
+  function unread() {
+    if (!visit || visit.ack) return 0;
+    return fresh.filter(function (x) { return visit.opened.indexOf(x._k) < 0; }).length;
+  }
+  function syncNews() {
+    var n = unread();
+    var list = doc.querySelectorAll("[data-arr-news]");
+    for (var i = 0; i < list.length; i++) {
+      var b = list[i];
+      b.hidden = !n;
+      if (!n) continue;
+      var label = n + " " + W.newSince.charAt(0).toLowerCase() + W.newSince.slice(1) + (visit.since ? " (" + fmtTime(visit.since) + ")" : "");
+      b.setAttribute("aria-label", label);
+      b.setAttribute("title", label);
+      var c = b.querySelector("[data-arr-news-n]");
+      if (c) c.textContent = n > 99 ? "99+" : String(n);
+    }
+  }
+  // Mark links (and [data-arr-key] rows) that point at something new.
+  function markNew(scope) {
+    if (!fresh.length) return;
+    var list = (scope || doc).querySelectorAll("a[href], [data-arr-key]");
+    for (var i = 0; i < list.length; i++) {
+      var el = list[i];
+      if (el.closest(".arr-dialog, arrival-controls, .arr-drawer")) continue;
+      var raw = el.getAttribute("data-arr-key") || el.getAttribute("href");
+      if (!raw || raw.charAt(0) === "#") continue;
+      if (!freshKeys[fnv(normUrl(raw)).toString(36)]) continue;
+      el.setAttribute("data-arr-new", "");
+      var tag = el.querySelector("[data-arr-new-tag]");
+      if (tag && !tag.textContent) {
+        tag.textContent = W.newTag;
+        tag.hidden = false;
+      }
+    }
+  }
+  // The count was opened: it has done its job for this visit (the marks stay until the next one).
+  function ackNews() {
+    if (!visit || visit.ack) return;
+    visit.ack = Date.now();
+    saveVisit();
+    syncNews();
   }
 
   /* ── custom elements (defined here in <head>, so they render as the parser reaches them) ── */
@@ -1451,6 +1757,9 @@
     else if (t.matches("[data-arr-motion]")) set({ motion: t.value }, tentative);
     else if (t.matches("[data-arr-contrast]")) set({ contrast: t.checked ? "more" : "standard" }, tentative);
     else if (t.matches("[data-arr-cursor]")) set({ cursor: t.checked ? "on" : "off" }, tentative);
+    else if (t.matches("[data-arr-reading]")) {
+      if (t.checked !== (state.reading === "on")) toggleReading(tentative);
+    }
   });
   doc.addEventListener("click", function (e) {
     var t = e.target && e.target.closest ? e.target : null;
@@ -1460,6 +1769,15 @@
       set({ light: b.getAttribute("data-arr-swatch") });
     } else if ((b = t.closest("[data-arr-cursor-toggle]"))) {
       set({ cursor: state.cursor === "on" ? "off" : "on" });
+    } else if ((b = t.closest("[data-arr-reading-toggle]"))) {
+      toggleReading();
+    } else if ((b = t.closest("[data-arr-news]"))) {
+      ackNews();
+      closeDrawers(false);
+      open("search");
+    } else if ((b = t.closest("[data-arr-read-enter]"))) {
+      if (state.reading !== "on") toggleReading(true);
+      hide(splashEl);
     } else if ((b = t.closest("[data-arr-motion-toggle]"))) {
       set({ motion: state.motion === STILL ? state.moving || movingDefault() : STILL });
     } else if ((b = t.closest("[data-arr-drawer]"))) {
@@ -1543,11 +1861,14 @@
   }
 
   function boot() {
+    startVisit();
     sync();
     if (location.hash === "#welcome") openGuide();
     else if (splashWanted()) openSplash();
     if (doc.querySelector("arrival-people, arrival-latest")) index();
     else idle(index);
+    if (hasNews && visit && !visit.first) setTimeout(loadNews, 250);
+    else if (hasNews && visit) idle(loadNews); // the first visit only records what it knows
   }
   if (doc.readyState === "loading") doc.addEventListener("DOMContentLoaded", boot);
   else boot();
@@ -1560,6 +1881,13 @@
     close: close,
     index: index,
     initials: initials,
+    reading: function (on) {
+      if (on === undefined || !!on !== (state.reading === "on")) toggleReading();
+      return state.reading === "on";
+    },
+    news: function () {
+      return loadNews().then(function () { return { since: visit && visit.since, count: unread(), items: fresh.slice() }; });
+    },
     config: C,
     site: site,
   };
