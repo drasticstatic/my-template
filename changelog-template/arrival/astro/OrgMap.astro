@@ -1,0 +1,129 @@
+---
+// Draws the map of ORG's sites from its data (ORG_MAP in the ORG AstroLog's src/data/map.ts, or the
+// same data fetched from /changelog-astro-public/map.json). This file is identical in the ORG
+// AstroLog and the drasticstatic ORG lab; the data has one home. `here` marks "You are here".
+import type { OrgMapData } from "../data/map";
+
+interface Props {
+  map: OrgMapData;
+  here?: string;
+}
+const { map, here } = Astro.props;
+const W = map.nodeW;
+---
+
+<svg viewBox={`0 0 ${map.width} ${map.height}`} role="img" aria-labelledby="map-title map-desc" class="org-map">
+  <title id="map-title">{map.title}</title>
+  <desc id="map-desc">{map.desc}</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="arrowhead"></path>
+    </marker>
+    <marker id="arrow-soft" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="arrowhead soft"></path>
+    </marker>
+  </defs>
+
+  {map.columns.map((c) => <text x={c.x} y="92" class="col">{c.label}</text>)}
+
+  {
+    map.edges.map((e) => (
+      <g class={e.soft ? "edge soft" : "edge"}>
+        <path d={e.d} fill="none" marker-end={e.soft ? "url(#arrow-soft)" : "url(#arrow)"} />
+        <text x={e.lx} y={e.ly} text-anchor="middle" class="edge-label">{e.label}</text>
+      </g>
+    ))
+  }
+
+  {
+    map.nodes.map((n) => {
+      const isHere = here && n.self === here;
+      const body = (
+        <g class={["node", n.private && "private", isHere && "here"].filter(Boolean).join(" ")}>
+          <polygon points={n.points} />
+          <text x={n.x + 18} y={n.y + 28} class="name">
+            {n.name}
+            {n.private ? " (private)" : ""}
+          </text>
+          <text x={n.x + 18} y={n.y + 50} class="line">{n.line}</text>
+          {isHere && (
+            <g class="pin">
+              <rect x={n.x + W - 112} y={n.y - 12} width="100" height="24" />
+              <text x={n.x + W - 62} y={n.y + 4.5} text-anchor="middle">You are here</text>
+            </g>
+          )}
+        </g>
+      );
+      return n.href && !isHere ? <a href={n.href}>{body}</a> : body;
+    })
+  }
+</svg>
+
+<style>
+  .org-map {
+    display: block;
+    min-width: 860px;
+    width: 100%;
+    height: auto;
+  }
+  .col {
+    font: 600 15px var(--font-body);
+    fill: var(--muted);
+  }
+  .node polygon {
+    fill: var(--surface-muted);
+    stroke: var(--border);
+    stroke-width: 1.5;
+  }
+  .node.private polygon {
+    stroke-dasharray: 5 4;
+  }
+  .node.here polygon {
+    stroke: var(--accent);
+    stroke-width: 2.5;
+  }
+  a .node:hover polygon,
+  a:focus-visible .node polygon {
+    stroke: var(--accent);
+    stroke-width: 2.5;
+  }
+  .name {
+    font-family: var(--font-heading);
+    font-variation-settings: var(--heading-settings);
+    font-size: 19px;
+    fill: var(--heading);
+  }
+  .line {
+    font: 13.5px var(--font-body);
+    fill: var(--muted);
+  }
+  .pin rect {
+    fill: var(--accent);
+  }
+  .pin text {
+    font: 700 12px var(--font-body);
+    fill: var(--on-accent);
+  }
+  .edge path {
+    stroke: var(--accent);
+    stroke-width: 1.6;
+  }
+  .edge.soft path {
+    stroke: var(--muted);
+    stroke-dasharray: 6 5;
+  }
+  .arrowhead {
+    fill: var(--accent);
+  }
+  .arrowhead.soft {
+    fill: var(--muted);
+  }
+  .edge-label {
+    font: 12.5px var(--font-body);
+    fill: var(--muted);
+    paint-order: stroke;
+    stroke: var(--surface);
+    stroke-width: 6px;
+    stroke-linejoin: round;
+  }
+</style>

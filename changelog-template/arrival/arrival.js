@@ -21,10 +21,13 @@
  *                         [data-arrival-open="guide"] element.
  *   "/" or Ctrl/⌘ K       quick search over ARRIVAL.search.sources (search.json files) plus links
  *                         and actions. [data-arrival-open="search"] opens it too.
+ *   [data-arrival-open="copy"]  copies the page's link and says it shares with its own card.
  *   <arrival-avatar name github email size>   GitHub picture, else Gravatar for an org-domain role
  *                         address only, else the org's initials SVG
  *   <arrival-people>, <arrival-latest limit>  rendered from the search.json people and entries
  *   window.Arrival        { get, set, open, close, index, initials, version }
+ *   <html data-cursor="on|off">: cursor effects (the kit's trail; sites key their own pointer effects
+ *                        on it). Off when the visitor turns them off or motion is still.
  *   window "arrival:change" event whenever a choice changes
  */
 (function () {
@@ -65,6 +68,11 @@
       moreAsked: "Your device asks for more contrast, so it's switched on.",
       nothing: "Nothing matches yet. Try a month, a name, or the word light.",
       followNow: "Right now",
+      copied: "Link copied. It shares with its own preview card.",
+      cursor: "Cursor effects",
+      cursorNote: "A trail of light behind your pointer, and ink that stirs as you move. Off for anyone who'd rather not.",
+      cursorOn: "Turn cursor effects off",
+      cursorOff: "Turn cursor effects on",
     },
     C.words || {}
   );
@@ -79,6 +87,7 @@
   ];
   var STILL = C.stillMotion || "still";
   var hasContrast = C.contrast !== false;
+  var hasCursor = C.cursor !== false; // the cursor-effects switch (trail + anything a site keys on data-cursor)
 
   /* ── helpers ───────────────────────────────────────────────────────────────────────────── */
   function assign(t) {
@@ -171,6 +180,7 @@
       light: byId(MODES, C.defaultMode) ? C.defaultMode : MODES[0].id,
       motion: prefersLess && byId(MOTIONS, STILL) ? STILL : movingDefault(),
       contrast: hasContrast && prefersMore ? "more" : "standard",
+      cursor: prefersLess || !hasCursor ? "off" : "on",
       chosen: false,
     };
   }
@@ -197,6 +207,8 @@
     if (!byId(MOTIONS, s.motion)) s.motion = defaults().motion;
     if (s.contrast !== "more") s.contrast = "standard";
     if (!hasContrast) s.contrast = "standard";
+    if (s.cursor !== "off" && s.cursor !== "on") s.cursor = defaults().cursor;
+    if (!hasCursor) s.cursor = "off";
     return s;
   }
 
@@ -221,6 +233,9 @@
     attr("data-theme", theme);
     attr("data-motion", state.motion);
     attr("data-contrast", state.contrast);
+    // "off" whenever the visitor switched cursor effects off or chose a still page. Sites key their
+    // own pointer effects on it (ORG's marbled ink stops stirring).
+    attr("data-cursor", state.cursor === "on" && state.motion !== STILL ? "on" : "off");
     var m = byId(MODES, theme);
     var bg = m && (m.bg || (m.swatch && m.swatch[0]));
     if (bg && doc.head) {
@@ -246,7 +261,7 @@
     emit("arrival:change", get());
   }
   function get() {
-    return { light: state.light, theme: themeOf(state.light), motion: state.motion, contrast: state.contrast, chosen: !!state.chosen };
+    return { light: state.light, theme: themeOf(state.light), motion: state.motion, contrast: state.contrast, cursor: state.cursor, chosen: !!state.chosen };
   }
 
   window.addEventListener("storage", function (e) {
@@ -328,6 +343,15 @@
       '<p class="arr-note">' + esc(W.contrastNote) + "</p>"
     );
   }
+  function cursorSwitch() {
+    if (!hasCursor) return "";
+    return (
+      '<label class="arr-switch arr-switch-cursor"><input class="arr-sr" type="checkbox" role="switch" data-arr-cursor>' +
+      '<span class="arr-switch-track" aria-hidden="true"><span></span></span>' +
+      '<span class="arr-switch-label">' + esc(W.cursor) + "</span></label>" +
+      '<p class="arr-note">' + esc(W.cursorNote) + "</p>"
+    );
+  }
   function notices() {
     var out = "";
     if (prefersLess) out += '<p class="arr-notice">' + icon("hand-palm") + esc(W.reduced) + "</p>";
@@ -354,6 +378,17 @@
     all("input[data-arr-contrast]", function (i) {
       i.checked = state.contrast === "more";
       i.setAttribute("aria-checked", String(i.checked));
+    });
+    all("input[data-arr-cursor]", function (i) {
+      i.checked = state.cursor === "on";
+      i.setAttribute("aria-checked", String(i.checked));
+    });
+    all("[data-arr-cursor-toggle]", function (b) {
+      var on = state.cursor === "on";
+      var label = on ? W.cursorOn : W.cursorOff;
+      b.setAttribute("aria-pressed", String(on));
+      b.setAttribute("aria-label", label);
+      b.setAttribute("title", label + (state.motion === STILL ? " (resting while motion is still)" : ""));
     });
     var still = state.motion === STILL;
     all("[data-arr-motion-toggle]", function (b) {
@@ -389,13 +424,14 @@
       icon("magnifying-glass") + '<span class="arr-chip-label">' + esc(W.search) + "</span><kbd>/</kbd></button>" +
       '<span class="arr-swatches" role="group" aria-label="' + esc(W.light) + '">' + swatches + "</span>" +
       '<button type="button" class="arr-chip arr-shape arr-chip-icon" data-arr-motion-toggle></button>' +
+      (hasCursor ? '<button type="button" class="arr-chip arr-shape arr-chip-icon arr-cursor-btn" data-arr-cursor-toggle>' + icon("cursor-click") + "</button>" : "") +
       '<span class="arr-drawer-wrap">' +
       '<button type="button" class="arr-chip arr-shape" data-arr-drawer aria-label="' + esc(W.drawer) + '" aria-expanded="false" aria-controls="arr-drawer-' + n + '">' +
       icon("sliders-horizontal") + '<span class="arr-chip-label">' + esc(W.drawer) + "</span>" + '<i class="ph ph-caret-down arr-caret" aria-hidden="true"></i></button>' +
       '<div class="arr-drawer arr-lift" id="arr-drawer-' + n + '" hidden><div class="arr-frame arr-shape"><div class="arr-in arr-shape">' +
       '<fieldset class="arr-field"><legend>' + esc(W.light) + '</legend><div class="arr-list">' + lightRadios("arr-dl-" + n, false) + "</div></fieldset>" +
       '<fieldset class="arr-field"><legend>' + esc(W.motion) + '</legend><div class="arr-seg">' + motionRadios("arr-dm-" + n) + "</div>" +
-      '<p class="arr-note" data-arr-motion-note></p></fieldset>' +
+      '<p class="arr-note" data-arr-motion-note></p>' + cursorSwitch() + "</fieldset>" +
       (hasContrast ? '<fieldset class="arr-field"><legend>' + esc(W.contrast) + "</legend>" + contrastSwitch() + "</fieldset>" : "") +
       '<div class="arr-rule" role="presentation"></div>' +
       '<a class="arr-link" href="#welcome" data-arrival-open="guide">' + icon("compass") + "<span>" + esc(W.openGuide) + "</span><kbd>?</kbd></a>" +
@@ -553,7 +589,7 @@
         '<fieldset class="arr-field"><legend>' + esc(W.light) + '</legend><div class="arr-cards">' + lightCards("arr-sl") + "</div></fieldset>" +
         '<div class="arr-split">' +
         '<fieldset class="arr-field"><legend>' + esc(W.motion) + '</legend><div class="arr-seg">' + motionRadios("arr-sm") + "</div>" +
-        '<p class="arr-note" data-arr-motion-note aria-live="polite"></p></fieldset>' +
+        '<p class="arr-note" data-arr-motion-note aria-live="polite"></p>' + cursorSwitch() + "</fieldset>" +
         (hasContrast ? '<fieldset class="arr-field"><legend>' + esc(W.contrast) + "</legend>" + contrastSwitch() + "</fieldset>" : "") +
         "</div>" +
         '<div class="arr-tip arr-shape"><kbd class="arr-kbd-big arr-shape">/</kbd><p><strong>Press / to search.</strong> ' + esc(W.searchTip) +
@@ -619,7 +655,8 @@
             '<div class="arr-box arr-shape"><h3>' + icon("books") + esc(li.name || "The library") + "</h3>" +
             para(li.text || "How things work. Longer write-ups that stay true over time, rather than news of one change.") +
             (li.href ? link(li.href, li.label || "Open the library", "arrow-right") : li.missing ? placeholder(li.missing) : "") + "</div>" +
-            "</div>"
+            "</div>" +
+            (rec.share ? '<p class="arr-notice">' + icon("share-network") + "<span>" + rec.share + "</span></p>" : "")
           );
         },
       },
@@ -655,10 +692,10 @@
             para((G.motion || {}).text) + notices() +
             '<div class="arr-split">' +
             '<fieldset class="arr-field"><legend>' + esc(W.motion) + '</legend><div class="arr-seg">' + motionRadios("arr-gm") + "</div>" +
-            '<p class="arr-note" data-arr-motion-note aria-live="polite"></p></fieldset>' +
+            '<p class="arr-note" data-arr-motion-note aria-live="polite"></p>' + cursorSwitch() + "</fieldset>" +
             (hasContrast ? '<fieldset class="arr-field"><legend>' + esc(W.contrast) + "</legend>" + contrastSwitch() + "</fieldset>" : "") +
             "</div>" +
-            '<p class="arr-fine">The pause button in the header switches motion off and on in one click.</p>'
+            '<p class="arr-fine">In the header, the pause button switches motion off and on in one click, and the pointer button does the same for cursor effects.</p>'
           );
         },
       },
@@ -890,8 +927,14 @@
         run: function () { set({ contrast: state.contrast === "more" ? "standard" : "more" }); },
       });
     }
+    if (hasCursor) {
+      out.push({
+        t: W.cursor + ": on or off", k: "cursor", i: "cursor-click", x: "trail pointer mouse sparkle effects",
+        run: function () { set({ cursor: state.cursor === "on" ? "off" : "on" }); },
+      });
+    }
     out.push({ t: W.openGuide, k: "guide", i: "compass", x: "help onboarding tour welcome how", run: function () { openGuide(); } });
-    out.push({ t: "Copy a link to this page", k: "action", i: "link", x: "share url", run: copyLink });
+    out.push({ t: "Copy a link to this page", k: "action", i: "link", x: "share url card preview telegram", run: copyLink });
     return out;
   }
   function staticItems() {
@@ -1091,7 +1134,7 @@
   }
   function copyLink() {
     var url = location.href.replace(/#welcome$/, "");
-    var done = function () { toast("Link copied"); };
+    var done = function () { toast(W.copied); };
     try {
       navigator.clipboard.writeText(url).then(done, function () { toast(url); });
     } catch (e) {
@@ -1274,19 +1317,32 @@
   define("arrival-people", renderPeople);
   define("arrival-latest", renderLatest);
 
-  /* ── "vivid" motion: an optional cursor trail (motion { trail: true | { colors: [...] } }) ─ */
+  /* ── cursor effects: a trail behind the pointer, per motion level ────────────────────────
+     motions[i].trail = true | { colors: [...], life: ms, width: px, alpha: 0..1, sparks: 0..1,
+     sides: n }. No colors = a prism-hue sweep; sparks = the chance per move of shedding a small
+     spinning n-sided spark. Runs only with cursor effects on, a moving motion and a fine pointer. */
   var stopTrail = null;
+  var trailKey = "";
   function syncTrail() {
     var m = byId(MOTIONS, state.motion);
-    var want = !!(m && m.trail) && !media("(pointer: coarse)") && !!doc.body;
-    if (want && !stopTrail) stopTrail = startTrail(m.trail);
-    else if (!want && stopTrail) {
+    var opt = m && m.trail;
+    var want = !!opt && state.cursor === "on" && state.motion !== STILL && !media("(pointer: coarse)") && !!doc.body;
+    var key = want ? state.motion : "";
+    if (key === trailKey) return;
+    if (stopTrail) {
       stopTrail();
       stopTrail = null;
     }
+    trailKey = key;
+    if (want) stopTrail = startTrail(opt === true ? {} : opt);
   }
-  function startTrail(opt) {
-    var colors = opt && opt.colors;
+  function startTrail(o) {
+    var colors = o.colors && o.colors.length ? o.colors : null;
+    var LIFE = o.life || 520;
+    var WIDTH = o.width || 3.2;
+    var ALPHA = o.alpha == null ? 0.8 : o.alpha;
+    var SPARKS = o.sparks || 0;
+    var SIDES = o.sides || 0;
     var canvas = doc.createElement("canvas");
     canvas.className = "arr-trail";
     canvas.setAttribute("aria-hidden", "true");
@@ -1295,44 +1351,81 @@
     if (!ctx) return function () { canvas.remove(); };
     var dpr = Math.min(2, window.devicePixelRatio || 1);
     var pts = [];
+    var dust = [];
     var raf = 0;
+    var n = 0;
     var size = function () {
       canvas.width = innerWidth * dpr;
       canvas.height = innerHeight * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
+    var poly = function (x, y, r, rot, sides) {
+      ctx.beginPath();
+      for (var k = 0; k < sides; k++) {
+        var a = rot + (k * Math.PI * 2) / sides;
+        if (k) ctx.lineTo(x + r * Math.cos(a), y + r * Math.sin(a));
+        else ctx.moveTo(x + r * Math.cos(a), y + r * Math.sin(a));
+      }
+      ctx.closePath();
+    };
     var frame = function () {
       raf = 0;
       var now = performance.now();
-      while (pts.length && now - pts[0].t > 520) pts.shift();
+      while (pts.length && now - pts[0].t > LIFE) pts.shift();
+      dust = dust.filter(function (d) { return now - d.t < d.life; });
       var mode = byId(MODES, themeOf(state.light));
       var dark = !!(mode && mode.dark);
+      var a = dark ? ALPHA : ALPHA * 0.72;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.globalCompositeOperation = dark ? "lighter" : "source-over";
       ctx.lineCap = "round";
       for (var i = 1; i < pts.length; i++) {
-        var life = 1 - (now - pts[i].t) / 520;
-        if (colors && colors.length) {
-          ctx.globalAlpha = life * (dark ? 0.85 : 0.6);
-          ctx.strokeStyle = colors[i % colors.length];
-        } else {
-          ctx.globalAlpha = 1;
-          var hue = (pts[i].t / 6 + i * 9) % 360;
-          ctx.strokeStyle = "hsla(" + hue + "," + (dark ? 90 : 75) + "%," + (dark ? 68 : 52) + "%," + life * (dark ? 0.8 : 0.55) + ")";
-        }
-        ctx.lineWidth = 0.6 + life * 3.2;
+        var life = 1 - (now - pts[i].t) / LIFE;
+        ctx.globalAlpha = Math.max(0, life * a);
+        ctx.strokeStyle = colors
+          ? colors[pts[i].c % colors.length]
+          : "hsl(" + ((pts[i].t / 6 + i * 9) % 360) + "," + (dark ? 90 : 75) + "%," + (dark ? 68 : 52) + "%)";
+        ctx.lineWidth = 0.5 + life * WIDTH;
         ctx.beginPath();
         ctx.moveTo(pts[i - 1].x, pts[i - 1].y);
         ctx.lineTo(pts[i].x, pts[i].y);
         ctx.stroke();
       }
+      dust.forEach(function (d) {
+        var age = (now - d.t) / d.life;
+        d.vx *= 0.96;
+        d.vy = d.vy * 0.96 + 0.025;
+        d.x += d.vx;
+        d.y += d.vy;
+        d.rot += d.spin;
+        ctx.globalAlpha = Math.max(0, (1 - age) * a);
+        ctx.fillStyle = d.color;
+        if (d.sides >= 3) poly(d.x, d.y, d.r * (1 - age * 0.4), d.rot, d.sides);
+        else {
+          ctx.beginPath();
+          ctx.arc(d.x, d.y, d.r * (1 - age * 0.4), 0, Math.PI * 2);
+        }
+        ctx.fill();
+      });
       ctx.globalAlpha = 1;
-      if (pts.length) raf = requestAnimationFrame(frame);
+      if (pts.length || dust.length) raf = requestAnimationFrame(frame);
     };
     var moveFn = function (e) {
       if (e.pointerType === "touch") return;
-      pts.push({ x: e.clientX, y: e.clientY, t: performance.now() });
-      if (pts.length > 48) pts.shift();
+      var t = performance.now();
+      n++;
+      pts.push({ x: e.clientX, y: e.clientY, t: t, c: Math.floor(n / 3) });
+      if (pts.length > 64) pts.shift();
+      if (SPARKS && Math.random() < SPARKS && dust.length < 60) {
+        var ang = Math.random() * Math.PI * 2;
+        var sp = 0.4 + Math.random() * 1.4;
+        dust.push({
+          x: e.clientX, y: e.clientY, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp - 0.4,
+          r: 1.6 + Math.random() * 2.6, rot: Math.random() * 6, spin: (Math.random() - 0.5) * 0.18,
+          sides: SIDES, t: t, life: 600 + Math.random() * 500,
+          color: colors ? colors[Math.floor(Math.random() * colors.length)] : "hsl(" + Math.floor(Math.random() * 360) + ",90%,70%)",
+        });
+      }
       if (!raf) raf = requestAnimationFrame(frame);
     };
     size();
@@ -1357,6 +1450,7 @@
     if (t.matches("[data-arr-light]")) set({ light: t.value }, tentative);
     else if (t.matches("[data-arr-motion]")) set({ motion: t.value }, tentative);
     else if (t.matches("[data-arr-contrast]")) set({ contrast: t.checked ? "more" : "standard" }, tentative);
+    else if (t.matches("[data-arr-cursor]")) set({ cursor: t.checked ? "on" : "off" }, tentative);
   });
   doc.addEventListener("click", function (e) {
     var t = e.target && e.target.closest ? e.target : null;
@@ -1364,6 +1458,8 @@
     var b;
     if ((b = t.closest("[data-arr-swatch]"))) {
       set({ light: b.getAttribute("data-arr-swatch") });
+    } else if ((b = t.closest("[data-arr-cursor-toggle]"))) {
+      set({ cursor: state.cursor === "on" ? "off" : "on" });
     } else if ((b = t.closest("[data-arr-motion-toggle]"))) {
       set({ motion: state.motion === STILL ? state.moving || movingDefault() : STILL });
     } else if ((b = t.closest("[data-arr-drawer]"))) {
@@ -1440,6 +1536,7 @@
     if (what === "search") openPalette();
     else if (what === "guide") openGuide(at || undefined);
     else if (what === "splash") openSplash();
+    else if (what === "copy") copyLink();
   }
   function close() {
     stack.slice().forEach(function (d) { hide(d); });

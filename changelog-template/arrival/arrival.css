@@ -122,6 +122,28 @@ arrival-controls {
 .arr-chip[aria-expanded="true"] .ph {
   color: var(--on-accent);
 }
+/* the cursor-effects toggle: a strike through the pointer when they're off (or resting on Still) */
+.arr-cursor-btn {
+  position: relative;
+}
+.arr-cursor-btn[aria-pressed="false"] .ph,
+html[data-motion="still"] .arr-cursor-btn .ph {
+  opacity: 0.5;
+}
+.arr-cursor-btn[aria-pressed="false"]::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: calc(50% - 1px);
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+  transform: rotate(-45deg);
+}
+.arr-switch-cursor {
+  margin-top: 0.8rem;
+}
 .arr-caret {
   font-size: 0.8rem !important;
   transition: transform 0.2s ease;

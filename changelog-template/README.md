@@ -371,7 +371,8 @@ org's fonts and Phosphor icons (`@phosphor-icons/web@2.1.1` regular).
    Remove the site's own theme tokens and toggle script; keep site layout CSS.
 6. **Portal:** swap inline tokens for the kit files, add `<arrival-latest>` and `<arrival-people>`,
    and kit includes + a search button on `404.html` (links stay absolute).
-7. **Verify** with `arrival/verify.example.mjs` (Playwright + local Chrome, fresh contexts): it runs
+7. **Social cards and the map:** follow "Social cards" and "One map, two sites" below.
+8. **Verify** with `arrival/verify.example.mjs` (and `verify-lab.example.mjs` for a cross-origin site) (Playwright + local Chrome, fresh contexts): it runs
    against the production URLs, optionally intercepted to the local repos before deploying
    (`--local`), and checks the splash on a genuine first visit and not the second, the focus trap,
    reduced motion, mode persistence portal ↔ AstroLog, `/` search across sites, every page type, and
@@ -387,6 +388,64 @@ org's fonts and Phosphor icons (`@phosphor-icons/web@2.1.1` regular).
   "people": [{ "name": "…", "role": "…", "github": "handle", "count": 5 }] }
 ```
 
+### Cursor effects (added 2026-10-12 at Christopher's request)
+
+- A persisted `cursor` choice (`on`/`off`) beside light, motion and contrast: a pointer toggle in
+  the minimal control (strike-through when off), a switch in the drawer, the splash and the guide's
+  motion step, and a "/" action. Default off when the OS asks for reduced motion; always resting on
+  the still motion. Set `ARRIVAL.cursor = false` to hide it.
+- The kit sets `<html data-cursor="on|off">`. Site pointer effects must honor it: ORG's marbled ink
+  returns early from its `pointermove` handler when `dataset.cursor === "off"` (three copies: the
+  portal's `marble.js`, the AstroLog's and the lab's `marble.ts`).
+- The trail is per motion: `motions[i].trail = { colors, life, width, alpha, sparks, sides }`.
+  ORG's: a faint trail through the octagon's eight wedge colors on gentle; a brighter one on vivid
+  that scatters little spinning octagons (`sides: 8`). `trail: true` gives the prism-hue sweep the
+  O-R-G dApp uses.
+
+### Social cards: one designed preview per entry (static, build time)
+
+Files in [`arrival/og/`](arrival/og/): `og-card.mjs` (the generator, identical everywhere),
+`theme.example.mjs` (ORG's night palette and fonts; write one per org), `cards.example.ts` (where
+each card lives and what it says), `map-svg.mjs` (a miniature diagram for the map card), and endpoint
+examples in [`arrival/astro/og-endpoints/`](arrival/astro/og-endpoints/).
+
+- **How:** Satori lays out the card and turns text into paths (SVG), and sharp writes a 1200×630
+  JPEG (60–85 KB). Astro static endpoints (`src/pages/og/changelog/[repo]/[slug].jpg.ts`,
+  `og/library/[slug].jpg.ts`, `og/map.jpg.ts`) emit plain files into `dist/og/`; nothing runs at
+  request time. Add `satori` and `sharp` to `package.json` explicitly (sharp already comes with
+  Astro and Next).
+- **Fonts:** Satori needs TTF/OTF/WOFF, not WOFF2. Fetch static instances once and commit them to
+  `astro/src/og/fonts/` (all fleet fonts are OFL):
+  `curl -A "Mozilla/4.0" "https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600&family=Manrope:wght@500;700"`
+  prints TTF URLs.
+- **Bundling gotcha:** Astro bundles the endpoint, so `import.meta.url` no longer points at
+  `src/og/`. Resolve fonts from the project: `pathToFileURL(path.resolve("src/og") + "/")`.
+- **Brand gotcha:** never crop an org's mark into another shape for a card. The generator shows
+  `art` whole on a mat (ORG's octagon art), and its own glyph is a wayfinding device, not a logo.
+- **Pages:** `Base.astro` takes `ogImage`, `ogAlt`, `ogType`; entries and articles pass their card
+  (`ogType="article"`). Every page emits `og:site_name`, `og:type`, `og:url`, `og:title`,
+  `og:description`, `og:image` (absolute) + `og:image:type/width/height/alt`, the matching
+  `twitter:*` tags (`summary_large_image`), and a canonical link.
+- **Make it discoverable:** a "Copy a link" button under each entry
+  (`data-arrival-open="copy"`, which toasts that the link shares with its own card), the guide's
+  `record.share` line in `org.js`, and a changelog entry saying so.
+- **Telegram caches previews.** After adding or changing tags, send each URL to
+  [@WebpageBot](https://t.me/WebpageBot) to refresh it.
+- A lab-style site whose entries live in one timeline should give each entry its own page first
+  (the O-R-G lab: `/changelog/<id>/`), so there is something specific to share.
+
+### One map, two sites (canonical publisher → build-time consumer)
+
+When two sites show the same diagram, keep one copy of the data. ORG's AstroLog owns the map
+(`src/data/map.ts`, see [`arrival/astro/map.canonical.example.ts`](arrival/astro/map.canonical.example.ts)),
+resolved to geometry, drawn by `OrgMap.astro` and published as `/map.json`. The lab
+([`map.consumer.example.ts`](arrival/astro/map.consumer.example.ts)) fetches that file at build time
+with a 10-second timeout, falls back to a committed `map.snapshot.json` (refresh with
+`npm run map:snapshot`), and draws it with the same `OrgMap.astro`. Each node can carry `self`, and
+each site passes `here` to mark "You are here". The direction runs from the official org record to
+the personal lab, never the other way. The consumer picks up a change on its next build; trigger
+one by hand, or add a schedule if the two drift for too long.
+
 ### Gotchas found building it
 
 - **Astro drops the space between a line break and a following tag**: `New here?⏎<a>` renders
@@ -398,6 +457,9 @@ org's fonts and Phosphor icons (`@phosphor-icons/web@2.1.1` regular).
 - Headers get crowded: hide the drawer's text label at a site breakpoint with
   `[data-arr-drawer] .arr-chip-label { display: none }` (the button keeps an `aria-label`), and on phones
   put the tools beside the brand and the nav in one swipeable row.
+- A Playwright `context.route("…/changelog-astro-public**", …)` glob silently missed `…/map` and
+  fetched the live page; match with a predicate (`(u) => u.href.startsWith(…)`) in verification
+  helpers.
 - The kit's storage key can be shared deliberately: ORG uses the O-R-G dApp's `org-experience`
   key and shape, so on `drasticstatic.github.io` the lab and the dApp preview share choices.
 

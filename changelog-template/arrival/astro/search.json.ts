@@ -4,7 +4,7 @@
 // URLs are absolute for that reason. Shape: { updated, items: [{ t, k, h, i, d?, s?, x?, who?, type }],
 // people: [{ name, role, github?, count }] } — documented in my-template/changelog-template/README.md.
 import { getCollection } from "astro:content";
-import { AREAS, PEOPLE, SITE, WEIGHT, areaBySlug, entrySlug, madeBy } from "../data/areas";
+import { AREAS, PEOPLE, SITE, WEIGHT, areaBySlug, entrySlug, madeBy, tldrOf } from "../data/areas";
 
 const plain = (md = "") =>
   md
@@ -14,8 +14,6 @@ const plain = (md = "") =>
     .replace(/[#>*_`|~-]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
-
-const tldrOf = (body = "") => body.match(/<strong>TL;DR:<\/strong>\s*([^<]+)/)?.[1]?.trim() ?? "";
 
 export async function GET() {
   const base = import.meta.env.BASE_URL;

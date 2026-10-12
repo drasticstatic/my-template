@@ -9,6 +9,8 @@
   var LOG = ROOT + "/changelog-astro-public";
   var SITE = "https://orgspirituality.org";
   var TELEGRAM = "https://t.me/+ccL8NUffhuU0ZGJh"; // the group chat orgspirituality.org/community links to
+  // The octagon mark's eight wedge colors, clockwise from the top edge.
+  var WEDGES = ["#5a43f0", "#9a4dff", "#d04ce8", "#e65aa8", "#f29a3a", "#e4d548", "#6fd84a", "#3ccfe0"];
 
   window.ARRIVAL = {
     org: {
@@ -52,17 +54,32 @@
     ],
     defaultMode: "night",
 
+    // ORG's motion styles. The cursor trail runs through the octagon's eight colors: faint on Gentle,
+    // brighter on Vivid, where it also scatters little octagons. Cursor effects can be switched off
+    // on their own, and they rest whenever motion is Still.
     motions: [
       { id: "still", name: "Still", icon: "pause", note: "Nothing moves unless you touch it." },
-      { id: "gentle", name: "Gentle", icon: "wind", note: "The ink drifts slowly, and your pointer stirs it." },
-      { id: "vivid", name: "Vivid", icon: "sparkle", note: "Faster ink, and a trail of prism light behind your pointer.", trail: true },
+      {
+        id: "gentle",
+        name: "Gentle",
+        icon: "wind",
+        note: "The ink drifts slowly, and your pointer stirs it and leaves a faint trail of the octagon's colors.",
+        trail: { colors: WEDGES, life: 440, width: 2.2, alpha: 0.5 },
+      },
+      {
+        id: "vivid",
+        name: "Vivid",
+        icon: "sparkle",
+        note: "Faster ink, a brighter trail, and little octagons scattering behind your pointer.",
+        trail: { colors: WEDGES, life: 680, width: 3.6, alpha: 0.85, sparks: 0.45, sides: 8 },
+      },
     ],
     defaultMotion: "gentle",
     stillMotion: "still",
 
     // The octagon mark's eight wedge colors, clockwise from the top edge. They color the guide's
     // progress octagon (eight steps, eight wedges) and the initials avatars.
-    wedges: ["#5a43f0", "#9a4dff", "#d04ce8", "#e65aa8", "#f29a3a", "#e4d548", "#6fd84a", "#3ccfe0"],
+    wedges: WEDGES,
 
     // Gravatar is used only for addresses at these domains. ORG hasn't published an org-domain role
     // address yet (placeholder), so for now everyone shows a GitHub picture or their initials.
@@ -81,6 +98,8 @@
 
     record: {
       intro: "ORG's AstroLog has two halves.",
+      share:
+        "Sharing one change? Every entry and every write-up has its own preview card. Paste its link into Telegram, iMessage or Discord and it arrives with its title, summary and who made it. The <strong>Copy a link</strong> button under each one does the copying.",
       changelog: {
         name: "The changelog",
         text: "Every notable change to ORG's websites, newest first. Each entry is a short summary with the full story underneath, filed under one of four areas: the live site, the API, ORG on GitHub, and previews and proposals.",
@@ -122,6 +141,7 @@
 
     words: {
       enter: "Enter ORG",
+      cursorNote: "A trail of the octagon's colors behind your pointer, and ink that stirs as you move. Switch it off if you'd rather not.",
       pause: "Pause the ink",
       play: "Let the ink move",
       searchTip: "Anywhere on ORG's pages, any time: every change, write-up, person and page, including the AstroLog from the entry portal.",

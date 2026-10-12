@@ -89,6 +89,29 @@ const theme = (p) => p.evaluate(() => document.documentElement.dataset.theme);
   await page.goto(ORIGIN + "/", { waitUntil: "networkidle" });
   ok("portal: light chosen on AstroLog carries back (stone)", (await theme(page)) === "stone");
 
+  // 2b. Cursor effects: on by default, a trail follows the pointer, the toggle turns them off and persists
+  ok("cursor effects on by default", (await page.evaluate(() => document.documentElement.dataset.cursor)) === "on");
+  await page.mouse.move(300, 300);
+  await page.mouse.move(420, 380, { steps: 12 });
+  ok("ORG cursor trail appears on Gentle", await page.evaluate(() => !!document.querySelector("canvas.arr-trail")));
+  ok("minimal control has a cursor toggle", await page.evaluate(() => !!document.querySelector("arrival-controls [data-arr-cursor-toggle]")));
+  await page.click("arrival-controls [data-arr-cursor-toggle]");
+  ok("toggle turns cursor effects off", (await page.evaluate(() => document.documentElement.dataset.cursor)) === "off" && !(await page.evaluate(() => !!document.querySelector("canvas.arr-trail"))));
+  await page.reload({ waitUntil: "networkidle" });
+  ok("cursor choice persists", (await page.evaluate(() => JSON.parse(localStorage.getItem("org-experience")).cursor)) === "off" && (await page.evaluate(() => document.documentElement.dataset.cursor)) === "off");
+  await page.click("[data-arr-drawer]");
+  ok("drawer has the cursor-effects switch, in step", await page.evaluate(() => { const i = document.querySelector(".arr-drawer input[data-arr-cursor]"); return !!i && i.checked === false; }));
+  await page.click(".arr-drawer .arr-switch-cursor");
+  ok("drawer switch turns them back on", (await page.evaluate(() => document.documentElement.dataset.cursor)) === "on");
+  await page.keyboard.press("Escape");
+  await page.click('[data-arr-swatch="stone"]');
+  await page.evaluate(() => Arrival.set({ motion: "vivid" }));
+  await page.mouse.move(200, 200);
+  for (let i = 0; i < 30; i++) await page.mouse.move(200 + i * 12, 200 + (i % 5) * 9);
+  await page.waitForTimeout(60);
+  await page.screenshot({ path: SHOTS + "/02b-vivid-trail.png" });
+  await page.evaluate(() => Arrival.set({ motion: "gentle" }));
+
   // 3. "/" search on the portal reaches AstroLog content
   await page.waitForTimeout(500);
   await page.keyboard.press("/");
@@ -188,6 +211,7 @@ const theme = (p) => p.evaluate(() => document.documentElement.dataset.theme);
   await page.waitForTimeout(400);
   ok("AstroLog: splash on a genuine first visit", await splashOpen(page));
   const note = await page.evaluate(() => document.querySelector("dialog.arr-splash .arr-notice")?.textContent || "");
+  ok("reduced motion: cursor effects default off", (await page.evaluate(() => document.documentElement.dataset.cursor)) === "off");
   ok("splash suggests reduced motion when the OS asks", /less motion/.test(note) && (await page.evaluate(() => document.documentElement.dataset.motion)) === "still", note);
   await page.screenshot({ path: SHOTS + "/09-astrolog-splash-reduced.png" });
   await page.keyboard.press("/");
