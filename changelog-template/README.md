@@ -687,6 +687,162 @@ items up to the end of its own day as already seen.
   and calls its portal link "Portal" in the header (the footer keeps "Entry portal").
 - "copy" and "text" are too ambiguous for the words rubric ("the map's canonical copy").
 
+## 🧩 Wave 6 / kit v1.2, proven out 2026-10-13 (psanctuary pair) — the interface half
+
+Reference install: `psanctuary.github.io` + `psanctuary/changelog-astro` (the playful,
+decentralized side) and `psanctuarychurch.github.io` + `psanctuarychurch/changelog-astro` (the
+church's professional face). Same kit, two looks. The ledger half of wave 6 (ledger v2) is the
+"Ledger v2" section under wave 5 above. **Rollout agents for PIR, THEF, ORG and the desks: this
+section is your handoff.** Re-copy `arrival.js` + `arrival.css` unchanged; they're drop-in for a
+v1.1 `org.js` (nothing new appears until you add the new keys and elements).
+
+### What a visitor gets
+
+- **A full navbar on every page** (portal, every AstroLog page, `/map`, `/ledger`, both 404s), with
+  an icon beside every link in the nav, its dropdowns, the Menu and the footer. It **never wraps**:
+  when the bar runs short, the lowest-priority items fold into a **More** dropdown (priority-plus);
+  below `nav.fold` (1100px) the whole bar folds into a **Menu** button (the O-R-G dApp preview's
+  pattern) that opens a grouped panel of everything and says "Close" while open. Dropdowns and the
+  Menu are disclosure buttons (`aria-expanded`/`aria-controls`): ArrowDown opens and enters, arrows,
+  Home and End move, Esc closes and returns focus, Tab out closes. This killed the two-row header on
+  `psanctuarychurch.github.io/changelog-astro-public/ledger/`.
+- **One contact modal.** Every "Reach out" link (`data-arrival-open="contact"`), and any plain click
+  on a link to one of the configured paths (a form, a `CONTACTS.md`, a `mailto:` role address), opens
+  one dialog listing every path, with "Copy address" for emails and marked placeholders for paths
+  that don't exist yet. Modifier and middle clicks still go straight to the link.
+- **One community modal.** Every platform the org has, each with a **public link** and a **sign-up
+  link** (missing ones render "coming soon" so the slots are ready to wire), plus a **sneak-peek card**
+  for the org's own network on Lens/Farcaster paired with its DAO, privacy first, never with a date.
+  `#contact` and `#community` deep-link to the modals; both are in `/` search.
+- **What's new, unmissable.** On a return visit the count is a filled accent pill ("✦ 22 new") with a
+  gentle halo four times (a background swell where an org clips its shapes), a steady ring instead
+  when motion is Still or reading mode is on, a **one-time tip** under it ("22 new since your last
+  visit. Take a look"), the count on the **Menu button**, and a "new since your last visit" row at
+  the top of the Menu. Links in the nav and footer to new things get a dot.
+- **Reading, round 2.** Four **text size** steps (a scale on the root font size, so every `rem`
+  grows) and a **comfortable line length** switch (paragraphs in `main` cap at 68ch with a taller
+  line height), beside the reading switch in the drawer and the guide, and in `/` search ("text",
+  "line"). Reading mode turns the shorter lines on and restores them after; text size is left alone.
+  `<html data-text data-measure>`.
+- **`/map/` on every site, with pictures.** Every destination as a card whose thumbnail is the
+  share image its link shows, grouped (start here, the record, get involved, beyond GitHub), with
+  "You are here". The AstroLog draws it at build time; the portal draws the same `map.json`.
+- **A donate page** on each portal (`/donate/`): the org's own giving path (psanctuary links
+  `psanctuary.org/donate`, never the Stripe link it forwards to), a per-org disclaimer slot, an
+  **opt-in contribution ledger** (a JSON file, friendly when empty), and an empty, labelled **"Give
+  with crypto, coming soon"** slot for the later wallet module. No wallet address, ever.
+- **`/roadmap` and `/sustainability`** on every AstroLog, rendered from the repo's own `ROADMAP.md`
+  and `SUSTAINABILITY.md`, linked from every footer.
+- **A signature share card per org** and a card for every site page (the map's thumbnails).
+
+### New org.js keys (all optional; annotated in [`arrival/org.example.js`](arrival/org.example.js))
+
+```js
+nav: { label, fold: 1100, items: [
+  { id, label, icon, href, hrefs?: { <siteId>: href }, open?: "contact" | "community" | "guide" | "search",
+    exact?, priority? (lower folds first, default 2), keep?, sites?: [ids], hideOn?: [ids], note? },
+  { id, label, icon, priority?, items: [ …links ] },              // a dropdown
+] },
+footer: { label?, groups: [{ label, icon, items: [navId | link] }], note? },  // default: repeat the nav
+contact: { title?, intro?, paths: [{ kind: "form" | "email" | "page" | "github" | "chat", label,
+  href?, note?, action?, icon?, placeholder? }], fine?, intercept? (default true) },
+community: { …v1.0 keys (guide step)…, title?, intro?, eyebrow?, platforms: [{ id, kind:
+  "discord" | "telegram" | "mighty" | "whatsapp" | "substack" | "bespoke" | "forum" | "email", name,
+  text?, status?: "soon", public?: { href, label, note }, join?: { href, label, note } }],
+  bespoke?: { title, tag?, icon?, text, points?: [], note? }, fine?, intercept? (default true) },
+donate: { give: [{ label, href, icon?, note?, action? }], disclaimer?: { title?, text, placeholder? },
+  ledger?: { src, title?, intro?, empty? }, crypto?: { title?, text?, note? } },
+reading: { light, sizes?: [{ id, name, scale }], measure?: false },
+```
+
+Elements: `<arrival-nav current="<id>">` (in the header, between the brand and
+`<arrival-controls>`), `<arrival-footer current>`, `<arrival-donate>`, `<arrival-map src here>`.
+`data-arrival-open="contact" | "community"` on any link (keep a real `href` as the no-JS fallback).
+`<html data-arr-nav="bar|menu">` lets site CSS react. `window.Arrival.open("contact")` works too.
+
+### Porting checklist (per org)
+
+1. **Kit:** copy `arrival/arrival.js` + `arrival.css` (1.2.0) unchanged into `<org>.github.io/arrival/`.
+2. **org.js:** add `nav`, `footer`, `contact`, `community.platforms` + `bespoke`, `donate` (and
+   `reading.sizes` if you want other steps). Facts only from the org's own materials; a path that
+   doesn't exist is a `placeholder`, never a guessed URL. Contacts per org: PIR's `CONTACTS.md` +
+   `psychedelicsinrecovery.org/contact/` + the service site's form; ORG's three role addresses (no
+   `/contact` page, it 404s); psanctuary's `psanctuary.org/contact` + `info@psanctuary.org`.
+3. **Portal header:** one row: `<a class="brand">…<span class="arr-brand-text">Name</span></a>`
+   `<arrival-nav></arrival-nav><arrival-controls></arrival-controls>`, `flex-wrap: nowrap`, brand
+   `min-width: 0`. Use [`arrival/portal/site.css`](arrival/portal/site.css) (header, page footer,
+   dock) or copy its four header rules; the kit also ships `.arr-header`. Put
+   `<div class="page-foot"><arrival-footer></arrival-footer></div>` above the dock, and point the
+   dock's Reach out / Community at `data-arrival-open`.
+4. **Portal pages:** `/donate/` from [`portal/donate.example.html`](arrival/portal/donate.example.html)
+   with `donate/contributors.json` from [`contributors.example.json`](arrival/portal/contributors.example.json)
+   (empty array; names only with permission, first name + last initial, never an email or amount);
+   `/map/` from [`portal/map.example.html`](arrival/portal/map.example.html) (`<arrival-map
+   src="…/changelog-astro-public/map.json" here="portal">`). The 404 gets the same header (links
+   stay absolute). Write a short `SUSTAINABILITY.md` + `ROADMAP.md` for the portal repo.
+5. **AstroLog `Base.astro`:** replace the old nav-links with `<arrival-nav current={active}>` and the
+   one-row header from [`astro/Base.example.astro`](arrival/astro/Base.example.astro); add the
+   footer groups and the fuller dock. Widen `active` to the nav ids you use.
+6. **AstroLog map:** `src/data/map.ts` from [`astro/map.v2.example.ts`](arrival/astro/map.v2.example.ts)
+   (version 2: groups + nodes with `og`), [`MapGrid.astro`](arrival/astro/MapGrid.astro),
+   [`map.json.ts`](arrival/astro/map.json.ts), [`map.example.astro`](arrival/astro/map.example.astro)
+   → `src/pages/map.astro`. ORG and PIR already have a v1 diagram map (`OrgMap.astro`): keep it and
+   add the v2 grid under it, or move the diagram's nodes into v2 groups. PIR's map lists every desk.
+7. **Page cards:** [`astro/pages.example.ts`](arrival/astro/pages.example.ts) → `src/og/pages.ts`
+   (one card per site page and per external destination; external sites get a card of our own,
+   never a hotlinked image) and [`og-endpoints/page-[slug].jpg.ts`](arrival/astro/og-endpoints/)
+   → `src/pages/og/page/[slug].jpg.ts`. Pass `ogImage={pageCardUrl("changelog")}` etc. on the index
+   pages; make the default og the porch card. Copy the built `og/page/portal.jpg` over the portal's
+   `social-card.jpg` (and `porch.jpg` over the AstroLog's).
+8. **Roadmap + sustainability:** add the `docs` collection (`glob({ pattern: ["ROADMAP.md",
+   "SUSTAINABILITY.md"], base: ".." })`), [`RepoDoc.astro`](arrival/astro/RepoDoc.astro),
+   [`roadmap.astro`](arrival/astro/roadmap.astro), [`sustainability.astro`](arrival/astro/sustainability.astro).
+   Write the two files at the repo root from [`docs/`](arrival/docs/) templates, **with absolute
+   links** (they're read on GitHub too), and **add both to `public_allowlist` in
+   `sync-public.yml`** or the validate tripwire fails the build.
+9. **Signature card:** pick a look in `src/og/theme.mjs` (spore-card orgs: `frame: true, quiet: true`
+   for formal, `prism: [colors]` for playful; og-card orgs can follow the same idea). No counts.
+10. **People:** first name + last initial on public pages (`PEOPLE` in `site.ts`), roles only as the
+    org states them. Changelog entry: `who: "Christopher W"`, TL;DR + `<details>`.
+11. **Deploy order:** portal first (the AstroLog loads the kit from it), then the AstroLog.
+12. **Verify:** [`arrival/verify-v12.example.mjs`](arrival/verify-v12.example.mjs) against the live
+    sites (edit `SITES`). psanctuary pair, 2026-10-13: **68/68 pass**, at 320–1920px.
+
+### Signature share cards (spore-card.mjs, canonical in `arrival/og/`)
+
+- `theme.frame: true` + `theme.quiet: true`: a double hairline frame in the accent, fewer and finer
+  gills, an inner stem ring, a plain hairline rule. **psanctuarychurch**, the professional face.
+- `theme.prism: ["#a88bc9", "#74bce0", "#9fe0c0", "#c9f76f", "#f0a6d0"]`: gills and dust sweep
+  through those colors, ripple rings, tinted glows and a gradient rule. **psanctuary**, the playful
+  side (it also got a Blacklight mode and an iridescent `.iris` title in `org.css`).
+- `spec.hero: true`: the big-name layout for a site's own card (portal, porch).
+- Never a count on a card: link previews are cached for weeks. Say what the page is.
+
+### Gotchas found in wave 6
+
+- **Two agents, one working tree.** A concurrent `git commit` swept my staged `arrival.js`/`.css`
+  into the ledger agent's `6698c9c`. Stage nothing you aren't committing this second; commit with
+  `git commit -- <paths>`; never `git add -A` in a shared clone.
+- **The fold's safety net is `overflow: hidden` on the bar**, so the dropdown panels live outside
+  it (siblings of the `<ul>`, positioned against `<arrival-nav>`), or they'd be clipped. The bar
+  folds by measuring `scrollWidth > clientWidth` after fonts load and on every resize.
+- **`<arrival-nav>` must keep `flex: 1 1 0`** in both modes: if it shrank to the Menu button in menu
+  mode, a ResizeObserver would flip it back and forth.
+- **Tight headers:** with the nav present the kit hides the light swatches, search's word and the
+  drawer's word below 1500px, the cursor and book buttons below 1280px in bar mode, the motion button
+  and drawer caret on small phones, and the brand's text at ≤400px (the mark stays, with an
+  `aria-label`). "Psanctuary Church AstroLog" drops "AstroLog" between 1100 and 1279px.
+- **Background-clip text and `text-shadow` don't mix:** an inherited text-shadow paints over the
+  clipped gradient (an outlined, dark title). Set `text-shadow: none` and use `filter: drop-shadow`.
+- **The "new" row bar looked broken on nav links;** inside `arrival-nav`/`arrival-footer` it's a dot.
+- **Root files in the AstroLog repo** (`ROADMAP.md`, `SUSTAINABILITY.md`) must be classified in
+  `sync-public.yml`, and root-relative links in them only work on the built site (base-links), not
+  on GitHub, so write them absolute.
+- **Mighty Networks blocks bots** (403 to curl and Firecrawl): its links can't be checked by
+  machine. Use the paths the org gives; the verify script checks only that they're real URLs.
+- Busy machine: other agents' `python -m http.server` held 8765 and 8791. Serve with
+  `--directory` on an unusual port and check `lsof` before trusting a local result.
+
 ## Future enhancement, not required (can simmer)
 
 `divorce-custody-assistant/vocational-compliance/build_vocational_log.py` generates an animated,
