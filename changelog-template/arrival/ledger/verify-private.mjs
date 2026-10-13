@@ -8,9 +8,12 @@
 // index) and the committed snapshot for each one, in three forms: the raw subject, its plain summary
 // and its sentence without the conventional prefix, case-insensitive, after decoding HTML entities and
 // JSON escapes. Subjects that are also public (a public copy, or the same words in a public repo)
-// and forms shorter than 12 characters are skipped and counted. Also checks that every private row in
-// the snapshot is masked and unlinked. Exits 1 on any hit, naming only the repository and short SHA,
-// never the subject. Without LEDGER_TOKEN it can't read the subjects: it says so and checks the
+// and forms shorter than 12 characters are skipped and counted. A form that the site also publishes
+// on purpose in its own editorial text (a changelog entry titled like the commit: config
+// `verify.publicText`, default ../changelog, ../library, ../teachings, src/content) is allowed on
+// other pages but never on the ledger page or in the snapshot, which stay strict. Also checks that
+// every private row in the snapshot and in latest.json is masked and unlinked. Exits 1 on any hit,
+// naming only the repository and short SHA, never the subject. Without LEDGER_TOKEN it can't read the subjects: it says so and checks the
 // snapshot's structure only (and the build had no private subjects to leak either).
 import fs from "node:fs";
 import path from "node:path";
@@ -55,6 +58,18 @@ for (const it of snapshot?.items ?? []) {
   if (fullMask.has(it.repo) && (!MASKED.test(it.text ?? "") || it.area)) fail(`snapshot: a private row isn't masked (${it.repo}@${it.short})`);
 }
 
+// latest.json's private rows too.
+const latestPath = path.join(DIST, "latest.json");
+if (fs.existsSync(latestPath)) {
+  const latest = JSON.parse(fs.readFileSync(latestPath, "utf8"));
+  for (const it of latest.items ?? []) {
+    if (it.type !== "ledger" || !/ · private$/.test(it.k ?? "")) continue;
+    const repo = priv.find((p) => it.k.includes(` · ${p.label ?? p.repo} · `));
+    if (!MASKED.test(it.t ?? "") && repo?.mask !== "sanitized") fail("latest.json: a private row isn't masked");
+    if (/github\.com/.test(it.h ?? "")) fail("latest.json: a private row links to GitHub");
+  }
+}
+
 // 2. Every raw private subject, searched for everywhere.
 const token = process.env.LEDGER_TOKEN ?? "";
 if (!token) {
@@ -88,12 +103,22 @@ const subjects = await privateSubjects(LEDGER, token);
 const unreadable = subjects.filter((s) => s.error);
 for (const u of unreadable) console.warn(`[leak-check] couldn't read ${u.repo} (${u.error}); its rows came masked from the snapshot`);
 
+// The site's own editorial text (what it publishes on purpose, e.g. changelog entries).
+const EDITORIAL = /\.(md|mdx|markdown|json|ya?ml|ts|mjs|js|astro|txt)$/i;
+let editorial = "";
+const readAll = (p) => {
+  const st = fs.statSync(p);
+  if (st.isDirectory()) for (const e of fs.readdirSync(p)) readAll(path.join(p, e));
+  else if (EDITORIAL.test(p)) editorial += norm(fs.readFileSync(p, "utf8")) + "\n";
+};
+for (const p of (LEDGER.verify?.publicText ?? ["../changelog", "../library", "../teachings", "src/content"]).map((x) => path.resolve(x))) if (fs.existsSync(p)) readAll(p);
+
 const needles = [];
 let skipped = 0;
 for (const s of subjects.filter((x) => !x.error)) {
   for (const f of new Set(forms(s.subject))) {
     if (f.length < MIN || publicForms.has(f)) skipped++;
-    else needles.push({ f, repo: s.repo, short: s.short });
+    else needles.push({ f, repo: s.repo, short: s.short, editorial: editorial.includes(f) });
   }
 }
 
@@ -110,10 +135,13 @@ walk(DIST);
 if (fs.existsSync(LEDGER.snapshot)) files.push(LEDGER.snapshot);
 
 const hits = [];
+const strictFile = (file) => file === LEDGER.snapshot || /^ledger(\/index)?\.html$/.test(path.relative(DIST, file).split(path.sep).join("/"));
 for (const file of files) {
   const hay = norm(fs.readFileSync(file, "utf8"));
-  for (const n of needles) if (hay.includes(n.f)) hits.push(`${n.repo}@${n.short} in ${path.relative(process.cwd(), file)}`);
+  const strict = strictFile(file);
+  for (const n of needles) if ((strict || !n.editorial) && hay.includes(n.f)) hits.push(`${n.repo}@${n.short} in ${path.relative(process.cwd(), file)}`);
 }
+const editorialForms = needles.filter((n) => n.editorial).length;
 const readable = subjects.filter((s) => !s.error).length;
 if (hits.length) {
   console.error(`[leak-check] ${hits.length} raw private ${hits.length === 1 ? "subject" : "subjects"} found in the build:`);
@@ -121,5 +149,5 @@ if (hits.length) {
   fail("raw private text reached the public build");
 }
 console.log(
-  `[leak-check] OK: ${readable} private subjects from ${priv.length - new Set(unreadable.map((u) => u.repo)).size}/${priv.length} repositories, ${needles.length} forms searched (${skipped} skipped: shorter than ${MIN} characters or also public) across ${files.length} files; no raw private text found`
+  `[leak-check] OK: ${readable} private subjects from ${priv.length - new Set(unreadable.map((u) => u.repo)).size}/${priv.length} repositories, ${needles.length} forms searched (${skipped} skipped: shorter than ${MIN} characters or also public${editorialForms ? `; ${editorialForms} also in the site's own changelog text, so checked strictly on the ledger page and snapshot only` : ""}) across ${files.length} files; no raw private text found`
 );
