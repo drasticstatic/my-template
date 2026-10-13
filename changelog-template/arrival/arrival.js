@@ -43,12 +43,37 @@
  *                         Opening the count, or the new page itself, clears it. First visits show
  *                         nothing. ARRIVAL.news = false hides it.
  *   record.ledger         a third box in the guide's "Changelog and library" step.
+ *
+ * Wave 6 (v1.2, 2026-10-13), the interface half; additive again, so a v1.1 org.js keeps working:
+ *   <arrival-nav>         the page's navbar, from ARRIVAL.nav: links and dropdown groups, every one
+ *                         with an icon. When the bar runs out of room, items fold into a "More"
+ *                         dropdown (lowest priority first), so it never wraps; below nav.fold (1100px)
+ *                         the whole bar folds into a Menu button and panel. Keyboard: arrows inside
+ *                         a dropdown, Esc closes and returns focus. <html data-arr-nav="bar|menu">.
+ *   <arrival-footer>      link groups (ARRIVAL.footer.groups, or derived from the nav), icon on every
+ *                         link: e.g. Explore, Get involved, About this build (roadmap, sustainability).
+ *   Contact modal         one dialog listing every way to reach the org (ARRIVAL.contact.paths: a
+ *                         form, a CONTACTS.md, role emails; placeholders say so). Opens from any
+ *                         [data-arrival-open="contact"], and any link to one of those paths.
+ *   Community modal       every platform the org has (ARRIVAL.community.platforms), each with a public
+ *                         link and a sign-up link, "coming soon" for placeholders, plus a sneak-peek
+ *                         card for the bespoke network (community.bespoke). [data-arrival-open="community"].
+ *   What's new, louder    a filled, counted pill with a gentle halo (none when motion is still or in
+ *                         reading mode), a one-time tip under it, a count on the Menu button and a
+ *                         row at the top of the Menu.
+ *   Reading, round 2      text size steps (ARRIVAL.reading.sizes) and a comfortable line length,
+ *                         in the drawer, the guide and "/" search. <html data-text data-measure>.
+ *   <arrival-donate>      the donate page body from ARRIVAL.donate: giving paths, a disclaimer slot,
+ *                         an opt-in contribution ledger (a JSON file) and an empty "crypto, coming
+ *                         soon" slot ([data-arr-wallet-slot]) for a later wallet module.
+ *   <arrival-map src>     the site map from a map.json (version 2): every destination as a card with
+ *                         its share image as the thumbnail, grouped, "You are here" on this site.
  */
 (function () {
   "use strict";
   if (window.Arrival) return;
 
-  var VERSION = "1.1.1";
+  var VERSION = "1.2.0";
   var C = window.ARRIVAL || {};
   var doc = document;
   var root = doc.documentElement;
@@ -95,8 +120,34 @@
       newSince: "New since your last visit",
       newBadge: "new",
       newTag: "New",
-      newsGuide: "Coming back? A small count in the header shows what's new since your last visit, and new things are marked where they appear. Opening it clears it.",
+      newsGuide: "Coming back? A bright count in the header shows what's new since your last visit, and new things are marked where they appear. Opening it clears it.",
+      newsTip: "{n} new since your last visit. Take a look",
       ledger: "The ledger",
+      // v1.2
+      menu: "Menu",
+      menuClose: "Close",
+      more: "More",
+      menuMain: "Pages",
+      nav: "Site",
+      footer: "More ways around",
+      textSize: "Text size",
+      measure: "Comfortable line length",
+      measureNote: "Shorter lines of text, with a little more room between them.",
+      contact: "Reach out",
+      contactIntro: "Every way to reach the people behind these pages. Pick whichever suits you.",
+      community: "Where we gather",
+      communityIntro: "Every place the community talks. Each one has a public link anyone can open, and a way to sign up.",
+      publicLink: "Public link",
+      joinLink: "Sign up",
+      soon: "Coming soon",
+      sneak: "Sneak peek",
+      close: "Close",
+      copyAddress: "Copy address",
+      addressCopied: "Address copied.",
+      writeEmail: "Write an email",
+      openLink: "Open",
+      youAreHere: "You are here",
+      mapLoading: "Drawing the map…",
     },
     C.words || {}
   );
@@ -114,6 +165,15 @@
   var hasCursor = C.cursor !== false; // the cursor-effects switch (trail + anything a site keys on data-cursor)
   var hasReading = C.reading !== false; // the one-tap reading-mode preset
   var RD = C.reading && typeof C.reading === "object" ? C.reading : {};
+  // Reading, round 2 (v1.2): text size steps (a scale on the root font size, so every rem grows) and
+  // a comfortable line length. Both are settings of their own, kept beside the reading switch.
+  var SIZES = RD.sizes && RD.sizes.length ? RD.sizes : [
+    { id: "standard", name: "Standard", scale: 1 },
+    { id: "large", name: "Large", scale: 1.125 },
+    { id: "larger", name: "Larger", scale: 1.25 },
+    { id: "largest", name: "Largest", scale: 1.4 },
+  ];
+  var hasMeasure = hasReading && RD.measure !== false;
 
   /* ── helpers ───────────────────────────────────────────────────────────────────────────── */
   function assign(t) {
@@ -208,6 +268,8 @@
       contrast: hasContrast && prefersMore ? "more" : "standard",
       cursor: prefersLess || !hasCursor ? "off" : "on",
       reading: "off",
+      text: SIZES[0].id,
+      measure: "full",
       chosen: false,
     };
   }
@@ -260,6 +322,8 @@
     if (!hasCursor) s.cursor = "off";
     if (s.reading !== "on" || !hasReading || !readingMatches(s)) s.reading = "off";
     if (!s.before || typeof s.before !== "object") s.before = null;
+    if (!byId(SIZES, s.text) || !hasReading) s.text = SIZES[0].id;
+    if (s.measure !== "comfy" || !hasMeasure) s.measure = "full";
     return s;
   }
 
@@ -288,6 +352,12 @@
     // own pointer effects on it (ORG's marbled ink stops stirring).
     attr("data-cursor", state.cursor === "on" && state.motion !== STILL ? "on" : "off");
     attr("data-reading", state.reading === "on" ? "on" : "off");
+    var sz = byId(SIZES, state.text) || SIZES[0];
+    attr("data-text", sz.id);
+    attr("data-measure", state.measure === "comfy" ? "comfy" : "full");
+    try {
+      root.style.setProperty("--arr-text-scale", String(+sz.scale || 1));
+    } catch (e) {}
     var m = byId(MODES, theme);
     var bg = m && (m.bg || (m.swatch && m.swatch[0]));
     if (bg && doc.head) {
@@ -321,10 +391,11 @@
   function get() {
     return {
       light: state.light, theme: themeOf(state.light), motion: state.motion, contrast: state.contrast,
-      cursor: state.cursor, reading: state.reading === "on", chosen: !!state.chosen,
+      cursor: state.cursor, reading: state.reading === "on", text: state.text, measure: state.measure, chosen: !!state.chosen,
     };
   }
-  // One tap: save what the visitor has, apply the calmest preset; tap again to restore it.
+  // One tap: save what the visitor has, apply the calmest preset; tap again to restore it. The
+  // preset also turns on the comfortable line length (and restores it after); text size is left alone.
   function toggleReading(tentative) {
     if (!hasReading) return;
     if (state.reading === "on") {
@@ -337,10 +408,16 @@
         motion: byId(MOTIONS, b.motion) ? b.motion : movingDefault(),
         contrast: b.contrast === "more" ? "more" : "standard",
         cursor: b.cursor === "on" ? "on" : "off",
+        measure: b.measure === "comfy" ? "comfy" : "full",
       }, tentative);
     } else {
-      set(assign({ reading: "on", before: { light: state.light, motion: state.motion, contrast: state.contrast, cursor: state.cursor } }, readingPreset()), tentative);
+      set(assign({ reading: "on", before: { light: state.light, motion: state.motion, contrast: state.contrast, cursor: state.cursor, measure: state.measure } }, readingPreset(), hasMeasure ? { measure: "comfy" } : {}), tentative);
     }
+  }
+  function stepText(d) {
+    var i = 0;
+    for (var k = 0; k < SIZES.length; k++) if (SIZES[k].id === state.text) i = k;
+    set({ text: SIZES[Math.max(0, Math.min(SIZES.length - 1, i + d))].id });
   }
 
   window.addEventListener("storage", function (e) {
@@ -441,7 +518,31 @@
       '<label class="arr-switch arr-switch-reading"><input class="arr-sr" type="checkbox" role="switch" data-arr-reading>' +
       '<span class="arr-switch-track" aria-hidden="true"><span></span></span>' +
       '<span class="arr-switch-label">' + icon("book-open-text") + esc(W.reading) + "</span></label>" +
-      '<p class="arr-note">' + esc(readingNote()) + "</p>"
+      '<p class="arr-note">' + esc(readingNote()) + "</p>" + readingExtras()
+    );
+  }
+  // Text size steps (a segmented row of growing A's) and the line-length switch, under the reading
+  // switch wherever it appears. `name` keeps each copy's radio group separate.
+  var rxUid = 0;
+  function readingExtras() {
+    if (!hasReading) return "";
+    var n = ++rxUid;
+    return (
+      '<fieldset class="arr-field arr-field-size"><legend>' + esc(W.textSize) + '</legend><div class="arr-seg arr-seg-size">' +
+      SIZES.map(function (s, i) {
+        return (
+          '<label class="arr-seg-opt" title="' + esc(s.name) + '"><input class="arr-sr" type="radio" name="arr-tx-' + n + '" value="' + esc(s.id) +
+          '" data-arr-text aria-label="' + esc(s.name) + '"><span class="arr-shape"><span class="arr-size-a" aria-hidden="true" style="font-size:' +
+          (0.78 + i * 0.17).toFixed(2) + 'rem">A</span></span></label>'
+        );
+      }).join("") +
+      "</div></fieldset>" +
+      (hasMeasure
+        ? '<label class="arr-switch arr-switch-measure"><input class="arr-sr" type="checkbox" role="switch" data-arr-measure>' +
+          '<span class="arr-switch-track" aria-hidden="true"><span></span></span>' +
+          '<span class="arr-switch-label">' + icon("text-align-left") + esc(W.measure) + "</span></label>" +
+          '<p class="arr-note">' + esc(W.measureNote) + "</p>"
+        : "")
     );
   }
   function notices() {
@@ -493,6 +594,13 @@
       b.setAttribute("aria-label", label);
       b.setAttribute("title", label);
     });
+    all("input[data-arr-text]", function (i) {
+      i.checked = i.value === state.text;
+    });
+    all("input[data-arr-measure]", function (i) {
+      i.checked = state.measure === "comfy";
+      i.setAttribute("aria-checked", String(i.checked));
+    });
     syncNews();
     var still = state.motion === STILL;
     all("[data-arr-motion-toggle]", function (b) {
@@ -524,8 +632,13 @@
     }).join("");
     host.innerHTML =
       '<div class="arr-controls">' +
-      // What's new: hidden until a return visit finds something newer than the last one.
-      (hasNews ? '<button type="button" class="arr-chip arr-shape arr-news" data-arr-news hidden>' + icon("sparkle") + '<span class="arr-news-n" data-arr-news-n></span><span class="arr-chip-label">' + esc(W.newBadge) + "</span></button>" : "") +
+      // What's new: hidden until a return visit finds something newer than the last one. Then it's a
+      // filled pill with a count, and (once per visit) a small tip underneath pointing at it.
+      (hasNews
+        ? '<span class="arr-news-wrap"><button type="button" class="arr-chip arr-shape arr-news" data-arr-news hidden>' + icon("sparkle") +
+          '<span class="arr-news-n" data-arr-news-n></span><span class="arr-chip-label">' + esc(W.newBadge) + "</span></button>" +
+          '<span class="arr-news-tip arr-shape" data-arr-news-tip aria-hidden="true" hidden></span></span>'
+        : "") +
       '<button type="button" class="arr-chip arr-shape arr-chip-search" data-arrival-open="search" aria-label="' + esc(W.search) + ' (press /)" title="' + esc(W.search) + ' (/)">' +
       icon("magnifying-glass") + '<span class="arr-chip-label">' + esc(W.search) + "</span><kbd>/</kbd></button>" +
       '<span class="arr-swatches" role="group" aria-label="' + esc(W.light) + '">' + swatches + "</span>" +
@@ -552,7 +665,10 @@
   function drawerOf(btn) {
     return doc.getElementById(btn.getAttribute("aria-controls"));
   }
+  // Every popup that hangs off the header (the drawer, the nav's dropdowns and the Menu) closes
+  // when another opens, so only one is ever open.
   function closeDrawers(refocus) {
+    closeNavs(false);
     var open = doc.querySelectorAll('[data-arr-drawer][aria-expanded="true"]');
     for (var i = 0; i < open.length; i++) {
       open[i].setAttribute("aria-expanded", "false");
@@ -645,6 +761,10 @@
   function show(d, focusEl) {
     if (d.open) return;
     d._return = doc.activeElement;
+    // Opened from inside a dropdown or the Menu, which closes now: return focus to its button.
+    var pop = d._return && d._return.closest && d._return.closest(".arr-nav-menu, .arr-menu-panel, .arr-drawer");
+    if (pop && pop.id) d._return = doc.querySelector('[aria-controls="' + pop.id + '"]') || d._return;
+    hideTip();
     closeDrawers(false);
     try {
       d.showModal();
@@ -833,6 +953,22 @@
         title: "Where the community talks",
         html: function () {
           if (!com) return placeholder("This org hasn't named its community space here yet.");
+          // v1.2: with platforms configured, list them and offer the community modal.
+          if (com.platforms && com.platforms.length) {
+            return (
+              para(com.text) +
+              '<ul class="arr-ticks">' +
+              com.platforms.map(function (p) {
+                var k = PLATFORM[p.kind] || [p.kind || "", "chats-circle"];
+                var soon = p.status === "soon" || (!(p.public && p.public.href) && !(p.join && p.join.href));
+                return "<li>" + icon(p.icon || k[1]) + "<span><strong>" + esc(p.name || k[0]) + "</strong>" + (soon ? " · " + esc(W.soon) : "") + "</span></li>";
+              }).join("") +
+              (com.bespoke ? "<li>" + icon(com.bespoke.icon || "graph") + "<span><strong>" + esc(com.bespoke.title || "A network of our own") + "</strong> · " + esc(com.bespoke.tag || W.sneak) + "</span></li>" : "") +
+              "</ul>" +
+              '<p><button type="button" class="arr-btn arr-btn-primary arr-shape" data-arrival-open="community">' + icon(com.icon || "users-three") + esc(com.label || "See every way in") + "</button></p>" +
+              (com.more || []).map(function (x) { return '<p class="arr-fine">' + x + "</p>"; }).join("")
+            );
+          }
           return (
             para(com.text) +
             (com.href ? link(com.href, com.label || "Open " + com.name, com.icon || "chats-circle", "arr-btn-primary") : placeholder("The " + esc(com.name) + " link still needs to be added.")) +
@@ -1057,6 +1193,18 @@
         x: "calm read quiet focus still contrast accessibility dyslexia simple plain", run: function () { toggleReading(); },
       });
     }
+    if (hasReading) {
+      out.push({ t: W.textSize + ": larger", k: "text", i: "text-aa", x: "bigger zoom font size read accessibility", run: function () { stepText(1); } });
+      out.push({ t: W.textSize + ": smaller", k: "text", i: "text-aa", x: "zoom font size read", run: function () { stepText(-1); } });
+      if (hasMeasure) {
+        out.push({
+          t: W.measure + ": on or off", k: "text", i: "text-align-left", x: "line width measure narrow column read accessibility",
+          run: function () { set({ measure: state.measure === "comfy" ? "full" : "comfy" }); },
+        });
+      }
+    }
+    if (hasContact) out.push({ t: (CONTACT.title || W.contact) + ": every way to reach us", k: "contact", i: "envelope-simple", x: "contact email form message question help reach out", run: openContact });
+    if (hasCommunity) out.push({ t: (COMM.title || W.community) + ": the community", k: "community", i: COMM.icon || "users-three", x: "community chat talk join sign up members discord telegram mighty", run: openCommunity });
     out.push({ t: W.openGuide, k: "guide", i: "compass", x: "help onboarding tour welcome how", run: function () { openGuide(); } });
     out.push({ t: "Copy a link to this page", k: "action", i: "link", x: "share url card preview telegram", run: copyLink });
     return out;
@@ -1215,7 +1363,7 @@
         .sort(function (a, b) { return String(b.d || "").localeCompare(String(a.d || "")); })
         .slice(0, 5);
       if (latest.length) groups.push(["Latest changes", latest]);
-      groups.push(["Try", actions().filter(function (a) { return a.k === "guide" || a.k === "contrast" || a.k === "reading"; })]);
+      groups.push(["Try", actions().filter(function (a) { return a.k === "guide" || a.k === "contrast" || a.k === "reading" || a.k === "contact" || a.k === "community"; })]);
       shown = [];
       groups.forEach(function (g) {
         html += '<li role="presentation" class="arr-pal-group">' + esc(g[0]) + "</li>";
@@ -1243,9 +1391,15 @@
   }
   function go(it, newTab) {
     if (!it) return;
-    hide(pal, !!it.h);
+    var via = it.open || (it.h && !newTab ? interceptOf(it.h) : null);
+    if (via && !canOpen(via)) via = null;
+    hide(pal, !!it.h && !via);
     if (it.run) {
       it.run();
+      return;
+    }
+    if (via) {
+      open(via);
       return;
     }
     if (!it.h) return;
@@ -1555,7 +1709,10 @@
       saveVisit();
       syncNews();
       markNew();
-      if (fresh.length) emit("arrival:news", { count: unread(), items: fresh.slice(), since: visit.since });
+      if (fresh.length) {
+        emit("arrival:news", { count: unread(), items: fresh.slice(), since: visit.since });
+        setTimeout(showTip, 700);
+      }
       return fresh;
     });
     return newsP;
@@ -1569,6 +1726,7 @@
   }
   function syncNews() {
     var n = unread();
+    var nn = n > 99 ? "99+" : String(n);
     var list = doc.querySelectorAll("[data-arr-news]");
     for (var i = 0; i < list.length; i++) {
       var b = list[i];
@@ -1577,9 +1735,40 @@
       var label = n + " " + W.newSince.charAt(0).toLowerCase() + W.newSince.slice(1) + (visit.since ? " (" + fmtTime(visit.since) + ")" : "");
       b.setAttribute("aria-label", label);
       b.setAttribute("title", label);
-      var c = b.querySelector("[data-arr-news-n]");
-      if (c) c.textContent = n > 99 ? "99+" : String(n);
+      var c = b.querySelectorAll("[data-arr-news-n]");
+      for (var j = 0; j < c.length; j++) c[j].textContent = nn;
     }
+    // The Menu button carries the count too, so a folded nav still shows it.
+    var dots = doc.querySelectorAll("[data-arr-news-dot]");
+    for (var k = 0; k < dots.length; k++) {
+      dots[k].hidden = !n;
+      dots[k].textContent = n ? nn : "";
+    }
+    if (!n) hideTip();
+  }
+  // Once per visit, a small tip under the count, so nobody misses it. It fades on its own.
+  var tipT = 0;
+  function showTip() {
+    if (!visit || visit.tipped || !unread()) return;
+    var tips = doc.querySelectorAll("[data-arr-news-tip]");
+    var shown = false;
+    for (var i = 0; i < tips.length; i++) {
+      var b = tips[i].parentNode && tips[i].parentNode.querySelector("[data-arr-news]");
+      if (!b || !b.getClientRects().length) continue;
+      tips[i].textContent = W.newsTip.replace("{n}", unread() > 99 ? "99+" : String(unread()));
+      tips[i].insertAdjacentHTML("beforeend", icon("arrow-right"));
+      tips[i].hidden = false;
+      shown = true;
+    }
+    if (!shown) return;
+    visit.tipped = true;
+    saveVisit();
+    clearTimeout(tipT);
+    tipT = setTimeout(hideTip, 9000);
+  }
+  function hideTip() {
+    var tips = doc.querySelectorAll("[data-arr-news-tip]");
+    for (var i = 0; i < tips.length; i++) tips[i].hidden = true;
   }
   // Mark links (and [data-arr-key] rows) that point at something new.
   function markNew(scope) {
@@ -1601,10 +1790,592 @@
   }
   // The count was opened: it has done its job for this visit (the marks stay until the next one).
   function ackNews() {
+    hideTip();
     if (!visit || visit.ack) return;
     visit.ack = Date.now();
     saveVisit();
     syncNews();
+  }
+
+  /* ── v1.2 · the navbar: <arrival-nav> ─────────────────────────────────────────────────────
+     ARRIVAL.nav = { items: [link | group], fold: 1100, menuLabel? }
+       link:  { id, label, icon, href, hrefs?: { <siteId>: href }, open?: "contact" | "community" |
+                "guide" | "search", exact?, priority? (lower folds first; default 2), keep?,
+                sites?: [siteIds], hideOn?: [siteIds], note? (a line under it in menus) }
+       group: { id, label, icon, items: [link…], priority?, keep? }   (a dropdown)
+     The bar shows every item it can fit; the rest move into a "More" dropdown, so the bar never
+     wraps. Below `fold` px the whole bar becomes a Menu button and panel. `current="<id>"` on the
+     element marks the current item; otherwise it's matched from the URL. */
+  var NAV = C.nav && C.nav.items && C.nav.items.length ? C.nav : null;
+  function visibleOn(it) {
+    if (!it) return false;
+    if (it.sites && it.sites.indexOf(siteId) < 0) return false;
+    if (it.hideOn && it.hideOn.indexOf(siteId) >= 0) return false;
+    return true;
+  }
+  function navItems() {
+    if (!NAV) return [];
+    return NAV.items
+      .filter(visibleOn)
+      .map(function (it) {
+        return it.items ? assign({}, it, { items: it.items.filter(visibleOn) }) : it;
+      })
+      .filter(function (it) {
+        return !it.items || it.items.length;
+      });
+  }
+  // Every link the nav knows, groups flattened, so the footer can name them by id.
+  function navLinks() {
+    var out = {};
+    ((NAV && NAV.items) || []).forEach(function (it) {
+      (it.items || [it]).forEach(function (x) {
+        if (x.id) out[x.id] = x;
+      });
+    });
+    return out;
+  }
+  function hrefOf(it) {
+    return (it.hrefs && it.hrefs[siteId]) || it.href || "";
+  }
+  function isCurrent(it, forced) {
+    if (forced) return it.id === forced;
+    if (it.open || !hrefOf(it)) return false;
+    var here = normUrl(location.href);
+    var h = normUrl(hrefOf(it));
+    if (here === h) return true;
+    if (it.exact) return false;
+    try {
+      if (new URL(hrefOf(it), location.href).pathname.replace(/\/+$/, "") === "") return false;
+    } catch (e) {}
+    return here.indexOf(h + "/") === 0;
+  }
+  function linkTag(it, cls, forced, withNote) {
+    var cur = isCurrent(it, forced);
+    var href = hrefOf(it) || "#";
+    return (
+      '<a class="' + cls + (cur ? " is-current" : "") + '" href="' + esc(href) + '"' +
+      (it.open ? ' data-arrival-open="' + esc(it.open) + '"' : "") + (cur ? ' aria-current="page"' : "") + ">" +
+      icon(it.icon || "arrow-right") +
+      '<span class="arr-nav-text"><span class="arr-nav-label">' + esc(it.label) + "</span>" +
+      (withNote && it.note ? '<span class="arr-nav-note">' + esc(it.note) + "</span>" : "") +
+      "</span></a>"
+    );
+  }
+  var navUid = 0;
+  var navHosts = [];
+  function renderNav(host) {
+    var items = navItems();
+    if (!items.length) {
+      host.hidden = true;
+      return;
+    }
+    var n = ++navUid;
+    var forced = host.getAttribute("current");
+    var bar = "";
+    var menus = "";
+    var more = "";
+    var mainLinks = [];
+    var groups = [];
+    items.forEach(function (it, k) {
+      var pri = it.priority == null ? 2 : +it.priority;
+      var li = '<li class="arr-nav-li" data-arr-nav-k="' + k + '" data-pri="' + pri + '"' + (it.keep ? " data-keep" : "") + ">";
+      if (it.items) {
+        var mid = "arr-nav-" + n + "-" + k;
+        var cur = it.items.some(function (x) { return isCurrent(x, forced); });
+        var rows = it.items.map(function (x) { return "<li>" + linkTag(x, "arr-nav-row", forced, true) + "</li>"; }).join("");
+        bar +=
+          li + '<button type="button" class="arr-nav-a arr-nav-btn' + (cur ? " is-current" : "") + '" data-arr-nav-toggle aria-expanded="false" aria-controls="' + mid + '">' +
+          icon(it.icon || "list") + '<span class="arr-nav-label">' + esc(it.label) + '</span><i class="ph ph-caret-down arr-caret" aria-hidden="true"></i></button></li>';
+        menus += '<div class="arr-nav-menu arr-lift" id="' + mid + '" hidden><div class="arr-frame arr-shape"><div class="arr-in arr-shape"><ul class="arr-nav-rows">' + rows + "</ul></div></div></div>";
+        more += '<div class="arr-nav-more-group" data-arr-more-k="' + k + '" hidden><p class="arr-nav-more-h">' + icon(it.icon || "list") + esc(it.label) + '</p><ul class="arr-nav-rows">' + rows + "</ul></div>";
+        groups.push({ label: it.label, icon: it.icon, rows: rows });
+      } else {
+        bar += li + linkTag(it, "arr-nav-a", forced) + "</li>";
+        more += '<div data-arr-more-k="' + k + '" hidden><ul class="arr-nav-rows"><li>' + linkTag(it, "arr-nav-row", forced, true) + "</li></ul></div>";
+        mainLinks.push("<li>" + linkTag(it, "arr-nav-row", forced, true) + "</li>");
+      }
+    });
+    var moreId = "arr-nav-" + n + "-more";
+    var menuId = "arr-menu-" + n;
+    var sections = (mainLinks.length ? [{ label: NAV.menuMain || W.menuMain, icon: "compass", rows: mainLinks.join("") }] : []).concat(groups);
+    host.innerHTML =
+      '<nav class="arr-nav" aria-label="' + esc(NAV.label || W.nav) + '">' +
+      '<ul class="arr-nav-bar">' + bar +
+      '<li class="arr-nav-li arr-nav-more-li" data-arr-nav-more hidden><button type="button" class="arr-nav-a arr-nav-btn" data-arr-nav-toggle aria-expanded="false" aria-controls="' + moreId + '">' +
+      icon("dots-three-circle") + '<span class="arr-nav-label">' + esc(NAV.moreLabel || W.more) + '</span><i class="ph ph-caret-down arr-caret" aria-hidden="true"></i></button></li>' +
+      "</ul>" + menus +
+      '<div class="arr-nav-menu arr-nav-more arr-lift" id="' + moreId + '" hidden><div class="arr-frame arr-shape"><div class="arr-in arr-shape">' + more + "</div></div></div>" +
+      // Folded: one Menu button (it carries the what's-new count), and the panel it opens.
+      '<button type="button" class="arr-chip arr-shape arr-menu-btn" data-arr-menu aria-expanded="false" aria-controls="' + menuId + '">' +
+      '<span class="arr-menu-icon">' + icon("list") + '</span><span class="arr-menu-label">' + esc(NAV.menuLabel || W.menu) + "</span>" +
+      '<span class="arr-menu-count" data-arr-news-dot hidden></span></button>' +
+      '<div class="arr-menu-panel arr-lift" id="' + menuId + '" hidden><div class="arr-frame arr-shape"><div class="arr-in arr-shape">' +
+      (hasNews
+        ? '<button type="button" class="arr-menu-news arr-shape" data-arr-news hidden>' + icon("sparkle") + '<span><strong><span data-arr-news-n></span> ' +
+          esc(W.newBadge) + "</strong> " + esc(W.newSince.charAt(0).toLowerCase() + W.newSince.slice(1)) + "</span>" + icon("arrow-right") + "</button>"
+        : "") +
+      '<div class="arr-menu-grid">' +
+      sections.map(function (s) {
+        return '<section class="arr-menu-sec"><p class="arr-menu-h">' + icon(s.icon || "list") + esc(s.label) + '</p><ul class="arr-nav-rows">' + s.rows + "</ul></section>";
+      }).join("") +
+      "</div></div></div></div></nav>";
+    host.classList.add("arr-nav-host");
+    navHosts.push(host);
+    layoutNav(host);
+    if (window.ResizeObserver) {
+      var raf = 0;
+      new ResizeObserver(function () {
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(function () { layoutNav(host); });
+      }).observe(host);
+    }
+    if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(function () { layoutNav(host); });
+    syncNews();
+  }
+  function foldAt() {
+    return (NAV && +NAV.fold) || 1100;
+  }
+  function setNavMode(host, mode) {
+    if (host._mode !== mode) {
+      closeNavs(false);
+      host._mode = mode;
+      host.setAttribute("data-mode", mode);
+    }
+    attr("data-arr-nav", mode);
+  }
+  function layoutNav(host) {
+    setNavMode(host, window.innerWidth < foldAt() ? "menu" : "bar");
+    if (host._mode === "bar") fitNav(host);
+  }
+  function overflows(el) {
+    return el.scrollWidth > el.clientWidth + 1;
+  }
+  // Priority+: show everything, then fold the lowest-priority items (rightmost first among equals)
+  // into "More" until the bar fits. If even that can't fit, fold the whole bar into the Menu.
+  function fitNav(host) {
+    var bar = host.querySelector(".arr-nav-bar");
+    if (!bar) return;
+    var lis = [].slice.call(bar.querySelectorAll("[data-arr-nav-k]"));
+    var moreLi = bar.querySelector("[data-arr-nav-more]");
+    var copies = host.querySelectorAll("[data-arr-more-k]");
+    var i;
+    for (i = 0; i < lis.length; i++) lis[i].hidden = false;
+    for (i = 0; i < copies.length; i++) copies[i].hidden = true;
+    moreLi.hidden = true;
+    if (!overflows(bar)) return;
+    moreLi.hidden = false;
+    var order = lis
+      .filter(function (li) { return !li.hasAttribute("data-keep"); })
+      .sort(function (a, b) {
+        return +a.getAttribute("data-pri") - +b.getAttribute("data-pri") || +b.getAttribute("data-arr-nav-k") - +a.getAttribute("data-arr-nav-k");
+      });
+    for (i = 0; i < order.length && overflows(bar); i++) {
+      order[i].hidden = true;
+      var c = host.querySelector('[data-arr-more-k="' + order[i].getAttribute("data-arr-nav-k") + '"]');
+      if (c) c.hidden = false;
+    }
+    if (overflows(bar)) setNavMode(host, "menu");
+  }
+  function panelOf(btn) {
+    return btn && doc.getElementById(btn.getAttribute("aria-controls"));
+  }
+  function closeNavs(refocus) {
+    var open = doc.querySelectorAll('[data-arr-nav-toggle][aria-expanded="true"], [data-arr-menu][aria-expanded="true"]');
+    for (var i = 0; i < open.length; i++) {
+      var b = open[i];
+      b.setAttribute("aria-expanded", "false");
+      var p = panelOf(b);
+      if (p) p.hidden = true;
+      if (b.hasAttribute("data-arr-menu")) {
+        var lab = b.querySelector(".arr-menu-label");
+        if (lab) lab.textContent = (NAV && NAV.menuLabel) || W.menu;
+        var ic = b.querySelector(".arr-menu-icon");
+        if (ic) ic.innerHTML = icon("list");
+      }
+      if (refocus) b.focus();
+    }
+  }
+  function placeDropdown(host, btn, p) {
+    p.style.left = "0px";
+    var hr = host.getBoundingClientRect();
+    var br = btn.getBoundingClientRect();
+    var w = p.offsetWidth;
+    var left = br.left - hr.left;
+    var max = window.innerWidth - 12 - w - hr.left;
+    p.style.left = Math.round(Math.max(12 - hr.left, Math.min(left, max))) + "px";
+  }
+  function placeMenu(btn, p) {
+    var head = btn.closest("header") || btn.closest("arrival-nav") || btn;
+    var top = Math.max(8, Math.round(head.getBoundingClientRect().bottom + 6));
+    p.style.top = top + "px";
+    p.style.maxHeight = Math.max(160, window.innerHeight - top - 12) + "px";
+  }
+  function openNav(btn) {
+    closeDrawers(false);
+    var p = panelOf(btn);
+    if (!p) return;
+    btn.setAttribute("aria-expanded", "true");
+    p.hidden = false;
+    var host = btn.closest("arrival-nav");
+    if (btn.hasAttribute("data-arr-menu")) {
+      var lab = btn.querySelector(".arr-menu-label");
+      if (lab) lab.textContent = (NAV && NAV.menuClose) || W.menuClose;
+      var ic = btn.querySelector(".arr-menu-icon");
+      if (ic) ic.innerHTML = icon("x");
+      placeMenu(btn, p);
+    } else if (host) {
+      placeDropdown(host, btn, p);
+    }
+    syncNews();
+  }
+  function navRows(p) {
+    var list = p.querySelectorAll("a[href], button:not([hidden])");
+    var out = [];
+    for (var i = 0; i < list.length; i++) if (list[i].getClientRects().length) out.push(list[i]);
+    return out;
+  }
+  window.addEventListener("resize", function () {
+    var b = doc.querySelector('[data-arr-menu][aria-expanded="true"]');
+    if (b) placeMenu(b, panelOf(b));
+  });
+  window.addEventListener(
+    "scroll",
+    function () {
+      var b = doc.querySelector('[data-arr-menu][aria-expanded="true"]');
+      if (b) placeMenu(b, panelOf(b));
+    },
+    { passive: true }
+  );
+
+  /* ── v1.2 · the footer: <arrival-footer> ──────────────────────────────────────────────────
+     ARRIVAL.footer = { label?, groups: [{ label, icon, items: [navId | link] }], note? }. Without
+     groups it repeats the nav: its links as one group, then each dropdown as its own. */
+  function renderFooter(host) {
+    var F = C.footer || {};
+    var byNav = navLinks();
+    var groups = F.groups;
+    if (!groups) {
+      var items = navItems();
+      groups = [{ label: (NAV && NAV.menuMain) || W.menuMain, icon: "compass", items: items.filter(function (x) { return !x.items; }) }].concat(
+        items.filter(function (x) { return x.items; }).map(function (g) { return { label: g.label, icon: g.icon, items: g.items }; })
+      );
+    }
+    var html = groups
+      .map(function (g) {
+        var links = (g.items || [])
+          .map(function (x) { return typeof x === "string" ? byNav[x] : x; })
+          .filter(visibleOn);
+        if (!links.length) return "";
+        return (
+          '<section class="arr-foot-group"><p class="arr-foot-h">' + icon(g.icon || "list") + esc(g.label) + "</p><ul>" +
+          links.map(function (x) { return "<li>" + linkTag(x, "arr-foot-a", host.getAttribute("current")) + "</li>"; }).join("") +
+          "</ul></section>"
+        );
+      })
+      .join("");
+    if (!html) {
+      host.hidden = true;
+      return;
+    }
+    host.innerHTML =
+      '<nav class="arr-foot" aria-label="' + esc(F.label || W.footer) + '"><div class="arr-foot-groups">' + html + "</div>" +
+      (F.note ? '<p class="arr-foot-note">' + F.note + "</p>" : "") + "</nav>";
+    if (fresh.length) markNew(host);
+  }
+
+  /* ── v1.2 · contact and community modals ──────────────────────────────────────────────────
+     ARRIVAL.contact = { title?, intro?, paths: [{ kind: "form" | "email" | "page" | "github" | "chat",
+       label, href, note?, action?, icon?, placeholder? (text: shown instead of a link) }], fine?,
+       intercept? (default true: a click on a link to one of these paths opens the modal instead) }
+     ARRIVAL.community = { …v1.0 keys for the guide…, title?, intro?, platforms: [{ id, kind:
+       "discord" | "telegram" | "mighty" | "whatsapp" | "substack" | "bespoke" | …, name, text?,
+       status?: "live" | "soon", public?: { href, label, note }, join?: { href, label, note } }],
+       bespoke?: { title, tag?, text, points?: [], note? }, fine?, intercept? (default true) }
+     Placeholders never get a made-up link: a missing href renders as "coming soon". */
+  var CONTACT = site.contact !== undefined ? site.contact : C.contact || null;
+  var COMM = site.community !== undefined ? site.community : C.community || null;
+  var hasContact = !!(CONTACT && CONTACT.paths && CONTACT.paths.length);
+  var hasCommunity = !!(COMM && ((COMM.platforms && COMM.platforms.length) || COMM.bespoke));
+  var PLATFORM = {
+    discord: ["Discord", "discord-logo"],
+    telegram: ["Telegram", "telegram-logo"],
+    mighty: ["Mighty Networks", "users-three"],
+    whatsapp: ["WhatsApp", "whatsapp-logo"],
+    substack: ["Substack", "newspaper-clipping"],
+    bespoke: ["Our own network", "graph"],
+    forum: ["Forum", "chats-teardrop"],
+    email: ["Email list", "envelope-simple"],
+  };
+  function hostOf(href) {
+    try {
+      var u = new URL(href, location.href);
+      if (u.protocol === "mailto:") return decodeURIComponent(u.pathname);
+      return (u.host.replace(/^www\./, "") + u.pathname).replace(/\/+$/, "");
+    } catch (e) {
+      return href;
+    }
+  }
+  function modalHead(title, eyebrow, id) {
+    return (
+      '<div class="arr-modal-head"><div class="arr-head">' + markHTML() +
+      '<span class="arr-eyebrow">' + esc(org.short || "") + (eyebrow ? " · " + esc(eyebrow) : "") + "</span></div>" +
+      '<button type="button" class="arr-x arr-shape" data-arr-close aria-label="' + esc(W.close) + '">' + icon("x") + "</button></div>" +
+      '<h2 class="arr-title" id="' + id + '">' + esc(title) + "</h2>"
+    );
+  }
+  function softPlaceholder(text, tag) {
+    return '<p class="arr-placeholder arr-shape">' + icon("note-pencil") + "<span><strong>" + esc(tag || "Placeholder.") + "</strong> " + text + "</span></p>";
+  }
+  function pathRow(p) {
+    var ic = p.icon || { form: "note-pencil", email: "envelope-simple", page: "address-book", github: "github-logo", chat: "chat-circle-text", phone: "phone" }[p.kind] || "arrow-square-out";
+    var head = '<span class="arr-path-icon arr-shape">' + icon(ic) + '</span><div class="arr-path-main"><h3>' + esc(p.label) + "</h3>";
+    if (!p.href || p.placeholder) {
+      return '<li class="arr-path arr-shape is-placeholder">' + head + (p.note ? "<p>" + p.note + "</p>" : "") + softPlaceholder(p.placeholder || "This way in isn't set up yet.") + "</div></li>";
+    }
+    var mail = /^mailto:/i.test(p.href);
+    var where = hostOf(p.href);
+    return (
+      '<li class="arr-path arr-shape">' + head + (p.note ? "<p>" + p.note + "</p>" : "") +
+      '<div class="arr-path-actions"><a class="arr-btn arr-btn-primary arr-shape" href="' + esc(p.href) + '"' + (mail ? "" : ' rel="noopener"') + ">" +
+      icon(mail ? "paper-plane-tilt" : "arrow-square-out") + esc(p.action || (mail ? W.writeEmail : W.openLink)) + "</a>" +
+      (mail ? '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-arr-copy="' + esc(where) + '">' + icon("copy") + esc(W.copyAddress) + "</button>" : "") +
+      '<span class="arr-path-where">' + esc(where) + "</span></div></div></li>"
+    );
+  }
+  var contactEl = null;
+  function openContact() {
+    if (!hasContact) return;
+    if (!contactEl) {
+      contactEl = makeDialog("arr-modal arr-contact", "arr-contact-title");
+      contactEl.innerHTML = panel(
+        modalHead(CONTACT.title || W.contact, W.contact, "arr-contact-title") +
+        '<p class="arr-intro">' + (CONTACT.intro || esc(W.contactIntro)) + "</p>" +
+        '<ul class="arr-paths">' + CONTACT.paths.map(pathRow).join("") + "</ul>" +
+        (CONTACT.fine ? '<p class="arr-fine">' + CONTACT.fine + "</p>" : ""),
+        "arr-modal-panel"
+      );
+    }
+    show(contactEl, contactEl.querySelector(".arr-path a, .arr-path button") || contactEl.querySelector("[data-arr-close]"));
+  }
+  function platLink(l, which) {
+    var ic = which === "public" ? "globe-simple" : "sign-in";
+    var label = (l && l.label) || (which === "public" ? W.publicLink : W.joinLink);
+    var note = l && l.note ? '<span class="arr-plat-note">' + esc(l.note) + "</span>" : "";
+    if (!l || !l.href) {
+      return '<span class="arr-plat-link is-off"><span class="arr-btn arr-btn-quiet arr-shape" aria-disabled="true">' + icon(ic) + esc(label) + '</span><span class="arr-plat-note">' + esc(W.soon) + "</span></span>";
+    }
+    return (
+      '<span class="arr-plat-link"><a class="arr-btn ' + (which === "join" ? "arr-btn-primary" : "arr-btn-quiet") + ' arr-shape" href="' + esc(l.href) + '" rel="noopener">' +
+      icon(ic) + esc(label) + "</a>" + note + "</span>"
+    );
+  }
+  function platCard(p) {
+    var k = PLATFORM[p.kind] || [p.kind || "", "chats-circle"];
+    var soon = p.status === "soon" || (!(p.public && p.public.href) && !(p.join && p.join.href));
+    return (
+      '<li class="arr-plat arr-shape' + (soon ? " is-soon" : "") + '"><div class="arr-plat-head"><span class="arr-path-icon arr-shape">' + icon(p.icon || k[1]) + "</span>" +
+      '<div class="arr-plat-title"><h3>' + esc(p.name || k[0]) + "</h3>" +
+      '<span class="arr-plat-kind">' + esc(k[0]) + (soon ? ' · <span class="arr-soon">' + esc(W.soon) + "</span>" : "") + "</span></div></div>" +
+      (p.text ? "<p>" + p.text + "</p>" : "") +
+      '<div class="arr-plat-links">' + platLink(p.public, "public") + platLink(p.join, "join") + "</div></li>"
+    );
+  }
+  function bespokeCard(b) {
+    if (!b) return "";
+    return (
+      '<li class="arr-plat arr-plat-bespoke arr-shape"><div class="arr-plat-head"><span class="arr-path-icon arr-shape">' + icon(b.icon || "graph") + "</span>" +
+      '<div class="arr-plat-title"><h3>' + esc(b.title || "A network of our own") + '</h3><span class="arr-plat-kind"><span class="arr-soon">' + esc(b.tag || W.sneak) + "</span></span></div></div>" +
+      (b.text ? "<p>" + b.text + "</p>" : "") +
+      (b.points && b.points.length ? '<ul class="arr-ticks">' + b.points.map(function (x) { return "<li>" + icon("sparkle") + "<span>" + x + "</span></li>"; }).join("") + "</ul>" : "") +
+      (b.note ? '<p class="arr-fine">' + b.note + "</p>" : "") + "</li>"
+    );
+  }
+  var communityEl = null;
+  function openCommunity() {
+    if (!hasCommunity) {
+      if (COMM && COMM.href) location.href = COMM.href;
+      return;
+    }
+    if (!communityEl) {
+      communityEl = makeDialog("arr-modal arr-community", "arr-community-title");
+      communityEl.innerHTML = panel(
+        modalHead(COMM.title || W.community, COMM.eyebrow || "Community", "arr-community-title") +
+        '<p class="arr-intro">' + (COMM.intro || esc(W.communityIntro)) + "</p>" +
+        '<ul class="arr-plats">' + (COMM.platforms || []).map(platCard).join("") + bespokeCard(COMM.bespoke) + "</ul>" +
+        (COMM.fine ? '<p class="arr-fine">' + COMM.fine + "</p>" : ""),
+        "arr-modal-panel"
+      );
+    }
+    show(communityEl, communityEl.querySelector(".arr-plat a") || communityEl.querySelector("[data-arr-close]"));
+  }
+  // Links that are really "contact" or "community" access points open the modal instead (a plain
+  // click only: modifier and middle clicks still go straight there).
+  var interceptMap = null;
+  function intercepts() {
+    if (interceptMap) return interceptMap;
+    interceptMap = {};
+    var add = function (href, what) {
+      if (!href) return;
+      var k = /^mailto:/i.test(href) ? "mailto:" + hostOf(href).toLowerCase() : normUrl(href);
+      if (k) interceptMap[k] = what;
+    };
+    if (hasContact && CONTACT.intercept !== false) CONTACT.paths.forEach(function (p) { if (!p.placeholder) add(p.href, "contact"); });
+    if (hasCommunity && COMM.intercept !== false) {
+      (COMM.platforms || []).forEach(function (p) {
+        add(p.public && p.public.href, "community");
+        add(p.join && p.join.href, "community");
+      });
+    }
+    return interceptMap;
+  }
+  function interceptOf(a) {
+    var href = typeof a === "string" ? a : a.getAttribute("href");
+    if (!href || href.charAt(0) === "#") return null;
+    var k = /^mailto:/i.test(href) ? "mailto:" + hostOf(href).toLowerCase() : normUrl(href);
+    return intercepts()[k] || null;
+  }
+
+  /* ── v1.2 · the donate page: <arrival-donate> ─────────────────────────────────────────────
+     ARRIVAL.donate = { give: [{ label, href, icon?, note?, action? }], disclaimer?: { title?, text,
+       placeholder? }, ledger?: { src (a contributors.json), title?, intro?, empty? }, crypto?:
+       { title?, text?, note? } }. contributors.json: { updated, contributors: [{ name, github?,
+       url?, kind?, since?, note? }] }, people who opted in to be named, nobody else. The crypto
+       slot stays empty until a wallet module fills [data-arr-wallet-slot]; it never shows an
+       address on its own. */
+  var KINDS = { gift: ["Gift", "gift"], sponsor: ["Sponsor", "handshake"], time: ["Time and skills", "hand-heart"], "in-kind": ["In kind", "package"], founding: ["Founding", "plant"] };
+  function renderDonate(el) {
+    var D = C.donate || {};
+    var L = D.ledger || null;
+    var X = D.crypto || {};
+    var n = ++uid;
+    var h = "";
+    if (D.give && D.give.length) {
+      h +=
+        '<section class="arr-give" aria-label="' + esc(D.giveLabel || "Ways to give") + '">' +
+        D.give.map(function (g, i) {
+          return (
+            '<div class="arr-give-card arr-shape' + (i ? "" : " is-primary") + '"><h2>' + icon(g.icon || "heart") + esc(g.label) + "</h2>" +
+            (g.note ? "<p>" + g.note + "</p>" : "") +
+            (g.href
+              ? '<a class="arr-btn ' + (i ? "arr-btn-quiet" : "arr-btn-primary") + ' arr-shape" href="' + esc(g.href) + '" rel="noopener">' + esc(g.action || "Give") + icon("arrow-square-out") + "</a>" +
+                '<span class="arr-path-where">' + esc(hostOf(g.href)) + "</span>"
+              : softPlaceholder(g.placeholder || "This way to give isn't set up yet.")) +
+            "</div>"
+          );
+        }).join("") +
+        "</section>";
+    }
+    if (D.disclaimer) {
+      var dc = D.disclaimer;
+      h +=
+        '<aside class="arr-disclaimer arr-shape' + (dc.placeholder ? " is-placeholder" : "") + '" aria-label="' + esc(dc.title || "Please note") + '">' +
+        '<p class="arr-disclaimer-h">' + icon(dc.placeholder ? "note-pencil" : "info") + esc(dc.title || "Please note") + (dc.placeholder ? ' <span class="arr-soon">Placeholder</span>' : "") + "</p>" +
+        "<p>" + dc.text + "</p></aside>";
+    }
+    if (L) {
+      h +=
+        '<section class="arr-contrib" aria-labelledby="arr-contrib-' + n + '"><h2 id="arr-contrib-' + n + '">' + icon("hand-heart") + esc(L.title || "Contribution ledger") + "</h2>" +
+        (L.intro ? '<p class="arr-intro">' + L.intro + "</p>" : "") + '<div data-arr-contrib><p class="arr-fine">Gathering the names…</p></div></section>';
+    }
+    h +=
+      '<section class="arr-crypto arr-shape" data-arr-wallet-slot aria-labelledby="arr-crypto-' + n + '">' +
+      '<h2 id="arr-crypto-' + n + '">' + icon(X.icon || "wallet") + esc(X.title || "Give with crypto") + ' <span class="arr-soon">' + esc(W.soon) + "</span></h2>" +
+      "<p>" + (X.text || "A way to give with a crypto wallet is on its way. It isn't open yet.") + "</p>" +
+      '<p class="arr-fine">' + (X.note || "No wallet address is published here yet. If you see one anywhere claiming to be ours, please check with us first.") + "</p></section>";
+    el.innerHTML = h;
+    if (!L) return;
+    var box = el.querySelector("[data-arr-contrib]");
+    var empty = function () {
+      box.innerHTML = '<div class="arr-contrib-empty arr-shape">' + icon("plant") + "<p>" + (L.empty || "No names here yet. People who'd like to be thanked by name are listed here, only with their permission. Giving without a name is just as welcome.") + "</p></div>";
+    };
+    if (!L.src || !window.fetch) return empty();
+    fetch(L.src, { credentials: "omit" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .catch(function () { return null; })
+      .then(function (j) {
+        var list = (j && j.contributors) || [];
+        if (!list.length) return empty();
+        box.innerHTML =
+          '<ul class="arr-contrib-list">' +
+          list.map(function (c) {
+            var k = KINDS[c.kind] || (c.kind ? [c.kind, "heart"] : null);
+            var name = c.url || c.github ? '<a href="' + esc(c.url || "https://github.com/" + c.github) + '" rel="noopener">' + esc(c.name) + "</a>" : esc(c.name);
+            return (
+              '<li class="arr-contrib-item arr-shape">' + avatarTag(c, 48) +
+              '<span class="arr-person"><span class="arr-person-name">' + name + "</span>" +
+              (k ? '<span class="arr-contrib-kind">' + icon(k[1]) + esc(k[0]) + (c.since ? " · since " + esc(fmtMonth(c.since)) : "") + "</span>" : c.since ? '<span class="arr-contrib-kind">Since ' + esc(fmtMonth(c.since)) + "</span>" : "") +
+              (c.note ? '<span class="arr-person-role">' + esc(c.note) + "</span>" : "") + "</span></li>"
+            );
+          }).join("") +
+          "</ul>" + (j.updated ? '<p class="arr-fine">Updated ' + esc(fmtDate(j.updated, true)) + ".</p>" : "");
+      });
+  }
+  function fmtMonth(s) {
+    var m = /^(\d{4})-(\d{2})/.exec(String(s || ""));
+    if (!m) return s;
+    try {
+      return new Date(Date.UTC(+m[1], +m[2] - 1, 15)).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
+    } catch (e) {
+      return s;
+    }
+  }
+
+  /* ── v1.2 · the site map: <arrival-map src here> ──────────────────────────────────────────
+     Reads a map.json (version 2), published by the AstroLog:
+       { version: 2, title, desc, groups: [{ id, label, icon?, note? }], nodes: [{ id, group, name,
+         line?, href?, open?, og? (absolute URL of its share image), icon?, self?, external? }] }
+     and draws every destination as a card with its share image as the thumbnail. A node whose
+     `self` equals `here` (default: this page's site id) says "You are here". The AstroLog renders
+     the same markup at build time (MapGrid.astro), so both maps look alike. */
+  function mapCard(nd, here) {
+    var isHere = !!(here && nd.self === here);
+    var thumb =
+      '<span class="arr-map-thumb arr-shape">' +
+      (nd.og ? '<img src="' + esc(nd.og) + '" alt="" width="1200" height="630" loading="lazy" decoding="async">' : '<span class="arr-map-noimg">' + icon(nd.icon || "globe-simple") + "</span>") +
+      (isHere ? '<span class="arr-map-here">' + icon("map-pin") + esc(W.youAreHere) + "</span>" : "") + "</span>";
+    var body =
+      '<span class="arr-map-body"><span class="arr-map-name">' + icon(nd.icon || "arrow-right") + "<span>" + esc(nd.name) + "</span>" +
+      (nd.external ? '<i class="ph ph-arrow-up-right arr-map-ext" aria-hidden="true"></i>' : "") + "</span>" +
+      (nd.line ? '<span class="arr-map-line">' + esc(nd.line) + "</span>" : "") +
+      (nd.href ? '<span class="arr-map-url">' + esc(hostOf(nd.href)) + "</span>" : "") + "</span>";
+    return (
+      '<li class="arr-map-item">' +
+      (nd.href
+        ? '<a class="arr-map-card arr-shape' + (isHere ? " is-here" : "") + '" href="' + esc(nd.href) + '"' + (nd.open ? ' data-arrival-open="' + esc(nd.open) + '"' : "") + (isHere ? ' aria-current="page"' : "") + ">" + thumb + body + "</a>"
+        : '<div class="arr-map-card arr-shape is-static">' + thumb + body + "</div>") +
+      "</li>"
+    );
+  }
+  function mapHTML(m, here) {
+    var groups = m.groups && m.groups.length ? m.groups : [{ id: "", label: "" }];
+    return groups
+      .map(function (g) {
+        var nodes = (m.nodes || []).filter(function (nd) { return (nd.group || "") === (g.id || ""); });
+        if (!nodes.length) return "";
+        return (
+          '<section class="arr-map-group">' + (g.label ? '<h2 class="arr-map-h">' + icon(g.icon || "map-trifold") + esc(g.label) + "</h2>" : "") +
+          (g.note ? '<p class="arr-map-note">' + esc(g.note) + "</p>" : "") +
+          '<ul class="arr-map-grid">' + nodes.map(function (nd) { return mapCard(nd, here); }).join("") + "</ul></section>"
+        );
+      })
+      .join("");
+  }
+  function renderMap(el) {
+    var src = el.getAttribute("src") || (C.map && C.map.src);
+    var here = el.getAttribute("here") || siteId;
+    if (!src || !window.fetch) return;
+    el.innerHTML = '<p class="arr-fine">' + esc(W.mapLoading) + "</p>";
+    fetch(src, { credentials: "omit" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .catch(function () { return null; })
+      .then(function (m) {
+        if (!m || !m.nodes) {
+          el.innerHTML = softPlaceholder("The map couldn't be drawn just now. Try again in a moment, or use the links in the menu.", "Not this time.");
+          return;
+        }
+        el.innerHTML = '<div class="arr-map">' + mapHTML(m, here) + "</div>";
+        if (fresh.length) markNew(el);
+      });
   }
 
   /* ── custom elements (defined here in <head>, so they render as the parser reaches them) ── */
@@ -1625,6 +2396,10 @@
   define("arrival-avatar", renderAvatar);
   define("arrival-people", renderPeople);
   define("arrival-latest", renderLatest);
+  define("arrival-nav", renderNav);
+  define("arrival-footer", renderFooter);
+  define("arrival-donate", renderDonate);
+  define("arrival-map", renderMap);
 
   /* ── cursor effects: a trail behind the pointer, per motion level ────────────────────────
      motions[i].trail = true | { colors: [...], life: ms, width: px, alpha: 0..1, sparks: 0..1,
@@ -1760,14 +2535,53 @@
     else if (t.matches("[data-arr-motion]")) set({ motion: t.value }, tentative);
     else if (t.matches("[data-arr-contrast]")) set({ contrast: t.checked ? "more" : "standard" }, tentative);
     else if (t.matches("[data-arr-cursor]")) set({ cursor: t.checked ? "on" : "off" }, tentative);
+    else if (t.matches("[data-arr-text]")) set({ text: t.value }, tentative);
+    else if (t.matches("[data-arr-measure]")) set({ measure: t.checked ? "comfy" : "full" }, tentative);
     else if (t.matches("[data-arr-reading]")) {
       if (t.checked !== (state.reading === "on")) toggleReading(tentative);
     }
   });
+  function canOpen(what) {
+    if (what === "contact") return hasContact;
+    if (what === "community") return hasCommunity;
+    return true;
+  }
   doc.addEventListener("click", function (e) {
     var t = e.target && e.target.closest ? e.target : null;
     if (!t) return;
     var b;
+    // v1.2: the nav's dropdowns and the Menu
+    if ((b = t.closest("[data-arr-nav-toggle], [data-arr-menu]"))) {
+      if (b.getAttribute("aria-expanded") === "true") closeNavs(true);
+      else openNav(b);
+      return;
+    }
+    if (!t.closest(".arr-nav-menu, .arr-menu-panel")) closeNavs(false);
+    if ((b = t.closest("[data-arr-copy]"))) {
+      var text = b.getAttribute("data-arr-copy");
+      try {
+        navigator.clipboard.writeText(text).then(function () { toast(W.addressCopied); }, function () { toast(text); });
+      } catch (err) {
+        toast(text);
+      }
+      return;
+    }
+    if ((b = t.closest("[data-arr-news-tip]"))) {
+      ackNews();
+      open("search");
+      return;
+    }
+    // A plain click on a link that is really a contact or community access point opens its modal.
+    var a = t.closest("a[href]");
+    if (a && !e.defaultPrevented && e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey && !a.closest(".arr-dialog") && !a.hasAttribute("data-arrival-open") && !a.hasAttribute("data-arr-direct")) {
+      var via = interceptOf(a);
+      if (via && canOpen(via)) {
+        e.preventDefault();
+        closeDrawers(false);
+        open(via);
+        return;
+      }
+    }
     if ((b = t.closest("[data-arr-swatch]"))) {
       set({ light: b.getAttribute("data-arr-swatch") });
     } else if ((b = t.closest("[data-arr-cursor-toggle]"))) {
@@ -1788,8 +2602,13 @@
       else openDrawer(b);
       return;
     } else if ((b = t.closest("[data-arrival-open]"))) {
-      e.preventDefault();
       var what = b.getAttribute("data-arrival-open");
+      // Without a configured modal, a link keeps its own href (the no-JS fallback).
+      if (!canOpen(what)) return;
+      if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey) {
+        if (b.tagName === "A" && b.getAttribute("href") && b.getAttribute("href").charAt(0) !== "#") return;
+      }
+      e.preventDefault();
       closeDrawers(false);
       if (splashEl && splashEl.open) hide(splashEl, true);
       open(what, b.getAttribute("data-arrival-step"));
@@ -1807,7 +2626,17 @@
     } else if ((b = t.closest("[data-arr-next]"))) {
       goStep(step + 1);
     }
-    if (!t.closest(".arr-drawer-wrap")) closeDrawers(false);
+    if (!t.closest(".arr-drawer-wrap, .arr-nav-menu, .arr-menu-panel")) closeDrawers(false);
+  });
+  // Focus leaving an open dropdown or Menu (Tab past its last link) closes it.
+  doc.addEventListener("focusin", function (e) {
+    var open = doc.querySelectorAll('[data-arr-nav-toggle][aria-expanded="true"], [data-arr-menu][aria-expanded="true"]');
+    for (var i = 0; i < open.length; i++) {
+      var p = panelOf(open[i]);
+      if (e.target === open[i] || (p && p.contains(e.target))) continue;
+      closeNavs(false);
+      break;
+    }
   });
   function typing(el) {
     if (!el) return false;
@@ -1825,12 +2654,46 @@
       return;
     }
     if (k === "Escape") {
+      var openN = doc.querySelector('[data-arr-nav-toggle][aria-expanded="true"], [data-arr-menu][aria-expanded="true"]');
+      if (openN) {
+        e.preventDefault();
+        closeNavs(true);
+        return;
+      }
       var openD = doc.querySelector('[data-arr-drawer][aria-expanded="true"]');
       if (openD) {
         e.preventDefault();
         closeDrawers(true);
       }
+      hideTip();
       return;
+    }
+    // Arrow keys inside the nav: Down on a dropdown button opens it; Up/Down/Home/End move between
+    // its links (Tab works too, and leaving closes it).
+    if (k === "ArrowDown" || k === "ArrowUp" || k === "Home" || k === "End") {
+      var tg = e.target && e.target.closest ? e.target.closest("[data-arr-nav-toggle], [data-arr-menu]") : null;
+      var pnl = e.target && e.target.closest ? e.target.closest(".arr-nav-menu, .arr-menu-panel") : null;
+      if (tg && k === "ArrowDown") {
+        e.preventDefault();
+        if (tg.getAttribute("aria-expanded") !== "true") openNav(tg);
+        var first = navRows(panelOf(tg))[0];
+        if (first) first.focus();
+        return;
+      }
+      if (pnl && !pnl.hidden) {
+        var rows = navRows(pnl);
+        var at = rows.indexOf(doc.activeElement);
+        if (!rows.length) return;
+        e.preventDefault();
+        var to = k === "Home" ? 0 : k === "End" ? rows.length - 1 : at + (k === "ArrowDown" ? 1 : -1);
+        if (to < 0) {
+          var own = doc.querySelector('[aria-controls="' + pnl.id + '"]');
+          if (own) own.focus();
+          return;
+        }
+        rows[Math.min(rows.length - 1, to)].focus();
+        return;
+      }
     }
     if (typing(e.target) || e.metaKey || e.ctrlKey || e.altKey) return;
     if (k === "/") {
@@ -1851,6 +2714,7 @@
   });
   window.addEventListener("hashchange", function () {
     if (location.hash === "#welcome") open("guide");
+    else if ((location.hash === "#contact" || location.hash === "#community") && canOpen(location.hash.slice(1))) open(location.hash.slice(1));
   });
 
   function open(what, at) {
@@ -1858,6 +2722,8 @@
     else if (what === "guide") openGuide(at || undefined);
     else if (what === "splash") openSplash();
     else if (what === "copy") copyLink();
+    else if (what === "contact") openContact();
+    else if (what === "community") openCommunity();
   }
   function close() {
     stack.slice().forEach(function (d) { hide(d); });
@@ -1867,6 +2733,7 @@
     startVisit();
     sync();
     if (location.hash === "#welcome") openGuide();
+    else if ((location.hash === "#contact" || location.hash === "#community") && canOpen(location.hash.slice(1))) open(location.hash.slice(1));
     else if (splashWanted()) openSplash();
     if (doc.querySelector("arrival-people, arrival-latest")) index();
     else idle(index);

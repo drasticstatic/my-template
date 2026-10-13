@@ -1,6 +1,6 @@
 ---
-// Arrival kit · the ledger's body: a calm, filterable record of public commits, grouped by month,
-// day and repository. Canonical copy: drasticstatic/my-template changelog-template/arrival/astro/
+// Arrival kit · the ledger's body (v2): a calm, filterable record of commits, grouped by month, day
+// and repository. Canonical copy: drasticstatic/my-template changelog-template/arrival/astro/
 // Ledger.astro. Copy unchanged; the page around it (src/pages/ledger.astro) supplies the heading,
 // the intro and the site layout. Styling uses only the kit's tokens, so it takes each org's lights.
 //
@@ -12,15 +12,18 @@
 //   ---
 //   <Ledger ledger={ledger} colors={WEDGES} openMonths={2} />
 //
-// Every row links to the commit on GitHub. Rows carry the commit URL, so the arrival kit's
-// "what's new" marks the ones newer than the visitor's last visit (and fills the New tag).
+// Every public row links to the commit on GitHub (so the arrival kit's "what's new" marks the ones
+// newer than the visitor's last visit and fills the New tag). A private row (v2) is masked and links
+// nowhere: repository, day, time, kind and priority only. Each row: kind, priority badge, summary,
+// then the person (first name + last initial, linked to their GitHub profile; a generated picture
+// when they ask for one), and an agent row when an AI co-authored it ("with Alfred · Claude Code").
 interface Props {
   ledger: any;
   /** One color per kind, in the ledger's kind order (an org's wedge colors work well). */
   colors?: string[];
   /** How many months start open. */
   openMonths?: number;
-  /** Words for the people who made each change, e.g. "with" in "Christopher with Alfred". */
+  /** The word before the agents, e.g. "with" in "with Alfred · Claude Code". */
   withWord?: string;
 }
 const { ledger, colors = ["#7c6cf2", "#c46be0", "#e07a9b", "#e39b4e", "#c9b648", "#6fbf5a", "#45b8c9", "#7b8ba6", "#a08bd8"], openMonths = 2, withWord = "with" } = Astro.props;
@@ -32,11 +35,20 @@ const generated = ledger.generated
   ? new Date(ledger.generated).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", timeZone: ledger.timeZone ?? "UTC", timeZoneName: "short" })
   : null;
 const f = ledger.filtered ?? {};
+const pub = ledger.shownPublic ?? ledger.shown;
+const priv = ledger.shownPrivate ?? 0;
+const pubRepos = (ledger.repos ?? []).filter((r: any) => !r.private).length;
+const privRepos = (ledger.repos ?? []).filter((r: any) => r.private).length;
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+// v1 snapshots: `github` was the picture and `with` the co-authors.
+const pictureOf = (who: any) => (who.avatar ? (who.avatar === "github" ? who.github : undefined) : who.github) ?? undefined;
+const agentsOf = (it: any): string[] => (it.agents ? it.agents.map((a: any) => a.label) : it.with ?? []);
 const left = [
   f.merges ? `${f.merges} ${f.merges === 1 ? "merge" : "merges"}` : "",
   f.mirrors ? `${f.mirrors} automatic ${f.mirrors === 1 ? "publish" : "publishes"}` : "",
   f.bots ? `${f.bots} bot ${f.bots === 1 ? "chore" : "chores"}` : "",
   f.undone ? `${f.undone} ${f.undone === 1 ? "change" : "changes"} that cancelled out (a change and its undo)` : "",
+  f.copies ? `${f.copies} private ${f.copies === 1 ? "change" : "changes"} already shown through a public copy` : "",
 ].filter(Boolean);
 ---
 
@@ -45,8 +57,8 @@ const left = [
     ledger.shown > 0 ? (
       <>
         <p class="lg-summary">
-          <strong>{ledger.shown} public {ledger.shown === 1 ? "change" : "changes"}</strong> across {ledger.repos.length}{" "}
-          {ledger.repos.length === 1 ? "repository" : "repositories"}, from {fmt(ledger.first)} to {fmt(ledger.last)}.
+          <strong>{plural(pub, "public change", "public changes")}</strong> across {plural(pubRepos, "repository", "repositories")}, from {fmt(ledger.first)} to {fmt(ledger.last)}.
+          {priv > 0 && <span> Also <strong>{plural(priv, "private change", "private changes")}</strong> in {plural(privRepos, "private repository", "private repositories")}, shown masked: where and when the work happened and what kind it was, never its words.</span>}
           {left.length > 0 && <span> Left out as noise: {left.join(", ")}.</span>}
           {generated && <span class="lg-fresh"> Gathered {generated}{ledger.from === "snapshot" ? " (from the saved copy; the live fetch was unavailable)" : ""}.</span>}
         </p>
@@ -67,8 +79,10 @@ const left = [
               <span class="arr-sr">Repository</span>
               <select data-lg-repo>
                 <option value="all">Every repository</option>
+                {privRepos > 0 && <option value="@public">Public repositories</option>}
+                {privRepos > 0 && <option value="@private">Private work (masked)</option>}
                 {ledger.repos.map((r: any) => (
-                  <option value={r.name}>{r.label} ({r.count})</option>
+                  <option value={r.name}>{r.label}{r.private ? " · private" : ""} ({r.count})</option>
                 ))}
               </select>
             </label>
@@ -93,34 +107,56 @@ const left = [
                 <h3 class="lg-day-name"><time datetime={day.date}>{day.label}</time></h3>
                 {day.groups.map((g: any) => (
                   <div class="lg-group" data-lg-group>
-                    <p class="lg-repo"><i class="ph ph-folder-simple" aria-hidden="true"></i>{g.label}</p>
+                    <p class="lg-repo">
+                      <i class={`ph ph-${g.private ? "lock-simple" : "folder-simple"}`} aria-hidden="true"></i>
+                      {g.label}
+                      {g.private && <span class="lg-private" title="A private repository: each change shows when it happened and what kind it was, never its words">private</span>}
+                    </p>
                     <ul class="lg-items">
                       {g.items.map((it: any) => (
                         <li
-                          class="lg-item"
+                          class:list={["lg-item", { "lg-has-agents": agentsOf(it).length > 0, "lg-item-private": it.private }]}
                           data-lg-item
                           data-kind={it.kind.id}
                           data-repo={it.repo}
-                          data-text={`${it.text} ${it.area} ${it.kind.name} ${it.who.name} ${it.with.join(" ")} ${it.repoLabel} ${it.short}`.toLowerCase()}
+                          data-private={it.private ? "1" : "0"}
+                          data-text={`${it.masked ? "private masked" : it.text} ${it.area ?? ""} ${it.kind.name} ${it.priority ? `${it.priority.name} priority` : ""} ${it.who.name} ${agentsOf(it).join(" ")} ${it.repoLabel} ${it.private ? "private" : ""} ${it.short}`.toLowerCase()}
                           style={`--k:${kindColor[it.kind.id]}`}
                         >
                           <span class="lg-kind" title={it.kind.name}>
                             <i class={`ph ph-${it.kind.icon}`} aria-hidden="true"></i>
                             <span class="lg-kind-name">{it.kind.name}</span>
                           </span>
-                          <a class="lg-text" href={it.url}>
-                            {it.area && <span class="lg-area">{it.area}</span>}
-                            {it.text}
-                            <span data-arr-new-tag hidden></span>
-                          </a>
+                          {it.url ? (
+                            <a class="lg-text" href={it.url}>
+                              {it.priority && <span class="lg-prio" data-p={it.priority.id} title={`Priority: ${it.priority.name.toLowerCase()}`}><i class={`ph ph-${it.priority.icon}`} aria-hidden="true"></i>{it.priority.name}</span>}
+                              {it.area && <span class="lg-area">{it.area}</span>}
+                              {it.text}
+                              <span data-arr-new-tag hidden></span>
+                            </a>
+                          ) : (
+                            <span class="lg-text lg-text-private">
+                              {it.priority && <span class="lg-prio" data-p={it.priority.id} title={`Priority: ${it.priority.name.toLowerCase()}`}><i class={`ph ph-${it.priority.icon}`} aria-hidden="true"></i>{it.priority.name}</span>}
+                              {it.area && <span class="lg-area">{it.area}</span>}
+                              {it.masked ? <span class="lg-mask" aria-hidden="true">{it.text}</span> : it.text}
+                              {it.masked && <span class="arr-sr">A private change; its description stays private.</span>}
+                              <span data-arr-new-tag hidden></span>
+                            </span>
+                          )}
                           <span class="lg-meta">
-                            <arrival-avatar name={it.who.name} github={it.who.github ?? undefined} size={18} />
-                            <span>{it.who.name}{it.with.length > 0 && ` ${withWord} ${it.with.join(", ")}`}</span>
+                            <arrival-avatar name={it.who.name} github={pictureOf(it.who)} size={18} />
+                            {it.who.github ? <a class="lg-who" href={`https://github.com/${it.who.github}`}>{it.who.name}</a> : <span class="lg-who">{it.who.name}</span>}
                             <span aria-hidden="true">·</span>
                             <time datetime={it.ts}>{it.time}</time>
                             <span aria-hidden="true">·</span>
-                            <code title="The change's id on GitHub">{it.short}</code>
+                            <code title={it.private ? "The change's id (a private repository, so no link)" : "The change's id on GitHub"}>{it.short}</code>
                           </span>
+                          {agentsOf(it).length > 0 && (
+                            <span class="lg-agents">
+                              <i class="ph ph-robot" aria-hidden="true"></i>
+                              {withWord} {agentsOf(it).join(", ")}
+                            </span>
+                          )}
                         </li>
                       ))}
                     </ul>
@@ -155,7 +191,10 @@ const left = [
       items.forEach((li) => {
         const ok =
           (!kinds.size || kinds.has(li.dataset.kind ?? "")) &&
-          (repo.value === "all" || li.dataset.repo === repo.value) &&
+          (repo.value === "all" ||
+            (repo.value === "@public" && li.dataset.private !== "1") ||
+            (repo.value === "@private" && li.dataset.private === "1") ||
+            li.dataset.repo === repo.value) &&
           words.every((w) => li.dataset.text?.includes(w));
         li.hidden = !ok;
         if (ok) shown++;
@@ -374,6 +413,7 @@ const left = [
     align-items: center;
     gap: 0.35rem;
     grid-row: span 2;
+    align-self: start;
     font-size: 0.8rem;
     font-weight: 600;
     color: var(--muted);
@@ -397,6 +437,75 @@ const left = [
   .lg-text:hover {
     color: var(--accent);
     text-decoration: underline;
+  }
+  .lg-has-agents .lg-kind {
+    grid-row: span 3;
+  }
+  .lg-text-private:hover {
+    color: var(--foreground);
+    text-decoration: none;
+  }
+  .lg-mask {
+    color: color-mix(in srgb, var(--muted) 70%, transparent);
+    letter-spacing: -0.02em;
+    word-spacing: 0.15em;
+    user-select: none;
+  }
+  .lg-private {
+    padding: 0.05rem 0.4rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .lg-prio {
+    --p: #8a8f98;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    margin-right: 0.45rem;
+    padding: 0.05rem 0.4rem;
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--p) 16%, transparent);
+    color: color-mix(in srgb, var(--p) 72%, var(--foreground));
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    vertical-align: 0.08em;
+  }
+  .lg-prio[data-p="critical"] {
+    --p: #e5484d;
+  }
+  .lg-prio[data-p="high"] {
+    --p: #f07a2c;
+  }
+  .lg-prio[data-p="medium"] {
+    --p: #d5a021;
+  }
+  .lg-prio[data-p="low"] {
+    --p: #46a758;
+  }
+  .lg-who {
+    color: inherit;
+    text-decoration: none;
+  }
+  a.lg-who:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+  .lg-agents {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+  .lg-agents .ph {
+    color: var(--k, var(--accent));
   }
   .lg-text[data-arr-new] {
     margin-left: -0.5rem;
@@ -433,7 +542,8 @@ const left = [
     .lg-item {
       grid-template-columns: minmax(0, 1fr);
     }
-    .lg-kind {
+    .lg-kind,
+    .lg-has-agents .lg-kind {
       grid-row: auto;
     }
     .lg-day {

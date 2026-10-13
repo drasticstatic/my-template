@@ -3,7 +3,8 @@
 // URLs (the portal and other origins fetch it). Shape:
 //   { updated: ISO time, items: [{ type: "entry" | "doc" | "ledger", t, k, i, h, d, ts?, who? }] }
 // `ts` is an exact time (ledger commits); `d`-only items count from the end of their day, and the
-// kit remembers what a visitor already saw so a same-day entry isn't counted twice.
+// kit remembers what a visitor already saw so a same-day entry isn't counted twice. Ledger v2:
+// private rows come with their masked text and point at their day on the ledger page (`ledgerHref`).
 import { getCollection } from "astro:content";
 import { SITE, areaBySlug, entrySlug } from "../data/areas";
 import { loadLedger, ledgerNewsItems } from "../ledger/ledger.mjs";
@@ -25,7 +26,7 @@ export async function GET() {
       who: e.data.who,
     })),
     ...docs.map((d) => ({ type: "doc", t: d.data.title, k: "library", i: "book-open-text", h: at(`/library/${entrySlug(d.id)}`), d: d.data.date })),
-    ...ledgerNewsItems(ledger, { kicker: "ledger" }),
+    ...ledgerNewsItems(ledger, { kicker: "ledger", ledgerHref: at("/ledger") }),
   ].sort((a, b) => String(b.ts ?? b.d).localeCompare(String(a.ts ?? a.d)));
   return new Response(JSON.stringify({ updated: new Date().toISOString(), items }), {
     headers: { "Content-Type": "application/json" },
