@@ -73,7 +73,7 @@
   "use strict";
   if (window.Arrival) return;
 
-  var VERSION = "1.2.0";
+  var VERSION = "1.2.1";
   var C = window.ARRIVAL || {};
   var doc = document;
   var root = doc.documentElement;
@@ -1940,6 +1940,9 @@
       }).observe(host);
     }
     if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(function () { layoutNav(host); });
+    // A web font can finish loading after fonts.ready resolves (THEF's Literata/PapyrusStd did), which
+    // widens the labels without resizing the host. Measure again whenever any font finishes loading.
+    if (doc.fonts && doc.fonts.addEventListener) doc.fonts.addEventListener("loadingdone", function () { layoutNav(host); });
     syncNews();
   }
   function foldAt() {

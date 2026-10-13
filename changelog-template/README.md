@@ -762,7 +762,7 @@ Elements: `<arrival-nav current="<id>">` (in the header, between the brand and
 
 ### Porting checklist (per org)
 
-1. **Kit:** copy `arrival/arrival.js` + `arrival.css` (1.2.0) unchanged into `<org>.github.io/arrival/`.
+1. **Kit:** copy `arrival/arrival.js` + `arrival.css` (1.2.1) unchanged into `<org>.github.io/arrival/`.
 2. **org.js:** add `nav`, `footer`, `contact`, `community.platforms` + `bespoke`, `donate` (and
    `reading.sizes` if you want other steps). Facts only from the org's own materials; a path that
    doesn't exist is a `placeholder`, never a guessed URL. Contacts per org: PIR's `CONTACTS.md` +
