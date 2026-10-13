@@ -1541,7 +1541,10 @@
       el.innerHTML =
         '<ul class="arr-people' + (compact ? " arr-people-compact" : "") + '">' +
         ix.people.map(function (p) {
-          var name = p.github ? '<a href="https://github.com/' + esc(p.github) + '">' + esc(p.name) + "</a>" : esc(p.name);
+          // A GitHub handle gives the picture and the link; someone shown with a generated avatar can
+          // still have a profile link (search.json: profile), so their name links too.
+          var href = p.github ? "https://github.com/" + p.github : /^https:\/\//.test(p.profile || "") ? p.profile : "";
+          var name = href ? '<a href="' + esc(href) + '">' + esc(p.name) + "</a>" : esc(p.name);
           return (
             "<li>" + avatarTag(p, compact ? 36 : 48) +
             '<span class="arr-person"><span class="arr-person-name">' + name + "</span>" +
