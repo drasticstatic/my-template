@@ -48,7 +48,7 @@
   "use strict";
   if (window.Arrival) return;
 
-  var VERSION = "1.1.0";
+  var VERSION = "1.1.1";
   var C = window.ARRIVAL || {};
   var doc = document;
   var root = doc.documentElement;
@@ -1538,7 +1538,10 @@
         var k = keyOf(it);
         if (dup[k]) return;
         dup[k] = 1;
-        if (t >= now - 3 * DAY) visit.seen.push(k); // what this visit knows, for the next one
+        // What this visit knows, for the next one: recent items up to the end of today (a date-only
+        // item counts from the end of its day). Anything stamped later than that can't have been
+        // seen yet (a clock behind the server's), so it stays eligible to count as new.
+        if (t >= now - 3 * DAY && t <= now + DAY) visit.seen.push(k);
         if (!visit.first && t > visit.since && !prev[k]) out.push(assign({}, it, { _k: k, _t: t }));
       });
       visit.seen = uniqCap(visit.seen, 400);
