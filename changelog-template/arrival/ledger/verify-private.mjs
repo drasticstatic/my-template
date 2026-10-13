@@ -99,7 +99,7 @@ const forms = (subject) => {
 
 const pubToken = process.env.GITHUB_TOKEN ?? process.env.GH_TOKEN ?? token;
 const publicForms = new Set((await publicSubjects({ ...LEDGER, token: pubToken })).flatMap(forms));
-const subjects = await privateSubjects(LEDGER, token);
+const subjects = await privateSubjects(LEDGER, [token, process.env.GITHUB_TOKEN]);
 const unreadable = subjects.filter((s) => s.error);
 for (const u of unreadable) console.warn(`[leak-check] couldn't read ${u.repo} (${u.error}); its rows came masked from the snapshot`);
 

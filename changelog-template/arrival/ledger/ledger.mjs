@@ -333,17 +333,31 @@ export async function publicSubjects(cfg) {
   for (const r of await publicRepos(cfg)) for (const c of await commitsOf(cfg.owner, r.name, cfg.token, cfg)) out.push(String(c.commit?.message || "").split("\n")[0].trim());
   return out;
 }
-export async function privateSubjects(cfg, token) {
+export async function privateSubjects(cfg, tokens) {
   const out = [];
   for (const p of privateList(cfg)) {
     if (p.mask !== "full") continue;
     try {
-      for (const c of await commitsOf(p.owner, p.repo, token, cfg)) out.push({ repo: p.repo, short: c.sha.slice(0, 7), authored: c.commit?.author?.date, subject: String(c.commit?.message || "").split("\n")[0].trim() });
+      for (const c of await privateCommits(p, tokens, cfg)) out.push({ repo: p.repo, short: c.sha.slice(0, 7), authored: c.commit?.author?.date, subject: String(c.commit?.message || "").split("\n")[0].trim() });
     } catch (e) {
       out.push({ repo: p.repo, error: e.message });
     }
   }
   return out;
+}
+// A private repository's commits with the first token that can read it: LEDGER_TOKEN, then the
+// build's own token (in CI, the workflow's GITHUB_TOKEN can read the repository it runs in, so a
+// site's own AstroLog source stays live even when LEDGER_TOKEN can't reach it).
+async function privateCommits(p, tokens, cfg) {
+  let last = new Error("no token");
+  for (const t of [...new Set([tokens].flat().filter(Boolean))]) {
+    try {
+      return await commitsOf(p.owner, p.repo, t, cfg);
+    } catch (e) {
+      last = e;
+    }
+  }
+  throw last;
 }
 
 /* ── the whole ledger ─────────────────────────────────────────────────────────────────────── */
@@ -374,10 +388,11 @@ export async function buildLedger(cfg) {
   const keep = [];
   const notes = [];
   let snap;
+  const tokens = [cfg.privateToken, cfg.privateToken ? cfg.token : null];
   for (const p of priv) {
     if (cfg.privateToken) {
       try {
-        for (const c of await commitsOf(p.owner, p.repo, cfg.privateToken, cfg)) raw.push(reduce(p.repo, c, true));
+        for (const c of await privateCommits(p, tokens, cfg)) raw.push(reduce(p.repo, c, true));
         privateRepos.push(p);
         continue;
       } catch (e) {
