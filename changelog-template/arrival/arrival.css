@@ -239,7 +239,7 @@ html[data-motion="still"] .arr-cursor-btn .ph {
   align-items: center;
   gap: 0.45rem;
   width: max-content;
-  max-width: min(17rem, calc(100vw - 24px));
+  max-width: min(21rem, calc(100vw - 24px));
   padding: 0.55rem 0.8rem;
   background: var(--heading);
   color: var(--background);
@@ -255,7 +255,7 @@ html[data-motion="still"] .arr-cursor-btn .ph {
   content: "";
   position: absolute;
   top: -6px;
-  right: 1.1rem;
+  right: var(--arr-tip-arrow, 18px);
   width: 12px;
   height: 12px;
   background: inherit;
@@ -272,6 +272,29 @@ html[data-motion="still"] .arr-cursor-btn .ph {
 [data-arr-new] {
   box-shadow: inset 3px 0 0 var(--accent);
   background-image: linear-gradient(90deg, color-mix(in srgb, var(--accent) 11%, transparent), transparent 70%);
+}
+/* In the nav and footer, a link to something new gets a small dot instead of the row bar. */
+:is(arrival-nav, arrival-footer) [data-arr-new] {
+  box-shadow: none;
+  background-image: none;
+}
+:is(.arr-nav-a, .arr-nav-row, .arr-foot-a)[data-arr-new] {
+  position: relative;
+}
+:is(.arr-nav-a, .arr-nav-row, .arr-foot-a)[data-arr-new]::after {
+  content: "";
+  position: absolute;
+  top: 5px;
+  right: 2px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px var(--background);
+}
+.arr-nav-a[aria-current="page"][data-arr-new],
+.arr-nav-a.is-current[data-arr-new] {
+  box-shadow: inset 0 -2px 0 var(--accent);
 }
 [data-arr-new-tag]:not([hidden]) {
   --arr-cut: 4px;

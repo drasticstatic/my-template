@@ -1761,6 +1761,13 @@
       tips[i].textContent = W.newsTip.replace("{n}", unread() > 99 ? "99+" : String(unread()));
       tips[i].insertAdjacentHTML("beforeend", icon("arrow-right"));
       tips[i].hidden = false;
+      // Keep it on screen: shift it right if it would start off the left edge, and move its arrow
+      // the other way so it still points at the count.
+      tips[i].style.right = "";
+      var r = tips[i].getBoundingClientRect();
+      var shift = r.left < 12 ? Math.ceil(12 - r.left) : 0;
+      if (shift) tips[i].style.right = -shift + "px";
+      tips[i].style.setProperty("--arr-tip-arrow", 18 + shift + "px");
       shown = true;
     }
     if (!shown) return;
