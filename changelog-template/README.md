@@ -57,6 +57,24 @@ only matters at the curated-changelog layer. Scoping priority to changelog front
 same visible-at-a-glance benefit (a badge on the entry, sortable/filterable) without touching commit
 hygiene at all. If the fleet ever does adopt GitHub Issues/Jira, this can be revisited — not before.
 
+## Commit priority convention (optional; the ledger reads it)
+
+Revisited 2026-10-13 for ledger v2, without making it a rule: a commit **may** carry a priority
+prefix, and the ledger shows it as a small badge (the tag itself is stripped from the summary).
+Untagged commits get no badge, so nothing breaks for commits that don't use it.
+
+```text
+[P2] fix(calendar): events keep their time zone
+
+Why P2: members saw the wrong start time on two events this week; nothing was lost.
+```
+
+- **Format:** `[P1]` / `[P2]` / `[P3]` first, matching the frontmatter's `P1-high` / `P2-medium` /
+  `P3-low`, then the usual `type(scope): short description`. The gitmoji form works too:
+  🚨 critical, 🔥 high, ⚡ medium, 🍃 low (`🔥 fix: …`).
+- **Why this priority** goes in the body, one line. The subject stays a plain description.
+- On a private repository the badge still shows (with the kind, day and repository); the words don't.
+
 ## Org-owned vs. personal-repo changelogs — where the public repo lives
 
 This matters and is easy to get backwards:
@@ -536,7 +554,8 @@ keyword rubric, scrubbed subjects, a grouped accordion); nothing else is shared 
   `users/<owner>/repos`), keeps only `private === false && visibility === "public"`, then the
   config's `include`/`deny`. A private repo's commits are never requested, whatever token the build
   holds. A user account needs `include` (the lab: `/^O-R-G-(astro-public|dapp-public-preview)$/`).
-  The snapshot script runs without a token on purpose.
+  The snapshot script runs without a token on purpose. (v2 adds opted-in private repositories,
+  masked; see "Ledger v2" below.)
 - **Noise filtered and counted:** merges; CI mirror/publish commits (`sync: rebuild from…`,
   `Deploy Astro build`, `Deploy: <sha>`); bot authors (`[bot]`, `actions-user`, `Public Mirror Bot`)
   and dependency bumps; a change and its `Revert "…"` cancel out. The page says how many it left out.
@@ -568,6 +587,78 @@ keyword rubric, scrubbed subjects, a grouped accordion); nothing else is shared 
 - **Discoverable:** `org.js` `record.ledger = { name, text, href, label }` adds a third box to the
   guide's "Changelog and library" step; also the header nav, footer, `/` search (pinned), porch,
   404 and a changelog entry.
+
+### Ledger v2 (wave 6, 2026-10-13): work behind the curtain, names, agents, priority
+
+`LEDGER_VERSION = 2`. Re-copy `arrival/ledger/ledger.mjs`, `snapshot.mjs`, the new
+[`verify-private.mjs`](arrival/ledger/verify-private.mjs) and `arrival/astro/Ledger.astro`
+unchanged; v1 configs still build (they just get the new name default and agent rows).
+
+- **Masked private commits (opt-in, per repository).** `private: [{ repo, label?, mask: "full" }]`
+  in `ledger.config.mjs`. Only listed repositories are ever requested, and only with
+  `LEDGER_TOKEN`. From each commit the generator keeps SHA, dates, author, the subject line and
+  co-author trailer lines (no diffs, no files; the rest of the message is dropped on arrival). It
+  drops commits that already appear through a public copy (allowlist-synced `-public` repos carry
+  rewritten copies: same author date + subject), filters noise, classifies kind and priority from
+  the raw subject, then **discards the subject**: the item holds only a block shape (`████ ██ ██████`:
+  word count kept, up to 10, widths rounded to 2/4/6/8). Rows show repository (or `label`), day,
+  time, kind, priority, person and agents, a short SHA as text, a "private" tag, and link nowhere.
+  `mask: "sanitized"` (explicit opt-in only) would show the scrubbed summary instead. A repository
+  listed in `private` is never read by the public lane, even if it turns public.
+- **Tokens, and graceful without one.** Each opted-in repository is read with `LEDGER_TOKEN`, then
+  the build's own token (in CI the workflow's `GITHUB_TOKEN` reads the repository it runs in, so a
+  site's own AstroLog source stays live with no extra secret). A repository neither can read has its
+  rows carried, masked, from the snapshot; the page doesn't change shape. The snapshot only ever
+  holds the masked form (raw subjects never reach the ledger object). Refresh it with
+  `LEDGER_TOKEN=$(gh auth token) npm run ledger:snapshot`.
+- **Leak check.** `npm run ledger:verify` (`--build` to build first) reads every raw private subject
+  and searches every text file in `dist/` (HTML, `latest.json`, JSON/JS chunks, RSS, SVG, any search
+  index) plus the snapshot, in three forms (raw, summary, sentence), case-insensitive after decoding
+  entities and JSON escapes; it fails naming only repo@sha, never the subject. A form the site also
+  publishes on purpose in its own editorial text (a changelog entry titled like the commit;
+  `verify.publicText`, default `../changelog`, `../library`, `../teachings`, `src/content`) is allowed
+  on other pages but never on the ledger page or in the snapshot. It also checks every private row in
+  the snapshot and `latest.json` is masked and unlinked. The og raster is drawn from constant text.
+  CI runs it between the build and the publish:
+  ```yaml
+  - run: npm ci                      # no token in this step
+  - name: Build Astro site
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}     # public lane (+ this repo's own private lane)
+      LEDGER_TOKEN: ${{ secrets.LEDGER_TOKEN || secrets.PUBLIC_REPO_TOKEN }} # private lane
+    run: npm run build
+  - name: Ledger leak check
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      LEDGER_TOKEN: ${{ secrets.LEDGER_TOKEN || secrets.PUBLIC_REPO_TOKEN }}
+    run: npm run ledger:verify
+  ```
+  A `LEDGER_TOKEN` secret (read-only "Contents" on the org's private repositories) wins over
+  `PUBLIC_REPO_TOKEN`; PIR's and THEF's `PUBLIC_REPO_TOKEN` (2026-10-05) can't read their orgs'
+  private repositories, so they need one (until then their other private rows come from the snapshot).
+- **Names: first name + last initial everywhere** (`nameStyle` now defaults to
+  `"first-last-initial"` and applies to listed people too: "Christopher W."; a single name or a
+  handle stays as is). **Every name links to the person's GitHub profile** (`github`, else the
+  commit's login). `avatar: "generated"` on a person keeps the link but draws the kit's generated
+  avatar (Kenney, Anne, Renan: their GitHub pictures are the default identicon). The site's
+  `Who.astro`/people list honor the same field.
+- **Agent row.** AI co-authors from `Co-Authored-By` trailers get their own row under the person:
+  "with Alfred · Claude Code". Known names: Alfred, Mystarch, Fortuna, Kavanah, Auggie (Augment),
+  Littlebird, Cosmos Advisor, plain `Claude <noreply@anthropic.com>` ("Claude Code"); tools
+  ClaudeCodeCLI/Claude → Claude Code, Cosmos, Littlebird, GitHub Actions, Augment. Unknown agents
+  fall back to their cleaned name (public) or "An AI helper" (private: no free text from a private
+  message is ever shown). Human co-authors aren't listed; emails never appear. `agents: false` hides
+  the row; `agentNames: [[/^nova$/i, "Nova", "Cursor"]]` extends the table.
+- **Priority badges** from `[P1]`/`[P2]`/`[P3]` or 🚨 🔥 ⚡ 🍃 (see "Commit priority convention").
+- **Rubric fix:** "allowlist sync" (the CI public lane), `-public` mirrors and filter-repo are
+  Behind the scenes; only an allowlist of people (allowlisted emails, a member allowlist) still
+  counts as Sign-in and members.
+- **Share card without counts:** the ledger's og image never states how many changes or
+  repositories (a cached preview would go stale); see
+  [`og-endpoints/ledger.jpg.ts`](arrival/astro/og-endpoints/ledger.jpg.ts).
+- **`latest.json`:** `ledgerNewsItems(ledger, { ledgerHref: at("/ledger") })` adds private rows
+  (masked text, pointing at their day on the ledger page); without `ledgerHref` they're left out.
+- **Filters:** the repository select gains "Public repositories" and "Private work (masked)".
 
 ### The dApp preview on the kit (a Next.js app)
 
