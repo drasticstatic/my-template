@@ -25,7 +25,7 @@
 //      (scrubbed of secret-shaped text). A private subject is classified and then DISCARDED: the item
 //      carries only a shape of blocks, so no page, JSON, image or snapshot can ever contain it.
 //   6. Credits each commit through the site's people list; names follow config.nameStyle (default
-//      "first-last-initial": Christopher W.) and link to the person's GitHub profile. AI co-authors
+//      "first-last-initial": Christopher W) and link to the person's GitHub profile. AI co-authors
 //      from Co-Authored-By trailers become an agent row ("with Alfred · Claude Code"); emails never
 //      appear. Then groups everything by month, day and repository.
 //   7. On a total failure (offline, rate limit) it falls back to the committed snapshot, which holds
@@ -134,11 +134,12 @@ function trim(s, n = 140) {
   const cut = s.lastIndexOf(" ", n - 1);
   return s.slice(0, cut > 40 ? cut : n - 1).replace(/[,;:.\s]+$/, "") + "…";
 }
-// "first-last-initial" (the default since v2): "Christopher Wilson" → "Christopher W."; a single
+// "first-last-initial" (the default since v2): "Christopher Wilson" → "Christopher W" (no period,
+// matching how every org site and CONTACTS write names); a single
 // name or handle stays as it is. "first": "Christopher". "full": as written.
 export function nameAs(name, style = "first-last-initial") {
   const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
-  if (style === "first-last-initial" && parts.length > 1) return `${parts[0]} ${parts[parts.length - 1].charAt(0).toUpperCase()}.`;
+  if (style === "first-last-initial" && parts.length > 1) return `${parts[0]} ${parts[parts.length - 1].charAt(0).toUpperCase()}`;
   if (style === "first" && parts.length) return parts[0];
   return parts.join(" ");
 }

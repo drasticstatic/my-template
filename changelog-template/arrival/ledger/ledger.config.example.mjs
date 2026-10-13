@@ -41,7 +41,7 @@ export const LEDGER = {
     { name: "Tripp Aardema", logins: ["ORG-Spirituality"], names: ["Tripp"] },
     { name: "Renan Teixeira", github: "SCDEVBrazil", avatar: "generated" },
     { name: "mitch8020", github: "mitch8020" },
-    { name: "Christopher W.", github: "drasticstatic", names: ["Christopher", "Christopher Wilson", "drasticstatic"] },
+    { name: "Christopher W", github: "drasticstatic", names: ["Christopher", "Christopher Wilson", "drasticstatic"] },
   ],
   // "first-last-initial" (the default since v2: "Christopher W.") | "first" | "full". Applies to
   // everyone, listed or not. A single name or handle stays as it is.
