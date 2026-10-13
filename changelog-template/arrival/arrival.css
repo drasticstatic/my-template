@@ -1815,15 +1815,6 @@ arrival-nav[data-mode="menu"] .arr-menu-btn {
     padding: 0 0.6rem;
   }
 }
-@media (max-width: 340px) {
-  .arr-menu-label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-  }
-}
 
 /* ── <arrival-footer>: link groups, an icon on every link ─────────────────────────────────── */
 arrival-footer {
