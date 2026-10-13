@@ -433,6 +433,17 @@ examples in [`arrival/astro/og-endpoints/`](arrival/astro/og-endpoints/).
   [@WebpageBot](https://t.me/WebpageBot) to refresh it.
 - A lab-style site whose entries live in one timeline should give each entry its own page first
   (the O-R-G lab: `/changelog/<id>/`), so there is something specific to share.
+- **Option: the spore-print layout** ([`arrival/og/spore-card.mjs`](arrival/og/spore-card.mjs) +
+  [`spore-svg.mjs`](arrival/og/spore-svg.mjs), used by psanctuary and psanctuarychurch since
+  2026-10-12). A drop-in alternative to `og-card.mjs` with the same `renderCard(spec, theme, base)`
+  call and spec fields, plus `seed`: the title and summary on the org's dark mode, and a large
+  spore print seeded by `seed` (the entry's slug) rising off the right edge, so every card gets a
+  print of its own that stays the same from build to build. No glyph or frame; an optional `mark`
+  (the org's square mark) sits beside the eyebrow. Copy both files unchanged into `src/og/` and
+  write a theme from [`spore-theme.example.mjs`](arrival/og/spore-theme.example.mjs) (it adds
+  `spore`, `glow` and `sporeGlow` to the usual colors). Pick it when an org's main social card
+  already has a bleed-off-the-edge motif; another org can follow the same pattern with its own
+  figure generator in place of `spore-svg.mjs`.
 
 ### One map, two sites (canonical publisher → build-time consumer)
 
