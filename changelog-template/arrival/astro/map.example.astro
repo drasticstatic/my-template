@@ -1,0 +1,46 @@
+---
+// The map: every place these pages lead, each with the picture its link shows when shared (kit
+// 1.2). Drawn at build time from src/data/map.ts, the canonical copy, which is also published at
+// /map.json for the entry portal's own /map/.
+import Base from "../layouts/Base.astro";
+import MapGrid from "../components/MapGrid.astro";
+import { SITE_MAP } from "../data/map";
+import { NAME } from "../data/site";
+import { pageCardUrl } from "../og/pages";
+---
+
+<Base
+  title={`Map — ${NAME} AstroLog`}
+  description={`Every place ${NAME}'s pages lead, each with a picture of where it goes: the portal, the record, the ways to get involved, and the church's own site.`}
+  active="map"
+  ogImage={pageCardUrl("map")}
+  ogAlt={`Map of ${NAME}'s pages, beside a spore print.`}
+>
+  <section class="map-page">
+    <h1>{SITE_MAP.title}</h1>
+    <p class="intro">Every place these pages lead, each with the picture it shows when you share its link, so you can see where you're going before you go. The same map is on the <a href={`${import.meta.env.SITE}/map/`}>entry portal</a>.</p>
+    <MapGrid map={SITE_MAP} here="map" />
+  </section>
+</Base>
+
+<style>
+  .map-page {
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 2.75rem 1.25rem 2rem;
+  }
+  h1 {
+    font-size: clamp(2.1rem, 5vw, 2.6rem);
+    line-height: 1.1;
+    margin: 0 0 0.9rem;
+  }
+  .intro {
+    max-width: 44rem;
+    margin: 0 0 2rem;
+    color: var(--muted);
+  }
+  h1,
+  .intro {
+    text-shadow: 0 0 14px var(--background), 0 0 3px var(--background);
+  }
+</style>

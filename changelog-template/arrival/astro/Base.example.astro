@@ -1,0 +1,382 @@
+---
+import "../styles/global.css";
+import Sporefield from "../components/Sporefield.astro";
+import { KIT, NAME, SITE } from "../data/site";
+
+interface Props {
+  title: string;
+  description: string;
+  filename?: string;
+  /** The nav item this page belongs to (an id from org.js nav.items); otherwise it's matched from the URL. */
+  active?: "porch" | "changelog" | "library" | "ledger" | "map" | "roadmap" | "sustainability";
+  /** false on the 404: no first-visit splash on a wrong turn. */
+  splash?: boolean;
+  /** Absolute URL of a 1200×630 JPEG for link previews; defaults to the AstroLog's social card. */
+  ogImage?: string;
+  ogAlt?: string;
+  ogType?: "website" | "article";
+}
+
+const { title, description, active, splash = true, ogType = "website" } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const pageUrl = new URL(Astro.url.pathname, SITE).toString();
+const socialImage = Astro.props.ogImage ?? `${SITE}${base}/og/page/porch.jpg`;
+const socialAlt = Astro.props.ogAlt ?? `${NAME} AstroLog: changelog, library and ledger, beside an iridescent spore print.`;
+---
+
+<!doctype html>
+<html lang="en" data-arrival-site="astrolog" data-arrival-splash={splash ? undefined : "off"}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href={`${base}/favicon.svg`} type="image/svg+xml" />
+    <link rel="alternate icon" href={`${base}/favicon.png`} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Young+Serif&display=swap" />
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css" />
+    <!-- Link previews (Telegram, iMessage, Slack, Discord…): every URL absolute, a real 1200×630 JPEG.
+         Each changelog entry and library write-up passes its own card. -->
+    <link rel="canonical" href={pageUrl} />
+    <meta property="og:site_name" content={`${NAME} AstroLog`} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:url" content={pageUrl} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={socialImage} />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={socialAlt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImage} />
+    <meta name="twitter:image:alt" content={socialAlt} />
+    <!-- The arrival kit, served from the entry portal so both sites load the same files: the modes,
+         motion, contrast and cursor choice (applied before first paint), the first-visit splash, the
+         welcome guide, "/" search and the avatars. Load order matters: kit CSS, the family's org.css,
+         then ours (imported above, so Astro injects it after these links). -->
+    <link rel="stylesheet" href={`${KIT}/arrival.css`} />
+    <link rel="stylesheet" href={`${KIT}/org.css`} />
+    <script is:inline src={`${KIT}/org.js`}></script>
+    <script is:inline src={`${KIT}/arrival.js`}></script>
+  </head>
+  <body>
+    <Sporefield />
+    <a class="skip" href="#main">Skip to content</a>
+    <!-- One row at every width: the brand, the kit's navbar (from org.js: it folds into "More", then a
+         Menu button below 1100px, rather than wrapping) and the kit's tools. -->
+    <header class="site-header">
+      <a href={`${base}/`} class="brand" aria-label={`${NAME} AstroLog, porch`}>
+        <Fragment set:html={`<svg xmlns="http://www.w3.org/2000/svg" viewBox="-32 -32 64 64" class="mark" aria-hidden="true"><g stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="8.00" y1="0.00" x2="26.00" y2="0.00"/><line x1="16.63" y1="3.53" x2="25.43" y2="5.41"/><line x1="7.31" y1="3.25" x2="23.75" y2="10.58"/><line x1="13.75" y1="9.99" x2="21.03" y2="15.28"/><line x1="5.35" y1="5.95" x2="17.40" y2="19.32"/><line x1="8.50" y1="14.72" x2="13.00" y2="22.52"/><line x1="2.47" y1="7.61" x2="8.03" y2="24.73"/><line x1="1.78" y1="16.91" x2="2.72" y2="25.86"/><line x1="-0.84" y1="7.96" x2="-2.72" y2="25.86"/><line x1="-5.25" y1="16.17" x2="-8.03" y2="24.73"/><line x1="-4.00" y1="6.93" x2="-13.00" y2="22.52"/><line x1="-11.38" y1="12.63" x2="-17.40" y2="19.32"/><line x1="-6.47" y1="4.70" x2="-21.03" y2="15.28"/><line x1="-15.53" y1="6.91" x2="-23.75" y2="10.58"/><line x1="-7.83" y1="1.66" x2="-25.43" y2="5.41"/><line x1="-17.00" y1="0.00" x2="-26.00" y2="0.00"/><line x1="-7.83" y1="-1.66" x2="-25.43" y2="-5.41"/><line x1="-15.53" y1="-6.91" x2="-23.75" y2="-10.58"/><line x1="-6.47" y1="-4.70" x2="-21.03" y2="-15.28"/><line x1="-11.38" y1="-12.63" x2="-17.40" y2="-19.32"/><line x1="-4.00" y1="-6.93" x2="-13.00" y2="-22.52"/><line x1="-5.25" y1="-16.17" x2="-8.03" y2="-24.73"/><line x1="-0.84" y1="-7.96" x2="-2.72" y2="-25.86"/><line x1="1.78" y1="-16.91" x2="2.72" y2="-25.86"/><line x1="2.47" y1="-7.61" x2="8.03" y2="-24.73"/><line x1="8.50" y1="-14.72" x2="13.00" y2="-22.52"/><line x1="5.35" y1="-5.95" x2="17.40" y2="-19.32"/><line x1="13.75" y1="-9.99" x2="21.03" y2="-15.28"/><line x1="7.31" y1="-3.25" x2="23.75" y2="-10.58"/><line x1="16.63" y1="-3.53" x2="25.43" y2="-5.41"/></g><circle r="28.5" fill="none" stroke="currentColor" stroke-width="1.6" opacity="0.55"/><circle r="5" fill="currentColor"/></svg>`} />
+        <span class="brand-title arr-brand-text">{NAME}<span class="brand-log"> AstroLog</span></span>
+      </a>
+      <arrival-nav current={active}></arrival-nav>
+      <arrival-controls></arrival-controls>
+    </header>
+    <main id="main">
+      <slot />
+    </main>
+    <!-- Every way around, in groups (drawn by the kit from org.js: footer.groups). -->
+    <div class="page-foot"><arrival-footer current={active}></arrival-footer></div>
+    <footer class="universal-footer">
+      <div class="footer-inner">
+        <span class="footer-brand">{NAME}</span>
+        <a href={`${SITE}/`}><i class="ph ph-house-simple" aria-hidden="true"></i> <span class="long">Entry </span>Portal</a>
+        <a href={`${base}/`}><i class="ph ph-door-open" aria-hidden="true"></i> Porch</a>
+        <a href={`${base}/changelog`}><i class="ph ph-clock-counter-clockwise" aria-hidden="true"></i> Changelog</a>
+        <a href={`${base}/library`}><i class="ph ph-books" aria-hidden="true"></i> Library</a>
+        <a href={`${base}/ledger`}><i class="ph ph-scroll" aria-hidden="true"></i> Ledger</a>
+        <a href={`${base}/map`}><i class="ph ph-map-trifold" aria-hidden="true"></i> Map</a>
+        <a href="https://psanctuary-member-community.mn.co/" data-arrival-open="community"><i class="ph ph-users-three" aria-hidden="true"></i> Community</a>
+        <a href="https://www.psanctuary.org/contact" data-arrival-open="contact"><i class="ph ph-envelope-simple" aria-hidden="true"></i> Reach out</a>
+        <a href={`${SITE}/donate/`}><i class="ph ph-heart" aria-hidden="true"></i> Donate</a>
+        <a href="#welcome" data-arrival-open="guide"><i class="ph ph-signpost" aria-hidden="true"></i> Welcome<span class="long"> guide</span></a>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style is:global>
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 4.75rem;
+  }
+  main {
+    flex: 1 0 auto;
+  }
+  .skip {
+    position: absolute;
+    left: 0.75rem;
+    top: -3rem;
+    z-index: 100;
+    padding: 0.5rem 0.8rem;
+    border-radius: 8px;
+    background: var(--accent);
+    color: var(--on-accent);
+    font-weight: 700;
+  }
+  .skip:focus {
+    top: 0.6rem;
+  }
+  /* The header never wraps (kit 1.2): one row at every width. The brand may shrink (its text
+     ellipsizes), <arrival-nav> takes the room that's left and folds what doesn't fit into "More",
+     then into the Menu; the kit's tools never shrink. */
+  .site-header {
+    position: relative;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.75rem;
+    max-width: 76rem;
+    margin: 0 auto;
+    width: 100%;
+    padding: 0.85rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .brand {
+    display: inline-flex;
+    flex: 0 1 auto;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    color: var(--heading);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .brand .mark {
+    width: 24px;
+    height: 24px;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+  .brand-title {
+    font-size: 1.05rem;
+  }
+  .site-header arrival-controls {
+    flex: none;
+  }
+  /* In the tightest bar widths the word "AstroLog" steps aside (the Porch link says where you are). */
+  @media (min-width: 1100px) and (max-width: 1279px) {
+    .brand-log {
+      display: none;
+    }
+  }
+  @media (max-width: 520px) {
+    .site-header {
+      padding-inline: 1rem;
+    }
+    .brand-log {
+      display: none;
+    }
+  }
+  @media (max-width: 400px) {
+    .brand-title {
+      display: none;
+    }
+  }
+  .page-foot {
+    width: 100%;
+    max-width: 64rem;
+    margin: 2rem auto 0;
+    padding: 2rem 1.25rem 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+  .page-foot arrival-footer {
+    padding: 1.25rem 1.25rem 1rem;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--surface) 82%, transparent);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  /* The dock: one row, swipeable on phones rather than wrapping into the bottom of the screen. */
+  .universal-footer {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 40;
+    padding: 0.65rem 1.25rem;
+    background: color-mix(in srgb, var(--background) 88%, transparent);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-top: 1px solid var(--border);
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  .footer-inner {
+    max-width: 64rem;
+    margin: 0 auto;
+    display: flex;
+    justify-content: safe center;
+    align-items: center;
+    gap: 0.2rem 1.1rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    white-space: nowrap;
+  }
+  .footer-inner::-webkit-scrollbar {
+    display: none;
+  }
+  .footer-inner > * {
+    flex: none;
+  }
+  .footer-inner a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .footer-inner a:hover {
+    color: var(--accent);
+  }
+  .footer-brand {
+    font-family: var(--font-heading);
+    color: var(--heading);
+  }
+  @media (max-width: 520px) {
+    .footer-inner .long {
+      display: none;
+    }
+  }
+
+  /* Shared prose for changelog entries and library docs. */
+  .prose p {
+    margin: 0 0 1rem;
+  }
+  .prose h2 {
+    font-size: 1.45rem;
+    line-height: 1.25;
+    margin: 2rem 0 0.75rem;
+  }
+  .prose h3 {
+    font-size: 1.15rem;
+    margin: 1.5rem 0 0.6rem;
+  }
+  .prose ul,
+  .prose ol {
+    padding-left: 1.3em;
+    margin: 0 0 1rem;
+  }
+  .prose li {
+    margin: 0.25rem 0;
+  }
+  .prose code {
+    font-size: 0.9em;
+    padding: 0.08em 0.3em;
+    border-radius: 5px;
+    background: color-mix(in srgb, var(--spore) 14%, transparent);
+  }
+  .prose kbd {
+    font: 600 0.8em/1 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    padding: 0.15em 0.4em;
+    border: 1px solid var(--border);
+    border-bottom-width: 2px;
+    border-radius: 5px;
+    background: var(--surface);
+  }
+  .prose pre {
+    overflow-x: auto;
+    padding: 1rem;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--spore) 10%, transparent);
+    font-size: 0.88rem;
+  }
+  .prose pre code {
+    background: none;
+    padding: 0;
+  }
+  .prose blockquote {
+    margin: 0 0 1rem;
+    padding: 0.25rem 0 0.25rem 1rem;
+    border-left: 3px solid var(--accent);
+    color: var(--muted);
+  }
+  .prose hr {
+    margin: 2rem 0;
+    border: none;
+    border-top: 1px solid var(--border);
+  }
+  /* TL;DR as block layout, not flex: a flex row wraps the label and text into columns on phones. */
+  .prose .tldr {
+    position: relative;
+    display: block;
+    padding: 0.9rem 1rem 0.9rem 2.6rem;
+    margin: 0 0 1.25rem;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--accent) 11%, var(--surface));
+    border-left: 3px solid var(--accent);
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+  }
+  .prose .tldr > .ph {
+    position: absolute;
+    left: 0.95rem;
+    top: 1.15rem;
+    color: var(--accent);
+  }
+  .prose details {
+    margin: 0.25rem 0 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0 1rem;
+    background: color-mix(in srgb, var(--surface) 72%, transparent);
+  }
+  .prose details[open] {
+    padding-bottom: 1rem;
+  }
+  .prose summary {
+    cursor: pointer;
+    list-style: none;
+    font-weight: 600;
+    padding: 0.85rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--accent);
+  }
+  .prose summary::-webkit-details-marker {
+    display: none;
+  }
+  .prose summary .ph-caret-right {
+    transition: transform 0.15s ease;
+  }
+  .prose details[open] summary .ph-caret-right {
+    transform: rotate(90deg);
+  }
+  /* "Copy a link" under each entry and write-up. */
+  .share {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.9rem;
+    margin: 2rem 0 0;
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+  .share-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.5rem 0.95rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: color-mix(in srgb, var(--surface) 75%, transparent);
+    color: var(--foreground);
+    font: 600 0.88rem/1.2 var(--font-body);
+    cursor: pointer;
+  }
+  .share-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .share-btn .ph {
+    color: var(--accent);
+  }
+</style>

@@ -1,0 +1,95 @@
+/* The portal's shared page chrome: the one-row header, the page footer and the dock. Every page on
+   this site loads it (index, 404, /donate/, /map/), after the arrival kit's arrival.css and org.css,
+   so colors, type and modes come from there and this file is layout only. Linked root-relative
+   (/site.css): the 404 is served at any depth, and a relative link would resolve under the bad path. */
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; overflow-x: hidden; }
+/* Only <body> gets a background, so it paints the whole canvas and the spore field (z-index -1)
+   shows through above it. */
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font: 400 1.0625rem/1.65 var(--font-body);
+  padding-bottom: 4.75rem;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); text-underline-offset: 0.18em; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+#sporefield-canvas { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+.skip {
+  position: absolute; left: 0.75rem; top: -3rem; z-index: 100;
+  padding: 0.5rem 0.8rem; border-radius: 8px; background: var(--accent); color: var(--on-accent); font-weight: 700;
+}
+.skip:focus { top: 0.6rem; }
+
+/* ── the header: one row at every width (the kit's <arrival-nav> folds what doesn't fit) ── */
+.topbar {
+  position: sticky; top: 0; z-index: 30;
+  display: flex; flex-wrap: nowrap; align-items: center; gap: 0.75rem;
+  padding: 0.6rem 1.25rem;
+  background: color-mix(in srgb, var(--background) 82%, transparent);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.topbar-brand {
+  display: inline-flex; flex: 0 1 auto; align-items: center; gap: 0.55rem; min-width: 0;
+  color: var(--heading); text-decoration: none; font-family: var(--font-heading); font-size: 1.05rem; white-space: nowrap;
+}
+.topbar-brand .mark { width: 26px; height: 26px; color: var(--accent); flex: none; }
+.topbar-brand .arr-brand-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.topbar arrival-controls { flex: none; }
+@media (max-width: 400px) {
+  .topbar { padding-inline: 1rem; gap: 0.5rem; }
+  .topbar-brand .arr-brand-text { display: none; }
+}
+
+/* ── shared page pieces ───────────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  padding: 0.62rem 1.05rem; border-radius: 999px; text-decoration: none;
+  font: 600 0.95rem/1.2 var(--font-body); cursor: pointer;
+  border: 1px solid var(--border); background: color-mix(in srgb, var(--surface) 70%, transparent); color: var(--foreground);
+}
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.page { max-width: 60rem; margin: 0 auto; padding: 2.5rem 1.25rem 3rem; }
+.page-narrow { max-width: 46rem; }
+.page h1 {
+  font-family: var(--font-heading); font-weight: 400; color: var(--heading);
+  font-size: clamp(2.1rem, 6vw, 3rem); line-height: 1.08; letter-spacing: -0.01em; margin: 0 0 0.9rem; text-wrap: balance;
+}
+.page .lede { max-width: 42rem; margin: 0 0 2rem; color: var(--muted); font-size: 1.08rem; }
+.page h1, .page .lede { text-shadow: 0 0 14px var(--background), 0 0 3px var(--background); }
+.crumbs { display: flex; flex-wrap: wrap; gap: 0.3rem 0.5rem; margin: 0 0 1rem; font-size: 0.88rem; color: var(--muted); }
+.crumbs a { display: inline-flex; align-items: center; gap: 0.3rem; color: var(--muted); text-decoration: none; }
+.crumbs a:hover { color: var(--accent); }
+
+/* ── the page footer: link groups from the kit (<arrival-footer>) ─────────────────────── */
+.page-foot {
+  max-width: 64rem; margin: 2rem auto 0; padding: 2rem 1.25rem 1.5rem;
+  border-top: 1px solid var(--border);
+}
+.page-foot arrival-footer { padding: 1.25rem 1.25rem 1rem; border-radius: 14px; background: color-mix(in srgb, var(--surface) 82%, transparent); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+
+/* ── the dock: one row, swipeable on phones rather than wrapping into the bottom of the screen ── */
+.universal-footer {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+  padding: 0.65rem 1.25rem;
+  background: color-mix(in srgb, var(--background) 88%, transparent);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border-top: 1px solid var(--border);
+  font-size: 0.8rem; color: var(--muted);
+}
+.footer-inner {
+  max-width: 64rem; margin: 0 auto; display: flex; justify-content: safe center; align-items: center;
+  gap: 0.2rem 1.1rem; overflow-x: auto; scrollbar-width: none; white-space: nowrap;
+}
+.footer-inner::-webkit-scrollbar { display: none; }
+.footer-inner > * { flex: none; }
+.footer-inner a { color: var(--muted); text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem; }
+.footer-inner a:hover { color: var(--accent); }
+.footer-brand { font-family: var(--font-heading); color: var(--heading); }
+@media (max-width: 520px) {
+  .footer-inner .long { display: none; }
+}

@@ -96,6 +96,146 @@
       ],
     },
 
+    // ── kit 1.1 (wave 5) ───────────────────────────────────────────────────────────────────────
+    news: { sources: [LOG + "/latest.json"] },
+
+    // ── kit 1.2 (wave 6): the interface half ─────────────────────────────────────────────────
+    // Reading mode's light, plus round 2: text size steps beside the reading switch (these four are
+    // the default; omit `sizes` to keep them) and a comfortable line length (measure: false hides it).
+    reading: {
+      light: "stone",
+      sizes: [
+        { id: "standard", name: "Standard", scale: 1 },
+        { id: "large", name: "Large", scale: 1.125 },
+        { id: "larger", name: "Larger", scale: 1.25 },
+        { id: "largest", name: "Largest", scale: 1.4 },
+      ],
+    },
+
+    // The navbar, drawn by <arrival-nav> on every page (portal and AstroLog). Links and dropdown
+    // groups, an icon on each. When the bar runs short, the lowest `priority` folds into "More"
+    // first (rightmost first among equals); below `fold` px the whole bar becomes a Menu button.
+    // hrefs.<siteId> gives one site its own link (the portal's /map/); hideOn hides an item on a site
+    // (no "Portal" link on the portal itself); open: "contact" | "community" opens that modal, with
+    // href as the no-JS fallback. `note` is a line under the link in dropdowns and the Menu.
+    nav: {
+      label: "ORG",
+      fold: 1100,
+      items: [
+        { id: "portal", label: "Portal", icon: "house-simple", href: ROOT + "/", hideOn: ["portal"], priority: 1, note: "ORG's front door on GitHub" },
+        { id: "porch", label: "Porch", icon: "door-open", href: LOG + "/", exact: true, priority: 1, note: "The AstroLog's front door" },
+        { id: "changelog", label: "Changelog", icon: "clock-counter-clockwise", href: LOG + "/changelog", priority: 3, note: "What changed, newest first" },
+        { id: "library", label: "Library", icon: "books", href: LOG + "/library", priority: 2, note: "How it works" },
+        { id: "ledger", label: "Ledger", icon: "scroll", href: LOG + "/ledger", priority: 2, note: "Every public change, in plain words" },
+        { id: "map", label: "Map", icon: "map-trifold", href: LOG + "/map", hrefs: { portal: ROOT + "/map/" }, priority: 2, note: "Every place, with a picture of each" },
+        {
+          id: "involved",
+          label: "Get involved",
+          icon: "hand-heart",
+          priority: 3,
+          items: [
+            { id: "community", label: "Community", icon: "users-three", href: TELEGRAM, open: "community", note: "Where members talk" },
+            { id: "contact", label: "Reach out", icon: "envelope-simple", href: "mailto:org@orgspirituality.org", open: "contact", note: "Every way to reach ORG" },
+            { id: "donate", label: "Donate", icon: "heart", href: ROOT + "/donate/", note: "Ways to give, and thanks by name" },
+          ],
+        },
+        {
+          id: "about",
+          label: "About",
+          icon: "info",
+          priority: 1,
+          items: [
+            { id: "roadmap", label: "Roadmap", icon: "path", href: LOG + "/roadmap", note: "Where these pages are headed" },
+            { id: "sustainability", label: "Sustainability", icon: "plant", href: LOG + "/sustainability", note: "What keeps them running" },
+            { id: "home", label: "orgspirituality.org", icon: "globe-hemisphere-west", href: SITE, note: "The official site" },
+            { id: "github", label: "GitHub", icon: "github-logo", href: "https://github.com/Octagon-Religious-Research-Group-ORG", note: "The organization and its code" },
+          ],
+        },
+      ],
+    },
+    // The footer's link groups, drawn by <arrival-footer>. Items are nav ids or full links. Without
+    // `groups`, the footer repeats the nav (its links, then each dropdown).
+    footer: {
+      groups: [
+        { label: "Explore", icon: "compass", items: ["portal", "porch", "changelog", "library", "ledger", "map"] },
+        { label: "Get involved", icon: "hand-heart", items: ["community", "contact", "donate", { id: "guide", label: "Welcome guide", icon: "signpost", href: "#welcome", open: "guide" }] },
+        { label: "About this build", icon: "wrench", items: ["roadmap", "sustainability", "github"] },
+      ],
+      note: "Code MIT, words CC BY-SA 4.0. ORG's name and octagon mark belong to ORG.",
+    },
+
+    // One modal for every way to reach the org. kind: form | email | page | github | chat. A path
+    // with `placeholder` (and no href) renders as a clearly marked slot: never invent a URL.
+    // A plain click on any link to one of these hrefs opens the modal instead (intercept: false
+    // turns that off). PIR's, for reference:
+    //   { kind: "page", label: "PIR's contacts on GitHub", href: "https://github.com/psychedelicsinrecovery/.github/blob/main/CONTACTS.md" },
+    //   { kind: "form", label: "The contact form", href: "https://www.psychedelicsinrecovery.org/contact/" },
+    //   { kind: "form", label: "The service site's contact form", href: "https://service.psychedelicsinrecovery.org/contact/" },
+    contact: {
+      title: "Reach out",
+      intro: "Every way to reach ORG. Pick whichever suits you.",
+      paths: [
+        { kind: "email", label: "org@orgspirituality.org", href: "mailto:org@orgspirituality.org", note: "ORG's main address." },
+        { kind: "email", label: "webdev@orgspirituality.org", href: "mailto:webdev@orgspirituality.org", note: "About the websites, these pages included." },
+        { kind: "email", label: "octagonreligiousresearchgroup@gmail.com", href: "mailto:octagonreligiousresearchgroup@gmail.com", note: "ORG's general inbox." },
+        { kind: "form", label: "A contact page on orgspirituality.org", placeholder: "orgspirituality.org doesn't have a contact page yet (/contact is a 404). The addresses above reach the team." },
+        { kind: "github", label: "ORG's CONTACTS.md", placeholder: "A contacts page on GitHub is planned." },
+      ],
+    },
+
+    // Every place the community talks: kind discord | telegram | mighty | whatsapp | substack |
+    // bespoke | forum | email, each with a `public` link (anyone can look) and a `join` link
+    // (sign up / private). A platform with status: "soon", or with neither link, renders as
+    // "coming soon". `bespoke` is the sneak-peek card for the org's own network + DAO (a direction,
+    // never a date). The v1.0 keys (name, icon, href, label, text, more) still drive the guide's step.
+    //   PIR:  { kind: "discord", name: "PIR's Discord", join: { href: "https://discord.gg/MyprTq8w95", label: "Join the Discord" } }
+    //   THEF: { kind: "whatsapp", status: "soon", … }, { kind: "substack", status: "soon", … }
+    //   psanctuarychurch: { kind: "mighty", public: { href: "https://psanctuary-member-community.mn.co/" },
+    //                       join: { href: "https://psanctuary-member-community.mn.co/plans/" } }
+    community: {
+      name: "Telegram",
+      icon: "telegram-logo",
+      href: TELEGRAM,
+      label: "See every way in",
+      text: "ORG's members talk in a Telegram group chat. The Community page on orgspirituality.org invites everyone there for more information and updates.",
+      more: ['Prefer to ask one person first? ORG\'s About page lists Tripp on Telegram as <a href="https://t.me/Tripp_ORG">@Tripp_ORG</a>.'],
+      title: "Where we gather",
+      platforms: [
+        {
+          id: "telegram",
+          kind: "telegram",
+          name: "ORG on Telegram",
+          text: "The group chat orgspirituality.org/community links to.",
+          // Whether "ORG (Public)" is truly public is still being asked (2026-10-13). Until then the
+          // invite link is the sign-up path and the public slot shows "coming soon".
+          join: { href: TELEGRAM, label: "Join the group chat", note: "An invite link to the group." },
+        },
+      ],
+      bespoke: {
+        title: "A network of our own",
+        tag: "Sneak peek",
+        text: "Further out, ORG would like a social space its members own, paired with its DAO.",
+        points: ["Profiles and posts on open protocols like Lens and Farcaster.", "Proposals and votes in ORG's DAO.", "Privacy first."],
+        note: "No dates. A direction, not a promise.",
+      },
+    },
+
+    // The donate page (<org>.github.io/donate/, the kit's <arrival-donate>). give: the org's own
+    // giving paths (link the org's page, not a payment processor directly). disclaimer: per org;
+    // placeholder: true marks it as waiting for real wording. ledger.src: a contributors.json of
+    // people who said yes to being named (empty is fine). The crypto slot stays empty until the
+    // wallet module fills [data-arr-wallet-slot]: never put an address here.
+    //   PIR's disclaimer (a placeholder until the Alex session writes it):
+    //   { placeholder: true, title: "About giving to PIR", text: "PIR can't accept outside contributions,
+    //     per its traditions, but it can accept donations, and other organizations have sponsored the
+    //     journey. The full wording is being written." }
+    donate: {
+      give: [{ label: "Gifts and offerings", icon: "gift", href: SITE + "/offerings", action: "Visit the offerings page", note: "ORG's own page for gifts and offerings." }],
+      disclaimer: { placeholder: true, title: "About giving", text: "ORG's wording about gifts belongs here. It's left as a placeholder until ORG writes it." },
+      ledger: { src: ROOT + "/donate/contributors.json", title: "Contribution ledger", intro: "People who have given time, skills or gifts, and said yes to being thanked by name." },
+      crypto: { text: "Giving from a crypto wallet is planned for this page. It isn't open yet." },
+    },
+
     record: {
       intro: "ORG's AstroLog has two halves.",
       share:

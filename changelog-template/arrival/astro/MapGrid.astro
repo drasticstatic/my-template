@@ -1,0 +1,84 @@
+---
+// The site map as cards (arrival kit 1.2): every destination with its share image as the thumbnail,
+// grouped, "You are here" on the page's own node. Server-rendered with exactly the markup and class
+// names of the kit's <arrival-map> (arrival.js mapHTML), so the kit's arrival.css styles both and
+// the portal's client-drawn map looks the same. Canonical copy: my-template
+// changelog-template/arrival/astro/MapGrid.astro.
+import type { SiteMap } from "../data/map";
+
+interface Props {
+  map: SiteMap;
+  here?: string;
+}
+const { map, here } = Astro.props;
+const hostOf = (href?: string) => {
+  if (!href) return "";
+  try {
+    const u = new URL(href);
+    return (u.host.replace(/^www\./, "") + u.pathname).replace(/\/+$/, "");
+  } catch {
+    return href;
+  }
+};
+---
+
+<div class="arr-map">
+  {
+    map.groups.map((g) => {
+      const nodes = map.nodes.filter((n) => n.group === g.id);
+      return nodes.length ? (
+        <section class="arr-map-group">
+          <h2 class="arr-map-h">
+            <i class={`ph ph-${g.icon ?? "map-trifold"}`} aria-hidden="true" />
+            {g.label}
+          </h2>
+          {g.note && <p class="arr-map-note">{g.note}</p>}
+          <ul class="arr-map-grid">
+            {nodes.map((n) => {
+              const isHere = !!here && n.self === here;
+              const inner = (
+                <Fragment>
+                  <span class="arr-map-thumb arr-shape">
+                    {n.og ? (
+                      <img src={n.og} alt="" width="1200" height="630" loading="lazy" decoding="async" />
+                    ) : (
+                      <span class="arr-map-noimg">
+                        <i class={`ph ph-${n.icon ?? "globe-simple"}`} aria-hidden="true" />
+                      </span>
+                    )}
+                    {isHere && (
+                      <span class="arr-map-here">
+                        <i class="ph ph-map-pin" aria-hidden="true" />
+                        You are here
+                      </span>
+                    )}
+                  </span>
+                  <span class="arr-map-body">
+                    <span class="arr-map-name">
+                      <i class={`ph ph-${n.icon ?? "arrow-right"}`} aria-hidden="true" />
+                      <span>{n.name}</span>
+                      {n.external && <i class="ph ph-arrow-up-right arr-map-ext" aria-hidden="true" />}
+                    </span>
+                    {n.line && <span class="arr-map-line">{n.line}</span>}
+                    {n.href && <span class="arr-map-url">{hostOf(n.href)}</span>}
+                  </span>
+                </Fragment>
+              );
+              return (
+                <li class="arr-map-item">
+                  {n.href ? (
+                    <a class={`arr-map-card arr-shape${isHere ? " is-here" : ""}`} href={n.href} data-arrival-open={n.open} aria-current={isHere ? "page" : undefined}>
+                      {inner}
+                    </a>
+                  ) : (
+                    <div class="arr-map-card arr-shape is-static">{inner}</div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ) : null;
+    })
+  }
+</div>

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en" data-arrival-site="portal">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Map — Psanctuary on GitHub</title>
+<meta name="description" content="Every place Psanctuary&#x27;s pages lead, each with a picture of where it goes: the portal, the AstroLog, the ways to get involved, and the church&#x27;s own site.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="/favicon.png">
+<!-- Link previews (Telegram, iMessage, Slack, Discord…): every URL absolute, a real 1200×630 JPEG. -->
+<link rel="canonical" href="https://psanctuary.github.io/map/">
+<meta property="og:site_name" content="Psanctuary on GitHub">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://psanctuary.github.io/map/">
+<meta property="og:title" content="Map — Psanctuary on GitHub">
+<meta property="og:description" content="Every place Psanctuary&#x27;s pages lead, each with a picture of where it goes: the portal, the AstroLog, the ways to get involved, and the church&#x27;s own site.">
+<meta property="og:image" content="https://psanctuary.github.io/changelog-astro-public/og/page/map.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Map of Psanctuary&#x27;s pages, beside a spore print.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Map — Psanctuary on GitHub">
+<meta name="twitter:description" content="Every place Psanctuary&#x27;s pages lead, each with a picture of where it goes: the portal, the AstroLog, the ways to get involved, and the church&#x27;s own site.">
+<meta name="twitter:image" content="https://psanctuary.github.io/changelog-astro-public/og/page/map.jpg">
+<meta name="twitter:image:alt" content="Map of Psanctuary&#x27;s pages, beside a spore print.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Young+Serif&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<!-- Psanctuary's arrival kit (v1.2): one stylesheet + script shared with the AstroLog, served from
+     /arrival/ on this site. arrival.js applies the visitor's light, motion, contrast, text size and
+     cursor choice before first paint, and draws the navbar, footer and modals from org.js, so it
+     loads here in <head>. site.css is this portal's page chrome (header, footer, dock). The map itself is drawn from the AstroLog's map.json, its one canonical copy. -->
+<link rel="stylesheet" href="/arrival/arrival.css">
+<link rel="stylesheet" href="/arrival/org.css">
+<link rel="stylesheet" href="/site.css">
+<script src="/arrival/org.js"></script>
+<script src="/arrival/arrival.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <canvas id="sporefield-canvas" aria-hidden="true"></canvas>
+
+  <!-- One row at every width: the brand, the kit's navbar (it folds into "More", then a Menu
+       button, rather than wrapping), and the kit's tools. -->
+  <header class="topbar">
+    <a class="topbar-brand" href="/" aria-label="Psanctuary on GitHub, home"><svg xmlns="http://www.w3.org/2000/svg" viewBox="-32 -32 64 64" class="mark" aria-hidden="true"><g stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="8.00" y1="0.00" x2="26.00" y2="0.00"/><line x1="16.63" y1="3.53" x2="25.43" y2="5.41"/><line x1="7.31" y1="3.25" x2="23.75" y2="10.58"/><line x1="13.75" y1="9.99" x2="21.03" y2="15.28"/><line x1="5.35" y1="5.95" x2="17.40" y2="19.32"/><line x1="8.50" y1="14.72" x2="13.00" y2="22.52"/><line x1="2.47" y1="7.61" x2="8.03" y2="24.73"/><line x1="1.78" y1="16.91" x2="2.72" y2="25.86"/><line x1="-0.84" y1="7.96" x2="-2.72" y2="25.86"/><line x1="-5.25" y1="16.17" x2="-8.03" y2="24.73"/><line x1="-4.00" y1="6.93" x2="-13.00" y2="22.52"/><line x1="-11.38" y1="12.63" x2="-17.40" y2="19.32"/><line x1="-6.47" y1="4.70" x2="-21.03" y2="15.28"/><line x1="-15.53" y1="6.91" x2="-23.75" y2="10.58"/><line x1="-7.83" y1="1.66" x2="-25.43" y2="5.41"/><line x1="-17.00" y1="0.00" x2="-26.00" y2="0.00"/><line x1="-7.83" y1="-1.66" x2="-25.43" y2="-5.41"/><line x1="-15.53" y1="-6.91" x2="-23.75" y2="-10.58"/><line x1="-6.47" y1="-4.70" x2="-21.03" y2="-15.28"/><line x1="-11.38" y1="-12.63" x2="-17.40" y2="-19.32"/><line x1="-4.00" y1="-6.93" x2="-13.00" y2="-22.52"/><line x1="-5.25" y1="-16.17" x2="-8.03" y2="-24.73"/><line x1="-0.84" y1="-7.96" x2="-2.72" y2="-25.86"/><line x1="1.78" y1="-16.91" x2="2.72" y2="-25.86"/><line x1="2.47" y1="-7.61" x2="8.03" y2="-24.73"/><line x1="8.50" y1="-14.72" x2="13.00" y2="-22.52"/><line x1="5.35" y1="-5.95" x2="17.40" y2="-19.32"/><line x1="13.75" y1="-9.99" x2="21.03" y2="-15.28"/><line x1="7.31" y1="-3.25" x2="23.75" y2="-10.58"/><line x1="16.63" y1="-3.53" x2="25.43" y2="-5.41"/></g><circle r="28.5" fill="none" stroke="currentColor" stroke-width="1.6" opacity="0.55"/><circle r="5" fill="currentColor"/></svg><span class="arr-brand-text">Psanctuary</span></a>
+    <arrival-nav current="map"></arrival-nav>
+    <arrival-controls></arrival-controls>
+  </header>
+
+  <main id="main" class="page">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="/"><i class="ph ph-house-simple" aria-hidden="true"></i>Portal</a><span aria-hidden="true">/</span><span aria-current="page">Map</span></nav>
+    <h1>Where everything is</h1>
+    <p class="lede">Every place these pages lead, each with the picture it shows when you share its link, so you can see where you're going before you go. The same map lives in the AstroLog.</p>
+    <!-- Drawn from the AstroLog's map.json (same origin): one copy of the map for both sites. -->
+    <arrival-map src="https://psanctuary.github.io/changelog-astro-public/map.json" here="portal"><noscript><p><a href="https://psanctuary.github.io/changelog-astro-public/map">Open the map in the AstroLog</a>.</p></noscript></arrival-map>
+  </main>
+
+  <!-- Every way around, in groups (drawn by the kit from org.js: footer.groups). -->
+  <div class="page-foot"><arrival-footer current="map"></arrival-footer></div>
+
+  <footer class="universal-footer">
+    <div class="footer-inner">
+      <span class="footer-brand">Psanctuary</span>
+      <a href="https://psanctuary.github.io/changelog-astro-public/"><i class="ph ph-door-open" aria-hidden="true"></i> <span class="long">Astro </span>Porch</a>
+      <a href="https://psanctuary.github.io/changelog-astro-public/changelog"><i class="ph ph-clock-counter-clockwise" aria-hidden="true"></i> Changelog</a>
+      <a href="https://psanctuary.github.io/changelog-astro-public/library"><i class="ph ph-books" aria-hidden="true"></i> Library</a>
+      <a href="https://psanctuary.github.io/changelog-astro-public/ledger"><i class="ph ph-scroll" aria-hidden="true"></i> Ledger</a>
+      <a href="https://psanctuary.github.io/map/"><i class="ph ph-map-trifold" aria-hidden="true"></i> Map</a>
+      <a href="https://psanctuary-member-community.mn.co/" data-arrival-open="community"><i class="ph ph-users-three" aria-hidden="true"></i> Community</a>
+      <a href="https://www.psanctuary.org/contact" data-arrival-open="contact"><i class="ph ph-envelope-simple" aria-hidden="true"></i> Reach out</a>
+      <a href="https://psanctuary.github.io/donate/"><i class="ph ph-heart" aria-hidden="true"></i> Donate</a>
+      <a href="#welcome" data-arrival-open="guide"><i class="ph ph-signpost" aria-hidden="true"></i> Welcome<span class="long"> guide</span></a>
+    </div>
+  </footer>
+
+  <!-- The spore field: drifting spores and cursor-lit mycelium, shared with the AstroLog. It follows
+       the kit's motion and cursor-effects choices. -->
+  <script src="/arrival/sporefield.js" defer></script>
+</body>
+</html>

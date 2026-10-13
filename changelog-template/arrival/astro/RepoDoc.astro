@@ -1,0 +1,53 @@
+---
+// A page rendered from one of the repository's own root documents (ROADMAP.md, SUSTAINABILITY.md),
+// so the same words read on GitHub and here (kit 1.2).
+import { getCollection, render } from "astro:content";
+
+interface Props {
+  doc: "roadmap" | "sustainability";
+}
+const { doc } = Astro.props;
+const entry = (await getCollection("docs")).find((d) => d.id.toLowerCase().includes(doc));
+if (!entry) throw new Error(`[docs] ${doc.toUpperCase()}.md not found at the repository root`);
+const { Content } = await render(entry);
+---
+
+<section class="repo-doc">
+  <div class="prose">
+    <Content />
+  </div>
+</section>
+
+<style>
+  .repo-doc {
+    max-width: 46rem;
+    margin: 0 auto;
+    padding: 2.75rem 1.25rem 3rem;
+  }
+  .repo-doc :global(h1) {
+    font-size: clamp(2.1rem, 5vw, 2.6rem);
+    line-height: 1.1;
+    margin: 0 0 1rem;
+  }
+  .repo-doc :global(table) {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+    margin: 0 0 1.25rem;
+  }
+  .repo-doc :global(th),
+  .repo-doc :global(td) {
+    text-align: left;
+    vertical-align: top;
+    padding: 0.55rem 0.65rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .repo-doc :global(h3) {
+    margin-top: 2rem;
+  }
+  .repo-doc :global(.prose) {
+    background: color-mix(in srgb, var(--background) 72%, transparent);
+  }
+</style>
