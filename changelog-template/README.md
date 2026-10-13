@@ -568,6 +568,15 @@ a client component's `useEffect` (React never sees the kit's children, so no hyd
 The app's experience store shares the `org-experience` key: it re-reads on `arrival:change` and
 dispatches a `storage` event after its own writes so the kit's next write keeps them.
 
+### Verify
+
+[`arrival/verify-wave5.example.mjs`](arrival/verify-wave5.example.mjs) (Playwright + local Chrome,
+a fresh context per check, production URLs): reading mode on every site, what's new on a genuine
+past first visit (Playwright's fake clock) then a return visit, the ledgers' commits all public and
+real, the dApp's kit/lab link/console, og tags with real JPEG cards, and every cross-link. ORG's run
+on 2026-10-12: all checks pass (53 cross-links). Kit 1.1.1 came out of it: a visit only records
+items up to the end of its own day as already seen.
+
 ### Gotchas found in wave 5
 
 - Astro's line-break gotcha struck again ("history of⏎<a>" rendered "history ofORG's"). Keep text
