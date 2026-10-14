@@ -966,7 +966,10 @@ and change `give.reownProjectId` in its `org.js` (one line).
 fresh context per check, live URLs, `--local <id>=<repo>` to test before pushing): lazy load with no
 third-party request before a click and no height change; Connect opens AppKit or the calm state with
 the guide; the guide's focus trap, Esc and focus return; AppKit never downloaded on an unlisted
-site; no address text; no page errors or red console; one header row at 320–1440px. Address mode,
+site; no address text; no page errors or red console; one header row at 320–1440px (every org,
+PIR included). **Live, 2026-10-14: 36/36 pass** on all five portals (four show the calm state until
+the allowlist is updated; PIR's slot stays empty), and every AstroLog and portal home loads kit
+1.3.0 with no page errors. Address mode,
 QR, send and the signed note were exercised locally with a random in-memory value and a mock wallet
 (nothing written down), and AppKit was opened for real on `http://127.0.0.1` (Reown always allows
 localhost): email, Google, X, Discord, Farcaster and GitHub sign-in, WalletConnect QR, wallet search.

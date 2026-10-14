@@ -104,10 +104,8 @@ for (const id of ids.length ? ids : Object.keys(SITES)) {
     ok(`${id}: no page errors, no console errors`, !page._errors.length && !page._console.length, [...page._errors, ...page._console].join(" | "));
     await ctx.close();
   }
-  if (!S.give) continue;
-
   // 2 + 3. Connect: AppKit or the calm state; the guide's focus trap.
-  {
+  if (S.give) {
     const { ctx, page } = await fresh(id);
     await go(page, URL_);
     await page.locator("[data-arr-give]").scrollIntoViewIfNeeded();
@@ -156,7 +154,7 @@ for (const id of ids.length ? ids : Object.keys(SITES)) {
       await page.waitForTimeout(500);
       const r = await page.evaluate(() => {
         const h = document.querySelector("header");
-        const sec = document.querySelector("[data-arr-give]");
+        const sec = document.querySelector("[data-arr-wallet-slot]");
         // One row: every visible header item overlaps every other vertically.
         const boxes = [...h.children].filter((c) => c.getClientRects().length && getComputedStyle(c).position !== "absolute").map((c) => c.getBoundingClientRect());
         return {
@@ -168,8 +166,8 @@ for (const id of ids.length ? ids : Object.keys(SITES)) {
       });
       if (r.h >= 72 || r.rows !== 1 || r.hs || r.over || page._errors.length) bad.push(`${w}px ${JSON.stringify(r)} ${page._errors.join(";")}`);
       if (w === 320) {
-        await page.locator("[data-arr-give]").scrollIntoViewIfNeeded();
-        await page.locator("[data-arr-give]").screenshot({ path: `${SHOTS}/${id}-320.png` });
+        await page.locator("[data-arr-wallet-slot]").scrollIntoViewIfNeeded();
+        await page.locator("[data-arr-wallet-slot]").screenshot({ path: `${SHOTS}/${id}-320.png` });
       }
       await ctx.close();
     }
