@@ -843,6 +843,145 @@ Elements: `<arrival-nav current="<id>">` (in the header, between the brand and
 - Busy machine: other agents' `python -m http.server` held 8765 and 8791. Serve with
   `--directory` on an unusual port and check `lsof` before trusting a local result.
 
+## 💳 Kit v1.3, 2026-10-14 — Give with crypto
+
+Reference install: every portal's `/donate/` (THEF, ORG, psanctuary, psanctuarychurch on; PIR off).
+Canonical files: [`arrival/arrival.js`](arrival/arrival.js) + [`arrival.css`](arrival/arrival.css)
+(now **1.3.0**) and the new [`arrival/give/give.js`](arrival/give/give.js). **Rollout agents: re-copy
+all three unchanged** (`give.js` goes to `<org>.github.io/arrival/give/give.js`). They're drop-in for
+a v1.2 `org.js`: with no `give` key, the donate page keeps its empty "coming soon" slot.
+
+### What a visitor gets
+
+- **At first paint** (drawn by `arrival.js`, so nothing moves later): "Give with crypto", a
+  **Preview** badge while the org has no address, one row per coin (Ethereum, Bitcoin, Solana) that
+  says **"Treasury address coming soon"**, a **Connect a wallet** button and **New to wallets?**
+- **One Connect button for every kind of wallet** (Reown AppKit): browser extensions, phone wallets
+  by **QR code** or deep link (so **Safari and phones work**), and **email or social sign-in**
+  (Google, X, Discord, Farcaster, GitHub, Apple, Facebook). Email/social costs nothing extra: it
+  comes with Reown's free plan and is on by default; the dashboard can narrow it (below).
+- **No address, ever, until the org publishes one.** Connecting is then a labelled preview: "No
+  treasury address is published yet, so there's nothing to send to, and nothing has been sent."
+- **With an address** (none today): the address in groups of four, **Copy**, **Show QR code** (dark
+  on white in every light), **Open in a wallet app** for BTC/SOL (`bitcoin:`/`solana:` links), and for
+  ETH **Send with your wallet**: an amount, then a prefilled transfer the visitor approves in their
+  own wallet (exact wei math, no floats; a mixed-case address is checksum-checked with viem first).
+  Afterwards, optionally, **Add your name to the contributors list**: the donor signs a plain
+  message (free, no gas) naming the transaction and the name to show, and gets a JSON note with
+  **Copy** and a prefilled **Email it to …** (the first email in `contact.paths`, or `give.claim.to`).
+  The page stores nothing and sends nothing.
+- **"New to wallets?"**: a kit dialog in plain words (what a wallet is, browser vs phone wallets,
+  why Safari can't use extensions, how to use a phone wallet instead, staying safe, where to get a
+  wallet), from David's Web3 guide in `david-amaringo`. It opens by itself when nothing is available.
+- **Calm when wallet connect isn't switched on for the site:** "Wallet connect isn't switched on for
+  this site yet. Nothing is wrong with your wallet or your browser…", with the guide. If the visitor
+  has a browser wallet, it connects that directly instead and says phone wallets aren't on yet.
+- Keyboard throughout; the guide traps focus, Esc closes it, focus returns; still motion and
+  reduced motion stop its animation; every light, more contrast (the hatching flattens) and reading
+  mode; 320px up.
+
+### The mechanism
+
+- `arrival.js` draws the section from `ARRIVAL.give`, then loads `give/give.js` (resolved from its
+  own `<script src>`, so it works cross-origin too) when the section comes within 600px of the
+  screen, or on the first click. Every `[data-give]` button routes through the kit's click handler
+  to `ArrivalGive.act()`.
+- **Nothing leaves the page until a click.** On Connect, `give.js` first asks Reown's public
+  allowlist endpoint (`api.web3modal.org/projects/v1/origins?projectId=…`, CORS-open, cached 5 min)
+  whether this origin is listed, mirroring AppKit's own rules (an empty list allows every site;
+  localhost always). Not listed: the calm state, and **AppKit is never downloaded**, so there's no
+  "Origin … not in your allow list" console error to see.
+- Listed: it imports **`@reown/appkit-cdn@1.8.24`** (published 2026-09-16, the latest stable) from
+  jsDelivr, with the Wagmi adapter, the org's `chains`, `metadata` from `org.js` (name, mark, the
+  page's origin, so wallets show the org), `analytics: false`, no swaps/on-ramp/send/receive, and
+  plain (EOA) accounts for email sign-ins so signatures verify with ordinary tools. Theme follows the
+  kit (dark/light from the mode, `--accent`, the body font) and updates on `arrival:change`.
+- **Belt and braces:** if AppKit still reports the origin (a stale cached answer), `give.js`
+  catches that console message (APKT002 and friends), shows the calm state and logs one
+  `console.info` line pointing at `SUSTAINABILITY.md`.
+- QR codes: `uqr@0.1.3` (MIT, no dependencies), imported only when someone opens one.
+- New kit API for modules: `Arrival.dialog({ title, eyebrow, html, cls })` → `{ el, show, hide }`
+  (the kit's dialog: focus trap, Esc, backdrop, focus return) and `Arrival.toast(text)`.
+
+### org.js
+
+```js
+give: {
+  reownProjectId: "00b6a1cd528ff580f1fd845ed08b0187", // public client ID (the O-R-G dApp's project)
+  chains: ["mainnet"],                    // + base, arbitrum, optimism only if the address receives there
+  addresses: { eth: null, btc: null, sol: null },    // null until the org publishes one
+  note: "",                               // the org's own words, after the safety line
+  // social: false (no email/social sign-in), claim: { to: "…" }, words: { … }, enabled: false
+},
+```
+
+`give` (top level) is the wallet module; `donate.give` is still the list of giving links. **PIR:
+`give: { enabled: false }`**: PIR can't accept outside contributions under its traditions; the
+donate and sponsorship wording is the A.L.E.X. session's (`~/code/pir/pending-tasks.md`, "(Alex)
+Donate-page disclaimer"). Its empty slot and placeholder disclaimer stay.
+
+### For Christopher: switch wallet connect on (Reown dashboard)
+
+1. Sign in at **https://dashboard.reown.com** with the account that owns project
+   `00b6a1cd528ff580f1fd845ed08b0187` (the one made for the O-R-G dApp).
+2. Open that project's **domain allowlist** and add these five origins exactly as written (scheme,
+   lowercase, no trailing slash), keeping `https://drasticstatic.github.io`:
+   - `https://psychedelicsinrecovery.github.io` (ready for later; PIR's module is off)
+   - `https://theholyearthfoundation.github.io`
+   - `https://octagon-religious-research-group-org.github.io`
+   - `https://psanctuary.github.io`
+   - `https://psanctuarychurch.github.io`
+3. Save, wait up to 5 minutes (the allowlist answer is cached), reload any `/donate/` and press
+   **Connect a wallet**: the wallet window opens instead of the calm state. Check with
+   `curl -s "https://api.web3modal.org/projects/v1/origins?projectId=00b6a1cd528ff580f1fd845ed08b0187"`.
+4. Optional: email/social sign-in is on with AppKit's default providers because the project leaves
+   them unset. To pick providers or turn it off for everyone, use the project's AppKit features
+   settings in the dashboard (they override `org.js`); per org, `give.social: false`.
+5. Nothing to do in Web3Auth: the kit doesn't use it.
+
+**One shared project, or one per org?** Shared (today): one allowlist, nothing to set up per org,
+and wallets still show each org's own name and mark (from `metadata`). But all five share one
+free-plan usage limit and one dashboard, the project lives in Christopher's account, and deleting or
+breaking it switches wallet connect off everywhere. One per org: each org's keepers own their
+project, limits and settings (and can later verify their domain for wallets' "verified" mark), at
+the cost of five dashboards. **Recommendation:** keep the shared project while every address is
+null (it's only a preview); give an org its own free project when it publishes a treasury address,
+and change `give.reownProjectId` in its `org.js` (one line).
+
+### Publishing an address later (per org)
+
+1. Paste the address exactly as the org's wallet shows it (checksummed for ETH) into
+   `give.addresses`; the kit refuses anything that doesn't look like its coin's address and shows
+   "coming soon" instead. List in `chains` only networks the address really receives on.
+2. Send a tiny test amount from another wallet using the page's own Copy, QR and Send, and confirm
+   it arrived, before telling anyone.
+3. "Add your name" notes: check the signature recovers to `proof.address` (for example
+   `cast wallet verify --address <address> "<message>" <signature>`, or Etherscan's Verified
+   Signatures page) and that `proof.tx` came from that address to the published one. Then add only
+   `entry` to `donate/contributors.json`; keep `proof` private (it links a name to a wallet).
+
+### Verify
+
+[`arrival/verify-give.example.mjs`](arrival/verify-give.example.mjs) (Playwright + local Chrome, a
+fresh context per check, live URLs, `--local <id>=<repo>` to test before pushing): lazy load with no
+third-party request before a click and no height change; Connect opens AppKit or the calm state with
+the guide; the guide's focus trap, Esc and focus return; AppKit never downloaded on an unlisted
+site; no address text; no page errors or red console; one header row at 320–1440px. Address mode,
+QR, send and the signed note were exercised locally with a random in-memory value and a mock wallet
+(nothing written down), and AppKit was opened for real on `http://127.0.0.1` (Reown always allows
+localhost): email, Google, X, Discord, Farcaster and GitHub sign-in, WalletConnect QR, wallet search.
+
+### Gotchas
+
+- **Native `<dialog>` sits in the top layer**, above any z-index, so AppKit's window would open
+  *under* the kit's guide. `give.js` closes the guide before it opens AppKit.
+- The kit opens the contact modal for any plain click on a configured `mailto:`; the "Email it to …"
+  link carries `data-arr-direct` so it really opens the mail app.
+- AppKit's remote config (the dashboard) wins over local `features` where it's set, and warns in the
+  console when it overrides a local value; `give.js` only sets what the dashboard leaves unset today.
+- A header-row check that scrolls first sees negative `top`s and mis-rounds them; measure the header
+  before scrolling, and test "one row" as vertical overlap.
+
 ## Future enhancement, not required (can simmer)
 
 `divorce-custody-assistant/vocational-compliance/build_vocational_log.py` generates an animated,

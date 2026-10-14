@@ -236,6 +236,29 @@
       crypto: { text: "Giving from a crypto wallet is planned for this page. It isn't open yet." },
     },
 
+    // v1.3 · give with crypto: the wallet module in the donate page's crypto slot (give/give.js,
+    // beside arrival.js). Not to be confused with donate.give above (the org's giving links).
+    //   reownProjectId  a Reown project ID (a public client ID; fine in code). Its allowlist on
+    //                   dashboard.reown.com must include https://<org>.github.io, or the page shows
+    //                   "Wallet connect isn't switched on for this site yet" (calmly, no red errors).
+    //   chains          EVM networks the ETH address can receive on: mainnet, base, arbitrum,
+    //                   optimism (sepolia for tests). List one only if the address really receives
+    //                   there: a Safe, for instance, exists only on the networks it was deployed to.
+    //   addresses       null until the org publishes a treasury address. With none, the page says
+    //                   "Treasury address coming soon" and connecting is a labelled preview. Never
+    //                   put a placeholder or example address here: the page would show it.
+    //   note            the org's own words, after the safety line. social: false hides email and
+    //                   social sign-in. claim.to: where "add your name" notes go (default: the
+    //                   first email in contact.paths). words: any of give.js's strings.
+    //   enabled: false  no module; the slot stays empty (PIR: no outside contributions, per its
+    //                   traditions; its wording is being written in the A.L.E.X. session).
+    give: {
+      reownProjectId: "00b6a1cd528ff580f1fd845ed08b0187",
+      chains: ["mainnet"],
+      addresses: { eth: null, btc: null, sol: null },
+      note: "",
+    },
+
     record: {
       intro: "ORG's AstroLog has two halves.",
       share:

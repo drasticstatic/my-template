@@ -68,14 +68,30 @@
  *                         soon" slot ([data-arr-wallet-slot]) for a later wallet module.
  *   <arrival-map src>     the site map from a map.json (version 2): every destination as a card with
  *                         its share image as the thumbnail, grouped, "You are here" on this site.
+ *
+ * Wave 7 (v1.3, 2026-10-14), give with crypto; additive, so a v1.2 org.js keeps working:
+ *   ARRIVAL.give          fills the donate page's crypto slot with the wallet module. arrival.js draws
+ *                         the section at first paint (coins, "Treasury address coming soon" for any
+ *                         coin without one, a Connect button, a "New to wallets?" guide) and loads
+ *                         give/give.js, next to this file, when the section nears the screen or on
+ *                         the first click. give.js loads Reown AppKit (pinned, from a CDN) only when
+ *                         the visitor asks to connect. No address in org.js means no address on the
+ *                         page, ever: connecting is then a labelled preview. give: { enabled: false }
+ *                         keeps the empty slot (PIR).
+ *   window.Arrival.dialog({ title, eyebrow, html, cls })  a kit dialog (focus trap, Esc, backdrop,
+ *                         focus return) for modules: { el, show(focusEl?), hide() }.
+ *   window.Arrival.toast(text)  the kit's quiet status toast.
  */
 (function () {
   "use strict";
   if (window.Arrival) return;
 
-  var VERSION = "1.2.1";
+  var VERSION = "1.3.0";
   var C = window.ARRIVAL || {};
   var doc = document;
+  // Where this file was loaded from, so modules beside it (give/give.js) load from the same place,
+  // on the portal and on any other origin that loads the kit by full URL.
+  var KIT_BASE = ((doc.currentScript && doc.currentScript.src) || "").replace(/[^/]*$/, "");
   var root = doc.documentElement;
   var siteId = root.getAttribute("data-arrival-site") || "site";
   var site = assign({}, (C.sites || {})[siteId] || {}, window.ARRIVAL_SITE || {});
@@ -2256,6 +2272,128 @@
        slot stays empty until a wallet module fills [data-arr-wallet-slot]; it never shows an
        address on its own. */
   var KINDS = { gift: ["Gift", "gift"], sponsor: ["Sponsor", "handshake"], time: ["Time and skills", "hand-heart"], "in-kind": ["In kind", "package"], founding: ["Founding", "plant"] };
+
+  /* ── v1.3 · give with crypto: the section, drawn at first paint ──────────────────────────
+     ARRIVAL.give = { enabled? (false keeps the empty slot), reownProjectId, chains? (EVM networks
+       the ETH address takes, default ["mainnet"]), addresses: { eth, btc, sol } (null until the
+       org publishes one), note?, title?, text?, social? (false hides email/social sign-in),
+       claim?: { to (an email for "add your name" notes) }, module? (give.js URL) }.
+     This draws everything a visitor sees before they click, so nothing moves when give/give.js
+     arrives; give.js adds what follows a click (the wallet window, the connected panel, the guide).
+     An address that doesn't look like its coin's is treated as missing, never shown. */
+  var GIVE = C.give && C.give.enabled !== false ? C.give : null;
+  var COINS = [
+    { id: "eth", name: "Ethereum", sym: "ETH", icon: "currency-eth", ok: /^0x[0-9a-fA-F]{40}$/ },
+    { id: "btc", name: "Bitcoin", sym: "BTC", icon: "currency-btc", ok: /^(bc1[02-9ac-hj-np-z]{8,87}|[13][1-9A-HJ-NP-Za-km-z]{25,34})$/, uri: "bitcoin:" },
+    { id: "sol", name: "Solana", sym: "SOL", icon: "coin", ok: /^[1-9A-HJ-NP-Za-km-z]{32,44}$/, uri: "solana:" },
+  ];
+  // Networks whose own coin is ETH (so "Send ETH" means ETH on every one of them).
+  var GIVE_NETS = { mainnet: "Ethereum", ethereum: "Ethereum", base: "Base", arbitrum: "Arbitrum One", optimism: "OP Mainnet", sepolia: "Sepolia (a test network)" };
+  function giveAddress(id) {
+    var A = (GIVE && GIVE.addresses) || {};
+    var v = A[id];
+    if (v == null || v === "") return null;
+    var coin = COINS.filter(function (c) { return c.id === id; })[0];
+    v = String(v).trim();
+    if (coin && coin.ok.test(v)) return v;
+    if (window.console) console.warn("[arrival] give.addresses." + id + " doesn't look like a " + (coin ? coin.name : id) + " address, so the page shows \"coming soon\" instead.");
+    return null;
+  }
+  function giveNets() {
+    var list = (GIVE.chains && GIVE.chains.length ? GIVE.chains : ["mainnet"]).filter(function (k) { return GIVE_NETS[k]; });
+    return list.length ? list : ["mainnet"];
+  }
+  function giveShell(n, X) {
+    var G = GIVE;
+    var A = G.addresses || { eth: null, btc: null, sol: null };
+    var coins = COINS.filter(function (c) { return Object.prototype.hasOwnProperty.call(A, c.id); });
+    var any = coins.some(function (c) { return giveAddress(c.id); });
+    var who = org.short || org.name || "us";
+    var rows = coins.map(function (c) {
+      var addr = giveAddress(c.id);
+      var head = '<span class="arr-path-icon arr-shape">' + icon(c.icon) + '</span><div class="arr-coin-main"><h3>' + esc(c.name) + ' <span class="arr-coin-sym">' + c.sym + "</span></h3>";
+      if (!addr) {
+        return '<li class="arr-coin arr-shape is-soon" data-coin="' + c.id + '">' + head + '<p class="arr-coin-soon">' + icon("hourglass-medium") + esc(G.soonText || "Treasury address coming soon") + "</p></div></li>";
+      }
+      var chunks = addr.match(/.{1,4}/g).map(function (s) { return "<span>" + esc(s) + "</span>"; }).join("");
+      var qid = "arr-qr-" + c.id + "-" + n;
+      return (
+        '<li class="arr-coin arr-shape" data-coin="' + c.id + '">' + head +
+        (c.id === "eth" ? '<p class="arr-coin-net">' + esc("On " + giveNets().map(function (k) { return GIVE_NETS[k]; }).join(", ")) + "</p>" : "") +
+        '<code class="arr-addr" translate="no" aria-label="' + esc(c.name + " address " + addr) + '">' + chunks + "</code>" +
+        '<div class="arr-coin-actions">' +
+        (c.id === "eth" ? '<button type="button" class="arr-btn arr-btn-primary arr-shape" data-give="send" data-coin="eth">' + icon("paper-plane-tilt") + "Send with your wallet</button>" : "") +
+        '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-arr-copy="' + esc(addr) + '">' + icon("copy") + "Copy</button>" +
+        '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-give="qr" data-coin="' + c.id + '" aria-expanded="false" aria-controls="' + qid + '">' + icon("qr-code") + "<span>Show QR code</span></button>" +
+        (c.uri ? '<a class="arr-btn arr-btn-quiet arr-shape" data-arr-direct href="' + esc(c.uri + addr) + '">' + icon("device-mobile") + "Open in a wallet app</a>" : "") +
+        "</div>" +
+        '<div class="arr-coin-qr" id="' + qid + '" hidden></div></div></li>'
+      );
+    }).join("");
+    var text = any
+      ? G.text || "Copy an address or scan its QR code with your wallet app, or connect a wallet and send from this page. Your wallet shows you exactly what you're approving before anything moves."
+      : G.previewText || "One button connects a browser wallet, a phone wallet (by QR code) or an email sign-in. No treasury address is published yet, so for now connecting is a preview of how giving will work: nothing can be sent.";
+    var safety = any
+      ? "Send only to an address on this page, and check its first and last characters in your wallet before you approve. No one from " + esc(who) + " will ever ask for your recovery phrase."
+      : "No wallet address is published here yet. If you see one anywhere claiming to be ours, please check with us first. No one from " + esc(who) + " will ever ask for your recovery phrase.";
+    return (
+      '<section class="arr-crypto arr-gift arr-shape" data-arr-wallet-slot data-arr-give data-give-mode="' + (any ? "live" : "preview") + '" aria-labelledby="arr-crypto-' + n + '">' +
+      '<h2 id="arr-crypto-' + n + '">' + icon("wallet") + esc(G.title || X.title || "Give with crypto") + (any ? "" : ' <span class="arr-soon">Preview</span>') + "</h2>" +
+      "<p>" + text + "</p>" +
+      (coins.length ? '<ul class="arr-coins">' + rows + "</ul>" : "") +
+      '<div class="arr-give-actions">' +
+      '<button type="button" class="arr-btn ' + (any ? "arr-btn-quiet" : "arr-btn-primary") + ' arr-shape" data-give="connect">' + icon("plugs-connected") + "<span>Connect a wallet</span></button>" +
+      '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-give="learn">' + icon("question") + "New to wallets?</button></div>" +
+      '<p class="arr-give-live" data-give-live role="status" aria-live="polite"></p>' +
+      '<div class="arr-give-panel arr-shape" data-give-panel hidden></div>' +
+      '<p class="arr-fine">' + safety + (G.note ? " " + G.note : "") + "</p></section>"
+    );
+  }
+  // give/give.js loads when the section nears the screen (so a click finds it ready), or on the
+  // first click. It talks to nobody until the visitor asks to connect.
+  var giveP = null;
+  function loadGive() {
+    if (window.ArrivalGive) return Promise.resolve(window.ArrivalGive);
+    if (giveP) return giveP;
+    giveP = new Promise(function (resolve, reject) {
+      var s = doc.createElement("script");
+      s.type = "module";
+      s.src = GIVE.module || KIT_BASE + "give/give.js?v=" + VERSION;
+      s.onload = function () {
+        if (window.ArrivalGive) resolve(window.ArrivalGive);
+        else reject(new Error("give.js loaded but didn't start"));
+      };
+      s.onerror = function () { reject(new Error("give.js didn't load")); };
+      doc.head.appendChild(s);
+    }).catch(function (err) {
+      giveP = null;
+      throw err;
+    });
+    return giveP;
+  }
+  function watchGive(sec) {
+    if (!sec) return;
+    var go = function () { loadGive().then(function (G) { G.init(sec); }, function () {}); };
+    if (!("IntersectionObserver" in window)) return idle(go);
+    var io = new IntersectionObserver(function (es) {
+      for (var i = 0; i < es.length; i++) if (es[i].isIntersecting) { io.disconnect(); go(); return; }
+    }, { rootMargin: "600px 0px" });
+    io.observe(sec);
+  }
+  function giveClick(sec, b) {
+    if (b.getAttribute("aria-busy") === "true") return;
+    loadGive().then(
+      function (G) {
+        G.init(sec);
+        G.act(b.getAttribute("data-give"), b, sec);
+      },
+      function () {
+        var live = sec.querySelector("[data-give-live]");
+        if (live) live.textContent = "The wallet part of this page didn't load. Check your connection, then try again.";
+      }
+    );
+  }
+
   function renderDonate(el) {
     var D = C.donate || {};
     var L = D.ledger || null;
@@ -2290,12 +2428,14 @@
         '<section class="arr-contrib" aria-labelledby="arr-contrib-' + n + '"><h2 id="arr-contrib-' + n + '">' + icon("hand-heart") + esc(L.title || "Contribution ledger") + "</h2>" +
         (L.intro ? '<p class="arr-intro">' + L.intro + "</p>" : "") + '<div data-arr-contrib><p class="arr-fine">Gathering the names…</p></div></section>';
     }
-    h +=
-      '<section class="arr-crypto arr-shape" data-arr-wallet-slot aria-labelledby="arr-crypto-' + n + '">' +
-      '<h2 id="arr-crypto-' + n + '">' + icon(X.icon || "wallet") + esc(X.title || "Give with crypto") + ' <span class="arr-soon">' + esc(W.soon) + "</span></h2>" +
-      "<p>" + (X.text || "A way to give with a crypto wallet is on its way. It isn't open yet.") + "</p>" +
-      '<p class="arr-fine">' + (X.note || "No wallet address is published here yet. If you see one anywhere claiming to be ours, please check with us first.") + "</p></section>";
+    h += GIVE
+      ? giveShell(n, X)
+      : '<section class="arr-crypto arr-shape" data-arr-wallet-slot aria-labelledby="arr-crypto-' + n + '">' +
+        '<h2 id="arr-crypto-' + n + '">' + icon(X.icon || "wallet") + esc(X.title || "Give with crypto") + ' <span class="arr-soon">' + esc(W.soon) + "</span></h2>" +
+        "<p>" + (X.text || "A way to give with a crypto wallet is on its way. It isn't open yet.") + "</p>" +
+        '<p class="arr-fine">' + (X.note || "No wallet address is published here yet. If you see one anywhere claiming to be ours, please check with us first.") + "</p></section>";
     el.innerHTML = h;
+    if (GIVE) watchGive(el.querySelector("[data-arr-give]"));
     if (!L) return;
     var box = el.querySelector("[data-arr-contrib]");
     var empty = function () {
@@ -2570,6 +2710,15 @@
       return;
     }
     if (!t.closest(".arr-nav-menu, .arr-menu-panel")) closeNavs(false);
+    // v1.3: every button of the give-with-crypto module (on the page or in its guide) goes to give.js.
+    if (GIVE && (b = t.closest("[data-give]")) && !b.disabled) {
+      var gsec = b.closest("[data-arr-give]") || doc.querySelector("[data-arr-give]");
+      if (gsec) {
+        e.preventDefault();
+        giveClick(gsec, b);
+        return;
+      }
+    }
     if ((b = t.closest("[data-arr-copy]"))) {
       var text = b.getAttribute("data-arr-copy");
       try {
@@ -2773,5 +2922,18 @@
     },
     config: C,
     site: site,
+    // v1.3, for modules such as give/give.js: the kit's own dialog and toast.
+    dialog: function (o) {
+      o = o || {};
+      var id = "arr-dlg-" + ++uid;
+      var d = makeDialog("arr-modal " + (o.cls || ""), id, o.onClose);
+      d.innerHTML = panel(modalHead(o.title || "", o.eyebrow, id) + (o.html || ""), "arr-modal-panel");
+      return {
+        el: d,
+        show: function (focusEl) { show(d, focusEl || d.querySelector("[data-arr-close]")); },
+        hide: function () { hide(d); },
+      };
+    },
+    toast: toast,
   };
 })();

@@ -7,7 +7,7 @@
      org; delete the rest. Worked examples: psanctuary/changelog-astro and
      psanctuarychurch/changelog-astro (SUSTAINABILITY.md). -->
 
-<div class="tldr"><i class="ph ph-plant"></i> <span><strong>TL;DR:</strong> Nothing here costs money. What keeps it alive is a short list of things that quietly expire or drift: one access token, the scheduled jobs, a vendored kit, cached link previews, and (later) a wallet allowlist.</span></div>
+<div class="tldr"><i class="ph ph-plant"></i> <span><strong>TL;DR:</strong> Nothing here costs money. What keeps it alive is a short list of things that quietly expire or drift: one access token, the scheduled jobs, a vendored kit, cached link previews, and a wallet allowlist.</span></div>
 
 ## The pieces
 
@@ -43,10 +43,14 @@ the two kit files unchanged; push the portal **before** the AstroLog.
 Apps cache a link's share image for days or weeks. Cards never carry counts. *What to do:* after a
 card changes, refresh important links (Telegram: @WebpageBot; LinkedIn and Facebook inspectors).
 
-### 👛 Wallet giving, later
-The crypto slot on `/donate/` is empty on purpose. *What to do:* when the wallet module (Reown
-AppKit, Web3Auth for email sign-in) is switched on, add `https://<ORG>.github.io` to both domain
-allowlists, with a real client ID (never a demo one).
+### 👛 Wallet giving (kit v1.3, `arrival/give/give.js`)
+`/donate/` has the kit's wallet module: one Connect button (Reown AppKit) for browser wallets, phone
+wallets by QR code, and email or social sign-in. It only works on sites listed in the Reown project's
+allowlist. *What to do:* make sure the project in `give.reownProjectId` (`arrival/org.js`) lists
+**`https://<ORG>.github.io`** at dashboard.reown.com; until it does, the page calmly says "Wallet
+connect isn't switched on for this site yet". `give.addresses` stays `null` until the org publishes a
+treasury address: never a placeholder. AppKit is pinned (`@reown/appkit-cdn@1.8.24`); upgrade it in
+the kit, not here.
 
 ### 🔗 Links that leave GitHub
 *What to do:* if the org's site, form or community links change, update `arrival/org.js` (nav,
