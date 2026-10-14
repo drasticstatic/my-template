@@ -41,6 +41,11 @@ const ok = (name, cond, extra = "") => {
   console.log(results[results.length - 1]);
 };
 const bust = (u) => u + (u.includes("?") ? "&" : "?") + "v=" + Date.now();
+// Slow networks happen (a hung font request blocks "networkidle"): wait for load, then idle if it comes.
+async function go(page, url) {
+  await page.goto(bust(url), { waitUntil: "load", timeout: 90000 });
+  await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => {});
+}
 const browser = await chromium.launch({ channel: "chrome" });
 async function fresh(id, width = 1280) {
   const S = SITES[id];
@@ -73,7 +78,7 @@ for (const id of ids.length ? ids : Object.keys(SITES)) {
   // 1. Lazy, quiet, no shift.
   {
     const { ctx, page } = await fresh(id);
-    await page.goto(bust(URL_), { waitUntil: "networkidle" });
+    await go(page, URL_);
     const slot = page.locator("[data-arr-wallet-slot]");
     await slot.scrollIntoViewIfNeeded();
     const h0 = await slot.evaluate((e) => e.getBoundingClientRect().height);
@@ -104,7 +109,7 @@ for (const id of ids.length ? ids : Object.keys(SITES)) {
   // 2 + 3. Connect: AppKit or the calm state; the guide's focus trap.
   {
     const { ctx, page } = await fresh(id);
-    await page.goto(bust(URL_), { waitUntil: "networkidle" });
+    await go(page, URL_);
     await page.locator("[data-arr-give]").scrollIntoViewIfNeeded();
     await page.waitForTimeout(800);
     await page.click('[data-give="connect"]');
@@ -147,7 +152,7 @@ for (const id of ids.length ? ids : Object.keys(SITES)) {
     const bad = [];
     for (const w of WIDTHS) {
       const { ctx, page } = await fresh(id, w);
-      await page.goto(bust(URL_), { waitUntil: "networkidle" });
+      await go(page, URL_);
       await page.waitForTimeout(500);
       const r = await page.evaluate(() => {
         const h = document.querySelector("header");

@@ -2298,6 +2298,14 @@ html:is([data-contrast="more"], [data-reading="on"]) .arr-coin.is-soon {
   padding: 0.95rem 1.05rem;
   background: var(--surface-muted);
 }
+/* quiet buttons would vanish into the panel's own background */
+.arr-give-panel .arr-btn-quiet {
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+.arr-give-panel .arr-btn-quiet:hover {
+  background: var(--border);
+}
 .arr-give-panel[hidden],
 .arr-coin-qr[hidden] {
   display: none;
