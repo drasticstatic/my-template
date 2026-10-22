@@ -137,7 +137,10 @@ function trim(s, n = 140) {
 // "first-last-initial" (the default since v2): "Christopher Wilson" → "Christopher W" (no period,
 // matching how every org site and CONTACTS write names); a single
 // name or handle stays as it is. "first": "Christopher". "full": as written.
+// A name with a chosen form in parentheses ("Isaiah (Kenney)", THEF's choice) is already how the
+// person is credited, so every style keeps it as written.
 export function nameAs(name, style = "first-last-initial") {
+  if (/\(.+\)\s*$/.test(String(name || ""))) return String(name).trim().replace(/\s+/g, " ");
   const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
   if (style === "first-last-initial" && parts.length > 1) return `${parts[0]} ${parts[parts.length - 1].charAt(0).toUpperCase()}`;
   if (style === "first" && parts.length) return parts[0];
