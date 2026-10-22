@@ -1,4 +1,4 @@
-/*! Arrival kit v1.3 · core stylesheet · https://github.com/drasticstatic/my-template (changelog-template/arrival)
+/*! Arrival kit v1.4 · core stylesheet · https://github.com/drasticstatic/my-template (changelog-template/arrival)
  *
  * The same file in every org. It reads only these tokens, which the org's org.css defines per
  * mode on [data-theme="<id>"] selectors (attribute selectors, so a light card can preview a mode by
@@ -1708,6 +1708,49 @@ arrival-nav[hidden] {
 .arr-nav-more [data-arr-more-k][hidden] {
   display: none;
 }
+/* v1.4: a dropdown in groups. Each group has a small heading, and a hairline divides it from what's
+   above (in the dropdown, the More panel and the Menu). */
+.arr-nav-grp {
+  margin: 0.3rem 0 0;
+  padding: 0.35rem 0 0;
+  border-top: 1px solid var(--border);
+}
+.arr-nav-grp:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+.arr-nav-grp-h {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.2rem 0 0.15rem;
+  padding: 0.2rem 0.65rem;
+  font: 600 0.74rem/1.3 var(--font-body);
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.arr-nav-grp-h .ph {
+  color: var(--accent);
+  font-size: 0.95rem;
+}
+.arr-nav-more-h + .arr-nav-grp,
+.arr-menu-h + .arr-nav-grp {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+/* v1.4: Donate and the welcome guide close the More panel, under a hairline when anything's above. */
+.arr-nav-ess[hidden],
+.arr-nav-ess li[hidden] {
+  display: none;
+}
+.arr-nav-more [data-arr-more-k]:not([hidden]) ~ .arr-nav-ess,
+.arr-nav-ess-rows {
+  margin-top: 0.3rem;
+  padding-top: 0.3rem;
+  border-top: 1px solid var(--border);
+}
 
 /* the Menu fold: below nav.fold the bar hides and one Menu button opens a panel of everything */
 .arr-menu-btn {
@@ -1839,65 +1882,139 @@ arrival-nav[data-mode="menu"] .arr-menu-btn {
   }
 }
 
-/* ── <arrival-footer>: link groups, an icon on every link ─────────────────────────────────── */
+/* ── <arrival-footer>: link groups, an icon on every link ───────────────────────────────────
+   v1.4: scoped against the host's CSS. Every rule starts with the element and sets each box
+   property a site's own stylesheet tends to touch (PIR's alex.css has `section { padding: 5.5rem 0 }`
+   and `footer a { display: block; margin: .25rem 0 }`; themes set `ul { margin-left }` and
+   `li::before` bullets), so the footer looks the same everywhere. Each rule is (0,1,1) or higher:
+   above bare element rules like `section`, `footer a` or `footer ul li`, and equal to an org.css
+   rule written `footer .arr-foot-a` (which loads later, so it still wins). The columns are balanced
+   by arrival.js (--arr-foot-cols); without it the grid simply auto-fits. */
 arrival-footer {
   display: block;
+  min-width: 0;
+  box-sizing: border-box;
 }
-.arr-foot {
+arrival-footer[hidden] {
+  display: none;
+}
+/* <arrival-footer frame>: the kit's card, for a page with no frame of its own around the footer */
+arrival-footer[frame] {
+  padding: 1.25rem 1.25rem 1rem;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+arrival-footer .arr-foot {
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
   font-family: var(--font-body);
+  text-align: left;
 }
-.arr-foot-groups {
+arrival-footer .arr-foot-groups {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(11.5rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 11.5rem), 1fr));
   gap: 1.5rem 2rem;
+  margin: 0;
+  padding: 0;
 }
-.arr-foot-h {
+arrival-footer .arr-foot-groups[style*="--arr-foot-cols"] {
+  grid-template-columns: repeat(var(--arr-foot-cols), minmax(0, 1fr));
+}
+arrival-footer .arr-foot-group {
+  display: block;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+arrival-footer .arr-foot-h {
   display: flex;
   align-items: center;
   gap: 0.4rem;
   margin: 0 0 0.6rem;
+  padding: 0;
+  border: 0;
+  background: none;
   font: 700 0.72rem/1.2 var(--font-body);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--muted);
 }
-.arr-foot-h .ph {
+arrival-footer .arr-foot-h .ph {
   color: var(--accent);
   font-size: 1rem;
 }
-.arr-foot-group ul {
+arrival-footer .arr-foot-list {
   display: grid;
   gap: 0.15rem;
   margin: 0;
   padding: 0;
+  border: 0;
   list-style: none;
 }
-.arr-foot-a {
+arrival-footer .arr-foot-li {
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  list-style: none;
+}
+arrival-footer .arr-foot-li::before,
+arrival-footer .arr-foot-li::after {
+  content: none;
+}
+arrival-footer .arr-foot-a {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
+  float: none;
+  width: auto;
+  max-width: 100%;
+  margin: 0;
   padding: 0.25rem 0;
+  border: 0;
   border-radius: 6px;
+  background: none;
+  box-shadow: none;
   color: var(--foreground);
-  font-size: 0.93rem;
+  font: 400 0.93rem/1.6 var(--font-body);
+  letter-spacing: normal;
+  text-transform: none;
   text-decoration: none;
 }
-.arr-foot-a .ph {
+arrival-footer .arr-foot-a .ph {
+  flex: none;
+  margin: 0;
+  opacity: 1;
   color: var(--accent);
   font-size: 1.05rem;
 }
-.arr-foot-a:hover {
+arrival-footer .arr-foot-a:hover {
   color: var(--accent);
 }
-.arr-foot-a[aria-current="page"] {
+arrival-footer .arr-foot-a[aria-current="page"] {
   color: var(--heading);
   font-weight: 600;
 }
-.arr-foot-note {
+arrival-footer .arr-foot-note {
   margin: 1.5rem 0 0;
+  padding: 0;
   font-size: 0.82rem;
   line-height: 1.5;
   color: var(--muted);
+}
+arrival-footer .arr-foot-note a {
+  display: inline;
+  margin: 0;
+  color: var(--accent);
 }
 
 /* ── contact and community modals ───────────────────────────────────────────────────────── */
@@ -2642,6 +2759,375 @@ a.arr-map-card:hover {
   text-overflow: ellipsis;
 }
 
+/* ── v1.4 · scroll strips (the dock): a fade and a chevron on each side with more to show ───────
+   arrival.js adds .arr-strip to the strip, .arr-strip-l / .arr-strip-r while there's more that
+   way, and the two buttons beside it in its parent. A focused link scrolls clear of the fade. */
+.arr-strip {
+  --arr-fade: 2.75rem;
+  scroll-padding-inline: var(--arr-fade);
+}
+.arr-strip.arr-strip-r {
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - var(--arr-fade)), transparent);
+  mask-image: linear-gradient(90deg, #000 calc(100% - var(--arr-fade)), transparent);
+}
+.arr-strip.arr-strip-l {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 var(--arr-fade));
+  mask-image: linear-gradient(90deg, transparent, #000 var(--arr-fade));
+}
+.arr-strip.arr-strip-l.arr-strip-r {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 var(--arr-fade), #000 calc(100% - var(--arr-fade)), transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 var(--arr-fade), #000 calc(100% - var(--arr-fade)), transparent);
+}
+.arr-strip-btn {
+  --arr-cut: 7px;
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--heading);
+  font-size: 0.95rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.22);
+}
+.arr-strip-btn[hidden] {
+  display: none;
+}
+.arr-strip-btn:hover {
+  background: var(--surface-muted);
+  color: var(--accent);
+}
+.arr-strip-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+/* More contrast (and reading mode, which turns it on): a shorter fade, a firmer button. */
+html[data-contrast="more"] .arr-strip {
+  --arr-fade: 1.5rem;
+}
+html[data-contrast="more"] .arr-strip-btn {
+  border-width: 2px;
+  box-shadow: none;
+}
+
+/* ── v1.4 · receipts and taxes (donate.tax) ─────────────────────────────────────────────────── */
+.arr-tax {
+  --arr-cut: 14px;
+  margin: 1.75rem 0 0;
+  padding: 1.1rem 1.2rem;
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+.arr-tax h2,
+.arr-pledge h2,
+.arr-pledge-verify h2 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0 0 0.5rem;
+  padding: 0;
+  font-family: var(--font-heading);
+  font-variation-settings: var(--heading-settings);
+  font-weight: 400;
+  font-size: 1.35rem;
+  line-height: 1.2;
+  color: var(--heading);
+}
+.arr-tax h2 .ph,
+.arr-pledge h2 .ph,
+.arr-pledge-verify h2 .ph,
+.arr-pledge-card h3 .ph,
+.arr-tax-row dt .ph {
+  color: var(--accent);
+}
+.arr-tax-list {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0.5rem 0 0.4rem;
+  padding: 0;
+}
+.arr-tax-row {
+  display: grid;
+  grid-template-columns: minmax(8rem, 11rem) minmax(0, 1fr);
+  gap: 0.2rem 1rem;
+}
+.arr-tax-row dt {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--heading);
+}
+.arr-tax-row dd,
+.arr-tax > p {
+  margin: 0;
+  line-height: 1.55;
+}
+.arr-tax > p:not(.arr-fine) {
+  margin-top: 0.6rem;
+}
+.arr-tax a {
+  color: var(--accent);
+}
+@media (max-width: 560px) {
+  .arr-tax-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ── v1.4 · a pledge of support: <arrival-pledge> ───────────────────────────────────────────── */
+arrival-pledge {
+  display: block;
+}
+arrival-pledge[hidden] {
+  display: none;
+}
+.arr-pledge,
+.arr-pledge-card,
+.arr-pledge-verify {
+  --arr-cut: 14px;
+  margin: 0;
+  padding: 1.15rem 1.25rem 1.2rem;
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+.arr-pledge {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+.arr-pledge > p,
+.arr-pledge-verify > p,
+.arr-pledge-card > p {
+  margin: 0 0 0.6rem;
+  line-height: 1.55;
+}
+.arr-pledge-intro {
+  color: var(--muted);
+}
+.arr-pledge-text {
+  --arr-cut: 10px;
+  margin: 0.9rem 0 1.2rem;
+  padding: 0.95rem 1.15rem;
+  border: 0;
+  border-left: 3px solid var(--accent);
+  background: var(--surface-muted);
+  font-family: var(--font-heading);
+  font-variation-settings: var(--heading-settings);
+  font-size: 1.2rem;
+  line-height: 1.45;
+  color: var(--heading);
+  quotes: none;
+}
+.arr-pledge-steps {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.arr-pledge-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  margin: 0;
+  padding: 0;
+}
+.arr-pledge-num {
+  --arr-cut: 7px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  background: var(--surface-muted);
+  box-shadow: inset 0 0 0 1px var(--border);
+  color: var(--heading);
+  font: 700 0.9rem/1 var(--font-body);
+}
+.arr-pledge-num .ph {
+  display: none;
+  font-size: 1.05rem;
+}
+.arr-pledge-step.is-done .arr-pledge-num {
+  background: var(--accent);
+  box-shadow: none;
+  color: var(--on-accent);
+}
+.arr-pledge-step.is-done .arr-pledge-num > span {
+  display: none;
+}
+.arr-pledge-step.is-done .arr-pledge-num .ph {
+  display: block;
+}
+.arr-pledge-body {
+  flex: 1;
+  min-width: 0;
+}
+.arr-pledge-body h3,
+.arr-pledge-card h3,
+.arr-pledge-done h3 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.45rem;
+  margin: 0.2rem 0 0.25rem;
+  padding: 0;
+  font-family: var(--font-heading);
+  font-variation-settings: var(--heading-settings);
+  font-weight: 400;
+  font-size: 1.12rem;
+  line-height: 1.3;
+  color: var(--heading);
+}
+.arr-pledge-body p,
+.arr-pledge-done p {
+  margin: 0 0 0.55rem;
+  line-height: 1.55;
+}
+.arr-pledge-live {
+  min-height: 1.45em; /* one line kept, so the first status message moves nothing */
+  margin: 0.8rem 0 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+.arr-pledge-panel {
+  --arr-cut: 12px;
+  margin: 0.35rem 0 0.6rem;
+  padding: 0.95rem 1.05rem;
+  background: var(--surface-muted);
+}
+.arr-pledge-panel[hidden] {
+  display: none;
+}
+.arr-pledge-panel .arr-btn-quiet {
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+.arr-pledge-panel .arr-btn-quiet:hover {
+  background: var(--border);
+}
+.arr-pledge-panel .arr-give-state h3 {
+  margin: 0 0 0.3rem;
+  font-family: var(--font-heading);
+  font-variation-settings: var(--heading-settings);
+  font-weight: 400;
+  font-size: 1.1rem;
+  color: var(--heading);
+}
+.arr-pledge-panel .arr-give-state p {
+  margin: 0 0 0.6rem;
+  line-height: 1.55;
+}
+.arr-pledge-done h3 .ph {
+  color: var(--accent);
+}
+.arr-pledge-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: 0.8rem;
+  margin: 1rem 0;
+}
+.arr-pledge-card h3 {
+  flex-wrap: nowrap;
+}
+.arr-pledge-card h3 > .ph {
+  flex: none;
+  position: relative;
+  top: 0.12em;
+}
+.arr-pledge-card h3 > span {
+  min-width: 0;
+}
+.arr-pledge-card .arr-ticks {
+  margin: 0.4rem 0 0;
+  font-size: 0.94rem;
+}
+.arr-pledge-card .arr-btn {
+  padding: 0.5rem 0.85rem;
+  font-size: 0.88rem;
+}
+.arr-pledge-verify {
+  margin-top: 1rem;
+}
+.arr-pledge-verify form {
+  margin: 0;
+}
+.arr-pledge-hex,
+.arr-pledge-msg {
+  font: 500 0.84rem/1.45 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+.arr-pledge-msg {
+  display: block;
+  min-height: 8.5rem;
+  white-space: pre-wrap;
+  resize: vertical;
+}
+.arr-pledge-verify .arr-give-field {
+  margin: 0 0 0.6rem;
+}
+.arr-pledge-verify .arr-give-actions .arr-btn {
+  padding: 0.55rem 0.9rem;
+  font-size: 0.9rem;
+}
+.arr-pledge-result {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  min-height: 1.45em;
+  margin: 0.8rem 0 0;
+  font-size: 0.93rem;
+  line-height: 1.5;
+}
+.arr-pledge-result:empty {
+  display: block;
+}
+.arr-pledge-result .ph {
+  flex: none;
+  margin-top: 0.15rem;
+  font-size: 1.15rem;
+}
+.arr-pledge-result[data-state="ok"] {
+  font-weight: 600;
+  color: var(--heading);
+}
+.arr-pledge-result[data-state="ok"] .ph {
+  color: var(--accent);
+}
+.arr-pledge-result[data-state="bad"],
+.arr-pledge-result[data-state="warn"] {
+  --arr-cut: 8px;
+  padding: 0.55rem 0.75rem;
+  border-radius: calc(var(--arr-radius) - 4px);
+  background: var(--surface-muted);
+  color: var(--heading);
+}
+.arr-pledge-result[data-state="busy"] {
+  color: var(--muted);
+}
+.arr-input[aria-invalid="true"] {
+  border-color: var(--heading);
+  border-width: 2px;
+}
+@media (max-width: 420px) {
+  .arr-pledge,
+  .arr-pledge-card,
+  .arr-pledge-verify {
+    padding: 1rem 0.95rem;
+  }
+  .arr-pledge-num {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+}
+
 /* ── reading, round 2: text size and line length ─────────────────────────────────────────── */
 .arr-field-size {
   margin: 0.9rem 0 0.8rem;
@@ -2714,7 +3200,12 @@ html[data-motion="still"] .arr-dialog::backdrop {
   .arr-news-tip,
   .arr-dialog,
   .arr-trail,
-  .arr-toast {
+  .arr-toast,
+  .arr-strip-btn {
     display: none !important;
+  }
+  .arr-strip {
+    -webkit-mask-image: none !important;
+    mask-image: none !important;
   }
 }

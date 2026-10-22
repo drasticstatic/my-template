@@ -1,4 +1,4 @@
-/*! Arrival kit v1.3 · give with crypto · https://github.com/drasticstatic/my-template (changelog-template/arrival/give)
+/*! Arrival kit v1.4 · give with crypto · https://github.com/drasticstatic/my-template (changelog-template/arrival/give)
  *
  * The same file in every org, beside arrival.js (served as /arrival/give/give.js). Tailor it through
  * org.js (window.ARRIVAL.give), never by editing this file:
@@ -40,6 +40,11 @@
  *                      above means it normally never loads on a site that isn't listed; if it does
  *                      (a stale answer), this catches that message, shows the calm state instead,
  *                      and logs one plain console.info line.
+ *
+ * v1.4: the wallet layer is shared. window.ArrivalGive.wallet = { allowed(pid), load(pid, { description }),
+ * injected(), connectBrowser(), sign(message), disconnect(), state(), on(fn), learn(kind, { eyebrow,
+ * onConnect }) } is what pledge/pledge.js uses, so a page has one AppKit, one allowlist check and
+ * one "New to wallets?" guide, whichever module asks first. It needs no give section on the page.
  */
 const APPKIT_VERSION = "1.8.24"; // @reown/appkit-cdn, published 2026-09-16
 const APPKIT = "https://cdn.jsdelivr.net/npm/@reown/appkit-cdn@" + APPKIT_VERSION + "/dist/appkit.js";
@@ -229,9 +234,23 @@ const S = {
   lastNet: null,
   learn: null,
   learnKind: null,
+  learnConnect: null,
   n: 0,
 };
 const $ = (sel) => S.sec && S.sec.querySelector(sel);
+// v1.4: anyone sharing the wallet layer (pledge.js) hears about every change of account.
+const subs = [];
+function walletState() {
+  return { account: S.account, via: S.via, wallet: S.wallet, chainId: S.chainId, blocked: S.blocked };
+}
+function notify() {
+  const st = walletState();
+  subs.forEach((fn) => {
+    try {
+      fn(st);
+    } catch (e) {}
+  });
+}
 function live(t) {
   const el = $("[data-give-live]");
   if (el) el.textContent = t || "";
@@ -323,10 +342,11 @@ function blocked() {
     S.state = "origin";
     render();
   }
+  notify();
 }
 
 /* ── loading AppKit (only on a click) ────────────────────────────────────────────────────── */
-function appkit(pid) {
+function appkit(pid, opts) {
   if (S.kitP) return S.kitP;
   S.kitP = (async () => {
     guard();
@@ -346,7 +366,7 @@ function appkit(pid) {
       projectId: pid,
       metadata: {
         name: ORG.name || ORG.short || doc.title,
-        description: "Give to " + WHO + " with a crypto wallet",
+        description: (opts && opts.description) || "Give to " + WHO + " with a crypto wallet",
         url: location.origin,
         icons: [iconUrl()],
       },
@@ -391,12 +411,14 @@ function onAccount(a) {
     if (fresh) {
       render();
       live(fill(W.connectedLive, { wallet: S.wallet ? " to " + S.wallet : "" }));
+      notify();
     }
   } else if (S.via === "appkit" && S.account) {
     S.account = null;
     S.via = "";
     render();
     live(W.disconnected);
+    notify();
   }
 }
 function setChain(id) {
@@ -404,6 +426,7 @@ function setChain(id) {
   if (!n || n === S.chainId) return;
   S.chainId = n;
   updateWho();
+  notify();
 }
 
 /* ── connecting ──────────────────────────────────────────────────────────────────────────── */
@@ -442,28 +465,37 @@ async function unavailable(kind) {
   render();
   learn(kind); // nothing available here: the guide, with what happened on top
 }
-async function connectInjected(kind) {
+// The browser's own wallet (window.ethereum), with no UI of its own: the give section and the
+// pledge both call this when wallet connect isn't available for the site.
+async function connectBrowser() {
   const eth = injected();
+  if (!eth) throw new Error("No browser wallet");
+  const accs = await eth.request({ method: "eth_requestAccounts" });
+  if (!accs || !accs[0]) throw new Error("No account");
+  S.account = accs[0];
+  S.via = "injected";
+  S.state = null;
+  S.chainId = parseInt(await eth.request({ method: "eth_chainId" }), 16) || null;
+  S.wallet = eth.isRabby ? "Rabby" : eth.isBraveWallet ? "Brave Wallet" : eth.isCoinbaseWallet ? "Coinbase Wallet" : eth.isMetaMask ? "MetaMask" : W.browserWallet;
+  if (!connectBrowser.on && eth.on) {
+    connectBrowser.on = true;
+    eth.on("accountsChanged", (a) => {
+      if (S.via !== "injected") return;
+      S.account = (a && a[0]) || null;
+      if (!S.account) S.via = "";
+      render();
+      notify();
+    });
+    eth.on("chainChanged", (c) => S.via === "injected" && setChain(parseInt(c, 16)));
+  }
+  notify();
+  return S.account;
+}
+async function connectInjected(kind) {
   try {
     live(W.asking);
-    const accs = await eth.request({ method: "eth_requestAccounts" });
-    if (!accs || !accs[0]) throw new Error("No account");
-    S.account = accs[0];
-    S.via = "injected";
-    S.state = null;
-    S.chainId = parseInt(await eth.request({ method: "eth_chainId" }), 16) || null;
-    S.wallet = eth.isRabby ? "Rabby" : eth.isBraveWallet ? "Brave Wallet" : eth.isCoinbaseWallet ? "Coinbase Wallet" : eth.isMetaMask ? "MetaMask" : W.browserWallet;
+    await connectBrowser();
     S.note = kind === "load" ? W.injectedLoad : W.injectedOrigin;
-    if (!connectInjected.on && eth.on) {
-      connectInjected.on = true;
-      eth.on("accountsChanged", (a) => {
-        if (S.via !== "injected") return;
-        S.account = (a && a[0]) || null;
-        if (!S.account) S.via = "";
-        render();
-      });
-      eth.on("chainChanged", (c) => S.via === "injected" && setChain(parseInt(c, 16)));
-    }
     render();
     live(fill(W.connectedLive, { wallet: " to " + S.wallet }));
   } catch (err) {
@@ -483,6 +515,7 @@ async function disconnect() {
   S.via = "";
   S.note = "";
   render();
+  notify();
   live(W.disconnected + (was === "injected" ? " " + W.injectedOff : ""));
   const b = $('[data-give="connect"]');
   if (b) b.focus();
@@ -786,21 +819,37 @@ function learnHTML() {
     "<section><h3>" + icon("arrow-square-out") + "Getting a wallet</h3><p>From their makers' own sites:</p>" +
     '<ul class="arr-learn-links">' + WALLETS.map((w) => '<li><a class="arr-btn arr-btn-quiet arr-shape" href="' + w[1] + '" rel="noopener">' + esc(w[0]) + "</a></li>").join("") + "</ul></section>" +
     '<div class="arr-give-actions">' +
-    '<button type="button" class="arr-btn arr-btn-primary arr-shape" data-give="connect">' + icon("plugs-connected") + esc(W.connect) + "</button>" +
+    // Handled here, not by the kit's [data-give] router, so the guide works on any page (the pledge's too).
+    '<button type="button" class="arr-btn arr-btn-primary arr-shape" data-give-learn="connect">' + icon("plugs-connected") + esc(W.connect) + "</button>" +
     '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-arr-close>' + esc(W.close) + "</button></div>"
   );
 }
-function learn(kind) {
+// opts (v1.4, for modules sharing the guide): eyebrow (its small heading), onConnect (what its
+// Connect button does; default: the give section's connect).
+function learn(kind, opts) {
   if (!KIT.dialog) return;
-  if (!S.learn) S.learn = KIT.dialog({ cls: "arr-learn", title: W.learnTitle, eyebrow: W.learnEyebrow, html: learnHTML() });
+  opts = opts || {};
+  if (!S.learn) {
+    S.learn = KIT.dialog({ cls: "arr-learn", title: W.learnTitle, eyebrow: W.learnEyebrow, html: learnHTML() });
+    S.learn.el.addEventListener("click", (e) => {
+      const b = e.target.closest && e.target.closest('[data-give-learn="connect"]');
+      if (!b) return;
+      e.preventDefault();
+      S.learn.hide();
+      (S.learnConnect || connect)();
+    });
+  }
   S.learnKind = kind || null;
+  S.learnConnect = opts.onConnect || null;
   const el = S.learn.el;
+  const eb = el.querySelector(".arr-eyebrow");
+  if (eb) eb.textContent = (ORG.short ? ORG.short + " · " : "") + (opts.eyebrow || W.learnEyebrow);
   const box = el.querySelector("[data-give-notice]");
   const t = { off: [W.offTitle, W.offText], origin: [W.originTitle, fill(W.originText, { host: location.host })], load: [W.loadTitle, W.loadText] }[kind];
   box.hidden = !t;
   box.innerHTML = t ? '<p class="arr-notice">' + icon("info") + "<span><strong>" + esc(t[0]) + ".</strong> " + esc(t[1]) + "</span></p>" : "";
   // Connecting from the guide only when it could work.
-  el.querySelector('[data-give="connect"]').hidden = kind === "off" || kind === "origin";
+  el.querySelector('[data-give-learn="connect"]').hidden = kind === "off" || kind === "origin";
   S.learn.show();
 }
 
@@ -843,4 +892,17 @@ async function act(name, el, sec) {
   if (name === "copy-note") return copyNote(el);
 }
 
-window.ArrivalGive = { init, act, version: "1.3.0", appkit: APPKIT_VERSION };
+// v1.4: the wallet layer, for modules beside this one (pledge/pledge.js). One AppKit per page.
+const wallet = {
+  allowed: originAllowed, // (projectId) → true | false | null (couldn't tell)
+  load: appkit, // (projectId, { description }) → the page's AppKit (created once, by whoever asks first)
+  injected, // → window.ethereum, or null
+  connectBrowser, // → the account, from the browser's own wallet
+  sign: walletSign, // (message) → an EIP-191 signature from the connected wallet
+  disconnect,
+  state: walletState, // → { account, via: "appkit" | "injected" | "", wallet, chainId, blocked }
+  on: (fn) => subs.push(fn), // fn(state) on every change of account
+  learn, // (kind?, { eyebrow, onConnect }) the "New to wallets?" guide
+};
+
+window.ArrivalGive = { init, act, wallet, version: "1.4.0", appkit: APPKIT_VERSION };
