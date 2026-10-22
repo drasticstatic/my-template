@@ -995,9 +995,11 @@ unchanged** (`pledge.js` goes to `<org>.github.io/arrival/pledge/pledge.js`). Dr
 affordance, grouped dropdowns, the pledge and the tax section wait for their keys.
 
 Rolled out 2026-10-22: **psanctuary, psanctuarychurch, THEF and ORG portals** (their AstroLogs and the
-drasticstatic ORG lab load the kit from there, so they're on 1.4.0 too). **Not rolled out:** PIR's hub
-runs a local fork ("kit 1.3.1": More-panel flyouts, plus `more-tree.css` and `concierge.js`), and the
-policy-reform AstroLog is still on pristine 1.2.1; both were left alone for their own agents.
+drasticstatic ORG lab load the kit from there, so they're on 1.4.0 too). **PIR followed the same day**
+(hub `9693b2b`, byte-identical 1.4.0): its local "1.3.1" fork is retired. Foyers and Helpers became
+native `groups`, and `concierge.js` and `more-tree.css` were deleted. The fork's More-panel flyouts were
+not ported (the kit lists folded dropdowns as grouped rows). Policy reform's AstroLog moves from 1.2.1 in
+its own pass.
 
 ### What a visitor gets
 
@@ -1095,7 +1097,7 @@ group, and no Donate or guide. Kit 1.4 makes the patch unnecessary. Every site m
 3. A `donate` block (or a nav item with id `donate`) so the essential Donate has somewhere to go.
 4. Restyle the footer only with the kit's own selectors (`arrival-footer .arr-foot .arr-foot-a`).
 
-**PIR pages for the PIR agent** (checked live 2026-10-22, PIR still on its 1.3.1 fork): no kit and no
+**PIR pages for the PIR agent** (checked live 2026-10-22 before PIR moved to 1.4.0; all fixed that day except catalyst-desk-public, which publishes once its `PUBLIC_REPO_TOKEN` exists): no kit and no
 footer at all on **catalyst-desk-public/**; footer **without the Welcome guide** on **alex-desk-public/**
 (and its `portal.html`, `web3.html`, `privacy.html`), **litcom-desk-public/**, **techcom-desk-public/**,
 **github-desk-public/**, **pr-desk-public/** and **gsr-desk-public/** (the desks swap in their own footer
@@ -1129,7 +1131,7 @@ header row and no errors.
   says so. AppKit already makes email sign-ins plain (EOA) accounts.
 - **Equal specificity loses to source order**: v1.4's first footer pass at (0,1,1) still lost to a
   host `.page-foot a`; it's (0,2,1) now. Element-scoped resets alone weren't enough.
-- **PIR's fork**: its More panel is a flyout tree (`.arr-nav-more-scroll`, `.arr-nav-fly`). Moving PIR
+- **PIR's fork (resolved 2026-10-22)**: its More panel was a flyout tree (`.arr-nav-more-scroll`, `.arr-nav-fly`). Moving PIR
   to 1.4 means porting or dropping that (the essentials block closes the More panel), and replacing
   concierge.js's Foyers patching with `groups`.
 - Copy-check before every rollout: `cmp` each destination against the previous canonical version;
