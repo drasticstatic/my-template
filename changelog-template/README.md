@@ -985,6 +985,156 @@ localhost): email, Google, X, Discord, Farcaster and GitHub sign-in, WalletConne
 - A header-row check that scrolls first sees negative `top`s and mis-rounds them; measure the header
   before scrolling, and test "one row" as vertical overlap.
 
+## 🤲 Kit v1.4, 2026-10-22 — essentials everywhere, a sturdier footer, a pledge of support
+
+Canonical files: [`arrival/arrival.js`](arrival/arrival.js) + [`arrival.css`](arrival/arrival.css)
+(now **1.4.0**), [`arrival/give/give.js`](arrival/give/give.js) (1.4.0, its wallet layer now shared)
+and the new [`arrival/pledge/pledge.js`](arrival/pledge/pledge.js). **Rollout agents: re-copy all four
+unchanged** (`pledge.js` goes to `<org>.github.io/arrival/pledge/pledge.js`). Drop-in for a v1.3
+`org.js`: **only the essentials (Donate + Welcome guide) appear without new keys**; the dock
+affordance, grouped dropdowns, the pledge and the tax section wait for their keys.
+
+Rolled out 2026-10-22: **psanctuary, psanctuarychurch, THEF and ORG portals** (their AstroLogs and the
+drasticstatic ORG lab load the kit from there, so they're on 1.4.0 too). **Not rolled out:** PIR's hub
+runs a local fork ("kit 1.3.1": More-panel flyouts, plus `more-tree.css` and `concierge.js`), and the
+policy-reform AstroLog is still on pristine 1.2.1; both were left alone for their own agents.
+
+### What a visitor gets
+
+- **Donate and the welcome guide, always.** In every footer, in the navbar's **More** dropdown and in
+  the **Menu**, whatever an org's config forgot. More now stays in the bar to hold them (closing rows
+  under a hairline; a row hides while a folded item already shows it). In the Menu and the footer they
+  join the group that holds contact or community ("Get involved"), or get a group of their own.
+- **One footer, the same everywhere.** The kit's footer CSS is scoped: what's inside is styled at
+  (0,2,1) and sets every box property a host stylesheet tends to touch, so a site's `section`,
+  `footer a`, `.wrap a`, `ul`, `li::before` rules can't reach it. Columns are **balanced** (four groups
+  in a row of three become 2 + 2, never 3 + 1). `<arrival-footer frame>` draws the kit's card for a
+  page with no frame of its own.
+- **You can tell the dock scrolls.** When the bottom strip overflows (phones): a soft fade on the edge
+  with more beyond it and a small chevron button there. Only on the side with more; gone when it fits;
+  keyboard reachable (Tab, Enter), focus is handed on when a chevron runs out of room, a focused link
+  scrolls clear of the fade, instant under reduced motion or Still, and it shows in every light, more
+  contrast and reading mode (shorter fade, firmer button there).
+- **Grouped dropdowns.** A dropdown can have `groups`, each with a small heading and a hairline
+  divider, in the dropdown, the More panel and the Menu (e.g. PIR's Foyers: "Committees", then
+  "Infrastructure"). Each group is a labelled `role="group"`; arrows, Home/End and Esc work as before.
+- **A pledge of support** (`<arrival-pledge>`, on a page of its own): the pledge in plain words, then
+  three steps (read, connect a wallet, sign). Signing is an **EIP-191 message signature: no gas, no
+  money, nothing sent, nothing recorded**; it's checked in the tab against the connected wallet and
+  then forgotten, and the page never shows the wallet's address ("Copy my signed pledge" puts message,
+  address and signature on the clipboard only). Two cards: **"Gratitude tokens (coming)"** (soulbound,
+  non-transferable tokens of gratitude from Christopher W's gratitude-token project, an optional deeper
+  commitment, no dates) and **"How you'll know these aren't bots"** (a signature proves a wallet
+  signed, not that a unique person did; before any count or list appears, pledges will be published as
+  verifiable records, e.g. Ethereum Attestation Service attestations, optionally gated by
+  proof-of-personhood such as Human Passport (formerly Gitcoin Passport), World ID or BrightID, named
+  only as options; **until then the page shows no counts at all**). And a **verify-a-signature tool**
+  (`#verify-signature`): paste address, message and signature, and the signer is recovered in the
+  browser; mixed-case addresses are checksum-checked; trailing blank space is forgiven and said so.
+- **Receipts and taxes** on `/donate/`: a calm section that claims nothing by default ("Ask us for a
+  receipt: reach out…"; "Whether a gift is tax-deductible depends on the organization's status and
+  your own situation"; "This isn't tax advice"). Only the org's own config states a status.
+
+### Config (annotated in [`arrival/org.example.js`](arrival/org.example.js))
+
+```js
+essentials: { donate?: false | { label, href, icon, note }, guide?: false | { label, icon, note } },
+                                         // or false; default: both on. Donate's href: the nav's own
+                                         // "donate" item, else donate.href, else <portal>/donate/
+dock: { scroll: true, selector? },       // or dock: true; data-arr-scroll on any strip opts it in
+nav.items[]: { id, label, icon, items?: [link], groups: [{ label, icon?, items: [link] }] },
+donate.tax: { status?, deductible?: "…" | true | false, receipts?, note?, title? },   // {} = defaults
+pledge: { text, note?, href?, title?, intro?, reownProjectId? (default give.reownProjectId),
+          tokens?: false | { title, text, href, label }, bots?: false | { title, points: [] },
+          verify?: false, enabled?: false, words?: {} },
+```
+
+**Per org, later agents fill in:** `dock: { scroll: true }` (every org; PIR's `.dock .wrap` is
+matched by default); `pledge.text` (+ `href`, `note`) in the org's own words, and a `/pledge/` page from
+[`portal/pledge.example.html`](arrival/portal/pledge.example.html) (+ a page card, a map node, and a nav
+or footer link if wanted); `donate.tax` (`{}` until the org publishes a status; `status` and
+`deductible` only from the org's own materials); PIR's Foyers as `groups` (then drop concierge.js's
+separators, rename and reorder); `essentials` only to opt out or relabel. `give.reownProjectId` stays
+the shared project until an org gets its own (one line).
+
+### The mechanism
+
+- **Essentials**: `essentials()` resolves Donate and the guide once; `withEssentials()` adds the
+  missing ones to the footer's and Menu's groups; More gets a closing `[data-arr-ess]` block that
+  `fitNav` measures (More stays) and `syncEssentials` dedupes against folded items (`data-arr-holds`).
+- **Footer**: groups are resolved first (`{ label, icon, links }`), then rendered with
+  `.arr-foot-list` / `.arr-foot-li`; a ResizeObserver sets `--arr-foot-cols` (the most columns at
+  11.5rem each, then evened out), also on `arrival:change` (text size).
+- **Strips**: `makeStrip()` adds `.arr-strip` and two absolutely placed buttons as siblings in the
+  strip's parent (a static parent becomes `position: relative`); `syncStrip()` toggles
+  `.arr-strip-l/-r` (mask gradients) and the buttons on scroll, resize and font load. RTL-aware.
+  `Arrival.strips(scope)` picks up strips added later.
+- **Pledge**: arrival.js draws the whole pledge at first paint, then loads `pledge/pledge.js` when it
+  nears the screen (`loadModule`, shared with give.js). pledge.js imports `give/give.js?v=<version>`
+  (the same URL arrival.js uses, so one module instance) and uses `ArrivalGive.wallet`: `allowed`,
+  `load` (one AppKit per page), `connectBrowser`, `sign`, `on`, `learn`. The signer is recovered with
+  `@noble/curves@1.9.7` (secp256k1) + `@noble/hashes@1.8.0` (keccak-256) from jsDelivr, imported on
+  first use; 65-byte and EIP-2098 64-byte signatures. Nothing third-party loads before a click.
+- **Signed message**: `<org.name>: a pledge of support` / the pledge / `Signed on <host>, <date>.` /
+  `Signing this is free. It sends nothing and approves nothing, and for now nothing is recorded.`
+
+### Footer: why PIR's looked different, and what every site must include
+
+PIR's hub, AstroLog, convention, gallery and board desk put `<arrival-footer>` inside alex.css's
+`footer .wrap` grid (a brand column beside it), so it got ~767px and three columns: four groups landed
+3 + 1. alex.css's `section { padding: 5.5rem 0 }` and `footer a { display: block; margin }` also
+reached the kit's groups; PIR's org.css patched those by hand, and `concierge.js` (another assistant's)
+renames and reorders the nav at runtime with a 4-second poll. Where that patch isn't loaded, the damage
+shows: **drasticstatic.github.io/alexandrina-public-preview/** has 96px of padding on every footer
+group, and no Donate or guide. Kit 1.4 makes the patch unnecessary. Every site must include:
+
+1. `arrival.css` before `org.css` and the site's own CSS, and `arrival.js` in `<head>`.
+2. `<arrival-footer current="<nav id>">` in a block of its own: the portal's
+   `<div class="page-foot">` (site.css) or `<arrival-footer frame>`; if a host grid puts it beside a
+   brand column, give it the wider track (PIR: `minmax(15rem, 1.1fr) 3fr`).
+3. A `donate` block (or a nav item with id `donate`) so the essential Donate has somewhere to go.
+4. Restyle the footer only with the kit's own selectors (`arrival-footer .arr-foot .arr-foot-a`).
+
+**PIR pages for the PIR agent** (checked live 2026-10-22, PIR still on its 1.3.1 fork): no kit and no
+footer at all on **catalyst-desk-public/**; footer **without the Welcome guide** on **alex-desk-public/**
+(and its `portal.html`, `web3.html`, `privacy.html`), **litcom-desk-public/**, **techcom-desk-public/**,
+**github-desk-public/**, **pr-desk-public/** and **gsr-desk-public/** (the desks swap in their own footer
+config); the Menu has no Welcome guide anywhere. On 1.4 the kit adds the guide and Donate itself; the
+catalyst desk needs the kit added.
+
+### Verify
+
+[`arrival/verify-v14.example.mjs`](arrival/verify-v14.example.mjs) (Playwright + local Chrome + viem;
+`--local <id>=<repo>` before pushing, `--deep <id>` for the full feature checks). It switches the
+configured features on for the test by wrapping `window.ARRIVAL` as org.js sets it, so nothing is
+written to a site; the test pledge key is generated in memory and never written down. **Live,
+2026-10-22: psanctuary 27/27** (essentials, one header row 320–1920px on portal/donate/porch, hostile
+host CSS, balanced columns, dock fades + chevrons at 320px in every mode, keyboard and reduced motion,
+the grouped dropdown, receipts and taxes, the pledge lazy-loading with nothing third-party before a
+click, **AppKit opening on the allowlisted origin**, the verify tool accepting an in-memory signature and
+rejecting a tampered one, signing through a stand-in browser wallet, no counts, no address text, no
+console errors); **THEF, ORG, psanctuarychurch 21/21** (essentials + header rows); `verify-give` still
+24/24 on all four (give.js's wallet layer changed); the drasticstatic ORG lab loads 1.4.0 with one
+header row and no errors.
+
+### Gotchas
+
+- **More is always in the bar now** (it holds the essentials), so a bar folds one item sooner. All
+  four orgs keep one header row from 320 to 1920px.
+- **The guide's Connect button** is `data-give-learn="connect"`, handled inside give.js, so the
+  "New to wallets?" guide works on a page with no give section (the pledge's); `learn(kind, { onConnect })`.
+- **A custom `give.module` URL** would give pledge.js a second give.js instance (two AppKits on a page
+  with both); leave it unset.
+- **Smart-contract wallets** (a Safe) sign with ERC-1271, which can't be recovered offline: the page
+  says so. AppKit already makes email sign-ins plain (EOA) accounts.
+- **Equal specificity loses to source order**: v1.4's first footer pass at (0,1,1) still lost to a
+  host `.page-foot a`; it's (0,2,1) now. Element-scoped resets alone weren't enough.
+- **PIR's fork**: its More panel is a flyout tree (`.arr-nav-more-scroll`, `.arr-nav-fly`). Moving PIR
+  to 1.4 means porting or dropping that (the essentials block closes the More panel), and replacing
+  concierge.js's Foyers patching with `groups`.
+- Copy-check before every rollout: `cmp` each destination against the previous canonical version;
+  a mismatch is a fork, not a stale copy.
+
 ## Future enhancement, not required (can simmer)
 
 `divorce-custody-assistant/vocational-compliance/build_vocational_log.py` generates an animated,
