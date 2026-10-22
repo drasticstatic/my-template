@@ -259,6 +259,51 @@
       note: "",
     },
 
+    // ── kit 1.4 (2026-10-22) ───────────────────────────────────────────────────────────────────
+    // Essentials: Donate and the welcome guide appear in the footer, the More dropdown and the Menu
+    // with no key at all (the More button now stays in the bar to hold them). Donate links the nav's
+    // own "donate" item, else donate.href, else <portal>/donate/. Override a label or link, or opt out:
+    //   essentials: { donate: { label: "Give" }, guide: false },   or   essentials: false
+    // (Nothing to set for ORG: its nav already has a Donate item, and the kit adds the guide.)
+
+    // The dock (the one-row strip at the bottom) gets edge fades and chevron buttons on the side with
+    // more to show, so visitors can tell it scrolls. Only while it overflows; keyboard reachable;
+    // instant under reduced motion. It finds .universal-footer .footer-inner and PIR's .dock .wrap;
+    // `selector` names another strip, and data-arr-scroll on any element opts that one in.
+    dock: { scroll: true },
+
+    // A grouped dropdown: `groups` instead of (or after) `items`, each with a heading and a divider,
+    // kept in the More panel and the Menu. The footer still lists it as one flat group. PIR's Foyers,
+    // for reference (it replaces concierge.js's runtime separators and reordering):
+    //   { id: "foyers", label: "Foyers", icon: "door-open", groups: [
+    //       { label: "Committees", icon: "users-three", items: [ …GSR, PR, TechCom, LitCom, … ] },
+    //       { label: "Infrastructure", icon: "wrench", items: [ …WordPress, GitHub, A.L.E.X. ] } ] }
+
+    // Receipts and taxes: a calm section at the end of /donate/, shown only with this key, inside the
+    // donate block above: donate.tax = { … }. With no fields it claims nothing: "Ask us for a
+    // receipt…", deductibility "depends on the organization's status and your own situation", "This
+    // isn't tax advice." Only the org's own published words may state a status:
+    //   status      the org's legal status, as the org itself publishes it (never guessed)
+    //   deductible  a sentence, or true / false for a plain one
+    //   receipts    how receipts work, in the org's words
+    //   note        anything else
+    // ORG hasn't published a status, so its block would be just: tax: {}
+
+    // A pledge of support: the kit's <arrival-pledge>, on a page of its own (/pledge/, from
+    // portal/pledge.example.html). A visitor signs a short pledge with a wallet: an EIP-191 message,
+    // free, nothing sent or recorded, checked in the tab and forgotten. No counts, ever, until pledges
+    // are published as verifiable records. Uses give.reownProjectId unless reownProjectId is set here.
+    //   text      the pledge itself, in the org's own plain words (what the wallet signs). Without it:
+    //             "I support <org.name> and the people it serves."
+    //   note      the org's own words after the fine print
+    //   href      the page it lives on (so "/" search finds it)
+    //   tokens    false hides the "Gratitude tokens (coming)" card; { text, href, label } rewords it
+    //   bots      false hides "How you'll know these aren't bots"; { points: [] } rewords it
+    //   verify    false hides the "verify a signature" tool
+    //   enabled   false: nothing at all
+    // Waiting on ORG's own words, so it stays off here:
+    //   pledge: { text: "…", href: ROOT + "/pledge/" },
+
     record: {
       intro: "ORG's AstroLog has two halves.",
       share:
