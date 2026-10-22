@@ -65,7 +65,8 @@ const W = Object.assign(
     tryAgain: "Try again",
     howWallets: "How wallets work",
     signApprove: "Waiting for you to sign in your wallet…",
-    signedTitle: "Signed, and checked. Thank you.",
+    signedLive: "Signed, and checked against your wallet.",
+    signedTitle: "Thank you for your pledge",
     signedText: "The signature matches your wallet. It stayed in this tab: nothing was sent anywhere, and nothing was recorded.",
     copy: "Copy my signed pledge",
     copied: "Copied. It includes your wallet's public address, so share it only if you'd like to.",
@@ -312,7 +313,7 @@ async function sign() {
     if (got) S.result = got.toLowerCase() === String(address).toLowerCase() ? "ok" : "mismatch";
     // Kept only in this tab, only for "Copy my signed pledge", and gone on Start over or reload.
     if (S.result === "ok") S.signed = { message, address, signature };
-    live(S.result === "ok" ? W.signedTitle : S.result === "mismatch" ? W.mismatch : W.checkFailed);
+    live(S.result === "ok" ? W.signedLive : S.result === "mismatch" ? W.mismatch : W.checkFailed);
   } catch (err) {
     S.result = rejected(err) ? "declined" : "failed";
     live(S.result === "declined" ? W.declined : W.signFailed);

@@ -382,7 +382,7 @@ for (const id of ids.length ? ids : Object.keys(SITES)) {
     await page.click("arrival-pledge [data-pledge='connect']");
     await page.waitForFunction(() => !document.querySelector("arrival-pledge [data-pledge='sign']").disabled, null, { timeout: 20000 });
     await page.click("arrival-pledge [data-pledge='sign']");
-    await page.waitForFunction(() => /checked/i.test(document.querySelector("[data-pledge-panel]").textContent), null, { timeout: 30000 });
+    await page.waitForFunction(() => /checked/i.test(document.querySelector("[data-pledge-live]").textContent), null, { timeout: 30000 });
     const r = await page.evaluate(() => ({
       done: [...document.querySelectorAll(".arr-pledge-step.is-done")].map((x) => x.getAttribute("data-pledge-step")),
       copy: !!document.querySelector("[data-pledge='copy']"),
