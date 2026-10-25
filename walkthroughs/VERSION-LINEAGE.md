@@ -104,6 +104,12 @@ The page's metadata adds `<link rel="canonical" href={NEXT_PUBLIC_CANONICAL_URL}
 | **At the move:** the domain points to the new home | Open the new rehearsal stop. Open the old copy as `earlier`, and give its build `LINEAGE_SELF=lab-original` so it greets visitors and points forward |
 | **After** | Nothing to maintain. New rehearsals are added as new stops, and old ones stay as history |
 
+> **Gotcha for a new organization:** GitHub turns deploy keys **off** for new orgs. The lanes publish
+> with one write deploy key per public repo, so an owner turns them on before the move: Org settings →
+> Member privileges → Deploy keys → **Enabled** → Save. Each key can write to its one repository only.
+> A GitHub App is the alternative if you ever want finer control. Found at The Holy Earth Foundation's
+> move (2026-10-25), where the setup script stopped cleanly at its first key.
+
 ## 🧩 Using it elsewhere
 
 - **Next.js sites:** copy `lineage.ts`, `LineageModal.tsx` and `lineage.css` from I Am One Self, mount the
