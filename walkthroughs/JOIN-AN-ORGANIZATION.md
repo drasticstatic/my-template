@@ -140,6 +140,16 @@ Co-Authored-By: Alfred · ClaudeCodeCLI · Anthropic [Opus-5.5]
 - The local check only offers a gentle note, and **nobody should ever need `--no-verify`**.
 - The one check that does stop a commit is the **secret scan**, and it stops only real secrets.
 
+## 🛡️ The secret scan (GitGuardian)
+
+- **You don't need your own key to contribute.** Each organization's workshop repository carries one CI
+  key, and it checks every change, including those made on GitHub's website or by Codex.
+- **Optional, and nice:** a free personal login turns on the earlier check on your own computer.
+  Run `brew install ggshield`, then `ggshield auth login`.
+- **If it stops a commit,** a secret is in the change. Don't bypass it; your helper knows what to do.
+- **Full guide:** [The secret scan](SECRET-SCAN.md). It's written so your AI helper can walk you through
+  any message it shows.
+
 ## 🛟 When you're unsure
 
 - Ask your helper: *"What would this change do? Don't make it yet."*
@@ -154,7 +164,9 @@ Before your first change in a repository of this organization:
 2. Sync: `git pull --rebase --autostash`.
 3. Work on `preview`. Never commit to `main`. Never force-push.
 4. Never publish what the never-publish rule names. When in doubt, ask your person.
-5. Never paste or commit secrets. Never ask your person to paste a password or key into chat.
+5. Never paste or commit secrets. Never ask your person to paste a password or key into chat. If the
+   secret scan stops a commit, or warns that it was skipped, follow [SECRET-SCAN.md](SECRET-SCAN.md).
+   Never use `--no-verify`.
 6. If the repository has a Spanish twin (`src/i18n/es.ts`, `src/data/es/`), update it with the English.
 7. Build before you finish (`npm run build` where there is one).
 8. End the commit with the credit line for your tool and model.

@@ -30,6 +30,17 @@ Every change rehearses before it goes live, so nothing you try can break anythin
 - **No secrets, ever.** Never paste a password or key into a chat or a file. The secret scan stops one
   that slips through.
 
+## 🛡️ The secret scan (GitGuardian): the one check that stops a commit
+
+- **You don't need your own key to contribute.** Each private workshop repository carries **one** CI key
+  (`GITGUARDIAN_API_KEY`, added once by an owner), and it checks every push. That includes changes made on
+  GitHub's website or by Codex, which skip checks on your computer.
+- **Optional, and nice:** turn on the earlier check on your own computer with a free personal login.
+  Run `brew install ggshield` (or `pipx install ggshield`), then `ggshield auth login`.
+- **If it stops a commit, a secret is in the change.** Don't bypass it (never `--no-verify`). Ask your
+  helper. Every message it can show, and what to do about each, is in
+  [The secret scan](https://github.com/drasticstatic/my-template/blob/main/walkthroughs/SECRET-SCAN.md).
+
 ## 💬 Be honest with your helper; GitHub keeps only what's meant to be public
 
 You can talk to your AI helper openly, the way you'd think out loud with a trusted friend. Drafts,
@@ -73,7 +84,9 @@ In any repository of {{ORG_NAME}}:
 1. Read `AGENTS.md` first, then sync: `git pull --rebase --autostash`.
 2. Work on `preview`. Never commit to `main`, never force-push.
 3. Follow the never-publish rule above. When unsure, ask your person before writing anything public.
-4. Never paste, commit or ask for secrets.
+4. Never paste, commit or ask for secrets. If the secret scan stops a commit or says it was skipped, follow
+   [SECRET-SCAN.md](https://github.com/drasticstatic/my-template/blob/main/walkthroughs/SECRET-SCAN.md):
+   name the file and line, never the value, and never use `--no-verify`.
 5. Build before you finish. Credit your work with the line for your tool and model.
 6. Explain the change in plain words and where to see it on the rehearsal copy.
 

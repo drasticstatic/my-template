@@ -7,6 +7,7 @@ walk me through it").
 | | Guide | For when you want to… |
 |---|---|---|
 | 🚪 | [Join an organization](JOIN-AN-ORGANIZATION.md) | accept an invitation, turn on two-factor login, connect Claude, Codex, ChatGPT, Littlebird or Cosmos, and start building in plain words |
+| 🛡️ | [The secret scan (GitGuardian)](SECRET-SCAN.md) | set up the one check that stops a commit, and **help someone who forgot** (written for AI helpers too) |
 | 🤝 | [Many AI tools, one team](MANY-AI-TOOLS-ONE-TEAM.md) | understand how several AI helpers share one rulebook, one notebook and one credit line |
 | 🔥 | [Connect Firecrawl](CONNECT-FIRECRAWL.md) | let your helper read whole websites as clean text, for research and site refreshes |
 | 🎨 | [Connect Wix](CONNECT-WIX.md) | let your helper read and help with a Wix site |

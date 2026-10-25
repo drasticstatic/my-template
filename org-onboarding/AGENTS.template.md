@@ -18,7 +18,10 @@ other. Humans welcome too. Read it before changing anything.
    - anyone's personal, medical or legal history;
    - private contact details.
 4. **No secrets, ever.** Never add passwords, keys, tokens or `.env` contents to any file; never read
-   them. The secret scan blocks commits that contain secrets. Never use `--no-verify`.
+   them. The secret scan (GitGuardian's `ggshield`) blocks commits that contain secrets. Never use
+   `--no-verify`. When it stops a commit, warns "skipped", or fails in CI, follow
+   [SECRET-SCAN.md](https://github.com/drasticstatic/my-template/blob/main/walkthroughs/SECRET-SCAN.md),
+   and help your person through it: name the file and line, never the value.
 5. **`public/` is visible to the world.**
 6. **Leave the machinery to the technical steward.** Ask before changing `.github/`, `.githooks/`,
    `scripts/`, build config or dependencies.
