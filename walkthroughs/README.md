@@ -15,6 +15,12 @@ walk me through it").
 | 📁 | [Connect Google Drive](CONNECT-GOOGLE-DRIVE.md) | let your helper read the documents you keep in Drive |
 | 🕸️ | [Connect Graphify](CONNECT-GRAPHIFY.md) | give your helper a map of a codebase, so it reads less and understands more |
 
+## Patterns worth borrowing
+
+| | Pattern | For when you want to… |
+|---|---|---|
+| 🌳 | [Version lineage](VERSION-LINEAGE.md) | keep old and rehearsal copies of a site up **without** `noindex`, each greeting visitors once and linking forward to newer versions |
+
 ## Three promises every guide keeps
 
 1. **Rehearse first.** Anything your helper changes goes to a rehearsal copy before it goes live.
