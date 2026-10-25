@@ -3,7 +3,8 @@
 **TL;DR:** when a site moves or rehearses, **don't hide the other copies from search (`noindex`) and don't
 take them down.**
 - **Every copy that isn't live** greets visitors once with a short note: *"You're on a rehearsal stage"* or
-  *"You're looking at an earlier version"*. It links to **every newer version**.
+  *"You're looking at an earlier version"*. It links to **every newer version** and, below that, to
+  **every earlier version** (the time machine).
 - **The live site shows nothing** and never links back.
 - **A canonical link** tells search engines which copy is the real one.
 
@@ -19,7 +20,7 @@ test publishes up beside the live site, made visitor-friendly.*
 | Rule | Why |
 |---|---|
 | **The live site has no note and no links back** | Visitors on the real site are never distracted by its history |
-| **Each other copy lists only the stops newer than itself** | An earlier version points forward; a rehearsal points to live. Nobody is sent backwards |
+| **Each other copy lists the newer stops first, then the time machine: the earlier stops, nearest first** | Forward is the main path: an earlier version points ahead, and a rehearsal points to live. Stepping back is a choice, so anyone can compare *then*, *Genesis day* and *next* side by side. (The first version listed only newer stops. Christopher asked for the time machine on move day, 2026-10-25, so the rehearsal could "play back in reverse" too) |
 | **The note stays until the visitor confirms**, then never again **in that browser, for that copy** | Honest without nagging. Remembered per copy, so confirming the rehearsal doesn't silence the old version |
 | **A small ribbon in the corner** reopens it | The truth is always one tap away |
 | **`<link rel="canonical">` points to live** on every other copy | Search engines credit the live site, while the copies stay findable and useful |
@@ -58,7 +59,15 @@ export function newerStops() {
   const i = LINEAGE.findIndex((s) => s.id === LINEAGE_SELF);
   return i < 0 ? [] : LINEAGE.slice(i + 1).filter((s) => s.open);
 }
+
+/** The time machine: every stop before this one that exists today, nearest first. */
+export function olderStops() {
+  const i = LINEAGE.findIndex((s) => s.id === LINEAGE_SELF);
+  return i < 0 ? [] : LINEAGE.slice(0, i).filter((s) => s.open).reverse();
+}
 ```
+
+At the move, `lab-original` opens too: once it's history, the rehearsals' time machines can reach it.
 
 **Local builds and the live site set no `LINEAGE_SELF`, so they render nothing.** Only a lane that names
 itself shows the note.
@@ -74,6 +83,12 @@ itself shows the note.
   `preventDefault()` the `cancel` event. So in `onClose`, if the visitor hasn't confirmed, call
   `showModal()` again on the next tick. The note can be dismissed only by choosing.
 - **Two choices, both honest:** *"Take me to the live site"* and *"I understand, let me look around"*.
+- **The time machine:**
+  - It sits under *"Newer versions"*, headed *"Earlier versions"* with the line *"Step back in time to
+    see how it grew."*
+  - Each earlier stop has a rewind (History) icon and a **dashed** edge, so the past reads as memories.
+  - The ribbon says so too: *"Rehearsal · not live · all versions"*, and the foot of the note reads *"The
+    ribbon in the corner brings this note back, with every version."*
 - **Keep it out of search results** (`data-pagefind-ignore`).
 - **Let other welcomes wait for it.** On I Am One Self, the arrival splash listens for a `lineage:ack`
   event, so two dialogs never stack.
@@ -109,6 +124,26 @@ The page's metadata adds `<link rel="canonical" href={NEXT_PUBLIC_CANONICAL_URL}
 > Member privileges → Deploy keys → **Enabled** → Save. Each key can write to its one repository only.
 > A GitHub App is the alternative if you ever want finer control. Found at The Holy Earth Foundation's
 > move (2026-10-25), where the setup script stopped cleanly at its first key.
+
+> **Gotcha: new repos may come up with Actions off.** The repo's Actions tab says *"Workflows aren't
+> being run on this repository"*, even though the API reports Actions as enabled.
+> - **Symptom:** pushes and merged pull requests publish nothing, while manual (`workflow_dispatch`)
+>   runs work.
+> - **Fix:** an owner clicks **Enable Actions on this repository**, once per new workshop repo. Do it
+>   before the first Promote.
+
+> **Gotcha: an empty value is false in GitHub expressions.** A custom domain has an empty
+> `LIVE_BASE_PATH`, so `main && vars.LIVE_BASE_PATH || vars.REHEARSAL_BASE_PATH` falls through and
+> builds the live site for the rehearsal's subpath: the pages load, but every style 404s. Choose between
+> JSON strings instead:
+>
+> ```yaml
+> NEXT_PUBLIC_BASE_PATH: ${{ fromJSON(github.ref_name == 'main' && toJSON(vars.LIVE_BASE_PATH) || toJSON(vars.REHEARSAL_BASE_PATH)) }}
+> ```
+>
+> Check any `a && b || c` whose `b` can be empty. (`… && vars.LIVE_CNAME || ''` is safe, because its
+> fallback is empty anyway.) **Verify a live build by fetching a real asset:** take a CSS path from the
+> page's HTML and request it, rather than checking only that the page itself returns 200.
 
 ## 🧩 Using it elsewhere
 
