@@ -1,5 +1,16 @@
 # Building your own version of this
 
+**TL;DR:** a fleet of AI helpers that never loses the thread rests on four habits:
+- **A notebook per repo:** `AGENT-SYNC/` handoffs.
+- **One credit line:** a commit trailer naming the helper.
+- **Skills where each tool can find them.**
+- **A to-do list written before the work starts:** `PENDING-TASKS.md`.
+
+Start with those, add helpers as the work grows, and let one rulebook (`AGENTS.md`) speak to all of them.
+
+**Just joining someone else's organization?** You don't need any of this. Read
+[walkthroughs/JOIN-AN-ORGANIZATION.md](walkthroughs/JOIN-AN-ORGANIZATION.md) instead.
+
 If someone pointed you here — human or AI agent — it's because they want to set up something
 similar to this fleet: several coding agents, each with their own persona and repo scope,
 coordinating across many git repositories without losing context between sessions. This doc is
@@ -52,10 +63,43 @@ see `scripts/install-hooks.sh`'s notes on why both hooks need to coexist).
 Adapt to your own situation: the specific agent personas and their names, the specific repos and
 naming scheme, whether you need a nested-parent pattern at all.
 
+## Your first 30 minutes
+
+1. Make a repo, and copy this template's `AGENT-SYNC/`, `.githooks/` and `scripts/install-hooks.sh` into
+   it. Run `sh scripts/install-hooks.sh`.
+2. Write an `AGENTS.md`: the house rules every helper should follow. The organization template in
+   [org-onboarding/](org-onboarding/) is a good start.
+3. Write `PENDING-TASKS.md` with the one thing you're doing today.
+4. Connect one helper ([walkthroughs/](walkthroughs/)), and ask it to read `AGENTS.md`, then the task list.
+5. At the end, ask it to leave a handoff in `AGENT-SYNC/created-by-<its name>/`. Tomorrow's session (or
+   another helper) starts from there.
+
+## Connecting more helpers and tools
+
+| To… | Read |
+|---|---|
+| Use several AI tools side by side | [walkthroughs/MANY-AI-TOOLS-ONE-TEAM.md](walkthroughs/MANY-AI-TOOLS-ONE-TEAM.md) |
+| Read whole websites (research, refreshes) | [walkthroughs/CONNECT-FIRECRAWL.md](walkthroughs/CONNECT-FIRECRAWL.md) |
+| Work with a Wix or WordPress site | [CONNECT-WIX.md](walkthroughs/CONNECT-WIX.md) · [CONNECT-WORDPRESS.md](walkthroughs/CONNECT-WORDPRESS.md) |
+| Read documents kept in Google Drive | [walkthroughs/CONNECT-GOOGLE-DRIVE.md](walkthroughs/CONNECT-GOOGLE-DRIVE.md) |
+| Give helpers a map of a codebase | [walkthroughs/CONNECT-GRAPHIFY.md](walkthroughs/CONNECT-GRAPHIFY.md) |
+| Welcome people into a GitHub organization | [org-onboarding/](org-onboarding/) |
+
 ## If you want to see it working end to end
 
-This template repo is deliberately generic and doesn't carry real-world specifics. If whoever
-pointed you here also gave you access to their actual fleet, that's where to see the pattern
-actually load-bearing real work — multiple agents, real handoffs, real task trackers with months
-of history. Ask them for a pointer into one of their repos if you want a worked example rather
-than just this description.
+This template repo is deliberately generic and doesn't carry real-world specifics. Public worked
+examples from the fleet that grew it:
+
+- **How a fleet's helpers are named and credited:**
+  [AGENT_IDENTITY_REFERENCE.md](https://github.com/drasticstatic/anthropas-argus-alfred-public-preview/blob/main/sandbox/AGENT_IDENTITY_REFERENCE.md).
+  It names which application decides the name, local helpers versus cloud ones, and how the memory layer
+  (Littlebird) fits.
+- **The cloud side:**
+  [COSMOS_AGENT_ROLE_REFERENCE.md](https://github.com/drasticstatic/anthropas-argus-alfred-public-preview/blob/main/sandbox/COSMOS_AGENT_ROLE_REFERENCE.md).
+  It covers an advisor that builds the other helpers, and a code-review team that wakes on GitHub events.
+- **A community's public changelog and welcome kit**, built and kept by several helpers:
+  [changelog-template/](changelog-template/), with its whole build story in
+  [changelog-template/docs/JOURNEY.md](changelog-template/docs/JOURNEY.md).
+
+If whoever pointed you here also gave you access to their actual fleet, that's where to see the pattern
+carrying real work: multiple agents, real handoffs, and task trackers with months of history.
