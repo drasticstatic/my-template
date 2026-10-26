@@ -335,6 +335,18 @@
     invalid: "Não confere. Esse endereço não assinou exatamente esta mensagem com esta assinatura. Confira cada linha, espaço e caractere. (Carteiras de contrato inteligente assinam de outro jeito e não podem ser verificadas aqui.)",
     verifyFailed: "O verificador não conseguiu carregar. Confira a sua conexão e tente de novo.",
     eyebrow: "Um compromisso de apoio",
+    // v1.5.1: the practice wallet
+    practice: "Experimente com uma carteira de treino",
+    practiceHint: "Ainda não tem carteira? A carteira de treino é uma chave descartável criada nesta aba, só para sentir como funciona assinar. Nada é enviado, nada é guardado.",
+    practiceOn: "A carteira de treino está pronta. Ela não é uma carteira de verdade: não guarda nem envia nada, existe só nesta aba e some quando você fecha ou recarrega a página.",
+    practiceLive: "Carteira de treino pronta. Você já pode assinar o compromisso.",
+    practiceEnd: "Encerrar o treino",
+    practiceEnded: "Treino encerrado. A chave descartável já não existe.",
+    practiceSign: "Assinar o compromisso (treino)",
+    practiceFailed: "A carteira de treino não conseguiu começar: as ferramentas de assinatura não carregaram. Nada foi enviado.",
+    practiceSignedLive: "Assinado com a carteira de treino, e verificado.",
+    practiceSignedTitle: "✓ Assinado. É exatamente isso que uma carteira de verdade faz",
+    practiceSignedText: "Uma carteira de verdade mostraria estas mesmas palavras e pediria a sua aprovação antes de assinar. A assinatura foi verificada aqui, nesta aba, com a carteira que a fez. Foi só um treino: nada foi enviado, nada foi registrado, e a chave de treino some quando você sai.",
   },
 
   // give/give.js: what follows a click on the giving section.

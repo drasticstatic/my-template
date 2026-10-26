@@ -1,4 +1,4 @@
-/*! Arrival kit v1.5 · a pledge of support · https://github.com/drasticstatic/my-template (changelog-template/arrival/pledge)
+/*! Arrival kit v1.5.1 · a pledge of support · https://github.com/drasticstatic/my-template (changelog-template/arrival/pledge)
  *
  * The same file in every org, beside arrival.js (served as /arrival/pledge/pledge.js). Tailor it
  * through org.js (window.ARRIVAL.pledge), never by editing this file:
@@ -28,6 +28,13 @@
  *   Verify a signature paste an address, a message and a signature: the signer is recovered here
  *                      (secp256k1 + keccak-256 from @noble, pinned, loaded on first use) and compared.
  *                      Plain wallets only: a smart-contract wallet (a Safe) signs differently.
+ *   Practice wallet    (v1.5.1; pledge.practice: false hides it) for visitors without a wallet yet. A
+ *                      throwaway secp256k1 key is made in this tab with the same pinned @noble code,
+ *                      held in memory only (no storage of any kind), and wiped on "End practice". It
+ *                      signs the pledge exactly as personal_sign does, and recover() checks it like any
+ *                      other. It never loads the wallet layer, never touches the network beyond @noble,
+ *                      and can't send a transaction. Its address and signature are never shown or
+ *                      copied. A real wallet connecting ends it.
  *   No counts, ever    until pledges are published as records anyone can verify (see the page).
  */
 const CURVES = "https://cdn.jsdelivr.net/npm/@noble/curves@1.9.7/secp256k1/+esm"; // MIT, audited, 2025-08-15
@@ -90,6 +97,16 @@ const W = Object.assign(
     invalid: "Doesn't match. That address didn't sign this exact message with this signature. Check every line, space and character. (Smart-contract wallets sign differently and can't be checked here.)",
     verifyFailed: "The checker couldn't load. Check your connection, then try again.",
     eyebrow: "A pledge of support",
+    // v1.5.1: the practice wallet
+    practiceOn: "A practice wallet is ready. It isn't a real wallet: it can't hold or send anything, it lives only in this tab, and it's gone when you close or reload the page.",
+    practiceLive: "Practice wallet ready. You can sign the pledge now.",
+    practiceEnd: "End practice",
+    practiceEnded: "Practice ended. The throwaway key is gone.",
+    practiceSign: "Sign the pledge (practice)",
+    practiceFailed: "The practice wallet couldn't start: its signing tools didn't load. Nothing was sent.",
+    practiceSignedLive: "Signed with the practice wallet, and checked.",
+    practiceSignedTitle: "✓ Signed. This is exactly what a real wallet does",
+    practiceSignedText: "A real wallet would show you these same words and ask you to approve them, then sign. The signature was checked here, in this tab, against the wallet that made it. It was only practice: nothing was sent, nothing was recorded, and the practice key is gone when you leave.",
   },
   /* WORDS:end */
   // v1.5: the org's words, then (in another language) the kit's pack and the org's translation.
@@ -178,7 +195,8 @@ function wallet() {
 const projectId = () => String(P.reownProjectId || (C.give && C.give.reownProjectId) || "").trim();
 
 /* ── state ───────────────────────────────────────────────────────────────────────────────── */
-const S = { root: null, sec: null, w: null, account: null, via: "", wallet: "", state: null, note: "", signed: null, result: "" };
+// S.practice: { key, address } while the practice wallet is on (memory only), else null.
+const S = { root: null, sec: null, w: null, account: null, via: "", wallet: "", state: null, note: "", signed: null, result: "", practice: null };
 const $ = (sel) => S.root && S.root.querySelector(sel);
 function live(t) {
   const el = $("[data-pledge-live]");
@@ -198,6 +216,10 @@ async function ready() {
   return w;
 }
 function onWallet(st) {
+  if (S.practice) {
+    if (!st.account) return render(); // the wallet layer has nothing: the practice wallet stays
+    dropPractice(); // a real wallet connected: it wins
+  }
   const was = S.account;
   S.account = st.account || null;
   S.via = st.via || "";
@@ -216,6 +238,7 @@ function onWallet(st) {
 /* ── connecting ──────────────────────────────────────────────────────────────────────────── */
 async function connect() {
   const btn = $('[data-pledge="connect"]');
+  if (S.practice) endPractice(true); // choosing a real wallet ends the practice
   let w;
   try {
     w = await ready();
@@ -282,6 +305,59 @@ async function learn(kind) {
   }
 }
 
+/* ── the practice wallet (v1.5.1): a throwaway key, in memory only ───────────────────────── */
+function dropPractice() {
+  if (S.practice && S.practice.key) S.practice.key.fill(0);
+  S.practice = null;
+}
+async function startPractice() {
+  if (S.practice) return endPractice();
+  if (S.account) return; // a real wallet is connected
+  const btn = $('[data-pledge="practice"]');
+  busy(btn, true);
+  try {
+    const { secp, keccak } = await noble();
+    const key = (secp.utils.randomSecretKey || secp.utils.randomPrivateKey)();
+    const pub = secp.getPublicKey(key, false);
+    S.practice = { key, address: "0x" + hex(keccak(pub.slice(1)).slice(-20)) };
+    S.account = S.practice.address;
+    S.via = "practice";
+    S.wallet = "";
+    S.state = null;
+    S.signed = null;
+    S.result = "";
+    live(W.practiceLive);
+  } catch (e) {
+    dropPractice();
+    live(W.practiceFailed);
+  } finally {
+    busy(btn, false);
+    render();
+  }
+}
+function endPractice(quiet) {
+  dropPractice();
+  S.account = null;
+  S.via = "";
+  S.signed = null;
+  S.result = "";
+  if (!quiet) live(W.practiceEnded);
+  render();
+  const b = $('[data-pledge="practice"]');
+  if (b && !quiet) b.focus();
+}
+// personal_sign, done here: keccak-256 of the EIP-191 prefix and the message, signed with the key.
+async function practiceSign(message) {
+  const { secp, keccak } = await noble();
+  const m = enc(message);
+  const digest = keccak(concat(enc("\x19Ethereum Signed Message:\n" + m.length), m));
+  const sig = secp.sign(digest, S.practice.key);
+  const out = new Uint8Array(65);
+  out.set(sig.toCompactRawBytes(), 0);
+  out[64] = 27 + sig.recovery;
+  return "0x" + hex(out);
+}
+
 /* ── signing ─────────────────────────────────────────────────────────────────────────────── */
 function pledgeText() {
   const el = $("[data-pledge-text]");
@@ -299,15 +375,16 @@ function pledgeMessage() {
 }
 async function sign() {
   const btn = $('[data-pledge="sign"]');
-  if (!S.account || !S.w) return;
+  const practicing = S.via === "practice" && !!S.practice;
+  if (!S.account || (!S.w && !practicing)) return;
   const message = pledgeMessage();
   busy(btn, true);
   btn.disabled = true;
   S.signed = null;
   S.result = "";
   try {
-    live(W.signApprove);
-    const signature = await S.w.sign(message);
+    if (!practicing) live(W.signApprove);
+    const signature = practicing ? await practiceSign(message) : await S.w.sign(message);
     const address = S.account;
     let got = "";
     try {
@@ -317,8 +394,9 @@ async function sign() {
     }
     if (got) S.result = got.toLowerCase() === String(address).toLowerCase() ? "ok" : "mismatch";
     // Kept only in this tab, only for "Copy my signed pledge", and gone on Start over or reload.
-    if (S.result === "ok") S.signed = { message, address, signature };
-    live(S.result === "ok" ? W.signedLive : S.result === "mismatch" ? W.mismatch : W.checkFailed);
+    // Never for the practice wallet: its address and signature are never shown or copied.
+    if (S.result === "ok" && !practicing) S.signed = { message, address, signature };
+    live(S.result === "ok" ? (practicing ? W.practiceSignedLive : W.signedLive) : S.result === "mismatch" ? W.mismatch : W.checkFailed);
   } catch (err) {
     S.result = rejected(err) ? "declined" : "failed";
     live(S.result === "declined" ? W.declined : W.signFailed);
@@ -375,25 +453,54 @@ function doneStep(k, on) {
 function render() {
   if (!S.root) return;
   const connected = !!S.account;
+  const practicing = S.via === "practice" && !!S.practice;
   doneStep("connect", connected);
   doneStep("sign", S.result === "ok");
   const cbtn = $('[data-pledge="connect"]');
   if (cbtn) {
     const label = cbtn.querySelector("span");
-    if (label) label.textContent = connected ? (S.via === "appkit" ? W.manage : W.linked) : W.connect;
+    // While practising, this button stays "Connect a wallet": choosing it ends the practice.
+    if (label) label.textContent = connected && !practicing ? (S.via === "appkit" ? W.manage : W.linked) : W.connect;
     cbtn.classList.toggle("arr-btn-primary", !connected);
     cbtn.classList.toggle("arr-btn-quiet", connected);
   }
+  const pbtn = $('[data-pledge="practice"]');
+  if (pbtn) {
+    pbtn.hidden = connected && !practicing; // a real wallet is connected
+    const label = pbtn.querySelector("span");
+    if (label) {
+      if (!label._orig) label._orig = label.textContent;
+      label.textContent = practicing ? W.practiceEnd : label._orig;
+    }
+    pbtn.setAttribute("aria-pressed", practicing ? "true" : "false");
+  }
+  const pnote = $(".arr-pledge-practice");
+  if (pnote) pnote.hidden = connected;
   const ctext = $('[data-pledge-step="connect"] .arr-pledge-body > p');
   if (ctext) {
     if (!ctext._orig) ctext._orig = ctext.textContent;
-    ctext.textContent = connected ? fill(W.connected, { wallet: S.wallet ? " (" + S.wallet + ")" : "" }) + (S.via === "injected" && S.note ? " " + S.note : "") : ctext._orig;
+    ctext.textContent = practicing
+      ? W.practiceOn
+      : connected ? fill(W.connected, { wallet: S.wallet ? " (" + S.wallet + ")" : "" }) + (S.via === "injected" && S.note ? " " + S.note : "") : ctext._orig;
   }
   const sbtn = $('[data-pledge="sign"]');
-  if (sbtn) sbtn.disabled = !connected;
+  if (sbtn) {
+    sbtn.disabled = !connected;
+    const label = sbtn.querySelector("span");
+    if (label) {
+      if (!label._orig) label._orig = label.textContent;
+      label.textContent = practicing ? W.practiceSign : label._orig;
+    }
+  }
   const panel = $("[data-pledge-panel]");
   if (!panel) return;
-  if (S.result === "ok") {
+  if (S.result === "ok" && practicing) {
+    panel.innerHTML =
+      '<div class="arr-pledge-done"><h3>' + icon("flask") + esc(W.practiceSignedTitle) + "</h3><p>" + esc(W.practiceSignedText) + "</p>" +
+      '<div class="arr-give-actions"><button type="button" class="arr-btn arr-btn-quiet arr-shape" data-pledge="again">' + icon("arrow-counter-clockwise") + esc(W.again) + "</button>" +
+      '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-pledge="practice">' + icon("x-circle") + esc(W.practiceEnd) + "</button></div></div>";
+    panel.hidden = false;
+  } else if (S.result === "ok") {
     panel.innerHTML =
       '<div class="arr-pledge-done"><h3>' + icon("seal-check") + esc(W.signedTitle) + "</h3><p>" + esc(W.signedText) + "</p>" +
       '<div class="arr-give-actions"><button type="button" class="arr-btn arr-btn-quiet arr-shape" data-pledge="copy">' + icon("copy") + esc(W.copy) + "</button>" +
@@ -477,10 +584,11 @@ async function act(name, el, root) {
     return connect();
   }
   if (name === "learn") return learn(S.state);
+  if (name === "practice") return startPractice();
   if (name === "sign") return sign();
   if (name === "copy") return copySigned();
   if (name === "again") return startOver();
   if (name === "verify") return verify(el && el.closest ? el.closest("form") || el : null);
 }
 
-window.ArrivalPledge = { init, act, recover, version: "1.4.0" };
+window.ArrivalPledge = { init, act, recover, version: "1.5.1" };

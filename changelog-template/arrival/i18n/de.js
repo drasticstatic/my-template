@@ -335,6 +335,18 @@
     invalid: "Passt nicht. Diese Adresse hat genau diese Nachricht nicht mit dieser Unterschrift unterschrieben. Prüfe jede Zeile, jedes Leerzeichen und jedes Zeichen. (Smart-Contract-Wallets unterschreiben anders und können hier nicht geprüft werden.)",
     verifyFailed: "Die Prüfung konnte nicht geladen werden. Prüfe deine Verbindung und versuch es dann noch einmal.",
     eyebrow: "Eine Zusage der Unterstützung",
+    // v1.5.1: the practice wallet
+    practice: "Mit einem Übungs-Wallet ausprobieren",
+    practiceHint: "Noch kein Wallet? Das Übungs-Wallet ist ein Wegwerf-Schlüssel, der in diesem Tab entsteht, nur damit du spürst, wie Unterschreiben geht. Nichts wird gesendet, nichts gespeichert.",
+    practiceOn: "Das Übungs-Wallet ist bereit. Es ist kein echtes Wallet: Es kann nichts aufbewahren oder senden, es lebt nur in diesem Tab und ist weg, sobald du die Seite schließt oder neu lädst.",
+    practiceLive: "Übungs-Wallet bereit. Du kannst die Zusage jetzt unterschreiben.",
+    practiceEnd: "Übung beenden",
+    practiceEnded: "Übung beendet. Der Wegwerf-Schlüssel ist weg.",
+    practiceSign: "Zusage unterschreiben (Übung)",
+    practiceFailed: "Das Übungs-Wallet konnte nicht starten: Seine Werkzeuge zum Unterschreiben wurden nicht geladen. Nichts wurde gesendet.",
+    practiceSignedLive: "Mit dem Übungs-Wallet unterschrieben und geprüft.",
+    practiceSignedTitle: "✓ Unterschrieben. Genau das macht ein echtes Wallet",
+    practiceSignedText: "Ein echtes Wallet würde dir genau diese Worte zeigen und dich bitten, sie zu bestätigen, bevor es unterschreibt. Die Unterschrift wurde hier in diesem Tab geprüft, gegen das Wallet, das sie erstellt hat. Es war nur eine Übung: Nichts wurde gesendet, nichts wurde gespeichert, und der Übungs-Schlüssel ist weg, sobald du gehst.",
   },
 
   // give/give.js: what follows a click on the giving section.

@@ -335,6 +335,18 @@
     invalid: "Ne correspond pas. Cette adresse n’a pas signé exactement ce message avec cette signature. Vérifiez chaque ligne, espace et caractère. (Les portefeuilles à contrat intelligent signent autrement et ne peuvent pas être vérifiés ici.)",
     verifyFailed: "Le vérificateur n’a pas pu se charger. Vérifiez votre connexion, puis réessayez.",
     eyebrow: "Un engagement de soutien",
+    // v1.5.1: the practice wallet
+    practice: "Essayer avec un portefeuille d’entraînement",
+    practiceHint: "Pas encore de portefeuille ? Le portefeuille d’entraînement est une clé jetable créée dans cet onglet, juste pour sentir comment on signe. Rien n’est envoyé, rien n’est enregistré.",
+    practiceOn: "Le portefeuille d’entraînement est prêt. Ce n’est pas un vrai portefeuille : il ne peut rien détenir ni envoyer, il n’existe que dans cet onglet et disparaît quand vous fermez ou rechargez la page.",
+    practiceLive: "Portefeuille d’entraînement prêt. Vous pouvez signer l’engagement.",
+    practiceEnd: "Terminer l’entraînement",
+    practiceEnded: "Entraînement terminé. La clé jetable a disparu.",
+    practiceSign: "Signer l’engagement (entraînement)",
+    practiceFailed: "Le portefeuille d’entraînement n’a pas pu démarrer : ses outils de signature ne se sont pas chargés. Rien n’a été envoyé.",
+    practiceSignedLive: "Signé avec le portefeuille d’entraînement, et vérifié.",
+    practiceSignedTitle: "✓ Signé. C’est exactement ce que fait un vrai portefeuille",
+    practiceSignedText: "Un vrai portefeuille vous montrerait ces mêmes mots et vous demanderait de les approuver avant de signer. La signature a été vérifiée ici, dans cet onglet, avec le portefeuille qui l’a faite. Ce n’était qu’un entraînement : rien n’a été envoyé, rien n’a été enregistré, et la clé d’entraînement disparaît quand vous partez.",
   },
 
   // give/give.js: what follows a click on the giving section.

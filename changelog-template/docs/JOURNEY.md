@@ -1064,6 +1064,23 @@ were fixed to `en-US`.
 3. PIR: the kit may translate its own buttons. PIR® literature stays in English until the Literature
    Committee provides official translations.
 
+## 🧪 Kit v1.5.1, 2026-10-26: the practice wallet
+
+Christopher asked: *"can you utilize a throwaway wallet for those who want to experience the site's
+web3 function without having a wallet set up yet?!"* The pledge now offers **"Try it with a practice
+wallet"**:
+- **The key** is a secp256k1 key made in the tab with the pinned @noble code the pledge already uses to
+  verify. It's held in memory and wiped on "End practice".
+- **The flow:** it signs the pledge as `personal_sign` does, and the existing `recover()` checks it.
+- **Never stored, never shown, never copied.** It never loads the wallet layer.
+- **Tested in Chrome:** English and Spanish, keyboard, and 390px wide. During practice the only network
+  requests were GETs for the @noble modules. No storage changed, and nothing showed in the console.
+
+**Why not wagmi's `mock` connector?** It forwards `personal_sign` to the chain's RPC (it expects a local
+Hardhat or Anvil node), and wagmi persists connections to localStorage. Both break "nothing sent,
+nothing saved". The policy-reform dApp got the same practice wallet with viem's `generatePrivateKey`,
+held in a React ref, outside wagmi.
+
 ## Future enhancement, not required (can simmer)
 
 `divorce-custody-assistant/vocational-compliance/build_vocational_log.py` generates an animated,

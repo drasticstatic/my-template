@@ -335,6 +335,18 @@
     invalid: "No coincide. Esa dirección no firmó exactamente este mensaje con esta firma. Revisa cada línea, espacio y carácter. (Las billeteras de contrato inteligente firman de otra manera y no se pueden verificar aquí.)",
     verifyFailed: "El verificador no pudo cargar. Revisa tu conexión y vuelve a intentarlo.",
     eyebrow: "Un compromiso de apoyo",
+    // v1.5.1: the practice wallet
+    practice: "Pruébalo con una billetera de práctica",
+    practiceHint: "¿Aún no tienes billetera? La billetera de práctica es una clave desechable creada en esta pestaña, solo para sentir cómo se firma. No se envía nada y no se guarda nada.",
+    practiceOn: "La billetera de práctica está lista. No es una billetera real: no puede guardar ni enviar nada, vive solo en esta pestaña y desaparece cuando cierras o recargas la página.",
+    practiceLive: "Billetera de práctica lista. Ya puedes firmar el compromiso.",
+    practiceEnd: "Terminar la práctica",
+    practiceEnded: "Práctica terminada. La clave desechable ya no existe.",
+    practiceSign: "Firmar el compromiso (práctica)",
+    practiceFailed: "La billetera de práctica no pudo empezar: sus herramientas de firma no cargaron. No se envió nada.",
+    practiceSignedLive: "Firmado con la billetera de práctica, y verificado.",
+    practiceSignedTitle: "✓ Firmado. Esto es exactamente lo que hace una billetera real",
+    practiceSignedText: "Una billetera real te mostraría estas mismas palabras y te pediría aprobarlas antes de firmar. La firma se verificó aquí, en esta pestaña, con la billetera que la hizo. Fue solo práctica: no se envió nada, no se registró nada y la clave de práctica desaparece cuando te vas.",
   },
 
   // give/give.js: what follows a click on the giving section.

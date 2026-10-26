@@ -13,7 +13,7 @@
 - Octagon Religious Research Group
 - Psanctuary and Psanctuary Church
 
-**Kit version:** 1.5.0.
+**Kit version:** 1.5.1.
 
 ---
 
@@ -94,6 +94,23 @@ i18n: { es: { reviewed: false, text: { "Get involved": "Participa" }, words: { e
 - `<html lang>` keeps describing the page's own words. The kit's menus and dialogs carry their own
   `lang`, so a screen reader voices each part in its own language. `data-lang` on `<html>` holds the
   choice.
+
+## 🧪 The practice wallet (kit 1.5.1)
+
+**TL;DR:** visitors without a wallet can still feel how the pledge works. Beside "Connect a wallet" sits
+**"Try it with a practice wallet"**: a throwaway key made in their tab, just for signing practice.
+Nothing is sent, and nothing is saved.
+
+- **Ephemeral:** the key is made with the same pinned @noble code that checks signatures, held in
+  memory only, and wiped on "End practice", reload or close. There's no storage of any kind.
+- **Signs, and nothing else:** it signs the pledge exactly as `personal_sign` does, and the normal
+  check verifies it. It never loads the wallet layer, so there's no AppKit and no RPC, and it can't
+  send a transaction.
+- **Clearly practice:** "(practice)" on the sign button, its own "✓ Signed. This is exactly what a
+  real wallet does" panel, and no "Copy my signed pledge". Its address and signature are never shown.
+- **A real wallet wins:** connecting one ends the practice.
+- **On by default** wherever the pledge is. `pledge: { practice: false }` hides it. Its words are in
+  every language pack.
 
 ## 🐇 Down the rabbit hole
 

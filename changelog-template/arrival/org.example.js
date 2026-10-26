@@ -300,6 +300,8 @@
     //   tokens    false hides the "Gratitude tokens (coming)" card; { text, href, label } rewords it
     //   bots      false hides "How you'll know these aren't bots"; { points: [] } rewords it
     //   verify    false hides the "verify a signature" tool
+    //   practice  false hides the practice wallet (v1.5.1): a throwaway key in the visitor's tab, so
+    //             anyone can try signing without a wallet. Nothing sent, nothing saved, never shown
     //   enabled   false: nothing at all
     // Waiting on ORG's own words, so it stays off here:
     //   pledge: { text: "…", href: ROOT + "/pledge/" },

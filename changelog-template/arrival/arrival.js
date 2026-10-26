@@ -137,7 +137,7 @@
   "use strict";
   if (window.Arrival) return;
 
-  var VERSION = "1.5.0";
+  var VERSION = "1.5.1";
   // C0 is org.js as written; C is the same config in the visitor's language (v1.5: localize()).
   var C0 = window.ARRIVAL || {};
   var C = C0;
@@ -3277,7 +3277,8 @@
        org's own words, after the fine print), title?, intro?, href? (the page it lives on, so "/"
        search finds it), reownProjectId? (default: give.reownProjectId), tokens? (false, or
        { title, text, href, label }: the "Gratitude tokens (coming)" card), bots? (false, or
-       { title, points: [] }), verify? (false hides the "verify a signature" tool), words? }
+       { title, points: [] }), verify? (false hides the "verify a signature" tool), practice? (v1.5.1;
+       false hides the practice wallet), words? }
      Drawn here at first paint (the pledge, three steps, two cards, the verify tool), so nothing
      moves when pledge/pledge.js arrives. pledge.js borrows give.js's wallet layer: one Reown AppKit
      per page, the same allowlist check, the same "New to wallets?" guide. Signing is an EIP-191
@@ -3298,6 +3299,8 @@
     connectText: "One button for a browser wallet, a phone wallet (by QR code) or an email sign-in.",
     connect: "Connect a wallet",
     learn: "New to wallets?",
+    practice: "Try it with a practice wallet",
+    practiceHint: "No wallet yet? The practice wallet is a throwaway key made in this tab, just to feel how signing works. Nothing is sent, nothing is saved.",
     signTitle: "Sign it",
     signText: "Your wallet shows the pledge and asks you to sign. It's a message, not a transaction: no gas, no contract, no money.",
     sign: "Sign the pledge",
@@ -3385,7 +3388,14 @@
       '<blockquote class="arr-pledge-text arr-shape" data-pledge-text>' + esc(pledgeText()) + "</blockquote>" +
       '<ol class="arr-pledge-steps">' +
       pledgeStep("read", 1, PW.readTitle, PW.readText, "", true) +
-      pledgeStep("connect", 2, PW.connectTitle, PW.connectText, '<div class="arr-give-actions">' + btn("connect", PW.connect, "plugs-connected", true) + btn("learn", PW.learn, "question") + "</div>") +
+      pledgeStep(
+        "connect", 2, PW.connectTitle, PW.connectText,
+        '<div class="arr-give-actions">' + btn("connect", PW.connect, "plugs-connected", true) +
+          // v1.5.1: the practice wallet (pledge.practice: false hides it).
+          (P.practice === false ? "" : '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-pledge="practice" aria-describedby="arr-pp-' + n + '">' + icon("flask") + "<span>" + esc(PW.practice) + "</span></button>") +
+          btn("learn", PW.learn, "question") + "</div>" +
+          (P.practice === false ? "" : '<p class="arr-fine arr-pledge-practice" id="arr-pp-' + n + '">' + esc(PW.practiceHint) + "</p>")
+      ) +
       pledgeStep("sign", 3, PW.signTitle, PW.signText, '<div class="arr-give-actions">' + btn("sign", PW.sign, "signature", true, true) + "</div>") +
       "</ol>" +
       '<p class="arr-pledge-live" data-pledge-live role="status" aria-live="polite"></p>' +
