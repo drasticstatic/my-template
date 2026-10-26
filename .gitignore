@@ -28,6 +28,9 @@
 .Spotlight-V100
 .Trashes
 Icon?
+# ("Icon?" is for macOS's hidden Icon\r files, but on a case-insensitive Mac it also matches a
+#  folder named "icons", so keep icon folders.)
+!**/icons/
 .fseventsd
 
 
