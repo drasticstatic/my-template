@@ -520,12 +520,21 @@
     var P = window.ARRIVAL_I18N;
     return (P && (P[l] || P[primary(l)])) || null;
   }
-  // One section of words for a language: the kit's pack, then the org's own on top.
-  function langSec(l, section) {
-    return assign({}, (pack(l) || {})[section] || {}, (I18N[l] || {})[section] || {});
+  // The org's own words (its English overrides from org.js) that its `text` translates into l, by exact
+  // match. Without this the kit's generic pack would win over them ("Enter ORG" became plain "Entrar").
+  function ownIn(l, words) {
+    var T = (I18N[l] || {}).text || {};
+    var out = {};
+    for (var k in words || {}) if (own(words, k) && typeof words[k] === "string" && own(T, words[k])) out[k] = T[words[k]];
+    return out;
+  }
+  // One section of words for a language: the kit's pack, then the org's own on top (the words its
+  // `text` translates, then its i18n section).
+  function langSec(l, section, orgWords) {
+    return assign({}, (pack(l) || {})[section] || {}, ownIn(l, orgWords), (I18N[l] || {})[section] || {});
   }
   function wordsFor(l) {
-    return l === BASE ? assign({}, WORDS, C0.words || {}) : assign({}, WORDS, C0.words || {}, langSec(l, "words"));
+    return l === BASE ? assign({}, WORDS, C0.words || {}) : assign({}, WORDS, C0.words || {}, langSec(l, "words", C0.words));
   }
   function named(list, kind, kitList) {
     if (!hasLangs || lang === BASE) return list;
@@ -3304,7 +3313,7 @@
   /* PWORDS:end */
   function pledgeWords() {
     var own = (PLEDGE && PLEDGE.words) || {};
-    return lang === BASE ? assign({}, PWORDS, own) : assign({}, PWORDS, own, langSec(lang, "pledge"));
+    return lang === BASE ? assign({}, PWORDS, own) : assign({}, PWORDS, own, langSec(lang, "pledge", (C0.pledge || {}).words));
   }
   var PW = pledgeWords();
   function pledgeText() {
@@ -4161,7 +4170,7 @@
     },
     words: function (section, orgWords) {
       if (!hasLangs || lang === BASE) return assign({}, orgWords || {});
-      return assign({}, orgWords || {}, langSec(lang, section));
+      return assign({}, orgWords || {}, langSec(lang, section, orgWords));
     },
   };
 })();

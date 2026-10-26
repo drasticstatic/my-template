@@ -72,7 +72,11 @@ i18n: { es: { reviewed: false, text: { "Get involved": "Participa" }, words: { e
   `i18n/<id>.js`, and `node arrival/verify-i18n.mjs` checks that every pack carries every word. All
   four ship with `reviewed: false`, until someone who speaks the language as their own has read it.
 - **An org's own words** go in `i18n.<lang>`: `text` swaps any string from `org.js` by exact match;
-  `modes` and `motions` rename by id; `config` merges over `org.js`.
+  `modes` and `motions` rename by id; `config` merges over `org.js`. That includes the org's own
+  `words` overrides (its "Enter ORG", its search tip): a translated one wins over the kit's generic
+  pack word.
+- **Static page markup stays as written.** A footer bar or hero written straight into the HTML isn't
+  in `org.js`, so the honest content note covers it.
 - **Three honest tiers for page content:**
   1. A site with real translated pages gives `languages.route`. The kit takes visitors to the twin
      page and adds `hreflang`.
