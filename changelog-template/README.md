@@ -86,6 +86,11 @@ i18n: { es: { reviewed: false, text: { "Get involved": "Participa" }, words: { e
   3. Names and marks carry `translate="no"`.
 - **Reviewed, not assumed.** A pack ships with `reviewed: false`, and the kit shows a small "Traducción en
   revisión" until the org's own people read it and set `reviewed: true`.
+- **An open invitation.** Under that mark, in any language but English, one quiet line asks for help:
+  "Spot a better way to say something? If you can help with translation, please *reach out*…" The link
+  opens the org's contact window (`contact`), or else follows `org.home`. The words are `helpTranslate`
+  (with a `{reachOut}` slot) and `helpReachOut`: each pack carries its own, and an org re-voices them in
+  `i18n.<lang>.words`.
 - `<html lang>` keeps describing the page's own words. The kit's menus and dialogs carry their own
   `lang`, so a screen reader voices each part in its own language. `data-lang` on `<html>` holds the
   choice.

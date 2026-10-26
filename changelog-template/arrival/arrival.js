@@ -234,6 +234,9 @@
     contentNote: "Menus in {lang}; this page's words are still in {base} for now.",
     inReview: "Translation in review",
     reviewNote: "Translated with care. The people of this organization haven't checked it yet.",
+    // Shown only in a language other than English, under the review mark. {reachOut} becomes the link.
+    helpTranslate: "Spot a better way to say something? If you can help with translation, please {reachOut}. It's a lovely way to be of service, and it gives the next person a more accurate, tailored welcome.",
+    helpReachOut: "reach out",
     // v1.5: the rest of the kit's words, moved here from where they're drawn
     searchPress: "Press / to search.",
     searchTry: "Try it now: press {key}.",
@@ -1002,7 +1005,22 @@
   function langNotes() {
     return (
       '<p class="arr-note arr-lang-note" data-arr-langnote' + (noteWanted() ? "" : " hidden") + ">" + icon("translate") + "<span>" + esc(noteText()) + "</span></p>" +
-      (inReview() ? '<p class="arr-note arr-lang-review" title="' + esc(W.reviewNote) + '">' + icon("seal-question") + "<span>" + esc(W.inReview) + "</span></p>" : "")
+      (inReview() ? '<p class="arr-note arr-lang-review" title="' + esc(W.reviewNote) + '">' + icon("seal-question") + "<span>" + esc(W.inReview) + "</span></p>" : "") +
+      helpNote()
+    );
+  }
+  // A warm invitation to help with the translation, in the visitor's language and never in English.
+  // "reach out" opens the org's contact window; without one it follows org.home, else stays plain text.
+  function helpNote() {
+    if (!hasLangs || lang === BASE || primary(lang) === "en") return "";
+    var parts = String(W.helpTranslate || "").split("{reachOut}");
+    var href = hasContact ? "#contact" : (org.home && org.home.href) || "";
+    var link = href
+      ? '<a href="' + esc(href) + '"' + (hasContact ? ' data-arrival-open="contact"' : "") + ">" + esc(W.helpReachOut) + "</a>"
+      : esc(W.helpReachOut);
+    return (
+      '<p class="arr-note arr-lang-help">' + icon("hand-heart") + "<span>" +
+      esc(parts[0]) + (parts.length > 1 ? link + esc(parts.slice(1).join("")) : "") + "</span></p>"
     );
   }
   function langField(name, rich) {

@@ -107,6 +107,8 @@
     contentNote: "Menus en {lang} ; les mots de cette page sont encore en {base} pour l’instant.",
     inReview: "Traduction en cours de relecture",
     reviewNote: "Traduite avec soin. Les personnes de cette organisation ne l’ont pas encore relue.",
+    helpTranslate: "Vous voyez une meilleure façon de dire quelque chose ? Si vous pouvez aider à la traduction, {reachOut}. C’est une belle façon de rendre service, et cela offre à la personne suivante un accueil plus juste et plus personnel.",
+    helpReachOut: "écrivez-nous",
     searchPress: "Appuyez sur / pour rechercher.",
     searchTry: "Essayez maintenant : appuyez sur {key}.",
     searchPhone: "Sur un téléphone, touchez la loupe dans l’en-tête.",

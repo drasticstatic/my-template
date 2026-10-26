@@ -107,6 +107,8 @@
     contentNote: "Menüs auf {lang}; die Worte dieser Seite sind vorerst noch auf {base}.",
     inReview: "Übersetzung wird geprüft",
     reviewNote: "Mit Sorgfalt übersetzt. Die Menschen dieser Organisation haben sie noch nicht geprüft.",
+    helpTranslate: "Fällt dir eine bessere Formulierung ein? Wenn du bei der Übersetzung helfen kannst, {reachOut}. Es ist eine schöne Art zu dienen, und es schenkt der nächsten Person ein genaueres, passenderes Willkommen.",
+    helpReachOut: "melde dich bei uns",
     searchPress: "Drück /, um zu suchen.",
     searchTry: "Probier es jetzt: drück {key}.",
     searchPhone: "Auf dem Handy tippst du auf die Lupe in der Kopfzeile.",
