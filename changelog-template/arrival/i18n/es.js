@@ -13,7 +13,7 @@
  */
 (window.ARRIVAL_I18N = window.ARRIVAL_I18N || {}).es = {
   reviewed: false,
-  langNames: { en: "inglés", es: "español", pt: "portugués", fr: "francés" },
+  langNames: { en: "inglés", es: "español", pt: "portugués", fr: "francés", de: "alemán" },
 
   // The kit's default lights, motions and text sizes, by id (an org's own are renamed in its i18n).
   modes: {

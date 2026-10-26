@@ -22,7 +22,7 @@
 | | What a visitor finds | Where it comes from |
 |---|---|---|
 | 🌗 | **"Choose how you arrive":** a first-visit welcome to pick light, motion and contrast. It respects the OS's own reduced-motion and contrast wishes | `arrival/arrival.js` |
-| 🗣️ | **"Your language · Tu idioma":** with two or more languages, the welcome opens with a door per language, each in its own words. The kit speaks Spanish out of the box, and says honestly which words aren't translated yet | `arrival/i18n/` |
+| 🗣️ | **"Your language · Tu idioma":** with two or more languages, the welcome opens with a door per language, each in its own words. The kit speaks Spanish, Portuguese, French and German out of the box, and says honestly which words aren't translated yet | `arrival/i18n/` |
 | 🧭 | **A welcome guide:** what the site is, how to search, who made the changes, where the community talks | `arrival/arrival.js` |
 | 🔎 | **Press `/` to search** everything, across the portal and its AstroLog | `search.json` from each site |
 | 🧑‍🤝‍🧑 | **Real faces:** contributor avatars, and personal emails are never hashed into a page | `<arrival-avatar>` |
@@ -66,9 +66,11 @@ i18n: { es: { reviewed: false, text: { "Get involved": "Participa" }, words: { e
   language, with the others one tap away in the welcome's first row. `start: "browser"` follows the
   visitor's browser instead. The family's sites are English first (`start: "en"`); a site whose people
   mostly speak another language starts in it.
-- **The kit's own words** (the welcome, drawer, guide, search, giving and pledge) come from
-  `arrival/i18n/es.js`. It loads only for a visitor who chooses Spanish. `node arrival/verify-i18n.mjs`
-  checks that a pack carries every word.
+- **The kit's own words** (the welcome, drawer, guide, search, giving and pledge) come from a pack
+  in `arrival/i18n/`: Spanish (`es.js`), Portuguese (`pt.js`), French (`fr.js`) and German (`de.js`).
+  A pack loads only for a visitor who chooses its language. Any other id works too: add
+  `i18n/<id>.js`, and `node arrival/verify-i18n.mjs` checks that every pack carries every word. All
+  four ship with `reviewed: false`, until someone who speaks the language as their own has read it.
 - **An org's own words** go in `i18n.<lang>`: `text` swaps any string from `org.js` by exact match;
   `modes` and `motions` rename by id; `config` merges over `org.js`.
 - **Three honest tiers for page content:**

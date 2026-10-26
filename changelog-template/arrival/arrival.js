@@ -477,9 +477,10 @@
     es: { ask: "Tu idioma", hello: "Te damos la bienvenida", locale: "es-419" },
     pt: { ask: "Seu idioma", hello: "Boas-vindas", locale: "pt-BR" },
     fr: { ask: "Votre langue", hello: "Bienvenue", locale: "fr-FR" },
+    de: { ask: "Deine Sprache", hello: "Willkommen", locale: "de-DE" },
   };
   // Language names in English (a pack carries its own: langNames).
-  var NAMES_EN = { en: "English", es: "Spanish", pt: "Portuguese", fr: "French" };
+  var NAMES_EN = { en: "English", es: "Spanish", pt: "Portuguese", fr: "French", de: "German" };
   var LC = C0.languages && C0.languages.list && C0.languages.list.length > 1 ? C0.languages : null;
   var LANGS = LC
     ? LC.list.filter(function (l) { return l && l.id; }).map(function (l) { return assign({}, LANG_META[primary(l.id)] || {}, l); })
