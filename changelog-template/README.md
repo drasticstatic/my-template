@@ -13,7 +13,7 @@
 - Octagon Religious Research Group
 - Psanctuary and Psanctuary Church
 
-**Kit version:** 1.5.1.
+**Kit version:** 1.5.2.
 
 ---
 
@@ -111,6 +111,25 @@ Nothing is sent, and nothing is saved.
 - **A real wallet wins:** connecting one ends the practice.
 - **On by default** wherever the pledge is. `pledge: { practice: false }` hides it. Its words are in
   every language pack.
+
+## 🎁 The practice gift (kit 1.5.2)
+
+**TL;DR:** giving sends real money, so its practice is a simulation, never a send. Beside "Connect a
+wallet" sits **"Try a practice gift"**. It walks through the real steps, and nothing in it is real.
+
+1. **Choose an amount:** quick picks or any amount, and the network if the org lists more than one.
+2. **What your wallet would show:** a wallet-shaped card with a dashed edge and a PRACTICE stamp. It
+   shows the amount, the network, and the fee's honest note (the network sets it when you send). The
+   recipient is **the org's name only**: no address is ever shown or invented. If the org hasn't
+   published one yet, the card says so.
+3. **Approve or decline (practice):** approving ends with *"✓ This is what a real gift looks like.
+   Nothing was sent"* and a receipt stamped PRACTICE (transaction: none). Declining ends with *"You
+   declined. Nothing was sent"*, which is exactly what a real wallet does.
+
+- **Nothing real:** no wallet, no key, no provider, no RPC and no storage. The amount lives in the
+  dialog only, and closing it forgets everything. The real give path is untouched.
+- **On by default** wherever the give section is. `give: { practice: false }` hides it. Its words
+  are in every language pack.
 
 ## 🐇 Down the rabbit hole
 

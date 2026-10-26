@@ -137,7 +137,7 @@
   "use strict";
   if (window.Arrival) return;
 
-  var VERSION = "1.5.1";
+  var VERSION = "1.5.2";
   // C0 is org.js as written; C is the same config in the visitor's language (v1.5: localize()).
   var C0 = window.ARRIVAL || {};
   var C = C0;
@@ -353,6 +353,8 @@
     previewTag: "Preview",
     connectWallet: "Connect a wallet",
     newToWallets: "New to wallets?",
+    practiceGift: "Try a practice gift",
+    practiceGiftHint: "A practice gift walks through giving with no wallet and no money: nothing is sent.",
     walletLoadFailed: "The wallet part of this page didn't load. Check your connection, then try again.",
     waysToGive: "Ways to give",
     give: "Give",
@@ -2970,7 +2972,8 @@
      ARRIVAL.give = { enabled? (false keeps the empty slot), reownProjectId, chains? (EVM networks
        the ETH address takes, default ["mainnet"]), addresses: { eth, btc, sol } (null until the
        org publishes one), note?, title?, text?, social? (false hides email/social sign-in),
-       claim?: { to (an email for "add your name" notes) }, module? (give.js URL) }.
+       claim?: { to (an email for "add your name" notes) }, module? (give.js URL), practice? (v1.5.2;
+       false hides the practice gift) }.
      This draws everything a visitor sees before they click, so nothing moves when give/give.js
      arrives; give.js adds what follows a click (the wallet window, the connected panel, the guide).
      An address that doesn't look like its coin's is treated as missing, never shown. */
@@ -3039,7 +3042,11 @@
       (coins.length ? '<ul class="arr-coins">' + rows + "</ul>" : "") +
       '<div class="arr-give-actions">' +
       '<button type="button" class="arr-btn ' + (any ? "arr-btn-quiet" : "arr-btn-primary") + ' arr-shape" data-give="connect">' + icon("plugs-connected") + "<span>" + esc(W.connectWallet) + "</span></button>" +
-      '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-give="learn">' + icon("question") + esc(W.newToWallets) + "</button></div>" +
+      '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-give="learn">' + icon("question") + esc(W.newToWallets) + "</button>" +
+      // v1.5.2: the practice gift (give.practice: false hides it). Nothing in it is real.
+      (G.practice === false ? "" : '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-give="practice" aria-describedby="arr-gp-' + n + '">' + icon("flask") + "<span>" + esc(W.practiceGift) + "</span></button>") +
+      "</div>" +
+      (G.practice === false ? "" : '<p class="arr-fine arr-give-practice" id="arr-gp-' + n + '">' + esc(W.practiceGiftHint) + "</p>") +
       '<p class="arr-give-live" data-give-live role="status" aria-live="polite"></p>' +
       '<div class="arr-give-panel arr-shape" data-give-panel hidden></div>' +
       '<p class="arr-fine">' + safety + (G.note ? " " + G.note : "") + "</p></section>"

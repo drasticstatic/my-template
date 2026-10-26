@@ -1085,6 +1085,25 @@ held in a React ref, outside wagmi.
 sections stayed in English on a Spanish page. Its words now live in give.js's `WORDS` table (`learnWhat…`
 through `learnGet…`), with `{connect}` and `{who}` slots, and every pack carries them (389 words each).
 
+## 🎁 Kit v1.5.2, 2026-10-26: the practice gift
+
+The practice wallet signs messages only, so giving was left out of 1.5.1 on purpose. Christopher:
+*"thanks for giving the giving its own design, go ahead and proceed"*. Giving sends real money
+(`eth_sendTransaction` in give.js), so its practice can't be a cut-down real send. It's a **simulation
+from end to end**, in a kit dialog:
+- **The steps:** amount (quick picks or any amount) → "What your wallet would show" → Approve or
+  Decline (practice) → "✓ This is what a real gift looks like. Nothing was sent", with a receipt stamped
+  PRACTICE.
+- **Nothing real:**
+  - **No address.** The recipient is the org's name only, never an address, shown or invented ("no
+    real or fake wallet addresses anywhere"). If the org hasn't published one, the card says so plainly.
+  - **No key, provider, RPC or storage.** It doesn't even need the practice wallet's key, because
+    nothing is signed. The fee is explained rather than estimated, since estimating would mean asking a
+    node.
+- **Tested in Chrome**, on a scratch copy of ORG's donate page:
+  - English and Spanish, keyboard only (Enter, Tab, Escape returns focus to the button), and 390px wide.
+  - During practice, storage was unchanged and there were no requests beyond the module's own GET.
+
 ## Future enhancement, not required (can simmer)
 
 `divorce-custody-assistant/vocational-compliance/build_vocational_log.py` generates an animated,
