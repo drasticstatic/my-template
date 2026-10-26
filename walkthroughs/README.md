@@ -28,6 +28,7 @@ walk me through it").
 | | Pattern | For when you want to… |
 |---|---|---|
 | 🌳 | [Version lineage](VERSION-LINEAGE.md) | keep old and rehearsal copies of a site up **without** `noindex`, each greeting visitors once and linking forward to newer versions |
+| 📜 | [Proposals template](../proposals-template/README.md) | give your organization a private `proposals` repo where each idea is a plain-language page and a PDF, decided by the people it affects |
 
 ## Three promises every guide keeps
 

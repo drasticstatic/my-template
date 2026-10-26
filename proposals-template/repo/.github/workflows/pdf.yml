@@ -1,0 +1,47 @@
+name: Render proposals to PDF
+
+on:
+  push:
+    branches: [main]
+    paths: ["[0-9][0-9][0-9]-*/README.md", "assets/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pdf
+  cancel-in-progress: true
+
+jobs:
+  pdf:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Render each proposal README (accordions opened for print)
+        run: |
+          mkdir -p pdf
+          for f in [0-9][0-9][0-9]-*/README.md; do
+            name="$(dirname "$f")"
+            sed -e 's/<details>/<details open>/g' \
+                -e 's/^> \[!TIP\]/> **Tip**/' -e 's/^> \[!NOTE\]/> **Note**/' \
+                -e 's/^> \[!IMPORTANT\]/> **Important**/' -e 's/^> \[!WARNING\]/> **Warning**/' \
+                "$f" > "$name/_print.md"
+            npx -y md-to-pdf@5 "$name/_print.md" \
+              --basedir . \
+              --css 'img{display:inline-block !important;vertical-align:-3px;margin:0 3px} h2 img{vertical-align:-5px} details>summary{font-weight:600} img[src*=screenshots]{display:block !important;max-width:100% !important;height:auto !important;margin:6px 0 !important;vertical-align:top} table:has(img[src*=screenshots]){table-layout:fixed;width:100%} table:has(img[src*=screenshots]) td{vertical-align:top}' \
+              --launch-options '{"args":["--no-sandbox"]}' \
+              --pdf-options '{"format":"Letter","margin":{"top":"18mm","bottom":"18mm","left":"16mm","right":"16mm"},"printBackground":true}'
+            mv "$name/_print.pdf" "pdf/$name.pdf"
+            rm "$name/_print.md"
+          done
+      - name: Commit PDFs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pdf
+          git diff --cached --quiet || git commit -m "📄 Render proposal PDFs"
+          git push

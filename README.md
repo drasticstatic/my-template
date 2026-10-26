@@ -72,6 +72,9 @@ Don't skip this — it's the step that gets missed most often (see `anthropas-ar
 | `scripts/init-graphify.sh` | Deploy `.graphifyignore` + install the Claude Code hook (keyless graphify setup) |
 | `branch-protection/ruleset.json` | GitHub branch protection ruleset — prevents force-push and deletion on `main` |
 | `changelog-template/` | Astro content-collection scaffold for a public, browsable changelog site — private source, `dist/`-only public pair via the standard sync workflow |
+| `proposals-template/` | A ready-to-copy private `proposals` repo: plain-language proposals (TL;DR, itinerary, questions, decisions log) rendered to PDF on every push |
+| `walkthroughs/` | Plain-language guides for people and their AI helpers: joining an org, connecting tools, keeping an org healthy |
+| `org-onboarding/` | The onboarding kit every organization's `.github` carries: ONBOARDING.md, an AGENTS.md template, the advisory credit hook |
 
 ---
 
