@@ -58,10 +58,14 @@
 **Turn it on** with two keys in `org.js`. Without them the kit is exactly 1.4: English only, no new step.
 
 ```js
-languages: { list: [{ id: "en", name: "English" }, { id: "es", name: "Español" }], start: "browser" },
+languages: { list: [{ id: "en", name: "English" }, { id: "es", name: "Español" }], start: "en" },
 i18n: { es: { reviewed: false, text: { "Get involved": "Participa" }, words: { enter: "Entrar" } } },
 ```
 
+- **Which language comes first.** `start: "en"` (or any listed id) opens every visitor in that
+  language, with the others one tap away in the welcome's first row. `start: "browser"` follows the
+  visitor's browser instead. The family's sites are English first (`start: "en"`); a site whose people
+  mostly speak another language starts in it.
 - **The kit's own words** (the welcome, drawer, guide, search, giving and pledge) come from
   `arrival/i18n/es.js`. It loads only for a visitor who chooses Spanish. `node arrival/verify-i18n.mjs`
   checks that a pack carries every word.

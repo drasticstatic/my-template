@@ -311,7 +311,7 @@
     // kit is exactly v1.4: English only, no new step.
     //   languages: {
     //     list: [{ id: "en", name: "English" }, { id: "es", name: "Español" }],
-    //     start: "browser",       // or "en" / "es": the language before the visitor chooses
+    //     start: "en",            // the language before the visitor chooses ("browser" follows theirs)
     //     // base: "en",          // the language this file is written in (default: en)
     //     // route: function (lang, path) { return lang === "es" ? "/es" + path : path.replace(/^\/es/, ""); },
     //     //                      // only for a site with real translated pages; adds hreflang too

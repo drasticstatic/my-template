@@ -118,7 +118,8 @@
  *   The language step     the splash opens with "Your language · Tu idioma": one door per language,
  *                         each written in its own language. Choosing one redraws the splash in it at
  *                         once. The drawer has the same row, so it can change any time. Stored with
- *                         the other choices (`lang`); <html lang> and data-lang follow it.
+ *                         the other choices (`lang`); data-lang on <html> follows it, while <html lang>
+ *                         keeps describing the page's own words (the kit's parts carry their own lang).
  *   The kit's own words   every string the kit draws is in WORDS below. A language pack beside this
  *                         file (i18n/es.js) translates them all, and the give and pledge modules too.
  *                         It loads only when the language isn't the base one. reviewed: false shows
