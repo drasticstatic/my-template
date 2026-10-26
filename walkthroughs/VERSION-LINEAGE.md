@@ -145,6 +145,30 @@ The page's metadata adds `<link rel="canonical" href={NEXT_PUBLIC_CANONICAL_URL}
 > fallback is empty anyway.) **Verify a live build by fetching a real asset:** take a CSS path from the
 > page's HTML and request it, rather than checking only that the page itself returns 200.
 
+## 👯 Twins: keeping the copies in step after a move
+
+Once a site has copies in two places (a new home and the lab it came from), a fix in one may belong in
+the other. Write down what each copy receives, in the workshop's `AGENTS.md`:
+
+| Copy | Receives |
+|---|---|
+| **The new home's workshop** | Everything. It's the source of truth |
+| **The lab's Genesis lane** | Shared features (the lineage note and time machine, welcomes, trails) and security or dependency fixes. Not day-to-day content: it stays "Genesis day" |
+| **The earlier version** | Security or dependency fixes and forward lineage links only. Its words stay as they were |
+
+**The chore:**
+- Add a **Twin check** box to the pull request template.
+- Run a read-only script that lists, per site, the files that differ between the workshop and the
+  Genesis lane, plus the `npm audit` count of every copy and each repo's open Dependabot alerts.
+  The Holy Earth Foundation's is `twin-check.sh`.
+- Mirror **file for file**, only after confirming the twin's file still matches the last mirrored
+  version.
+- Bring the earlier versions' Dependabot pull requests together into one tested pull request
+  (build with the publisher's own settings, then check canonicals and styles), and close major tooling
+  jumps on a frozen copy.
+- Point weekly version updates at `preview` (`target-branch`) so they rehearse first. Security fixes
+  always open against `main`: retarget them to `preview` before merging.
+
 ## 🧩 Using it elsewhere
 
 - **Next.js sites:** copy `lineage.ts`, `LineageModal.tsx` and `lineage.css` from I Am One Self, mount the
