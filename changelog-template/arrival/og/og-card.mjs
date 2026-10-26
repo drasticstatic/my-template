@@ -42,7 +42,10 @@ export const THEME_EXAMPLE = {
   },
 };
 
-const h = (type, style, children) => ({ type, props: { style, children } });
+// Every box is border-box: satori 0.18 laid boxes out that way, but satori 0.63 follows CSS
+// (content-box), so a box with a set width or height plus padding or a border overflowed and the
+// card's frame and footer were cut off. This default draws the same card on both versions.
+const h = (type, style, children) => ({ type, props: { style: { boxSizing: "border-box", ...style }, children } });
 const clip = (s, n) => (s && s.length > n ? s.slice(0, n - 1).replace(/[\s,.;:]+\S*$/, "") + "…" : s || "");
 
 function glyph(theme, lit, size) {
