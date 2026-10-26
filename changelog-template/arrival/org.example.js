@@ -304,6 +304,34 @@
     // Waiting on ORG's own words, so it stays off here:
     //   pledge: { text: "…", href: ROOT + "/pledge/" },
 
+    // ── kit 1.5 (2026-10-26): languages ─────────────────────────────────────────────────────────
+    // Two or more languages turn on the welcome's first step, "Your language · Tu idioma": a door per
+    // language, each written in its own words. The kit's own words come from arrival/i18n/<id>.js
+    // (Spanish ships with the kit), loaded only for a visitor who chooses it. Without this key the
+    // kit is exactly v1.4: English only, no new step.
+    //   languages: {
+    //     list: [{ id: "en", name: "English" }, { id: "es", name: "Español" }],
+    //     start: "browser",       // or "en" / "es": the language before the visitor chooses
+    //     // base: "en",          // the language this file is written in (default: en)
+    //     // route: function (lang, path) { return lang === "es" ? "/es" + path : path.replace(/^\/es/, ""); },
+    //     //                      // only for a site with real translated pages; adds hreflang too
+    //     // contentNote: false,  // hides the honest "this page's words are in English for now" line
+    //   },
+    // ORG's own words in Spanish. `text` swaps any English string from this file (an exact match);
+    // `modes` and `motions` rename by id; `words` re-voices the kit (it wins over the kit's pack);
+    // `config` is merged over this file for that language. reviewed: true once someone who speaks
+    // Spanish as their own language has read the kit's pack and these words.
+    //   i18n: {
+    //     es: {
+    //       reviewed: false,
+    //       words: { enter: "Entrar a ORG" },
+    //       text: { "Where science and spirituality meet.": "Donde la ciencia y la espiritualidad se encuentran.", "Porch": "Pórtico" },
+    //       modes: { night: { name: "Santuario nocturno", note: "…" }, prism: { name: "Luz de prisma" } },
+    //       motions: { still: { name: "Quieto" }, gentle: { name: "Suave" }, vivid: { name: "Vívido" } },
+    //     },
+    //   },
+    // Waiting on ORG's choice of languages (and a Spanish read), so it stays off here.
+
     record: {
       intro: "ORG's AstroLog has two halves.",
       share:

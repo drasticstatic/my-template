@@ -1,4 +1,4 @@
-/*! Arrival kit v1.4 · give with crypto · https://github.com/drasticstatic/my-template (changelog-template/arrival/give)
+/*! Arrival kit v1.5 · give with crypto · https://github.com/drasticstatic/my-template (changelog-template/arrival/give)
  *
  * The same file in every org, beside arrival.js (served as /arrival/give/give.js). Tailor it through
  * org.js (window.ARRIVAL.give), never by editing this file:
@@ -68,12 +68,14 @@ const COINS = {
 };
 
 const doc = document;
-const C = window.ARRIVAL || {};
+// v1.5: the config in the visitor's language (the kit keeps it current), else org.js as written.
+const C = (window.Arrival && window.Arrival.config) || window.ARRIVAL || {};
 const G = C.give || {};
 const ORG = C.org || {};
 const WHO = ORG.short || ORG.name || "us";
 const KIT = window.Arrival || {};
 
+/* WORDS:begin */
 const W = Object.assign(
   {
     connect: "Connect a wallet",
@@ -83,6 +85,7 @@ const W = Object.assign(
     opening: "Opening the wallet window…",
     asking: "Asking the wallet in your browser…",
     connectedLive: "Connected{wallet}.",
+    toWallet: " to {wallet}",
     disconnected: "Disconnected.",
     connected: "Connected",
     disconnect: "Disconnect",
@@ -150,7 +153,9 @@ const W = Object.assign(
     learnEyebrow: "Give with crypto",
     close: "Close",
   },
-  G.words || {}
+  /* WORDS:end */
+  // v1.5: the org's words, then (in another language) the kit's pack and the org's translation.
+  KIT.words ? KIT.words("give", G.words) : G.words || {}
 );
 
 /* ── helpers ─────────────────────────────────────────────────────────────────────────────── */
@@ -410,7 +415,7 @@ function onAccount(a) {
     if (cid != null) S.chainId = Number(cid);
     if (fresh) {
       render();
-      live(fill(W.connectedLive, { wallet: S.wallet ? " to " + S.wallet : "" }));
+      live(fill(W.connectedLive, { wallet: S.wallet ? fill(W.toWallet, { wallet: S.wallet }) : "" }));
       notify();
     }
   } else if (S.via === "appkit" && S.account) {
@@ -497,7 +502,7 @@ async function connectInjected(kind) {
     await connectBrowser();
     S.note = kind === "load" ? W.injectedLoad : W.injectedOrigin;
     render();
-    live(fill(W.connectedLive, { wallet: " to " + S.wallet }));
+    live(fill(W.connectedLive, { wallet: fill(W.toWallet, { wallet: S.wallet }) }));
   } catch (err) {
     S.state = kind;
     render();

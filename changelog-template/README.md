@@ -13,7 +13,7 @@
 - Octagon Religious Research Group
 - Psanctuary and Psanctuary Church
 
-**Kit version:** 1.4.0.
+**Kit version:** 1.5.0.
 
 ---
 
@@ -22,6 +22,7 @@
 | | What a visitor finds | Where it comes from |
 |---|---|---|
 | 🌗 | **"Choose how you arrive":** a first-visit welcome to pick light, motion and contrast. It respects the OS's own reduced-motion and contrast wishes | `arrival/arrival.js` |
+| 🗣️ | **"Your language · Tu idioma":** with two or more languages, the welcome opens with a door per language, each in its own words. The kit speaks Spanish out of the box, and says honestly which words aren't translated yet | `arrival/i18n/` |
 | 🧭 | **A welcome guide:** what the site is, how to search, who made the changes, where the community talks | `arrival/arrival.js` |
 | 🔎 | **Press `/` to search** everything, across the portal and its AstroLog | `search.json` from each site |
 | 🧑‍🤝‍🧑 | **Real faces:** contributor avatars, and personal emails are never hashed into a page | `<arrival-avatar>` |
@@ -52,11 +53,38 @@
 | [`arrival/docs/`](arrival/docs/) | Roadmap and sustainability page templates |
 | `content.config.ts`, `index.astro`, `[slug].astro` | The content-collection pattern: markdown in, pages out |
 
+## 🗣️ Languages (kit 1.5)
+
+**Turn it on** with two keys in `org.js`. Without them the kit is exactly 1.4: English only, no new step.
+
+```js
+languages: { list: [{ id: "en", name: "English" }, { id: "es", name: "Español" }], start: "browser" },
+i18n: { es: { reviewed: false, text: { "Get involved": "Participa" }, words: { enter: "Entrar" } } },
+```
+
+- **The kit's own words** (the welcome, drawer, guide, search, giving and pledge) come from
+  `arrival/i18n/es.js`. It loads only for a visitor who chooses Spanish. `node arrival/verify-i18n.mjs`
+  checks that a pack carries every word.
+- **An org's own words** go in `i18n.<lang>`: `text` swaps any string from `org.js` by exact match;
+  `modes` and `motions` rename by id; `config` merges over `org.js`.
+- **Three honest tiers for page content:**
+  1. A site with real translated pages gives `languages.route`. The kit takes visitors to the twin
+     page and adds `hreflang`.
+  2. Otherwise the page keeps its words. One quiet line says so ("Menús en español; las palabras de
+     esta página siguen en inglés por ahora") in the welcome and the drawer, once per visit as a note,
+     and wherever a page puts `<arrival-langnote>`. No machine-translation widget.
+  3. Names and marks carry `translate="no"`.
+- **Reviewed, not assumed.** A pack ships with `reviewed: false`, and the kit shows a small "Traducción en
+  revisión" until the org's own people read it and set `reviewed: true`.
+- `<html lang>` keeps describing the page's own words. The kit's menus and dialogs carry their own
+  `lang`, so a screen reader voices each part in its own language. `data-lang` on `<html>` holds the
+  choice.
+
 ## 🐇 Down the rabbit hole
 
 Curious how all of this came to be? Every wave, every gotcha, every porting checklist and every decision is
 kept word for word in **[docs/JOURNEY.md](docs/JOURNEY.md)**: from the first two AstroLogs (2026-09-23) to
-the splash, the language pickers and the giving pages that grew from them.
+the splash, the giving pages and the languages that grew from them.
 
 Sites built with the kit can point their developers here with a quiet **"How this site was made"** link,
 as I Am One Self does in its footer Navigator.

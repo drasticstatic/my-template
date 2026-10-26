@@ -915,6 +915,139 @@ html.arr-locked {
   gap: 0.65rem 1rem;
 }
 
+/* ── v1.5 · languages: the doors, the drawer row, the chip and the honest notes ─────────── */
+.arr-field-lang > legend .ph {
+  margin-right: 0.4rem;
+  font-size: 0.95rem;
+  vertical-align: -0.15em;
+  color: var(--accent);
+}
+.arr-lang-dot {
+  opacity: 0.6;
+}
+.arr-langs {
+  display: grid;
+  /* side by side where there's room; one door per row on a phone, so each welcome stays on one line */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: 0.6rem;
+}
+.arr-lang {
+  position: relative;
+  display: block;
+  cursor: pointer;
+}
+.arr-lang .arr-frame {
+  height: 100%;
+  transition: background 0.25s ease;
+}
+.arr-lang .arr-in {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.05rem 0.75rem;
+  min-height: 100%;
+  box-sizing: border-box;
+  padding: 0.7rem 2.4rem 0.75rem 0.85rem;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body);
+}
+/* The door: closed while it's only one of the choices, open once it's yours. */
+.arr-lang-door {
+  grid-row: span 2;
+  display: grid;
+  place-items: center;
+  width: 2.3rem;
+  height: 2.3rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+  font-size: 1.25rem;
+}
+.arr-lang-door .ph-door-open,
+.arr-lang:has(:checked) .arr-lang-door .ph-door {
+  display: none;
+}
+.arr-lang:has(:checked) .arr-lang-door .ph-door-open {
+  display: inline-block;
+}
+.arr-lang-name {
+  font-family: var(--font-heading);
+  font-variation-settings: var(--heading-settings);
+  font-size: 1.2rem;
+  line-height: 1.2;
+  color: var(--heading);
+}
+.arr-lang-hello {
+  font-size: 0.8rem;
+  line-height: 1.35;
+  color: var(--muted);
+}
+.arr-lang:hover .arr-frame {
+  background: color-mix(in srgb, var(--accent) 50%, var(--border));
+}
+.arr-lang:has(:checked) .arr-frame {
+  background: var(--accent);
+}
+.arr-lang:has(:checked) .arr-card-check {
+  opacity: 1;
+  transform: none;
+}
+.arr-lang:has(:checked) .arr-lang-door {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.arr-lang:has(:focus-visible) .arr-in {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+.arr-lang-note,
+.arr-lang-review {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  min-height: 0;
+}
+.arr-lang-note[hidden] {
+  display: none;
+}
+.arr-lang-note .ph,
+.arr-lang-review .ph {
+  flex: none;
+  margin-top: 0.15em;
+  color: var(--accent);
+}
+.arr-lang-review {
+  font-size: 0.78rem;
+}
+.arr-lang-chip .arr-lang-code {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+/* <arrival-langnote>: the same honest line, wherever a page puts it */
+arrival-langnote {
+  display: block;
+}
+arrival-langnote[hidden] {
+  display: none;
+}
+.arr-langnote {
+  --arr-cut: 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0.55rem 0.8rem;
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  color: var(--foreground);
+  font: 0.86rem/1.45 var(--font-body);
+}
+.arr-langnote .ph {
+  flex: none;
+  margin-top: 0.15em;
+  color: var(--accent);
+}
+
 /* ── the welcome guide ────────────────────────────────────────────────────────────────── */
 .arr-guide .arr-lift {
   max-width: 58rem;

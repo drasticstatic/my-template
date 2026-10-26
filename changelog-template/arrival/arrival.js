@@ -102,13 +102,44 @@
  *                         wallet layer. A "verify a signature" tool checks any pledge in the browser.
  *   donate.tax            a calm "Receipts and taxes" section on the donate page that claims nothing
  *                         the org's own config doesn't say.
+ *
+ * Wave 9 (v1.5, 2026-10-26), languages; additive, so a v1.4 org.js keeps working exactly as before
+ * (English only, no new step, <html lang> left alone). Nothing changes until org.js lists two or
+ * more languages:
+ *   ARRIVAL.languages     { list: [{ id: "en", name: "English" }, { id: "es", name: "Español" }],
+ *                         base?: "en" (the language org.js is written in), start?: "browser" | an id
+ *                         (the default before the visitor chooses), route?: fn(lang, path) → href
+ *                         (for a site with real translated pages), contentNote?: true, packs?: { es: url } }
+ *   ARRIVAL.i18n          { es: { reviewed?, words?, pledge?, give?, modes?, motions?, sizes?, text?,
+ *                         config? } }: the org's own words in each language. `text` maps any English
+ *                         string in org.js to its translation (matched exactly); `config` is merged
+ *                         over org.js for that language (arrays replace); words/pledge/give re-voice
+ *                         the kit and its modules; modes/motions/sizes rename by id.
+ *   The language step     the splash opens with "Your language · Tu idioma": one door per language,
+ *                         each written in its own language. Choosing one redraws the splash in it at
+ *                         once. The drawer has the same row, so it can change any time. Stored with
+ *                         the other choices (`lang`); <html lang> and data-lang follow it.
+ *   The kit's own words   every string the kit draws is in WORDS below. A language pack beside this
+ *                         file (i18n/es.js) translates them all, and the give and pledge modules too.
+ *                         It loads only when the language isn't the base one. reviewed: false shows
+ *                         a small "Translation in review" until the org's own i18n says reviewed: true.
+ *   Honest content        a page without a translated twin keeps its own words, and the visitor is
+ *                         told so in one quiet line (no machine-translation widget): in the splash,
+ *                         the drawer, once per visit as a toast, and wherever <arrival-langnote> sits.
+ *                         Names and marks carry translate="no".
+ *   Dates                 every date follows the chosen language (Intl), not a fixed "en-US".
+ *   A lineage note        if one is waiting (<html data-lineage-pending>, or an open
+ *                         dialog[data-lineage]), the splash waits for its "lineage:ack" event.
+ *   window.Arrival.lang() / .lang(id) / .words(section, orgWords) for modules and pages.
  */
 (function () {
   "use strict";
   if (window.Arrival) return;
 
-  var VERSION = "1.4.0";
-  var C = window.ARRIVAL || {};
+  var VERSION = "1.5.0";
+  // C0 is org.js as written; C is the same config in the visitor's language (v1.5: localize()).
+  var C0 = window.ARRIVAL || {};
+  var C = C0;
   var doc = document;
   // Where this file was loaded from, so modules beside it (give/give.js) load from the same place,
   // on the portal and on any other origin that loads the kit by full URL.
@@ -118,105 +149,266 @@
   var site = assign({}, (C.sites || {})[siteId] || {}, window.ARRIVAL_SITE || {});
   var org = C.org || {};
 
-  var W = assign(
-    {
-      arrive: "Choose how you arrive",
-      intro:
-        "Pick a light, how much movement you'd like, and how much contrast. Change any of it later from the light and motion controls in the header.",
-      enter: "Enter",
-      tour: "Take the tour",
-      saved: "Saved in this browser only.",
-      light: "Light",
-      motion: "Motion",
-      contrast: "Contrast",
-      moreContrast: "More contrast",
-      contrastNote: "Stronger text and edges, and a quieter background behind the words.",
-      pause: "Pause the motion",
-      play: "Let it move",
-      search: "Search",
-      searchPlaceholder: "Search changes, write-ups, people and pages",
-      searchTip: "Anywhere, any time: every change, write-up, person and page.",
-      drawer: "Light & motion",
-      guide: "Welcome guide",
-      openGuide: "Open the welcome guide",
-      searchAll: "Search everything",
-      reduced: "Your device asks for less motion, so Still is selected. You can still choose more.",
-      moreAsked: "Your device asks for more contrast, so it's switched on.",
-      nothing: "Nothing matches yet. Try a month, a name, or the word light.",
-      followNow: "Right now",
-      copied: "Link copied. It shares with its own preview card.",
-      cursor: "Cursor effects",
-      cursorNote: "A trail of light behind your pointer, and ink that stirs as you move. Off for anyone who'd rather not.",
-      cursorOn: "Turn cursor effects off",
-      cursorOff: "Turn cursor effects on",
-      reading: "Reading mode",
-      readingNote: "One tap for the calmest page: the {light} light, nothing moving, more contrast, and no cursor effects. Tap again to go back to how you had it.",
-      readingOn: "Leave reading mode",
-      readingOff: "Reading mode",
-      readEnter: "Just let me read",
-      newSince: "New since your last visit",
-      newBadge: "new",
-      newTag: "New",
-      newsGuide: "Coming back? A bright count in the header shows what's new since your last visit, and new things are marked where they appear. Opening it clears it.",
-      newsTip: "{n} new since your last visit. Take a look",
-      ledger: "The ledger",
-      // v1.2
-      menu: "Menu",
-      menuClose: "Close",
-      more: "More",
-      menuMain: "Pages",
-      nav: "Site",
-      footer: "More ways around",
-      textSize: "Text size",
-      measure: "Comfortable line length",
-      measureNote: "Shorter lines of text, with a little more room between them.",
-      contact: "Reach out",
-      contactIntro: "Every way to reach the people behind these pages. Pick whichever suits you.",
-      community: "Where we gather",
-      communityIntro: "Every place the community talks. Each one has a public link anyone can open, and a way to sign up.",
-      publicLink: "Public link",
-      joinLink: "Sign up",
-      soon: "Coming soon",
-      sneak: "Sneak peek",
-      close: "Close",
-      copyAddress: "Copy address",
-      addressCopied: "Address copied.",
-      writeEmail: "Write an email",
-      openLink: "Open",
-      youAreHere: "You are here",
-      mapLoading: "Drawing the map…",
-      // v1.4
-      donate: "Donate",
-      donateNote: "Ways to give",
-      guideNote: "A short tour of these pages",
-      involved: "Get involved",
-      scrollLeft: "Show earlier links",
-      scrollRight: "Show more links",
-    },
-    C.words || {}
-  );
+  // The kit's own words, in English. Every string the kit draws is here, so an org can re-voice any
+  // of it (ARRIVAL.words) and a language pack (i18n/<lang>.js) can translate all of it. A {name} is
+  // filled in when it's drawn. Keys ending in Html may hold simple markup; the rest are plain text.
+  // verify-i18n.mjs reads this table between the WORDS markers, so keep it a plain object literal.
+  /* WORDS:begin */
+  var WORDS = {
+    arrive: "Choose how you arrive",
+    intro:
+      "Pick a light, how much movement you'd like, and how much contrast. Change any of it later from the light and motion controls in the header.",
+    enter: "Enter",
+    tour: "Take the tour",
+    saved: "Saved in this browser only.",
+    light: "Light",
+    motion: "Motion",
+    contrast: "Contrast",
+    moreContrast: "More contrast",
+    contrastNote: "Stronger text and edges, and a quieter background behind the words.",
+    pause: "Pause the motion",
+    play: "Let it move",
+    search: "Search",
+    searchPlaceholder: "Search changes, write-ups, people and pages",
+    searchTip: "Anywhere, any time: every change, write-up, person and page.",
+    drawer: "Light & motion",
+    guide: "Welcome guide",
+    openGuide: "Open the welcome guide",
+    searchAll: "Search everything",
+    reduced: "Your device asks for less motion, so Still is selected. You can still choose more.",
+    moreAsked: "Your device asks for more contrast, so it's switched on.",
+    nothing: "Nothing matches yet. Try a month, a name, or the word light.",
+    followNow: "Right now",
+    copied: "Link copied. It shares with its own preview card.",
+    cursor: "Cursor effects",
+    cursorNote: "A trail of light behind your pointer, and ink that stirs as you move. Off for anyone who'd rather not.",
+    cursorOn: "Turn cursor effects off",
+    cursorOff: "Turn cursor effects on",
+    reading: "Reading mode",
+    readingNote: "One tap for the calmest page: the {light} light, nothing moving, more contrast, and no cursor effects. Tap again to go back to how you had it.",
+    readingOn: "Leave reading mode",
+    readingOff: "Reading mode",
+    readEnter: "Just let me read",
+    newSince: "New since your last visit",
+    newBadge: "new",
+    newTag: "New",
+    newsGuide: "Coming back? A bright count in the header shows what's new since your last visit, and new things are marked where they appear. Opening it clears it.",
+    newsTip: "{n} new since your last visit. Take a look",
+    ledger: "The ledger",
+    // v1.2
+    menu: "Menu",
+    menuClose: "Close",
+    more: "More",
+    menuMain: "Pages",
+    nav: "Site",
+    footer: "More ways around",
+    textSize: "Text size",
+    measure: "Comfortable line length",
+    measureNote: "Shorter lines of text, with a little more room between them.",
+    contact: "Reach out",
+    contactIntro: "Every way to reach the people behind these pages. Pick whichever suits you.",
+    community: "Where we gather",
+    communityIntro: "Every place the community talks. Each one has a public link anyone can open, and a way to sign up.",
+    publicLink: "Public link",
+    joinLink: "Sign up",
+    soon: "Coming soon",
+    sneak: "Sneak peek",
+    close: "Close",
+    copyAddress: "Copy address",
+    addressCopied: "Address copied.",
+    writeEmail: "Write an email",
+    openLink: "Open",
+    youAreHere: "You are here",
+    mapLoading: "Drawing the map…",
+    // v1.4
+    donate: "Donate",
+    donateNote: "Ways to give",
+    guideNote: "A short tour of these pages",
+    involved: "Get involved",
+    scrollLeft: "Show earlier links",
+    scrollRight: "Show more links",
+    // v1.5: languages
+    language: "Language",
+    languageAction: "Language: {name}",
+    contentNote: "Menus in {lang}; this page's words are still in {base} for now.",
+    inReview: "Translation in review",
+    reviewNote: "Translated with care. The people of this organization haven't checked it yet.",
+    // v1.5: the rest of the kit's words, moved here from where they're drawn
+    searchPress: "Press / to search.",
+    searchTry: "Try it now: press {key}.",
+    searchPhone: "On a phone, tap the magnifier in the header.",
+    searchAria: "{search} (press /)",
+    restingStill: " (resting while motion is still)",
+    placeholderTag: "Placeholder.",
+    welcomeTitle: "Welcome to {site}",
+    theSite: "the site",
+    recordTitle: "Changelog and library",
+    changelogName: "The changelog",
+    changelogText: "What changed, when, and who did it. Short dated entries, newest first, each with a one-line summary and the full story folded underneath.",
+    changelogLink: "Read the changelog",
+    libraryName: "The library",
+    libraryText: "How things work. Longer write-ups that stay true over time, rather than news of one change.",
+    libraryLink: "Open the library",
+    ledgerText: "Every public change to the code, in plain words, grouped by day and by kind, each one linked to the change itself. For anyone who'd rather not open GitHub.",
+    ledgerLink: "Open the ledger",
+    searchTitle: "Press / to search",
+    searchHowHtml: "Press <kbd>/</kbd> on any page, or <kbd>Ctrl</kbd> <kbd>K</kbd> (<kbd>⌘</kbd> <kbd>K</kbd> on a Mac). On a phone, tap the magnifier in the header. Like Discord's quick switcher: start typing and jump.",
+    searchEntries: "Every changelog entry, by title, month, area, or who made it.",
+    searchWriteups: "Every library write-up.",
+    searchPages: "Pages and links, like {home}{community}.",
+    searchPagesCommunity: " or the {name} group",
+    mainSite: "the main site",
+    searchActionsHtml: "Actions: type <em>light</em>, <em>still</em> or <em>contrast</em> to change how the page looks.",
+    tryNow: "Try it now",
+    lightTitle: "Pick a light",
+    motionTitle: "Motion and contrast",
+    motionFine: "In the header, the pause button switches motion off and on in one click, the pointer button does the same for cursor effects{reading}.",
+    motionFineReading: ", and the book button is reading mode",
+    peopleTitle: "Who made the changes",
+    peopleText: "Every entry credits whoever did the work.",
+    peopleFine: "Pictures come from public GitHub profiles. Anyone without one gets their initials instead.",
+    communityTitle: "Where the community talks",
+    communityNone: "This org hasn't named its community space here yet.",
+    bespokeTitle: "A network of our own",
+    seeEveryWay: "See every way in",
+    openNamed: "Open {name}",
+    communityMissing: "The {name} link still needs to be added.",
+    homeTitle: "The main site",
+    visitNamed: "Visit {name}",
+    stepOf: "{n} of {total}",
+    done: "Done",
+    next: "Next",
+    back: "Back",
+    arrowsMove: "{keys} to move",
+    guideFinale: "You've lit every wedge. Welcome in.",
+    guideAgain: "You can open this guide again any time from the light and motion drawer, or by pressing ?",
+    closeGuide: "Close the guide",
+    guideSteps: "Guide steps",
+    onOrOff: "{what}: on or off",
+    readingBack: "{what}: off, back to how I had it",
+    readingOnAct: "{what}: on",
+    larger: "{what}: larger",
+    smaller: "{what}: smaller",
+    contactAct: "{what}: every way to reach us",
+    communityAct: "{what}: the community",
+    pledgeAct: "{what}: sign it with a wallet",
+    copyLink: "Copy a link to this page",
+    kwMotion: "pause animation",
+    kwContrast: "accessibility readable",
+    kwCursor: "trail pointer mouse sparkle effects",
+    kwReading: "calm read quiet focus still contrast accessibility dyslexia simple plain",
+    kwLarger: "bigger zoom font size read accessibility",
+    kwSmaller: "zoom font size read",
+    kwMeasure: "line width measure narrow column read accessibility",
+    kwContact: "contact email form message question help reach out",
+    kwCommunity: "community chat talk join sign up members discord telegram mighty",
+    kwGuide: "help onboarding tour welcome how",
+    kwPledge: "pledge support sign signature wallet verify check",
+    kwCopy: "share url card preview telegram",
+    kwLanguage: "language translate",
+    closeSearch: "Close search",
+    results: "Results",
+    keyMove: "move",
+    keyOpen: "open",
+    keyClose: "close",
+    keyGuide: "guide",
+    jumpTo: "Jump to",
+    latestChanges: "Latest changes",
+    tryGroup: "Try",
+    loadingIndex: "Loading the index…",
+    resultOne: "{n} result",
+    resultMany: "{n} results",
+    gatheringPeople: "Gathering who made the changes…",
+    entryOne: "{n} entry",
+    entryMany: "{n} entries",
+    byWho: "by {who}",
+    platformBespoke: "Our own network",
+    platformForum: "Forum",
+    platformEmail: "Email list",
+    communityEyebrow: "Community",
+    notSetUp: "This way in isn't set up yet.",
+    kindGift: "Gift",
+    kindSponsor: "Sponsor",
+    kindTime: "Time and skills",
+    kindInKind: "In kind",
+    kindFounding: "Founding",
+    sepolia: "Sepolia (a test network)",
+    us: "us",
+    treasurySoon: "Treasury address coming soon",
+    onNets: "On {nets}",
+    addressLabel: "{coin} address {address}",
+    sendWithWallet: "Send with your wallet",
+    copy: "Copy",
+    showQr: "Show QR code",
+    openWalletApp: "Open in a wallet app",
+    giveText: "Copy an address or scan its QR code with your wallet app, or connect a wallet and send from this page. Your wallet shows you exactly what you're approving before anything moves.",
+    givePreviewText: "One button connects a browser wallet, a phone wallet (by QR code) or an email sign-in. No treasury address is published yet, so for now connecting is a preview of how giving will work: nothing can be sent.",
+    giveSafety: "Send only to an address on this page, and check its first and last characters in your wallet before you approve. No one from {who} will ever ask for your recovery phrase.",
+    givePreviewSafety: "No wallet address is published here yet. If you see one anywhere claiming to be ours, please check with us first. No one from {who} will ever ask for your recovery phrase.",
+    giveTitle: "Give with crypto",
+    previewTag: "Preview",
+    connectWallet: "Connect a wallet",
+    newToWallets: "New to wallets?",
+    walletLoadFailed: "The wallet part of this page didn't load. Check your connection, then try again.",
+    waysToGive: "Ways to give",
+    give: "Give",
+    giveNotSetUp: "This way to give isn't set up yet.",
+    pleaseNote: "Please note",
+    placeholderBadge: "Placeholder",
+    contribTitle: "Contribution ledger",
+    gatheringNames: "Gathering the names…",
+    cryptoSoonText: "A way to give with a crypto wallet is on its way. It isn't open yet.",
+    cryptoSoonNote: "No wallet address is published here yet. If you see one anywhere claiming to be ours, please check with us first.",
+    contribEmpty: "No names here yet. People who'd like to be thanked by name are listed here, only with their permission. Giving without a name is just as welcome.",
+    sinceKind: " · since {month}",
+    since: "Since {month}",
+    updatedOn: "Updated {date}.",
+    reachOut: "reach out",
+    taxReceipts: "Ask us for a receipt: {reach} and say what you gave and when.",
+    taxMay: "{who} says gifts to it may be tax-deductible. How much, if at all, depends on your own situation.",
+    taxNot: "Gifts to {who} aren't tax-deductible.",
+    taxDepends: "Whether a gift is tax-deductible depends on the organization's status and your own situation.",
+    taxTitle: "Receipts and taxes",
+    taxReceiptsLabel: "Receipts",
+    taxStatusLabel: "Status",
+    taxDeductibleLabel: "Tax-deductible?",
+    taxAdvice: "This isn't tax advice. For your own situation, ask a tax professional.",
+    mapFailed: "The map couldn't be drawn just now. Try again in a moment, or use the links in the menu.",
+    notThisTime: "Not this time.",
+  };
+  /* WORDS:end */
+  var W = assign({}, WORDS, C.words || {});
 
-  var MODES = C.modes && C.modes.length ? C.modes : [
+  var KIT_MODES = [
     { id: "dark", name: "Dark", swatch: ["#111318", "#8ab4ff"], dark: true },
     { id: "light", name: "Light", swatch: ["#ffffff", "#2f5bd3"] },
   ];
-  var MOTIONS = C.motions && C.motions.length ? C.motions : [
+  var KIT_MOTIONS = [
     { id: "still", name: "Still", note: "Nothing moves." },
     { id: "gentle", name: "Gentle", note: "Slow, soft movement." },
   ];
-  var STILL = C.stillMotion || "still";
-  var hasContrast = C.contrast !== false;
-  var hasCursor = C.cursor !== false; // the cursor-effects switch (trail + anything a site keys on data-cursor)
-  var hasReading = C.reading !== false; // the one-tap reading-mode preset
-  var RD = C.reading && typeof C.reading === "object" ? C.reading : {};
   // Reading, round 2 (v1.2): text size steps (a scale on the root font size, so every rem grows) and
   // a comfortable line length. Both are settings of their own, kept beside the reading switch.
-  var SIZES = RD.sizes && RD.sizes.length ? RD.sizes : [
+  var KIT_SIZES = [
     { id: "standard", name: "Standard", scale: 1 },
     { id: "large", name: "Large", scale: 1.125 },
     { id: "larger", name: "Larger", scale: 1.25 },
     { id: "largest", name: "Largest", scale: 1.4 },
   ];
+  var MODES, MOTIONS, SIZES, RD;
+  // The lights, motions and text sizes, named in the visitor's language (v1.5: lists() runs again
+  // whenever the language changes; the ids never change).
+  function lists() {
+    RD = C.reading && typeof C.reading === "object" ? C.reading : {};
+    MODES = named(C.modes && C.modes.length ? C.modes : KIT_MODES, "modes", !(C.modes && C.modes.length));
+    MOTIONS = named(C.motions && C.motions.length ? C.motions : KIT_MOTIONS, "motions", !(C.motions && C.motions.length));
+    SIZES = named(RD.sizes && RD.sizes.length ? RD.sizes : KIT_SIZES, "sizes", !(RD.sizes && RD.sizes.length));
+  }
+  lists();
+  var STILL = C.stillMotion || "still";
+  var hasContrast = C.contrast !== false;
+  var hasCursor = C.cursor !== false; // the cursor-effects switch (trail + anything a site keys on data-cursor)
+  var hasReading = C.reading !== false; // the one-tap reading-mode preset
   var hasMeasure = hasReading && RD.measure !== false;
 
   /* ── helpers ───────────────────────────────────────────────────────────────────────────── */
@@ -246,10 +438,19 @@
   function icon(name) {
     return '<i class="ph ph-' + esc(name) + '" aria-hidden="true"></i>';
   }
+  // A word with its {slots} filled in. fillH escapes the word first, then drops markup into it.
+  function fill(s, o) {
+    return String(s == null ? "" : s).replace(/\{(\w+)\}/g, function (m, k) {
+      return o && o[k] != null ? o[k] : m;
+    });
+  }
+  function fillH(s, o) {
+    return fill(esc(s), o);
+  }
   function fmtDate(d, long) {
     if (!d) return "";
     try {
-      return new Date(d + "T12:00:00Z").toLocaleDateString("en-US", { year: "numeric", month: long ? "long" : "short", day: "numeric", timeZone: "UTC" });
+      return new Date(d + "T12:00:00Z").toLocaleDateString(locale(), { year: "numeric", month: long ? "long" : "short", day: "numeric", timeZone: "UTC" });
     } catch (e) {
       return d;
     }
@@ -262,6 +463,164 @@
   function idle(fn) {
     if (window.requestIdleCallback) window.requestIdleCallback(fn, { timeout: 2500 });
     else setTimeout(fn, 1200);
+  }
+
+  /* ── v1.5 · languages ─────────────────────────────────────────────────────────────────────
+     Nothing here runs for an org.js without ARRIVAL.languages (two or more): `hasLangs` stays false,
+     the kit draws its English words and never touches lang attributes. With languages, the kit
+     draws in `lang` (the visitor's choice, once its words are ready), keeps org.js's content in
+     its own language unless ARRIVAL.i18n translates it, and says so honestly. */
+  // How each language asks "your language?" and says welcome, in its own words, and its locale.
+  var LANG_META = {
+    en: { ask: "Your language", hello: "Welcome", locale: "en-US" },
+    es: { ask: "Tu idioma", hello: "Te damos la bienvenida", locale: "es-419" },
+    pt: { ask: "Seu idioma", hello: "Boas-vindas", locale: "pt-BR" },
+    fr: { ask: "Votre langue", hello: "Bienvenue", locale: "fr-FR" },
+  };
+  // Language names in English (a pack carries its own: langNames).
+  var NAMES_EN = { en: "English", es: "Spanish", pt: "Portuguese", fr: "French" };
+  var LC = C0.languages && C0.languages.list && C0.languages.list.length > 1 ? C0.languages : null;
+  var LANGS = LC
+    ? LC.list.filter(function (l) { return l && l.id; }).map(function (l) { return assign({}, LANG_META[primary(l.id)] || {}, l); })
+    : [];
+  var hasLangs = LANGS.length > 1;
+  var BASE = hasLangs ? (byId(LANGS, LC.base) ? LC.base : byId(LANGS, "en") ? "en" : LANGS[0].id) : "en";
+  var I18N = C0.i18n || {};
+  var lang = BASE; // the language the kit is drawn in right now
+  var held = null; // while a pack loads at first paint, the kit's elements wait (briefly) to render
+
+  function primary(id) {
+    return String(id || "").toLowerCase().split(/[-_]/)[0];
+  }
+  function langOf(id) {
+    return byId(LANGS, id);
+  }
+  function startLang() {
+    var s = LC && LC.start;
+    if (s && s !== "browser" && langOf(s)) return s;
+    var asked = [];
+    try {
+      asked = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || ""];
+    } catch (e) {}
+    for (var i = 0; i < asked.length; i++) {
+      var a = String(asked[i] || "").toLowerCase();
+      for (var j = 0; j < LANGS.length; j++) if (LANGS[j].id.toLowerCase() === a) return LANGS[j].id;
+      for (j = 0; j < LANGS.length; j++) if (primary(LANGS[j].id) === primary(a)) return LANGS[j].id;
+    }
+    return BASE;
+  }
+  function locale() {
+    if (!hasLangs) return "en-US";
+    var m = langOf(lang);
+    return (m && m.locale) || lang;
+  }
+  function pack(l) {
+    var P = window.ARRIVAL_I18N;
+    return (P && (P[l] || P[primary(l)])) || null;
+  }
+  // One section of words for a language: the kit's pack, then the org's own on top.
+  function langSec(l, section) {
+    return assign({}, (pack(l) || {})[section] || {}, (I18N[l] || {})[section] || {});
+  }
+  function wordsFor(l) {
+    return l === BASE ? assign({}, WORDS, C0.words || {}) : assign({}, WORDS, C0.words || {}, langSec(l, "words"));
+  }
+  function named(list, kind, kitList) {
+    if (!hasLangs || lang === BASE) return list;
+    var o = assign({}, kitList ? (pack(lang) || {})[kind] || {} : {}, (I18N[lang] || {})[kind] || {});
+    return list.map(function (m) {
+      return o[m.id] ? assign({}, m, o[m.id]) : m;
+    });
+  }
+  // org.js in another language: every string that `text` names is swapped (an exact match), then
+  // `config` is merged over it. Functions, and the languages and i18n keys, are kept as they are.
+  function plain(o) {
+    if (!o || typeof o !== "object") return false;
+    var p = Object.getPrototypeOf(o);
+    return p === Object.prototype || p === null;
+  }
+  function own(o, k) {
+    return Object.prototype.hasOwnProperty.call(o, k);
+  }
+  function mapText(v, T, depth) {
+    if (typeof v === "string") return own(T, v) ? T[v] : v;
+    if (depth > 24) return v;
+    if (Array.isArray(v)) return v.map(function (x) { return mapText(x, T, depth + 1); });
+    if (!plain(v)) return v;
+    var o = {};
+    for (var k in v) if (own(v, k)) o[k] = depth === 0 && (k === "i18n" || k === "languages") ? v[k] : mapText(v[k], T, depth + 1);
+    return o;
+  }
+  function mergeIn(t, s) {
+    for (var k in s) {
+      if (!own(s, k)) continue;
+      if (plain(s[k]) && plain(t[k])) mergeIn(t[k], s[k]);
+      else t[k] = s[k];
+    }
+    return t;
+  }
+  function localize(l) {
+    if (!hasLangs || l === BASE) return C0;
+    var L = I18N[l] || {};
+    var out = mapText(C0, L.text || {}, 0);
+    if (plain(L.config)) mergeIn(out, L.config);
+    return out;
+  }
+  function langName(id) {
+    var names = lang === "en" ? NAMES_EN : (pack(lang) || {}).langNames || {};
+    return names[id] || (langOf(id) || {}).name || id;
+  }
+  // A translated twin of this page, when the org has them (languages.route).
+  function routeFor(l) {
+    if (!LC || typeof LC.route !== "function") return null;
+    try {
+      return LC.route(l, location.pathname) || null;
+    } catch (e) {
+      return null;
+    }
+  }
+  function noteWanted() {
+    return hasLangs && lang !== BASE && LC.contentNote !== false && !routeFor(lang);
+  }
+  function noteText() {
+    return fill(W.contentNote, { lang: langName(lang), base: langName(BASE) });
+  }
+  function inReview() {
+    if (!hasLangs || lang === BASE) return false;
+    var mine = I18N[lang] || {};
+    if (mine.reviewed === false) return true;
+    var p = pack(lang);
+    return !!(p && p.reviewed === false && mine.reviewed !== true);
+  }
+  // ' lang="es"' on the kit's own chrome, so a screen reader voices each part in its language, while
+  // <html lang> keeps describing the page's own words. Empty without languages (v1.4 markup).
+  function langAt() {
+    return hasLangs ? ' lang="' + esc(lang) + '"' : "";
+  }
+  function tagLang(el) {
+    if (hasLangs && el && el.setAttribute) el.setAttribute("lang", lang);
+  }
+  function noTr() {
+    return hasLangs ? ' translate="no"' : "";
+  }
+  var packP = {};
+  function loadPack(l) {
+    if (pack(l)) return Promise.resolve(pack(l));
+    var src = LC && LC.packs && LC.packs[l];
+    if (src === false || (!src && !KIT_BASE)) return Promise.resolve(null);
+    if (packP[l]) return packP[l];
+    packP[l] = new Promise(function (resolve) {
+      var s = doc.createElement("script");
+      s.src = src || KIT_BASE + "i18n/" + encodeURIComponent(primary(l)) + ".js?v=" + VERSION;
+      s.async = true;
+      s.onload = function () { resolve(pack(l)); };
+      s.onerror = function () {
+        packP[l] = null;
+        resolve(null);
+      };
+      (doc.head || root).appendChild(s);
+    });
+    return packP[l];
   }
 
   /* ── storage: every access guarded ─────────────────────────────────────────────────────── */
@@ -306,7 +665,7 @@
     return MOTIONS[0].id;
   }
   function defaults() {
-    return {
+    var d = {
       light: byId(MODES, C.defaultMode) ? C.defaultMode : MODES[0].id,
       motion: prefersLess && byId(MOTIONS, STILL) ? STILL : movingDefault(),
       contrast: hasContrast && prefersMore ? "more" : "standard",
@@ -316,6 +675,8 @@
       measure: "full",
       chosen: false,
     };
+    if (hasLangs) d.lang = startLang();
+    return d;
   }
 
   // Reading mode's light: ARRIVAL.reading.light, else the first mode marked calm: true, else the
@@ -368,6 +729,7 @@
     if (!s.before || typeof s.before !== "object") s.before = null;
     if (!byId(SIZES, s.text) || !hasReading) s.text = SIZES[0].id;
     if (s.measure !== "comfy" || !hasMeasure) s.measure = "full";
+    if (hasLangs && !langOf(s.lang)) s.lang = startLang();
     return s;
   }
 
@@ -399,6 +761,7 @@
     var sz = byId(SIZES, state.text) || SIZES[0];
     attr("data-text", sz.id);
     attr("data-measure", state.measure === "comfy" ? "comfy" : "full");
+    if (hasLangs) attr("data-lang", state.lang);
     try {
       root.style.setProperty("--arr-text-scale", String(+sz.scale || 1));
     } catch (e) {}
@@ -418,7 +781,9 @@
 
   // tentative: a choice made inside the splash, which counts as "chosen" only once it closes.
   function set(patch, tentative) {
+    var was = state.lang;
     state = assign({}, state, patch || {});
+    if (hasLangs && !langOf(state.lang)) state.lang = was;
     if (state.motion !== STILL) state.moving = state.motion;
     // Reading mode is a preset, not a fifth setting: any change that breaks it leaves it, and the
     // visitor keeps what they just chose (nothing is restored behind their back).
@@ -430,13 +795,16 @@
     apply();
     store.set(KEY, JSON.stringify(state));
     sync();
+    if (hasLangs && state.lang !== was) switchLang(state.lang);
     emit("arrival:change", get());
   }
   function get() {
-    return {
+    var g = {
       light: state.light, theme: themeOf(state.light), motion: state.motion, contrast: state.contrast,
       cursor: state.cursor, reading: state.reading === "on", text: state.text, measure: state.measure, chosen: !!state.chosen,
     };
+    if (hasLangs) g.lang = state.lang;
+    return g;
   }
   // One tap: save what the visitor has, apply the calmest preset; tap again to restore it. The
   // preset also turns on the comfortable line length (and restores it after); text size is left alone.
@@ -469,6 +837,7 @@
     state = read();
     apply();
     sync();
+    if (hasLangs && state.lang !== lang) switchLang(state.lang); // chosen in another tab
   });
   setInterval(function () {
     var m = byId(MODES, state.light);
@@ -595,6 +964,44 @@
     if (prefersMore && hasContrast) out += '<p class="arr-notice">' + icon("circle-half") + esc(W.moreAsked) + "</p>";
     return out;
   }
+  // v1.5: "Your language · Tu idioma", every language asking in its own words.
+  function langLegend() {
+    return LANGS.map(function (l) {
+      return '<span lang="' + esc(l.id) + '">' + esc(l.ask || l.name) + "</span>";
+    }).join('<span class="arr-lang-dot" aria-hidden="true"> · </span>');
+  }
+  // The doors: each language's name and welcome, written in that language. rich: the splash's cards.
+  function langDoors(name, rich) {
+    return LANGS.map(function (l) {
+      // A door: closed until it's the one chosen, then open.
+      return rich
+        ? '<label class="arr-lang" lang="' + esc(l.id) + '">' +
+            '<input class="arr-sr" type="radio" name="' + name + '" value="' + esc(l.id) + '" data-arr-lang>' +
+            '<span class="arr-frame arr-shape"><span class="arr-in arr-shape">' +
+            '<span class="arr-lang-door" aria-hidden="true">' + icon("door") + icon("door-open") + "</span>" +
+            '<span class="arr-lang-name">' + esc(l.name) + "</span>" +
+            (l.hello ? '<span class="arr-lang-hello">' + esc(l.hello) + "</span>" : "") +
+            '<span class="arr-card-check" aria-hidden="true">' + icon("check") + "</span></span></span></label>"
+        : '<label class="arr-seg-opt" lang="' + esc(l.id) + '">' +
+            '<input class="arr-sr" type="radio" name="' + name + '" value="' + esc(l.id) + '" data-arr-lang>' +
+            '<span class="arr-shape">' + esc(l.name) + "</span></label>";
+    }).join("");
+  }
+  // The honest lines under the doors: which words are translated, and whether that's been reviewed.
+  function langNotes() {
+    return (
+      '<p class="arr-note arr-lang-note" data-arr-langnote' + (noteWanted() ? "" : " hidden") + ">" + icon("translate") + "<span>" + esc(noteText()) + "</span></p>" +
+      (inReview() ? '<p class="arr-note arr-lang-review" title="' + esc(W.reviewNote) + '">' + icon("seal-question") + "<span>" + esc(W.inReview) + "</span></p>" : "")
+    );
+  }
+  function langField(name, rich) {
+    if (!hasLangs) return "";
+    return (
+      // Both legends ask in every language, so someone who can't read the current one still finds it.
+      '<fieldset class="arr-field arr-field-lang"><legend>' + icon("translate") + langLegend() + "</legend>" +
+      '<div class="' + (rich ? "arr-langs" : "arr-seg arr-seg-lang") + '">' + langDoors(name, rich) + "</div>" + langNotes() + "</fieldset>"
+    );
+  }
 
   /* ── keep every control in step with the state ────────────────────────────────────────── */
   function sync() {
@@ -625,7 +1032,7 @@
       var label = on ? W.cursorOn : W.cursorOff;
       b.setAttribute("aria-pressed", String(on));
       b.setAttribute("aria-label", label);
-      b.setAttribute("title", label + (state.motion === STILL ? " (resting while motion is still)" : ""));
+      b.setAttribute("title", label + (state.motion === STILL ? W.restingStill : ""));
     });
     var reading = state.reading === "on";
     all("input[data-arr-reading]", function (i) {
@@ -645,6 +1052,11 @@
       i.checked = state.measure === "comfy";
       i.setAttribute("aria-checked", String(i.checked));
     });
+    if (hasLangs) {
+      all("input[data-arr-lang]", function (i) {
+        i.checked = i.value === state.lang;
+      });
+    }
     syncNews();
     var still = state.motion === STILL;
     all("[data-arr-motion-toggle]", function (b) {
@@ -683,16 +1095,22 @@
           '<span class="arr-news-n" data-arr-news-n></span><span class="arr-chip-label">' + esc(W.newBadge) + "</span></button>" +
           '<span class="arr-news-tip arr-shape" data-arr-news-tip aria-hidden="true" hidden></span></span>'
         : "") +
-      '<button type="button" class="arr-chip arr-shape arr-chip-search" data-arrival-open="search" aria-label="' + esc(W.search) + ' (press /)" title="' + esc(W.search) + ' (/)">' +
+      '<button type="button" class="arr-chip arr-shape arr-chip-search" data-arrival-open="search" aria-label="' + esc(fill(W.searchAria, { search: W.search })) + '" title="' + esc(W.search) + ' (/)">' +
       icon("magnifying-glass") + '<span class="arr-chip-label">' + esc(W.search) + "</span><kbd>/</kbd></button>" +
       '<span class="arr-swatches" role="group" aria-label="' + esc(W.light) + '">' + swatches + "</span>" +
       '<button type="button" class="arr-chip arr-shape arr-chip-icon" data-arr-motion-toggle></button>' +
       (hasCursor ? '<button type="button" class="arr-chip arr-shape arr-chip-icon arr-cursor-btn" data-arr-cursor-toggle>' + icon("cursor-click") + "</button>" : "") +
       (hasReading ? '<button type="button" class="arr-chip arr-shape arr-chip-icon arr-reading-btn" data-arr-reading-toggle>' + icon("book-open-text") + "</button>" : "") +
+      // v1.5: the language, one tap away (it opens the drawer at its language row).
+      (hasLangs
+        ? '<button type="button" class="arr-chip arr-shape arr-lang-chip" data-arr-lang-chip aria-label="' + esc(fill(W.languageAction, { name: (langOf(lang) || {}).name || lang })) +
+          '" title="' + esc(W.language) + '">' + icon("translate") + '<span class="arr-lang-code" translate="no">' + esc(primary(lang).toUpperCase()) + "</span></button>"
+        : "") +
       '<span class="arr-drawer-wrap">' +
       '<button type="button" class="arr-chip arr-shape" data-arr-drawer aria-label="' + esc(W.drawer) + '" aria-expanded="false" aria-controls="arr-drawer-' + n + '">' +
       icon("sliders-horizontal") + '<span class="arr-chip-label">' + esc(W.drawer) + "</span>" + '<i class="ph ph-caret-down arr-caret" aria-hidden="true"></i></button>' +
       '<div class="arr-drawer arr-lift" id="arr-drawer-' + n + '" hidden><div class="arr-frame arr-shape"><div class="arr-in arr-shape">' +
+      langField("arr-dlang-" + n, false) +
       (hasReading ? '<div class="arr-field arr-field-reading">' + readingSwitch() + "</div>" : "") +
       '<fieldset class="arr-field"><legend>' + esc(W.light) + '</legend><div class="arr-list">' + lightRadios("arr-dl-" + n, false) + "</div></fieldset>" +
       '<fieldset class="arr-field"><legend>' + esc(W.motion) + '</legend><div class="arr-seg">' + motionRadios("arr-dm-" + n) + "</div>" +
@@ -703,6 +1121,7 @@
       '<button type="button" class="arr-link" data-arrival-open="search">' + icon("magnifying-glass") + "<span>" + esc(W.searchAll) + "</span><kbd>/</kbd></button>" +
       '<p class="arr-fine">' + esc(W.saved) + "</p>" +
       "</div></div></div></span></div>";
+    tagLang(host);
     sync();
   }
 
@@ -761,6 +1180,7 @@
     var d = doc.createElement("dialog");
     d.className = "arr-dialog " + cls;
     d.setAttribute("aria-labelledby", labelId);
+    tagLang(d);
     d._onClose = onClose;
     d.addEventListener("cancel", function (e) {
       e.preventDefault();
@@ -847,34 +1267,40 @@
   function splashWanted() {
     return store.ok && !state.chosen && C.splash !== false && root.getAttribute("data-arrival-splash") !== "off";
   }
+  function splashHTML() {
+    return panel(
+      '<div class="arr-head">' + markHTML() +
+      '<span class="arr-eyebrow"' + noTr() + ">" + esc(org.short || "") + (org.name ? '<span class="arr-eyebrow-full"> · ' + esc(org.name) + "</span>" : "") + "</span></div>" +
+      '<h2 class="arr-title" id="arr-splash-title">' + esc(W.arrive) + "</h2>" +
+      '<p class="arr-intro">' + esc(W.intro) + "</p>" +
+      notices() +
+      langField("arr-slang", true) + // v1.5: the language comes first, so everything after is in it
+      '<fieldset class="arr-field"><legend>' + esc(W.light) + '</legend><div class="arr-cards">' + lightCards("arr-sl") + "</div></fieldset>" +
+      '<div class="arr-split">' +
+      '<fieldset class="arr-field"><legend>' + esc(W.motion) + '</legend><div class="arr-seg">' + motionRadios("arr-sm") + "</div>" +
+      '<p class="arr-note" data-arr-motion-note aria-live="polite"></p>' + cursorSwitch() + "</fieldset>" +
+      (hasContrast ? '<fieldset class="arr-field"><legend>' + esc(W.contrast) + "</legend>" + contrastSwitch() + "</fieldset>" : "") +
+      "</div>" +
+      '<div class="arr-tip arr-shape"><kbd class="arr-kbd-big arr-shape">/</kbd><p><strong>' + esc(W.searchPress) + "</strong> " + esc(W.searchTip) +
+      ' <span class="arr-hover-only">' + fillH(W.searchTry, { key: "<kbd>/</kbd>" }) + '</span><span class="arr-touch-only">' + esc(W.searchPhone) + "</span></p></div>" +
+      '<div class="arr-actions">' +
+      '<button type="button" class="arr-btn arr-btn-primary arr-shape" data-arr-enter>' + esc(W.enter) + icon("arrow-right") + "</button>" +
+      '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-arr-tour>' + icon("compass") + esc(W.tour) + "</button>" +
+      (hasReading ? '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-arr-read-enter title="' + esc(readingNote()) + '">' + icon("book-open-text") + esc(W.readEnter) + "</button>" : "") +
+      '<span class="arr-fine">' + esc(W.saved) + "</span></div>"
+    );
+  }
   function openSplash() {
     if (!splashEl) {
       splashEl = makeDialog("arr-splash", "arr-splash-title", function () {
         set({}, false); // closing (Enter, Esc, backdrop, tour, "/") records the choice
+        followRoute(); // v1.5: a site with translated pages goes to this page's twin
       });
-      splashEl.innerHTML = panel(
-        '<div class="arr-head">' + markHTML() +
-        '<span class="arr-eyebrow">' + esc(org.short || "") + (org.name ? '<span class="arr-eyebrow-full"> · ' + esc(org.name) + "</span>" : "") + "</span></div>" +
-        '<h2 class="arr-title" id="arr-splash-title">' + esc(W.arrive) + "</h2>" +
-        '<p class="arr-intro">' + esc(W.intro) + "</p>" +
-        notices() +
-        '<fieldset class="arr-field"><legend>' + esc(W.light) + '</legend><div class="arr-cards">' + lightCards("arr-sl") + "</div></fieldset>" +
-        '<div class="arr-split">' +
-        '<fieldset class="arr-field"><legend>' + esc(W.motion) + '</legend><div class="arr-seg">' + motionRadios("arr-sm") + "</div>" +
-        '<p class="arr-note" data-arr-motion-note aria-live="polite"></p>' + cursorSwitch() + "</fieldset>" +
-        (hasContrast ? '<fieldset class="arr-field"><legend>' + esc(W.contrast) + "</legend>" + contrastSwitch() + "</fieldset>" : "") +
-        "</div>" +
-        '<div class="arr-tip arr-shape"><kbd class="arr-kbd-big arr-shape">/</kbd><p><strong>Press / to search.</strong> ' + esc(W.searchTip) +
-        ' <span class="arr-hover-only">Try it now: press <kbd>/</kbd>.</span><span class="arr-touch-only">On a phone, tap the magnifier in the header.</span></p></div>' +
-        '<div class="arr-actions">' +
-        '<button type="button" class="arr-btn arr-btn-primary arr-shape" data-arr-enter>' + esc(W.enter) + icon("arrow-right") + "</button>" +
-        '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-arr-tour>' + icon("compass") + esc(W.tour) + "</button>" +
-        (hasReading ? '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-arr-read-enter title="' + esc(readingNote()) + '">' + icon("book-open-text") + esc(W.readEnter) + "</button>" : "") +
-        '<span class="arr-fine">' + esc(W.saved) + "</span></div>"
-      );
+      splashEl.innerHTML = splashHTML();
     }
     sync();
-    show(splashEl, splashEl.querySelector("input[data-arr-light]:checked") || splashEl.querySelector("[data-arr-enter]"));
+    show(splashEl, (hasLangs && splashEl.querySelector("input[data-arr-lang]:checked")) || splashEl.querySelector("input[data-arr-light]:checked") || splashEl.querySelector("[data-arr-enter]"));
+    if (noteWanted()) noteSeen(); // the splash has said it
   }
 
   /* ── the welcome guide (onboarding panel) ─────────────────────────────────────────────── */
@@ -887,7 +1313,7 @@
     return '<a class="arr-btn arr-shape ' + (cls || "arr-btn-quiet") + '" href="' + esc(href) + '">' + (ic ? icon(ic) : "") + esc(label) + "</a>";
   }
   function placeholder(text) {
-    return '<p class="arr-placeholder arr-shape">' + icon("note-pencil") + "<span><strong>Placeholder.</strong> " + text + "</span></p>";
+    return '<p class="arr-placeholder arr-shape">' + icon("note-pencil") + "<span><strong>" + esc(W.placeholderTag) + "</strong> " + text + "</span></p>";
   }
   function para(text) {
     return text ? "<p>" + text + "</p>" : "";
@@ -903,7 +1329,7 @@
     var defs = {
       welcome: {
         icon: "hand-waving",
-        title: "Welcome to " + (site.name || org.short || "the site"),
+        title: fill(W.welcomeTitle, { site: site.name || org.short || W.theSite }),
         html: function () {
           return (
             (site.what ? '<p class="arr-lede">' + site.what + "</p>" : "") +
@@ -915,7 +1341,7 @@
       },
       record: {
         icon: "clock-counter-clockwise",
-        title: "Changelog and library",
+        title: W.recordTitle,
         html: function () {
           var ch = rec.changelog || {};
           var li = rec.library || {};
@@ -923,16 +1349,16 @@
           return (
             para(rec.intro) +
             '<div class="arr-two' + (lg ? " arr-three" : "") + '">' +
-            '<div class="arr-box arr-shape"><h3>' + icon("clock-counter-clockwise") + esc(ch.name || "The changelog") + "</h3>" +
-            para(ch.text || "What changed, when, and who did it. Short dated entries, newest first, each with a one-line summary and the full story folded underneath.") +
-            link(ch.href, ch.label || "Read the changelog", "arrow-right") + "</div>" +
-            '<div class="arr-box arr-shape"><h3>' + icon("books") + esc(li.name || "The library") + "</h3>" +
-            para(li.text || "How things work. Longer write-ups that stay true over time, rather than news of one change.") +
-            (li.href ? link(li.href, li.label || "Open the library", "arrow-right") : li.missing ? placeholder(li.missing) : "") + "</div>" +
+            '<div class="arr-box arr-shape"><h3>' + icon("clock-counter-clockwise") + esc(ch.name || W.changelogName) + "</h3>" +
+            para(ch.text || W.changelogText) +
+            link(ch.href, ch.label || W.changelogLink, "arrow-right") + "</div>" +
+            '<div class="arr-box arr-shape"><h3>' + icon("books") + esc(li.name || W.libraryName) + "</h3>" +
+            para(li.text || W.libraryText) +
+            (li.href ? link(li.href, li.label || W.libraryLink, "arrow-right") : li.missing ? placeholder(li.missing) : "") + "</div>" +
             (lg
               ? '<div class="arr-box arr-shape arr-box-ledger"><h3>' + icon(lg.icon || "scroll") + esc(lg.name || W.ledger) + "</h3>" +
-                para(lg.text || "Every public change to the code, in plain words, grouped by day and by kind, each one linked to the change itself. For anyone who'd rather not open GitHub.") +
-                link(lg.href, lg.label || "Open the ledger", "arrow-right") + "</div>"
+                para(lg.text || W.ledgerText) +
+                link(lg.href, lg.label || W.ledgerLink, "arrow-right") + "</div>"
               : "") +
             "</div>" +
             (rec.share ? '<p class="arr-notice">' + icon("share-network") + "<span>" + rec.share + "</span></p>" : "") +
@@ -942,31 +1368,31 @@
       },
       search: {
         icon: "magnifying-glass",
-        title: "Press / to search",
+        title: W.searchTitle,
         html: function () {
           return (
-            '<div class="arr-tip arr-shape"><kbd class="arr-kbd-big arr-shape">/</kbd><p>Press <kbd>/</kbd> on any page, or <kbd>Ctrl</kbd> <kbd>K</kbd> (<kbd>⌘</kbd> <kbd>K</kbd> on a Mac). On a phone, tap the magnifier in the header. Like Discord\'s quick switcher: start typing and jump.</p></div>' +
+            '<div class="arr-tip arr-shape"><kbd class="arr-kbd-big arr-shape">/</kbd><p>' + W.searchHowHtml + "</p></div>" +
             "<ul class=\"arr-ticks\">" +
-            "<li>" + icon("sparkle") + "Every changelog entry, by title, month, area, or who made it.</li>" +
-            "<li>" + icon("book-open-text") + "Every library write-up.</li>" +
-            "<li>" + icon("signpost") + "Pages and links, like " + esc(home ? home.label : "the main site") + (com ? " or the " + esc(com.name) + " group" : "") + ".</li>" +
-            "<li>" + icon("palette") + "Actions: type <em>light</em>, <em>still</em> or <em>contrast</em> to change how the page looks.</li>" +
+            "<li>" + icon("sparkle") + esc(W.searchEntries) + "</li>" +
+            "<li>" + icon("book-open-text") + esc(W.searchWriteups) + "</li>" +
+            "<li>" + icon("signpost") + fillH(W.searchPages, { home: esc(home ? home.label : W.mainSite), community: com ? fillH(W.searchPagesCommunity, { name: esc(com.name) }) : "" }) + "</li>" +
+            "<li>" + icon("palette") + W.searchActionsHtml + "</li>" +
             "</ul>" +
             para((G.search || {}).more) +
-            '<p><button type="button" class="arr-btn arr-btn-primary arr-shape" data-arrival-open="search">' + icon("magnifying-glass") + "Try it now</button></p>"
+            '<p><button type="button" class="arr-btn arr-btn-primary arr-shape" data-arrival-open="search">' + icon("magnifying-glass") + esc(W.tryNow) + "</button></p>"
           );
         },
       },
       light: {
         icon: "palette",
-        title: "Pick a light",
+        title: W.lightTitle,
         html: function () {
           return para((G.light || {}).text) + '<div class="arr-cards arr-cards-compact">' + lightCards("arr-gl") + "</div>";
         },
       },
       motion: {
         icon: "wind",
-        title: "Motion and contrast",
+        title: W.motionTitle,
         html: function () {
           return (
             para((G.motion || {}).text) + notices() +
@@ -976,46 +1402,45 @@
             '<p class="arr-note" data-arr-motion-note aria-live="polite"></p>' + cursorSwitch() + "</fieldset>" +
             (hasContrast ? '<fieldset class="arr-field"><legend>' + esc(W.contrast) + "</legend>" + contrastSwitch() + "</fieldset>" : "") +
             "</div>" +
-            '<p class="arr-fine">In the header, the pause button switches motion off and on in one click, the pointer button does the same for cursor effects' +
-            (hasReading ? ", and the book button is reading mode" : "") + ".</p>"
+            '<p class="arr-fine">' + fillH(W.motionFine, { reading: hasReading ? esc(W.motionFineReading) : "" }) + "</p>"
           );
         },
       },
       people: {
         icon: "users-three",
-        title: "Who made the changes",
+        title: W.peopleTitle,
         html: function () {
           return (
-            para((G.people || {}).text || "Every entry credits whoever did the work.") +
+            para((G.people || {}).text || W.peopleText) +
             "<arrival-people compact></arrival-people>" +
-            '<p class="arr-fine">' + ((G.people || {}).fine || "Pictures come from public GitHub profiles. Anyone without one gets their initials instead.") + "</p>"
+            '<p class="arr-fine">' + ((G.people || {}).fine || W.peopleFine) + "</p>"
           );
         },
       },
       community: {
         icon: "chats-circle",
-        title: "Where the community talks",
+        title: W.communityTitle,
         html: function () {
-          if (!com) return placeholder("This org hasn't named its community space here yet.");
+          if (!com) return placeholder(W.communityNone);
           // v1.2: with platforms configured, list them and offer the community modal.
           if (com.platforms && com.platforms.length) {
             return (
               para(com.text) +
               '<ul class="arr-ticks">' +
               com.platforms.map(function (p) {
-                var k = PLATFORM[p.kind] || [p.kind || "", "chats-circle"];
+                var k = platform(p.kind);
                 var soon = p.status === "soon" || (!(p.public && p.public.href) && !(p.join && p.join.href));
                 return "<li>" + icon(p.icon || k[1]) + "<span><strong>" + esc(p.name || k[0]) + "</strong>" + (soon ? " · " + esc(W.soon) : "") + "</span></li>";
               }).join("") +
-              (com.bespoke ? "<li>" + icon(com.bespoke.icon || "graph") + "<span><strong>" + esc(com.bespoke.title || "A network of our own") + "</strong> · " + esc(com.bespoke.tag || W.sneak) + "</span></li>" : "") +
+              (com.bespoke ? "<li>" + icon(com.bespoke.icon || "graph") + "<span><strong>" + esc(com.bespoke.title || W.bespokeTitle) + "</strong> · " + esc(com.bespoke.tag || W.sneak) + "</span></li>" : "") +
               "</ul>" +
-              '<p><button type="button" class="arr-btn arr-btn-primary arr-shape" data-arrival-open="community">' + icon(com.icon || "users-three") + esc(com.label || "See every way in") + "</button></p>" +
+              '<p><button type="button" class="arr-btn arr-btn-primary arr-shape" data-arrival-open="community">' + icon(com.icon || "users-three") + esc(com.label || W.seeEveryWay) + "</button></p>" +
               (com.more || []).map(function (x) { return '<p class="arr-fine">' + x + "</p>"; }).join("")
             );
           }
           return (
             para(com.text) +
-            (com.href ? link(com.href, com.label || "Open " + com.name, com.icon || "chats-circle", "arr-btn-primary") : placeholder("The " + esc(com.name) + " link still needs to be added.")) +
+            (com.href ? link(com.href, com.label || fill(W.openNamed, { name: com.name }), com.icon || "chats-circle", "arr-btn-primary") : placeholder(fillH(W.communityMissing, { name: esc(com.name) }))) +
             (com.more || []).map(function (x) {
               return '<p class="arr-fine">' + x + "</p>";
             }).join("")
@@ -1024,11 +1449,11 @@
       },
       home: {
         icon: "globe-hemisphere-west",
-        title: home ? home.label : "The main site",
+        title: home ? home.label : W.homeTitle,
         html: function () {
           return (
             para(home && home.text) +
-            (home ? link(home.href, "Visit " + home.label, "arrow-square-out", "arr-btn-primary") : "") +
+            (home ? link(home.href, fill(W.visitNamed, { name: home.label }), "arrow-square-out", "arr-btn-primary") : "") +
             para((G.home || {}).more) +
             '<p class="arr-finale" data-arr-finale hidden>' + icon("seal-check") + "<span></span></p>"
           );
@@ -1076,7 +1501,7 @@
     seen[step] = true;
     var g = guideEl;
     g.querySelector("[data-arr-glyph]").innerHTML = glyph(n, step, 56);
-    g.querySelector("[data-arr-count]").textContent = step + 1 + " of " + n;
+    g.querySelector("[data-arr-count]").textContent = fill(W.stepOf, { n: step + 1, total: n });
     g.querySelector("#arr-guide-title").innerHTML = icon(s.icon) + esc(s.title);
     var body = g.querySelector("[data-arr-body]");
     body.innerHTML = s.html();
@@ -1089,14 +1514,14 @@
     }
     g.querySelector("[data-arr-prev]").disabled = step === 0;
     var next = g.querySelector("[data-arr-next]");
-    next.innerHTML = step === n - 1 ? "Done" + icon("check") : "Next" + icon("arrow-right");
+    next.innerHTML = step === n - 1 ? esc(W.done) + icon("check") : esc(W.next) + icon("arrow-right");
     var fin = body.querySelector("[data-arr-finale]");
     if (fin) {
       var all = Object.keys(seen).length >= n;
       fin.hidden = false;
       fin.querySelector("span").textContent = all
-        ? (C.guideFinale || "You've lit every wedge. Welcome in.")
-        : "You can open this guide again any time from the light and motion drawer, or by pressing ?";
+        ? (C.guideFinale || W.guideFinale)
+        : W.guideAgain;
       if (all) g.querySelector(".arr-glyph").classList.add("is-whole");
     }
     sync();
@@ -1118,9 +1543,9 @@
         '<span class="arr-glyph-wrap" data-arr-glyph></span>' +
         '<div class="arr-guide-heading"><p class="arr-eyebrow">' + esc(W.guide) + ' · <span data-arr-count></span></p>' +
         '<h2 class="arr-title" id="arr-guide-title" aria-live="polite"></h2></div>' +
-        '<button type="button" class="arr-x arr-shape" data-arr-close aria-label="Close the guide">' + icon("x") + "</button></div>" +
+        '<button type="button" class="arr-x arr-shape" data-arr-close aria-label="' + esc(W.closeGuide) + '">' + icon("x") + "</button></div>" +
         '<div class="arr-guide-main">' +
-        '<nav class="arr-steps" aria-label="Guide steps"><ol>' +
+        '<nav class="arr-steps" aria-label="' + esc(W.guideSteps) + '"><ol>' +
         STEPS.map(function (s, i) {
           return (
             '<li><button type="button" data-arr-step="' + i + '"><span class="arr-step-dot" style="--wedge:' +
@@ -1130,8 +1555,8 @@
         "</ol></nav>" +
         '<section class="arr-step" data-arr-body></section></div>' +
         '<div class="arr-guide-foot">' +
-        '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-arr-prev>' + icon("arrow-left") + "Back</button>" +
-        '<span class="arr-fine arr-hover-only"><kbd>←</kbd> <kbd>→</kbd> to move</span>' +
+        '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-arr-prev>' + icon("arrow-left") + esc(W.back) + "</button>" +
+        '<span class="arr-fine arr-hover-only">' + fillH(W.arrowsMove, { keys: "<kbd>←</kbd> <kbd>→</kbd>" }) + "</span>" +
         '<button type="button" class="arr-btn arr-btn-primary arr-shape" data-arr-next></button></div>',
         "arr-guide-panel"
       );
@@ -1217,43 +1642,48 @@
       out.push({ t: W.light + ": " + m.name, k: "light", i: "palette", x: m.note || "", run: function () { set({ light: m.id }); } });
     });
     MOTIONS.forEach(function (m) {
-      out.push({ t: W.motion + ": " + m.name, k: "motion", i: m.icon || "wind", x: (m.note || "") + " pause animation", run: function () { set({ motion: m.id }); } });
+      out.push({ t: W.motion + ": " + m.name, k: "motion", i: m.icon || "wind", x: (m.note || "") + " " + W.kwMotion, run: function () { set({ motion: m.id }); } });
     });
     if (hasContrast) {
       out.push({
-        t: W.moreContrast + ": on or off", k: "contrast", i: "circle-half", x: "accessibility readable",
+        t: fill(W.onOrOff, { what: W.moreContrast }), k: "contrast", i: "circle-half", x: W.kwContrast,
         run: function () { set({ contrast: state.contrast === "more" ? "standard" : "more" }); },
       });
     }
     if (hasCursor) {
       out.push({
-        t: W.cursor + ": on or off", k: "cursor", i: "cursor-click", x: "trail pointer mouse sparkle effects",
+        t: fill(W.onOrOff, { what: W.cursor }), k: "cursor", i: "cursor-click", x: W.kwCursor,
         run: function () { set({ cursor: state.cursor === "on" ? "off" : "on" }); },
       });
     }
     if (hasReading) {
       out.push({
-        t: W.reading + ": " + (state.reading === "on" ? "off, back to how I had it" : "on"), k: "reading", i: "book-open-text",
-        x: "calm read quiet focus still contrast accessibility dyslexia simple plain", run: function () { toggleReading(); },
+        t: fill(state.reading === "on" ? W.readingBack : W.readingOnAct, { what: W.reading }), k: "reading", i: "book-open-text",
+        x: W.kwReading, run: function () { toggleReading(); },
       });
     }
     if (hasReading) {
-      out.push({ t: W.textSize + ": larger", k: "text", i: "text-aa", x: "bigger zoom font size read accessibility", run: function () { stepText(1); } });
-      out.push({ t: W.textSize + ": smaller", k: "text", i: "text-aa", x: "zoom font size read", run: function () { stepText(-1); } });
+      out.push({ t: fill(W.larger, { what: W.textSize }), k: "text", i: "text-aa", x: W.kwLarger, run: function () { stepText(1); } });
+      out.push({ t: fill(W.smaller, { what: W.textSize }), k: "text", i: "text-aa", x: W.kwSmaller, run: function () { stepText(-1); } });
       if (hasMeasure) {
         out.push({
-          t: W.measure + ": on or off", k: "text", i: "text-align-left", x: "line width measure narrow column read accessibility",
+          t: fill(W.onOrOff, { what: W.measure }), k: "text", i: "text-align-left", x: W.kwMeasure,
           run: function () { set({ measure: state.measure === "comfy" ? "full" : "comfy" }); },
         });
       }
     }
-    if (hasContact) out.push({ t: (CONTACT.title || W.contact) + ": every way to reach us", k: "contact", i: "envelope-simple", x: "contact email form message question help reach out", run: openContact });
-    if (hasCommunity) out.push({ t: (COMM.title || W.community) + ": the community", k: "community", i: COMM.icon || "users-three", x: "community chat talk join sign up members discord telegram mighty", run: openCommunity });
-    out.push({ t: W.openGuide, k: "guide", i: "compass", x: "help onboarding tour welcome how", run: function () { openGuide(); } });
+    if (hasContact) out.push({ t: fill(W.contactAct, { what: CONTACT.title || W.contact }), k: "contact", i: "envelope-simple", x: W.kwContact, run: openContact });
+    if (hasCommunity) out.push({ t: fill(W.communityAct, { what: COMM.title || W.community }), k: "community", i: COMM.icon || "users-three", x: W.kwCommunity, run: openCommunity });
+    out.push({ t: W.openGuide, k: "guide", i: "compass", x: W.kwGuide, run: function () { openGuide(); } });
+    // v1.5: every language, by its own name ("español" finds Español)
+    LANGS.forEach(function (l) {
+      if (l.id === state.lang) return;
+      out.push({ t: fill(W.languageAction, { name: l.name }), k: "language", i: "translate", x: W.kwLanguage + " " + l.id + " " + (l.ask || ""), run: function () { set({ lang: l.id }); followRoute(); } });
+    });
     if (PLEDGE && PLEDGE.href) {
-      out.push({ t: (PLEDGE.title || PW.title) + ": sign it with a wallet", k: "pledge", i: "handshake", x: "pledge support sign signature wallet verify check", run: function () { location.href = PLEDGE.href; } });
+      out.push({ t: fill(W.pledgeAct, { what: PLEDGE.title || PW.title }), k: "pledge", i: "handshake", x: W.kwPledge, run: function () { location.href = PLEDGE.href; } });
     }
-    out.push({ t: "Copy a link to this page", k: "action", i: "link", x: "share url card preview telegram", run: copyLink });
+    out.push({ t: W.copyLink, k: "action", i: "link", x: W.kwCopy, run: copyLink });
     return out;
   }
   function staticItems() {
@@ -1319,9 +1749,10 @@
         '<label class="arr-sr" id="arr-pal-label" for="arr-pal-input">' + esc(W.search) + "</label>" +
         '<div class="arr-pal-bar">' + icon("magnifying-glass") +
         '<input id="arr-pal-input" type="text" role="combobox" aria-expanded="true" aria-controls="arr-pal-list" aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="' + esc(W.searchPlaceholder) + '">' +
-        '<kbd class="arr-hover-only">esc</kbd><button type="button" class="arr-x arr-shape arr-touch-only" data-arr-close aria-label="Close search">' + icon("x") + "</button></div>" +
-        '<ul class="arr-pal-list" id="arr-pal-list" role="listbox" aria-label="Results"></ul>' +
-        '<div class="arr-pal-foot arr-hover-only"><span><kbd>↑</kbd><kbd>↓</kbd> move</span><span><kbd>↵</kbd> open</span><span><kbd>esc</kbd> close</span><span><kbd>?</kbd> guide</span><span class="arr-pal-status" aria-live="polite"></span></div>',
+        '<kbd class="arr-hover-only">esc</kbd><button type="button" class="arr-x arr-shape arr-touch-only" data-arr-close aria-label="' + esc(W.closeSearch) + '">' + icon("x") + "</button></div>" +
+        '<ul class="arr-pal-list" id="arr-pal-list" role="listbox" aria-label="' + esc(W.results) + '"></ul>' +
+        '<div class="arr-pal-foot arr-hover-only"><span><kbd>↑</kbd><kbd>↓</kbd> ' + esc(W.keyMove) + "</span><span><kbd>↵</kbd> " + esc(W.keyOpen) + "</span><span><kbd>esc</kbd> " + esc(W.keyClose) +
+        "</span><span><kbd>?</kbd> " + esc(W.keyGuide) + '</span><span class="arr-pal-status" aria-live="polite"></span></div>',
         "arr-pal-panel"
       );
       var inp = pal.querySelector("input");
@@ -1404,13 +1835,13 @@
         if (x.h) pinH[x.h] = 1;
         return true;
       });
-      if (pinned.length) groups.push(["Jump to", pinned]);
+      if (pinned.length) groups.push([W.jumpTo, pinned]);
       var latest = content
         .filter(function (x) { return x.type === "entry"; })
         .sort(function (a, b) { return String(b.d || "").localeCompare(String(a.d || "")); })
         .slice(0, 5);
-      if (latest.length) groups.push(["Latest changes", latest]);
-      groups.push(["Try", actions().filter(function (a) { return a.k === "guide" || a.k === "contrast" || a.k === "reading" || a.k === "contact" || a.k === "community"; })]);
+      if (latest.length) groups.push([W.latestChanges, latest]);
+      groups.push([W.tryGroup, actions().filter(function (a) { return a.k === "guide" || a.k === "contrast" || a.k === "reading" || a.k === "contact" || a.k === "community" || a.k === "language"; })]);
       shown = [];
       groups.forEach(function (g) {
         html += '<li role="presentation" class="arr-pal-group">' + esc(g[0]) + "</li>";
@@ -1429,10 +1860,10 @@
       });
       shown = rank(q, pool.concat(actions()));
       html = shown.map(function (it, i) { return option(it, i, q); }).join("");
-      if (!shown.length) html = '<li role="presentation" class="arr-pal-empty">' + esc(loaded ? W.nothing : "Loading the index…") + "</li>";
+      if (!shown.length) html = '<li role="presentation" class="arr-pal-empty">' + esc(loaded ? W.nothing : W.loadingIndex) + "</li>";
     }
     list.innerHTML = html;
-    if (status) status.textContent = norm(q) ? shown.length + (shown.length === 1 ? " result" : " results") : "";
+    if (status) status.textContent = norm(q) ? fill(shown.length === 1 ? W.resultOne : W.resultMany, { n: shown.length }) : "";
     sel = Math.min(sel, Math.max(0, shown.length - 1));
     paintSel();
   }
@@ -1469,17 +1900,18 @@
   }
   var toastEl = null;
   var toastT = 0;
-  function toast(msg) {
+  function toast(msg, ms) {
     if (!toastEl) {
       toastEl = doc.createElement("div");
       toastEl.className = "arr-toast arr-shape";
       toastEl.setAttribute("role", "status");
       doc.body.appendChild(toastEl);
     }
+    tagLang(toastEl);
     toastEl.textContent = msg;
     toastEl.classList.add("is-on");
     clearTimeout(toastT);
-    toastT = setTimeout(function () { toastEl.classList.remove("is-on"); }, 2200);
+    toastT = setTimeout(function () { toastEl.classList.remove("is-on"); }, ms || 2200);
   }
 
   /* ── avatars ───────────────────────────────────────────────────────────────────────────── */
@@ -1577,8 +2009,9 @@
     );
   }
   function renderPeople(el) {
+    tagLang(el);
     var compact = el.hasAttribute("compact");
-    el.innerHTML = '<p class="arr-fine">Gathering who made the changes…</p>';
+    el.innerHTML = '<p class="arr-fine">' + esc(W.gatheringPeople) + "</p>";
     index().then(function (ix) {
       if (!ix.people.length) {
         el.innerHTML = "";
@@ -1596,7 +2029,7 @@
             "<li>" + avatarTag(p, compact ? 36 : 48) +
             '<span class="arr-person"><span class="arr-person-name">' + name + "</span>" +
             (p.role ? '<span class="arr-person-role">' + esc(p.role) + "</span>" : "") + "</span>" +
-            (p.count != null ? '<span class="arr-person-count">' + p.count + (p.count === 1 ? " entry" : " entries") + "</span>" : "") +
+            (p.count != null ? '<span class="arr-person-count">' + esc(fill(p.count === 1 ? W.entryOne : W.entryMany, { n: p.count })) + "</span>" : "") +
             "</li>"
           );
         }).join("") +
@@ -1604,6 +2037,7 @@
     });
   }
   function renderLatest(el) {
+    tagLang(el);
     var limit = +el.getAttribute("limit") || 4;
     index().then(function (ix) {
       var list = ix.items
@@ -1620,7 +2054,7 @@
           return (
             '<li><a href="' + esc(it.h) + '"><time datetime="' + esc(it.d) + '">' + esc(fmtDate(it.d)) + "</time>" +
             '<span class="arr-latest-title">' + esc(it.t) + "</span>" +
-            '<span class="arr-latest-meta">' + esc([it.k, it.who ? "by " + it.who : ""].filter(Boolean).join(" · ")) + "</span></a></li>"
+            '<span class="arr-latest-meta">' + esc([it.k, it.who ? fill(W.byWho, { who: it.who }) : ""].filter(Boolean).join(" · ")) + "</span></a></li>"
           );
         }).join("") +
         "</ul>";
@@ -1651,7 +2085,7 @@
 
   function fmtTime(ms) {
     try {
-      return new Date(ms).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      return new Date(ms).toLocaleDateString(locale(), { month: "short", day: "numeric" });
     } catch (e) {
       return "";
     }
@@ -2110,19 +2544,24 @@
       }).join("") +
       "</div></div></div></div></nav>";
     host.classList.add("arr-nav-host");
-    navHosts.push(host);
+    tagLang(host);
+    host._mode = null; // v1.5: drawn again (a language change), so measure it afresh
     layoutNav(host);
-    if (window.ResizeObserver) {
-      var raf = 0;
-      new ResizeObserver(function () {
-        cancelAnimationFrame(raf);
-        raf = requestAnimationFrame(function () { layoutNav(host); });
-      }).observe(host);
+    if (!host._arrWatched) {
+      host._arrWatched = true;
+      navHosts.push(host);
+      if (window.ResizeObserver) {
+        var raf = 0;
+        new ResizeObserver(function () {
+          cancelAnimationFrame(raf);
+          raf = requestAnimationFrame(function () { layoutNav(host); });
+        }).observe(host);
+      }
+      if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(function () { layoutNav(host); });
+      // A web font can finish loading after fonts.ready resolves (THEF's Literata/PapyrusStd did), which
+      // widens the labels without resizing the host. Measure again whenever any font finishes loading.
+      if (doc.fonts && doc.fonts.addEventListener) doc.fonts.addEventListener("loadingdone", function () { layoutNav(host); });
     }
-    if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(function () { layoutNav(host); });
-    // A web font can finish loading after fonts.ready resolves (THEF's Literata/PapyrusStd did), which
-    // widens the labels without resizing the host. Measure again whenever any font finishes loading.
-    if (doc.fonts && doc.fonts.addEventListener) doc.fonts.addEventListener("loadingdone", function () { layoutNav(host); });
     syncNews();
   }
   function foldAt() {
@@ -2301,9 +2740,13 @@
     host.innerHTML =
       '<nav class="arr-foot" aria-label="' + esc(F.label || W.footer) + '"><div class="arr-foot-groups">' + html + "</div>" +
       (F.note ? '<p class="arr-foot-note">' + F.note + "</p>" : "") + "</nav>";
-    footHosts.push(host);
+    tagLang(host);
     balanceFoot(host);
-    if (window.ResizeObserver) new ResizeObserver(function () { balanceFoot(host); }).observe(host);
+    if (!host._arrWatched) {
+      host._arrWatched = true;
+      footHosts.push(host);
+      if (window.ResizeObserver) new ResizeObserver(function () { balanceFoot(host); }).observe(host);
+    }
     if (fresh.length) markNew(host);
   }
   // The most columns that fit (each at least 11.5rem), then evened out: 4 groups → 4, or 2 + 2,
@@ -2346,10 +2789,16 @@
     mighty: ["Mighty Networks", "users-three"],
     whatsapp: ["WhatsApp", "whatsapp-logo"],
     substack: ["Substack", "newspaper-clipping"],
-    bespoke: ["Our own network", "graph"],
-    forum: ["Forum", "chats-teardrop"],
-    email: ["Email list", "envelope-simple"],
+    bespoke: ["platformBespoke", "graph"],
+    forum: ["platformForum", "chats-teardrop"],
+    email: ["platformEmail", "envelope-simple"],
   };
+  // [name, icon] for a platform kind; brand names stay as they are, the rest come from W.
+  function platform(kind) {
+    var k = PLATFORM[kind];
+    if (!k) return [kind || "", "chats-circle"];
+    return [W[k[0]] || k[0], k[1]];
+  }
   function hostOf(href) {
     try {
       var u = new URL(href, location.href);
@@ -2362,19 +2811,19 @@
   function modalHead(title, eyebrow, id) {
     return (
       '<div class="arr-modal-head"><div class="arr-head">' + markHTML() +
-      '<span class="arr-eyebrow">' + esc(org.short || "") + (eyebrow ? " · " + esc(eyebrow) : "") + "</span></div>" +
+      '<span class="arr-eyebrow">' + (hasLangs ? '<span translate="no">' + esc(org.short || "") + "</span>" : esc(org.short || "")) + (eyebrow ? " · " + esc(eyebrow) : "") + "</span></div>" +
       '<button type="button" class="arr-x arr-shape" data-arr-close aria-label="' + esc(W.close) + '">' + icon("x") + "</button></div>" +
       '<h2 class="arr-title" id="' + id + '">' + esc(title) + "</h2>"
     );
   }
   function softPlaceholder(text, tag) {
-    return '<p class="arr-placeholder arr-shape">' + icon("note-pencil") + "<span><strong>" + esc(tag || "Placeholder.") + "</strong> " + text + "</span></p>";
+    return '<p class="arr-placeholder arr-shape">' + icon("note-pencil") + "<span><strong>" + esc(tag || W.placeholderTag) + "</strong> " + text + "</span></p>";
   }
   function pathRow(p) {
     var ic = p.icon || { form: "note-pencil", email: "envelope-simple", page: "address-book", github: "github-logo", chat: "chat-circle-text", phone: "phone" }[p.kind] || "arrow-square-out";
     var head = '<span class="arr-path-icon arr-shape">' + icon(ic) + '</span><div class="arr-path-main"><h3>' + esc(p.label) + "</h3>";
     if (!p.href || p.placeholder) {
-      return '<li class="arr-path arr-shape is-placeholder">' + head + (p.note ? "<p>" + p.note + "</p>" : "") + softPlaceholder(p.placeholder || "This way in isn't set up yet.") + "</div></li>";
+      return '<li class="arr-path arr-shape is-placeholder">' + head + (p.note ? "<p>" + p.note + "</p>" : "") + softPlaceholder(p.placeholder || W.notSetUp) + "</div></li>";
     }
     var mail = /^mailto:/i.test(p.href);
     var where = hostOf(p.href);
@@ -2414,7 +2863,7 @@
     );
   }
   function platCard(p) {
-    var k = PLATFORM[p.kind] || [p.kind || "", "chats-circle"];
+    var k = platform(p.kind);
     var soon = p.status === "soon" || (!(p.public && p.public.href) && !(p.join && p.join.href));
     return (
       '<li class="arr-plat arr-shape' + (soon ? " is-soon" : "") + '"><div class="arr-plat-head"><span class="arr-path-icon arr-shape">' + icon(p.icon || k[1]) + "</span>" +
@@ -2428,7 +2877,7 @@
     if (!b) return "";
     return (
       '<li class="arr-plat arr-plat-bespoke arr-shape"><div class="arr-plat-head"><span class="arr-path-icon arr-shape">' + icon(b.icon || "graph") + "</span>" +
-      '<div class="arr-plat-title"><h3>' + esc(b.title || "A network of our own") + '</h3><span class="arr-plat-kind"><span class="arr-soon">' + esc(b.tag || W.sneak) + "</span></span></div></div>" +
+      '<div class="arr-plat-title"><h3>' + esc(b.title || W.bespokeTitle) + '</h3><span class="arr-plat-kind"><span class="arr-soon">' + esc(b.tag || W.sneak) + "</span></span></div></div>" +
       (b.text ? "<p>" + b.text + "</p>" : "") +
       (b.points && b.points.length ? '<ul class="arr-ticks">' + b.points.map(function (x) { return "<li>" + icon("sparkle") + "<span>" + x + "</span></li>"; }).join("") + "</ul>" : "") +
       (b.note ? '<p class="arr-fine">' + b.note + "</p>" : "") + "</li>"
@@ -2443,7 +2892,7 @@
     if (!communityEl) {
       communityEl = makeDialog("arr-modal arr-community", "arr-community-title");
       communityEl.innerHTML = panel(
-        modalHead(COMM.title || W.community, COMM.eyebrow || "Community", "arr-community-title") +
+        modalHead(COMM.title || W.community, COMM.eyebrow || W.communityEyebrow, "arr-community-title") +
         '<p class="arr-intro">' + (COMM.intro || esc(W.communityIntro)) + "</p>" +
         '<ul class="arr-plats">' + (COMM.platforms || []).map(platCard).join("") + bespokeCard(COMM.bespoke) + "</ul>" +
         (COMM.fine ? '<p class="arr-fine">' + COMM.fine + "</p>" : ""),
@@ -2486,7 +2935,7 @@
        url?, kind?, since?, note? }] }, people who opted in to be named, nobody else. The crypto
        slot stays empty until a wallet module fills [data-arr-wallet-slot]; it never shows an
        address on its own. */
-  var KINDS = { gift: ["Gift", "gift"], sponsor: ["Sponsor", "handshake"], time: ["Time and skills", "hand-heart"], "in-kind": ["In kind", "package"], founding: ["Founding", "plant"] };
+  var KINDS = { gift: ["kindGift", "gift"], sponsor: ["kindSponsor", "handshake"], time: ["kindTime", "hand-heart"], "in-kind": ["kindInKind", "package"], founding: ["kindFounding", "plant"] };
 
   /* ── v1.3 · give with crypto: the section, drawn at first paint ──────────────────────────
      ARRIVAL.give = { enabled? (false keeps the empty slot), reownProjectId, chains? (EVM networks
@@ -2503,7 +2952,10 @@
     { id: "sol", name: "Solana", sym: "SOL", icon: "coin", ok: /^[1-9A-HJ-NP-Za-km-z]{32,44}$/, uri: "solana:" },
   ];
   // Networks whose own coin is ETH (so "Send ETH" means ETH on every one of them).
-  var GIVE_NETS = { mainnet: "Ethereum", ethereum: "Ethereum", base: "Base", arbitrum: "Arbitrum One", optimism: "OP Mainnet", sepolia: "Sepolia (a test network)" };
+  var GIVE_NETS = { mainnet: "Ethereum", ethereum: "Ethereum", base: "Base", arbitrum: "Arbitrum One", optimism: "OP Mainnet", sepolia: "sepolia" };
+  function netName(k) {
+    return k === "sepolia" ? W.sepolia : GIVE_NETS[k];
+  }
   function giveAddress(id) {
     var A = (GIVE && GIVE.addresses) || {};
     var v = A[id];
@@ -2523,42 +2975,42 @@
     var A = G.addresses || { eth: null, btc: null, sol: null };
     var coins = COINS.filter(function (c) { return Object.prototype.hasOwnProperty.call(A, c.id); });
     var any = coins.some(function (c) { return giveAddress(c.id); });
-    var who = org.short || org.name || "us";
+    var who = org.short || org.name || W.us;
     var rows = coins.map(function (c) {
       var addr = giveAddress(c.id);
       var head = '<span class="arr-path-icon arr-shape">' + icon(c.icon) + '</span><div class="arr-coin-main"><h3>' + esc(c.name) + ' <span class="arr-coin-sym">' + c.sym + "</span></h3>";
       if (!addr) {
-        return '<li class="arr-coin arr-shape is-soon" data-coin="' + c.id + '">' + head + '<p class="arr-coin-soon">' + icon("hourglass-medium") + esc(G.soonText || "Treasury address coming soon") + "</p></div></li>";
+        return '<li class="arr-coin arr-shape is-soon" data-coin="' + c.id + '">' + head + '<p class="arr-coin-soon">' + icon("hourglass-medium") + esc(G.soonText || W.treasurySoon) + "</p></div></li>";
       }
       var chunks = addr.match(/.{1,4}/g).map(function (s) { return "<span>" + esc(s) + "</span>"; }).join("");
       var qid = "arr-qr-" + c.id + "-" + n;
       return (
         '<li class="arr-coin arr-shape" data-coin="' + c.id + '">' + head +
-        (c.id === "eth" ? '<p class="arr-coin-net">' + esc("On " + giveNets().map(function (k) { return GIVE_NETS[k]; }).join(", ")) + "</p>" : "") +
-        '<code class="arr-addr" translate="no" aria-label="' + esc(c.name + " address " + addr) + '">' + chunks + "</code>" +
+        (c.id === "eth" ? '<p class="arr-coin-net">' + esc(fill(W.onNets, { nets: giveNets().map(netName).join(", ") })) + "</p>" : "") +
+        '<code class="arr-addr" translate="no" aria-label="' + esc(fill(W.addressLabel, { coin: c.name, address: addr })) + '">' + chunks + "</code>" +
         '<div class="arr-coin-actions">' +
-        (c.id === "eth" ? '<button type="button" class="arr-btn arr-btn-primary arr-shape" data-give="send" data-coin="eth">' + icon("paper-plane-tilt") + "Send with your wallet</button>" : "") +
-        '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-arr-copy="' + esc(addr) + '">' + icon("copy") + "Copy</button>" +
-        '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-give="qr" data-coin="' + c.id + '" aria-expanded="false" aria-controls="' + qid + '">' + icon("qr-code") + "<span>Show QR code</span></button>" +
-        (c.uri ? '<a class="arr-btn arr-btn-quiet arr-shape" data-arr-direct href="' + esc(c.uri + addr) + '">' + icon("device-mobile") + "Open in a wallet app</a>" : "") +
+        (c.id === "eth" ? '<button type="button" class="arr-btn arr-btn-primary arr-shape" data-give="send" data-coin="eth">' + icon("paper-plane-tilt") + esc(W.sendWithWallet) + "</button>" : "") +
+        '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-arr-copy="' + esc(addr) + '">' + icon("copy") + esc(W.copy) + "</button>" +
+        '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-give="qr" data-coin="' + c.id + '" aria-expanded="false" aria-controls="' + qid + '">' + icon("qr-code") + "<span>" + esc(W.showQr) + "</span></button>" +
+        (c.uri ? '<a class="arr-btn arr-btn-quiet arr-shape" data-arr-direct href="' + esc(c.uri + addr) + '">' + icon("device-mobile") + esc(W.openWalletApp) + "</a>" : "") +
         "</div>" +
         '<div class="arr-coin-qr" id="' + qid + '" hidden></div></div></li>'
       );
     }).join("");
     var text = any
-      ? G.text || "Copy an address or scan its QR code with your wallet app, or connect a wallet and send from this page. Your wallet shows you exactly what you're approving before anything moves."
-      : G.previewText || "One button connects a browser wallet, a phone wallet (by QR code) or an email sign-in. No treasury address is published yet, so for now connecting is a preview of how giving will work: nothing can be sent.";
+      ? G.text || W.giveText
+      : G.previewText || W.givePreviewText;
     var safety = any
-      ? "Send only to an address on this page, and check its first and last characters in your wallet before you approve. No one from " + esc(who) + " will ever ask for your recovery phrase."
-      : "No wallet address is published here yet. If you see one anywhere claiming to be ours, please check with us first. No one from " + esc(who) + " will ever ask for your recovery phrase.";
+      ? fill(W.giveSafety, { who: esc(who) })
+      : fill(W.givePreviewSafety, { who: esc(who) });
     return (
       '<section class="arr-crypto arr-gift arr-shape" data-arr-wallet-slot data-arr-give data-give-mode="' + (any ? "live" : "preview") + '" aria-labelledby="arr-crypto-' + n + '">' +
-      '<h2 id="arr-crypto-' + n + '">' + icon("wallet") + esc(G.title || X.title || "Give with crypto") + (any ? "" : ' <span class="arr-soon">Preview</span>') + "</h2>" +
+      '<h2 id="arr-crypto-' + n + '">' + icon("wallet") + esc(G.title || X.title || W.giveTitle) + (any ? "" : ' <span class="arr-soon">' + esc(W.previewTag) + "</span>") + "</h2>" +
       "<p>" + text + "</p>" +
       (coins.length ? '<ul class="arr-coins">' + rows + "</ul>" : "") +
       '<div class="arr-give-actions">' +
-      '<button type="button" class="arr-btn ' + (any ? "arr-btn-quiet" : "arr-btn-primary") + ' arr-shape" data-give="connect">' + icon("plugs-connected") + "<span>Connect a wallet</span></button>" +
-      '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-give="learn">' + icon("question") + "New to wallets?</button></div>" +
+      '<button type="button" class="arr-btn ' + (any ? "arr-btn-quiet" : "arr-btn-primary") + ' arr-shape" data-give="connect">' + icon("plugs-connected") + "<span>" + esc(W.connectWallet) + "</span></button>" +
+      '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-give="learn">' + icon("question") + esc(W.newToWallets) + "</button></div>" +
       '<p class="arr-give-live" data-give-live role="status" aria-live="polite"></p>' +
       '<div class="arr-give-panel arr-shape" data-give-panel hidden></div>' +
       '<p class="arr-fine">' + safety + (G.note ? " " + G.note : "") + "</p></section>"
@@ -2613,12 +3065,13 @@
       },
       function () {
         var live = sec.querySelector("[data-give-live]");
-        if (live) live.textContent = "The wallet part of this page didn't load. Check your connection, then try again.";
+        if (live) live.textContent = W.walletLoadFailed;
       }
     );
   }
 
   function renderDonate(el) {
+    tagLang(el);
     var D = C.donate || {};
     var L = D.ledger || null;
     var X = D.crypto || {};
@@ -2626,15 +3079,15 @@
     var h = "";
     if (D.give && D.give.length) {
       h +=
-        '<section class="arr-give" aria-label="' + esc(D.giveLabel || "Ways to give") + '">' +
+        '<section class="arr-give" aria-label="' + esc(D.giveLabel || W.waysToGive) + '">' +
         D.give.map(function (g, i) {
           return (
             '<div class="arr-give-card arr-shape' + (i ? "" : " is-primary") + '"><h2>' + icon(g.icon || "heart") + esc(g.label) + "</h2>" +
             (g.note ? "<p>" + g.note + "</p>" : "") +
             (g.href
-              ? '<a class="arr-btn ' + (i ? "arr-btn-quiet" : "arr-btn-primary") + ' arr-shape" href="' + esc(g.href) + '" rel="noopener">' + esc(g.action || "Give") + icon("arrow-square-out") + "</a>" +
+              ? '<a class="arr-btn ' + (i ? "arr-btn-quiet" : "arr-btn-primary") + ' arr-shape" href="' + esc(g.href) + '" rel="noopener">' + esc(g.action || W.give) + icon("arrow-square-out") + "</a>" +
                 '<span class="arr-path-where">' + esc(hostOf(g.href)) + "</span>"
-              : softPlaceholder(g.placeholder || "This way to give isn't set up yet.")) +
+              : softPlaceholder(g.placeholder || W.giveNotSetUp)) +
             "</div>"
           );
         }).join("") +
@@ -2643,28 +3096,28 @@
     if (D.disclaimer) {
       var dc = D.disclaimer;
       h +=
-        '<aside class="arr-disclaimer arr-shape' + (dc.placeholder ? " is-placeholder" : "") + '" aria-label="' + esc(dc.title || "Please note") + '">' +
-        '<p class="arr-disclaimer-h">' + icon(dc.placeholder ? "note-pencil" : "info") + esc(dc.title || "Please note") + (dc.placeholder ? ' <span class="arr-soon">Placeholder</span>' : "") + "</p>" +
+        '<aside class="arr-disclaimer arr-shape' + (dc.placeholder ? " is-placeholder" : "") + '" aria-label="' + esc(dc.title || W.pleaseNote) + '">' +
+        '<p class="arr-disclaimer-h">' + icon(dc.placeholder ? "note-pencil" : "info") + esc(dc.title || W.pleaseNote) + (dc.placeholder ? ' <span class="arr-soon">' + esc(W.placeholderBadge) + "</span>" : "") + "</p>" +
         "<p>" + dc.text + "</p></aside>";
     }
     if (L) {
       h +=
-        '<section class="arr-contrib" aria-labelledby="arr-contrib-' + n + '"><h2 id="arr-contrib-' + n + '">' + icon("hand-heart") + esc(L.title || "Contribution ledger") + "</h2>" +
-        (L.intro ? '<p class="arr-intro">' + L.intro + "</p>" : "") + '<div data-arr-contrib><p class="arr-fine">Gathering the names…</p></div></section>';
+        '<section class="arr-contrib" aria-labelledby="arr-contrib-' + n + '"><h2 id="arr-contrib-' + n + '">' + icon("hand-heart") + esc(L.title || W.contribTitle) + "</h2>" +
+        (L.intro ? '<p class="arr-intro">' + L.intro + "</p>" : "") + '<div data-arr-contrib><p class="arr-fine">' + esc(W.gatheringNames) + "</p></div></section>";
     }
     h += GIVE
       ? giveShell(n, X)
       : '<section class="arr-crypto arr-shape" data-arr-wallet-slot aria-labelledby="arr-crypto-' + n + '">' +
-        '<h2 id="arr-crypto-' + n + '">' + icon(X.icon || "wallet") + esc(X.title || "Give with crypto") + ' <span class="arr-soon">' + esc(W.soon) + "</span></h2>" +
-        "<p>" + (X.text || "A way to give with a crypto wallet is on its way. It isn't open yet.") + "</p>" +
-        '<p class="arr-fine">' + (X.note || "No wallet address is published here yet. If you see one anywhere claiming to be ours, please check with us first.") + "</p></section>";
+        '<h2 id="arr-crypto-' + n + '">' + icon(X.icon || "wallet") + esc(X.title || W.giveTitle) + ' <span class="arr-soon">' + esc(W.soon) + "</span></h2>" +
+        "<p>" + (X.text || W.cryptoSoonText) + "</p>" +
+        '<p class="arr-fine">' + (X.note || W.cryptoSoonNote) + "</p></section>";
     if (D.tax) h += taxHTML(D.tax === true ? {} : D.tax, n);
     el.innerHTML = h;
     if (GIVE) watchGive(el.querySelector("[data-arr-give]"));
     if (!L) return;
     var box = el.querySelector("[data-arr-contrib]");
     var empty = function () {
-      box.innerHTML = '<div class="arr-contrib-empty arr-shape">' + icon("plant") + "<p>" + (L.empty || "No names here yet. People who'd like to be thanked by name are listed here, only with their permission. Giving without a name is just as welcome.") + "</p></div>";
+      box.innerHTML = '<div class="arr-contrib-empty arr-shape">' + icon("plant") + "<p>" + (L.empty || W.contribEmpty) + "</p></div>";
     };
     if (!L.src || !window.fetch) return empty();
     fetch(L.src, { credentials: "omit" })
@@ -2676,16 +3129,16 @@
         box.innerHTML =
           '<ul class="arr-contrib-list">' +
           list.map(function (c) {
-            var k = KINDS[c.kind] || (c.kind ? [c.kind, "heart"] : null);
+            var k = KINDS[c.kind] ? [W[KINDS[c.kind][0]], KINDS[c.kind][1]] : c.kind ? [c.kind, "heart"] : null;
             var name = c.url || c.github ? '<a href="' + esc(c.url || "https://github.com/" + c.github) + '" rel="noopener">' + esc(c.name) + "</a>" : esc(c.name);
             return (
               '<li class="arr-contrib-item arr-shape">' + avatarTag(c, 48) +
               '<span class="arr-person"><span class="arr-person-name">' + name + "</span>" +
-              (k ? '<span class="arr-contrib-kind">' + icon(k[1]) + esc(k[0]) + (c.since ? " · since " + esc(fmtMonth(c.since)) : "") + "</span>" : c.since ? '<span class="arr-contrib-kind">Since ' + esc(fmtMonth(c.since)) + "</span>" : "") +
+              (k ? '<span class="arr-contrib-kind">' + icon(k[1]) + esc(k[0]) + (c.since ? esc(fill(W.sinceKind, { month: fmtMonth(c.since) })) : "") + "</span>" : c.since ? '<span class="arr-contrib-kind">' + esc(fill(W.since, { month: fmtMonth(c.since) })) + "</span>" : "") +
               (c.note ? '<span class="arr-person-role">' + esc(c.note) + "</span>" : "") + "</span></li>"
             );
           }).join("") +
-          "</ul>" + (j.updated ? '<p class="arr-fine">Updated ' + esc(fmtDate(j.updated, true)) + ".</p>" : "");
+          "</ul>" + (j.updated ? '<p class="arr-fine">' + esc(fill(W.updatedOn, { date: fmtDate(j.updated, true) })) + "</p>" : "");
       });
   }
   /* ── v1.4 · receipts and taxes (ARRIVAL.donate.tax) ──────────────────────────────────────
@@ -2696,36 +3149,36 @@
      are deductible. deductible: a sentence, or true / false for a plain one. Strings may hold
      simple HTML, like the rest of ARRIVAL.donate. */
   function taxHTML(T, n) {
-    var who = org.short || org.name || "us";
-    var ask = hasContact ? '<a href="#contact" data-arrival-open="contact">reach out</a>' : "reach out";
-    var receipts = T.receipts || "Ask us for a receipt: " + ask + " and say what you gave and when.";
+    var who = org.short || org.name || W.us;
+    var ask = hasContact ? '<a href="#contact" data-arrival-open="contact">' + esc(W.reachOut) + "</a>" : esc(W.reachOut);
+    var receipts = T.receipts || fillH(W.taxReceipts, { reach: ask });
     var deductible =
       typeof T.deductible === "string" && T.deductible
         ? T.deductible
         : T.deductible === true
-          ? esc(who) + " says gifts to it may be tax-deductible. How much, if at all, depends on your own situation."
+          ? fill(W.taxMay, { who: esc(who) })
           : T.deductible === false
-            ? "Gifts to " + esc(who) + " aren't tax-deductible."
-            : "Whether a gift is tax-deductible depends on the organization's status and your own situation.";
+            ? fill(W.taxNot, { who: esc(who) })
+            : W.taxDepends;
     var row = function (ic, label, text) {
       return '<div class="arr-tax-row"><dt>' + icon(ic) + "<span>" + esc(label) + "</span></dt><dd>" + text + "</dd></div>";
     };
     return (
-      '<section class="arr-tax arr-shape" aria-labelledby="arr-tax-' + n + '"><h2 id="arr-tax-' + n + '">' + icon("receipt") + esc(T.title || "Receipts and taxes") + "</h2>" +
+      '<section class="arr-tax arr-shape" aria-labelledby="arr-tax-' + n + '"><h2 id="arr-tax-' + n + '">' + icon("receipt") + esc(T.title || W.taxTitle) + "</h2>" +
       '<dl class="arr-tax-list">' +
-      row("receipt", "Receipts", receipts) +
-      (T.status ? row("bank", "Status", T.status) : "") +
-      row("scales", "Tax-deductible?", deductible) +
+      row("receipt", W.taxReceiptsLabel, receipts) +
+      (T.status ? row("bank", W.taxStatusLabel, T.status) : "") +
+      row("scales", W.taxDeductibleLabel, deductible) +
       "</dl>" +
       (T.note ? "<p>" + T.note + "</p>" : "") +
-      '<p class="arr-fine">This isn\'t tax advice. For your own situation, ask a tax professional.</p></section>'
+      '<p class="arr-fine">' + W.taxAdvice + "</p></section>"
     );
   }
   function fmtMonth(s) {
     var m = /^(\d{4})-(\d{2})/.exec(String(s || ""));
     if (!m) return s;
     try {
-      return new Date(Date.UTC(+m[1], +m[2] - 1, 15)).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
+      return new Date(Date.UTC(+m[1], +m[2] - 1, 15)).toLocaleDateString(locale(), { month: "long", year: "numeric", timeZone: "UTC" });
     } catch (e) {
       return s;
     }
@@ -2772,6 +3225,7 @@
       .join("");
   }
   function renderMap(el) {
+    tagLang(el);
     var src = el.getAttribute("src") || (C.map && C.map.src);
     var here = el.getAttribute("here") || siteId;
     if (!src || !window.fetch) return;
@@ -2781,7 +3235,7 @@
       .catch(function () { return null; })
       .then(function (m) {
         if (!m || !m.nodes) {
-          el.innerHTML = softPlaceholder("The map couldn't be drawn just now. Try again in a moment, or use the links in the menu.", "Not this time.");
+          el.innerHTML = softPlaceholder(W.mapFailed, W.notThisTime);
           return;
         }
         el.innerHTML = '<div class="arr-map">' + mapHTML(m, here) + "</div>";
@@ -2802,50 +3256,57 @@
      wallet and then forgotten. Nothing is sent or recorded, and there are never any counts: counts
      wait for records anyone can verify (the bots card says how). */
   var PLEDGE = C.pledge && C.pledge.enabled !== false ? C.pledge : null;
-  var PW = assign(
-    {
-      title: "A pledge of support",
-      preview: "Preview",
-      intro: "Sign a short pledge with a crypto wallet. It's free: no gas and no money, and for now nothing is recorded.",
-      text: "I support {org} and the people it serves.",
-      readTitle: "Read the pledge",
-      readText: "It's above. Signing it says you support it, and nothing else about you.",
-      connectTitle: "Connect a wallet",
-      connectText: "One button for a browser wallet, a phone wallet (by QR code) or an email sign-in.",
-      connect: "Connect a wallet",
-      learn: "New to wallets?",
-      signTitle: "Sign it",
-      signText: "Your wallet shows the pledge and asks you to sign. It's a message, not a transaction: no gas, no contract, no money.",
-      sign: "Sign the pledge",
-      done: "done",
-      fine: "Signing sends nothing anywhere. The signature is checked here, in this tab, and then forgotten. This page never shows or keeps your wallet's address.",
-      tokensTitle: "Gratitude tokens",
-      tokensTag: "Coming",
-      tokensText:
-        "Later, a pledge may come with a token of gratitude, for anyone who'd like a deeper commitment. It would be soulbound: it stays in the wallet it was given to, and can't be sold, sent on or traded. It isn't money; it's a thank-you. It comes from the gratitude-token project Christopher W is building, which is still being tested. No dates.",
-      botsTitle: "How you'll know these aren't bots",
-      bots: [
-        "Each pledge is a signature. Anyone can check it against the wallet address that made it, with the tool below or any Ethereum toolkit.",
-        "A signature proves that a wallet signed. It doesn't prove that a unique person did: one person can make many wallets, and a program can sign too.",
-        "So before any count or list of pledges appears, pledges will be published as records anyone can check, such as on-chain attestations (the Ethereum Attestation Service is one way), optionally paired with a check that a real, unique person is behind each one. Human Passport (formerly Gitcoin Passport), World ID and BrightID are among the options; none has been chosen.",
-        "Until then, this page shows no counts at all.",
-      ],
-      verifyTitle: "Verify a signature",
-      verifyText: "Paste a wallet address, the exact message that was signed, and the signature. The check happens here in your browser; nothing is sent anywhere.",
-      address: "Wallet address",
-      addressHint: "0x and 40 more letters and numbers.",
-      signature: "Signature",
-      signatureHint: "0x and 130 more letters and numbers.",
-      message: "The message, exactly as it was signed",
-      messageHint: "Every line, space and character counts.",
-      check: "Check the signature",
-      clear: "Clear",
-      failed: "This part of the page didn't load. Check your connection, then try again.",
-    },
-    (PLEDGE && PLEDGE.words) || {}
-  );
+  // The pledge's words (pledge.js has its own for what follows a click). Same markers as WORDS.
+  /* PWORDS:begin */
+  var PWORDS = {
+    title: "A pledge of support",
+    preview: "Preview",
+    intro: "Sign a short pledge with a crypto wallet. It's free: no gas and no money, and for now nothing is recorded.",
+    text: "I support {org} and the people it serves.",
+    readTitle: "Read the pledge",
+    readText: "It's above. Signing it says you support it, and nothing else about you.",
+    connectTitle: "Connect a wallet",
+    connectText: "One button for a browser wallet, a phone wallet (by QR code) or an email sign-in.",
+    connect: "Connect a wallet",
+    learn: "New to wallets?",
+    signTitle: "Sign it",
+    signText: "Your wallet shows the pledge and asks you to sign. It's a message, not a transaction: no gas, no contract, no money.",
+    sign: "Sign the pledge",
+    done: "done",
+    fine: "Signing sends nothing anywhere. The signature is checked here, in this tab, and then forgotten. This page never shows or keeps your wallet's address.",
+    tokensTitle: "Gratitude tokens",
+    tokensTag: "Coming",
+    tokensText:
+      "Later, a pledge may come with a token of gratitude, for anyone who'd like a deeper commitment. It would be soulbound: it stays in the wallet it was given to, and can't be sold, sent on or traded. It isn't money; it's a thank-you. It comes from the gratitude-token project Christopher W is building, which is still being tested. No dates.",
+    botsTitle: "How you'll know these aren't bots",
+    bots: [
+      "Each pledge is a signature. Anyone can check it against the wallet address that made it, with the tool below or any Ethereum toolkit.",
+      "A signature proves that a wallet signed. It doesn't prove that a unique person did: one person can make many wallets, and a program can sign too.",
+      "So before any count or list of pledges appears, pledges will be published as records anyone can check, such as on-chain attestations (the Ethereum Attestation Service is one way), optionally paired with a check that a real, unique person is behind each one. Human Passport (formerly Gitcoin Passport), World ID and BrightID are among the options; none has been chosen.",
+      "Until then, this page shows no counts at all.",
+    ],
+    verifyTitle: "Verify a signature",
+    verifyText: "Paste a wallet address, the exact message that was signed, and the signature. The check happens here in your browser; nothing is sent anywhere.",
+    address: "Wallet address",
+    addressHint: "0x and 40 more letters and numbers.",
+    signature: "Signature",
+    signatureHint: "0x and 130 more letters and numbers.",
+    message: "The message, exactly as it was signed",
+    messageHint: "Every line, space and character counts.",
+    check: "Check the signature",
+    clear: "Clear",
+    failed: "This part of the page didn't load. Check your connection, then try again.",
+    readAbout: "Read about it",
+    thisOrg: "this organization",
+  };
+  /* PWORDS:end */
+  function pledgeWords() {
+    var own = (PLEDGE && PLEDGE.words) || {};
+    return lang === BASE ? assign({}, PWORDS, own) : assign({}, PWORDS, own, langSec(lang, "pledge"));
+  }
+  var PW = pledgeWords();
   function pledgeText() {
-    return (PLEDGE && PLEDGE.text) || PW.text.replace("{org}", org.name || org.short || "this organization");
+    return (PLEDGE && PLEDGE.text) || PW.text.replace("{org}", org.name || org.short || PW.thisOrg);
   }
   function pledgeStep(k, n, title, text, body, done) {
     return (
@@ -2875,6 +3336,7 @@
     );
   }
   function renderPledge(el) {
+    tagLang(el);
     if (!PLEDGE) {
       el.hidden = true;
       return;
@@ -2905,7 +3367,7 @@
           (T
             ? '<section class="arr-pledge-card arr-shape" aria-labelledby="arr-pt-' + n + '"><h3 id="arr-pt-' + n + '">' + icon("hand-heart") + "<span>" + esc(T.title || PW.tokensTitle) +
               ' <span class="arr-soon">' + esc(PW.tokensTag) + "</span></span></h3><p>" + (T.text || esc(PW.tokensText)) + "</p>" +
-              (T.href ? '<a class="arr-btn arr-btn-quiet arr-shape" href="' + esc(T.href) + '" rel="noopener">' + esc(T.label || "Read about it") + icon("arrow-square-out") + "</a>" : "") + "</section>"
+              (T.href ? '<a class="arr-btn arr-btn-quiet arr-shape" href="' + esc(T.href) + '" rel="noopener">' + esc(T.label || PW.readAbout) + icon("arrow-square-out") + "</a>" : "") + "</section>"
             : "") +
           (B
             ? '<section class="arr-pledge-card arr-shape" aria-labelledby="arr-pb-' + n + '"><h3 id="arr-pb-' + n + '">' + icon("shield-check") + "<span>" + esc(B.title || PW.botsTitle) + "</span></h3>" +
@@ -3038,7 +3500,157 @@
     }
   }
 
+  /* ── v1.5 · switching language ────────────────────────────────────────────────────────────
+     relang() points everything the kit draws from at the new language: org.js in that language,
+     the words, the named lists and every config the kit read at load. redraw() then draws the
+     kit's elements again; an open splash or drawer stays open, in the new language. */
+  function relang(l) {
+    lang = l;
+    C = localize(l);
+    org = C.org || {};
+    site = assign({}, (C.sites || {})[siteId] || {}, mapText(window.ARRIVAL_SITE || {}, (I18N[l] || {}).text || {}, 1));
+    W = wordsFor(l);
+    lists();
+    NAV = C.nav && C.nav.items && C.nav.items.length ? C.nav : null;
+    ESS = C.essentials === false ? { donate: false, guide: false } : C.essentials || {};
+    CONTACT = site.contact !== undefined ? site.contact : C.contact || null;
+    COMM = site.community !== undefined ? site.community : C.community || null;
+    GIVE = C.give && C.give.enabled !== false ? C.give : null;
+    PLEDGE = C.pledge && C.pledge.enabled !== false ? C.pledge : null;
+    PW = pledgeWords();
+    interceptMap = null;
+  }
+  // Draw again in the visitor's language, loading its pack first when the kit needs one.
+  function switchLang(l) {
+    var go = function () {
+      if (state.lang !== l) return; // the visitor has already chosen another
+      relang(l);
+      release();
+      redraw();
+    };
+    if (l === BASE || pack(l)) go();
+    else loadPack(l).then(go);
+  }
+  var REDRAW = [
+    ["arrival-controls", renderControls],
+    ["arrival-nav", renderNav],
+    ["arrival-footer", renderFooter],
+    ["arrival-people", renderPeople],
+    ["arrival-latest", renderLatest],
+    ["arrival-map", renderMap],
+    ["arrival-langnote", renderLangNote],
+    // The giving and pledge sections redraw only until their module has started (it holds state).
+    ["arrival-donate", function (el) { if (!window.ArrivalGive) renderDonate(el); }],
+    ["arrival-pledge", function (el) { if (!window.ArrivalPledge) renderPledge(el); }],
+  ];
+  function redraw() {
+    // Remember an open drawer, by its place among the drawers, to open it again after.
+    var drawers = [].slice.call(doc.querySelectorAll("[data-arr-drawer]"));
+    var openAt = -1;
+    drawers.forEach(function (b, i) { if (b.getAttribute("aria-expanded") === "true") openAt = i; });
+    REDRAW.forEach(function (r) {
+      var list = doc.querySelectorAll(r[0]);
+      for (var i = 0; i < list.length; i++) if (list[i]._arr) r[1](list[i]);
+    });
+    // Dialogs: an open splash is drawn again in place; the others are built afresh next time.
+    if (splashEl) {
+      if (splashEl.open) {
+        splashEl.innerHTML = splashHTML();
+        tagLang(splashEl);
+        sync();
+        var f = splashEl.querySelector("input[data-arr-lang]:checked") || splashEl.querySelector("[data-arr-enter]");
+        if (f) f.focus();
+        if (noteWanted()) noteSeen();
+      } else {
+        splashEl.remove();
+        splashEl = null;
+      }
+    }
+    if (guideEl && !guideEl.open) { guideEl.remove(); guideEl = null; STEPS = null; }
+    if (pal && !pal.open) { pal.remove(); pal = null; }
+    if (contactEl && !contactEl.open) { contactEl.remove(); contactEl = null; }
+    if (communityEl && !communityEl.open) { communityEl.remove(); communityEl = null; }
+    var strips = doc.querySelectorAll("[data-arr-strip]");
+    for (var k = 0; k < strips.length; k++) {
+      var label = strips[k].getAttribute("data-arr-strip") === "l" ? W.scrollLeft : W.scrollRight;
+      strips[k].setAttribute("aria-label", label);
+      strips[k].title = label;
+    }
+    if (openAt >= 0) {
+      var btn = doc.querySelectorAll("[data-arr-drawer]")[openAt];
+      if (btn) {
+        openDrawer(btn);
+        var li = drawerOf(btn) && drawerOf(btn).querySelector("input[data-arr-lang]:checked");
+        if (li) li.focus();
+      }
+    }
+    sync();
+    langToast();
+  }
+  // A site with translated pages: go to this page's twin in the chosen language.
+  function followRoute() {
+    if (!hasLangs) return;
+    var h = routeFor(state.lang);
+    if (h && normUrl(h) !== normUrl(location.href)) location.assign(h);
+  }
+  // Once per visit, a quiet word that this page's own words aren't translated: not again after the
+  // splash said it, and not where the page already shows it (<arrival-langnote>).
+  function noteSeen(check) {
+    var k = KEY + ":langnote:" + lang;
+    try {
+      if (check && sessionStorage.getItem(k)) return true;
+      sessionStorage.setItem(k, "1");
+      return false;
+    } catch (e) {
+      return true;
+    }
+  }
+  function langToast() {
+    if (!noteWanted() || (splashEl && splashEl.open)) return;
+    if (doc.querySelector("arrival-langnote:not([hidden])")) return noteSeen();
+    if (!noteSeen(true)) toast(noteText(), 6500);
+  }
+  // <arrival-langnote>: the same note, wherever a page puts it (nothing in the base language).
+  function renderLangNote(el) {
+    if (!noteWanted()) {
+      el.hidden = true;
+      el.innerHTML = "";
+      return;
+    }
+    el.hidden = false;
+    tagLang(el);
+    el.innerHTML = '<p class="arr-langnote arr-shape">' + icon("translate") + "<span>" + esc(noteText()) + "</span></p>";
+  }
+  // hreflang alternates, when the site has translated twins of its pages.
+  function alternates() {
+    if (!hasLangs || typeof LC.route !== "function" || !doc.head || doc.head.querySelector('link[rel="alternate"][hreflang]')) return;
+    var add = function (code, href) {
+      var ln = doc.createElement("link");
+      ln.rel = "alternate";
+      ln.hreflang = code;
+      try {
+        ln.href = new URL(href, location.href).href;
+      } catch (e) {
+        return;
+      }
+      doc.head.appendChild(ln);
+    };
+    LANGS.forEach(function (l) {
+      var h = routeFor(l.id);
+      if (h) add(l.id, h);
+    });
+    var b = routeFor(BASE);
+    if (b) add("x-default", b);
+  }
+
   /* ── custom elements (defined here in <head>, so they render as the parser reaches them) ── */
+  // v1.5: while a returning visitor's language pack loads (from the cache, usually at once), the
+  // kit's elements wait to render, so the page never flashes in the wrong language. 1.2s at most.
+  function release() {
+    var q = held;
+    held = null;
+    if (q) q.forEach(function (x) { x[1](x[0]); });
+  }
   function define(name, render) {
     if (!window.customElements || customElements.get(name)) return;
     customElements.define(
@@ -3047,10 +3659,44 @@
         connectedCallback() {
           if (this._arr) return;
           this._arr = true;
-          render(this);
+          if (held) held.push([this, render]);
+          else render(this);
         }
       }
     );
+  }
+  // Resolves once the first language's words are ready (or after 1.2s); the splash waits for it.
+  var langReady = null;
+  if (hasLangs) {
+    alternates();
+    if (state.lang !== BASE) {
+      relang(state.lang); // the org's own words in this language apply at once
+      if (!pack(state.lang)) {
+        held = [];
+        var late = false;
+        langReady = new Promise(function (resolve) {
+          setTimeout(function () {
+            late = true;
+            release();
+            resolve();
+          }, 1200);
+          loadPack(state.lang).then(function () {
+            if (state.lang === lang) {
+              relang(lang);
+              if (late) redraw(); // it came after the wait: draw what's already showing again
+              else release();
+            }
+            resolve();
+          });
+        });
+      }
+    }
+  }
+  // v1.5: a lineage note ("you're on a rehearsal") comes first; the splash follows its "lineage:ack".
+  function afterLineage(fn) {
+    var pending = root.hasAttribute("data-lineage-pending") || !!doc.querySelector("dialog[data-lineage][open]");
+    if (pending) window.addEventListener("lineage:ack", fn, { once: true });
+    else fn();
   }
   define("arrival-controls", renderControls);
   define("arrival-avatar", renderAvatar);
@@ -3061,6 +3707,7 @@
   define("arrival-donate", renderDonate);
   define("arrival-map", renderMap);
   define("arrival-pledge", renderPledge);
+  define("arrival-langnote", renderLangNote);
 
   /* ── cursor effects: a trail behind the pointer, per motion level ────────────────────────
      motions[i].trail = true | { colors: [...], life: ms, width: px, alpha: 0..1, sparks: 0..1,
@@ -3198,6 +3845,10 @@
     else if (t.matches("[data-arr-cursor]")) set({ cursor: t.checked ? "on" : "off" }, tentative);
     else if (t.matches("[data-arr-text]")) set({ text: t.value }, tentative);
     else if (t.matches("[data-arr-measure]")) set({ measure: t.checked ? "comfy" : "full" }, tentative);
+    else if (t.matches("[data-arr-lang]")) {
+      set({ lang: t.value }, tentative);
+      if (!tentative) followRoute(); // the splash goes when it closes
+    }
     else if (t.matches("[data-arr-reading]")) {
       if (t.checked !== (state.reading === "on")) toggleReading(tentative);
     }
@@ -3283,6 +3934,15 @@
     } else if ((b = t.closest("[data-arr-drawer]"))) {
       if (b.getAttribute("aria-expanded") === "true") closeDrawers(true);
       else openDrawer(b);
+      return;
+    } else if ((b = t.closest("[data-arr-lang-chip]"))) {
+      // v1.5: the language chip opens the drawer at its language row.
+      var dw = b.parentNode && b.parentNode.querySelector("[data-arr-drawer]");
+      if (dw) {
+        openDrawer(dw);
+        var lr = drawerOf(dw) && drawerOf(dw).querySelector("input[data-arr-lang]:checked");
+        if (lr) lr.focus();
+      }
       return;
     } else if ((b = t.closest("[data-arrival-open]"))) {
       var what = b.getAttribute("data-arrival-open");
@@ -3435,7 +4095,14 @@
     scrollStrips();
     if (location.hash === "#welcome") openGuide();
     else if ((location.hash === "#contact" || location.hash === "#community") && canOpen(location.hash.slice(1))) open(location.hash.slice(1));
-    else if (splashWanted()) openSplash();
+    else if (splashWanted()) {
+      afterLineage(function () {
+        var go = function () { if (splashWanted()) openSplash(); };
+        if (langReady) langReady.then(go);
+        else go();
+      });
+    } else if (langReady) langReady.then(langToast); // in the visitor's language, once its words are here
+    else langToast();
     if (doc.querySelector("arrival-people, arrival-latest")) index();
     else idle(index);
     if (hasNews && visit && !visit.first) setTimeout(loadNews, 250);
@@ -3459,8 +4126,9 @@
     news: function () {
       return loadNews().then(function () { return { since: visit && visit.since, count: unread(), items: fresh.slice() }; });
     },
-    config: C,
-    site: site,
+    // The config and site in the visitor's language (v1.5: they follow a language change).
+    get config() { return C; },
+    get site() { return site; },
     // v1.3, for modules such as give/give.js: the kit's own dialog and toast.
     dialog: function (o) {
       o = o || {};
@@ -3476,5 +4144,22 @@
     toast: toast,
     // v1.4: give fades and chevrons to strips added after load (any [data-arr-scroll] in scope).
     strips: scrollStrips,
+    // v1.5: the language. lang() reads it, lang("es") chooses it (and goes to a translated twin, if
+    // the site has one). words(section, orgWords) is what give.js and pledge.js merge over their own
+    // English words: the org's words in the base language, else the pack's and the org's translation.
+    lang: function (id) {
+      if (id !== undefined && hasLangs && langOf(id) && id !== state.lang) {
+        set({ lang: id });
+        followRoute();
+      }
+      return hasLangs ? state.lang : BASE;
+    },
+    languages: function () {
+      return LANGS.map(function (l) { return { id: l.id, name: l.name }; });
+    },
+    words: function (section, orgWords) {
+      if (!hasLangs || lang === BASE) return assign({}, orgWords || {});
+      return assign({}, orgWords || {}, langSec(lang, section));
+    },
   };
 })();

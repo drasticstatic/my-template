@@ -1,4 +1,4 @@
-/*! Arrival kit v1.4 · a pledge of support · https://github.com/drasticstatic/my-template (changelog-template/arrival/pledge)
+/*! Arrival kit v1.5 · a pledge of support · https://github.com/drasticstatic/my-template (changelog-template/arrival/pledge)
  *
  * The same file in every org, beside arrival.js (served as /arrival/pledge/pledge.js). Tailor it
  * through org.js (window.ARRIVAL.pledge), never by editing this file:
@@ -35,12 +35,14 @@ const HASHES = "https://cdn.jsdelivr.net/npm/@noble/hashes@1.8.0/sha3/+esm"; // 
 const V = new URL(import.meta.url).search; // "?v=<kit version>": give.js is imported the same way arrival.js loads it
 
 const doc = document;
-const C = window.ARRIVAL || {};
+// v1.5: the config in the visitor's language (the kit keeps it current), else org.js as written.
+const C = (window.Arrival && window.Arrival.config) || window.ARRIVAL || {};
 const P = C.pledge || {};
 const ORG = C.org || {};
 const WHO = ORG.name || ORG.short || "this organization";
 const KIT = window.Arrival || {};
 
+/* WORDS:begin */
 const W = Object.assign(
   {
     title: "A pledge of support",
@@ -52,6 +54,7 @@ const W = Object.assign(
     asking: "Asking the wallet in your browser…",
     connected: "A wallet is connected{wallet}. Its address stays in your wallet: this page doesn't show it or keep it.",
     connectedLive: "Connected{wallet}. You can sign the pledge now.",
+    toWallet: " to {wallet}",
     injectedNote: "This used the wallet in your browser. To disconnect, use your wallet's list of connected sites.",
     disconnected: "Disconnected.",
     declinedConnect: "You declined in your wallet. Nothing was shared.",
@@ -88,7 +91,9 @@ const W = Object.assign(
     verifyFailed: "The checker couldn't load. Check your connection, then try again.",
     eyebrow: "A pledge of support",
   },
-  P.words || {}
+  /* WORDS:end */
+  // v1.5: the org's words, then (in another language) the kit's pack and the org's translation.
+  KIT.words ? KIT.words("pledge", P.words) : P.words || {}
 );
 
 /* ── helpers ─────────────────────────────────────────────────────────────────────────────── */
@@ -202,7 +207,7 @@ function onWallet(st) {
   if (S.account !== was) {
     S.signed = null;
     S.result = "";
-    if (S.account) live(fill(W.connectedLive, { wallet: S.wallet ? " to " + S.wallet : "" }));
+    if (S.account) live(fill(W.connectedLive, { wallet: S.wallet ? fill(W.toWallet, { wallet: S.wallet }) : "" }));
     else if (was) live(W.disconnected);
   }
   render();

@@ -7,6 +7,7 @@
 - **Wave 5:** reading mode, what's new and the ledger.
 - **Wave 6:** the interface half.
 - **Kits 1.3–1.4:** giving with crypto, essentials, the pledge.
+- **Kit 1.5:** languages, starting with Spanish.
 
 Every gotcha, verify step and porting checklist is still here. Moved out of the [README](../README.md) on
 2026-10-25 so the front door could stay simple; nothing was deleted.
@@ -1006,6 +1007,62 @@ header row and no errors.
   concierge.js's Foyers patching with `groups`.
 - Copy-check before every rollout: `cmp` each destination against the previous canonical version;
   a mismatch is a fork, not a stale copy.
+
+## 🗣️ Kit v1.5, 2026-10-26 — languages: a warm welcome in each visitor's own words
+
+**Why:** Christopher asked for "a warm multilingual language welcome to all organizations". A read-only
+recon across PIR, Psanctuary, Psanctuary Church, ORG and Psychedelic Policy Reform found every site
+English only. Despite the README's old line about "language pickers", the kit had none: one `words`
+hook, in one language. About 200 more English strings were drawn straight from the code, and dates
+were fixed to `en-US`.
+
+**What changed** (branch `kit-1.5-languages`, built and tested in the lab before any portal):
+- **Every string the kit draws now lives in one table**, `WORDS` (arrival.js), plus `PWORDS` for the
+  pledge. give.js and pledge.js keep their own tables. 215 kit words, 74 pledge words and 73 give
+  words, all re-voiceable by an org and all translatable.
+- **`arrival/i18n/es.js`**, the kit in Spanish. It's warm Latin-American Spanish using tú, with David
+  Amaringo's site as the voice reference. It loads only for a visitor who chooses Spanish.
+  `reviewed: false` until a native speaker reads it.
+- **`languages` and `i18n` in org.js.** With two or more languages, the splash opens with "Your language
+  · Tu idioma", and each language's door is written in that language. Choosing one redraws the splash at
+  once. The drawer has the same row, and the header gets a small language chip.
+- **Honest content:** a page without a translated twin keeps its words and says so in one quiet line,
+  with no machine-translation widget. `<arrival-langnote>` places that line in a page.
+- **A returning visitor never sees the wrong language flash.** The kit's elements wait up to 1.2s for
+  the pack (usually from the cache, at once).
+
+**Decisions worth keeping:**
+- **`<html lang>` is left alone.** It describes the page's own words. The kit marks its own menus and
+  dialogs with `lang`, so a screen reader voices English content in English and Spanish menus in
+  Spanish. `data-lang` on `<html>` carries the choice for CSS. (The recon suggested setting `<html
+  lang>`. That would make screen readers read English pages with Spanish pronunciation.)
+- **An org.js without `languages` is byte-identical to 1.4.** It was checked by rendering main's kit and
+  this one with the same v1.4 org.js in jsdom and comparing the whole document at 20 points: the
+  splash, the drawer, all eight guide steps, search, contact and community. Every one was identical.
+- **Doors, not a dropdown.** Each door's icon is closed until it's the chosen one, then open: the
+  one small flourish. Doors sit side by side where there's room, and one per row on a phone, so each
+  welcome stays on one line.
+- **The legend asks in every language** ("Your language · Tu idioma"), in the drawer too, so someone
+  who can't read the current language still finds the way back.
+- **Search finds a language by its own name.** Typing "español" offers "Language: Español". Spanish search
+  words keep the English ones too.
+
+**Gotchas:**
+- **jsdom fires DOMContentLoaded after a synchronous `eval`.** A harness that snapshots right away never
+  sees the splash. Wait a tick first. (The first comparison run "passed" without the splash in it.)
+- **A local test server needs `Cache-Control: no-store`.** Otherwise Chrome keeps the old `arrival.css`
+  across reloads, and a fixed layout looks broken.
+- **`height: 100%` on a door's inner panel** resolved against the grid row before the content was
+  counted, and clipped the welcome line. `min-height` fixed it.
+- **The toast must wait for the pack.** Fired at boot, the once-per-visit note came out in English
+  ("Menus in Español…"). It now follows `langReady`.
+
+**Rollout, when Christopher says go** (not done in this pass):
+1. Copy `arrival.js`, `arrival.css`, `give/give.js`, `pledge/pledge.js` and the new `i18n/es.js`
+   unchanged to each portal's `/arrival/`, and to the policy-reform AstroLog's self-hosted copy.
+2. Each org adds `languages` (and as much of `i18n.es` as it has words for) to its own `org.js`.
+3. PIR: the kit may translate its own buttons. PIR® literature stays in English until the Literature
+   Committee provides official translations.
 
 ## Future enhancement, not required (can simmer)
 
