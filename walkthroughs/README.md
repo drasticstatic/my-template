@@ -15,6 +15,14 @@ walk me through it").
 | 📁 | [Connect Google Drive](CONNECT-GOOGLE-DRIVE.md) | let your helper read the documents you keep in Drive |
 | 🕸️ | [Connect Graphify](CONNECT-GRAPHIFY.md) | give your helper a map of a codebase, so it reads less and understands more |
 
+## Keeping an organization healthy
+
+| | Guide | For when you want to… |
+|---|---|---|
+| 🔐 | [Org security settings](ORG-SECURITY-SETTINGS.md) | turn on alerts and security fixes everywhere, apply "GitHub recommended" to public repositories and a free-features configuration to private ones, and see why private ones show "failed" (an owner's clicks) |
+| 🌱 | [Dependabot](DEPENDABOT.md) | keep updates a gentle monthly trickle, test every PR against a baseline, merge one at a time while checking the live site, and hold a risky major with a written reason |
+| 🔒 | [The members' edition of a profile](MEMBERS-PROFILE.md) | show signed-in members the full public welcome plus their own section, kept in step by a daily workflow |
+
 ## Patterns worth borrowing
 
 | | Pattern | For when you want to… |

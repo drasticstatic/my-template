@@ -24,6 +24,7 @@ You'll usually meet the secret scan in one of these moments. Match the message, 
 | `ggshield` asks for authentication / *no API key* | Installed, but this person hasn't logged in | Ask your person to run `ggshield auth login` themselves (it opens their browser). **Never ask them to paste a key into chat** |
 | `ggshield` reports **secrets found** and the commit stops | A secret is in the staged change | **Stop. Do not bypass.** Follow *"A secret was found"* below |
 | A Guardrails run says `Secret scan skipped: add the GITGUARDIAN_API_KEY secret` | The repository has no CI key yet | Tell your person that **an owner** adds it (below). Until then, only local scans protect this repository |
+| It still says **skipped**, though the secret shows in the repository's list | The secret was saved **empty** (see the gotcha below) | Have your person set it again on the repository's Secrets page, then re-run Guardrails |
 | The Guardrails **Secret scan** step fails after a push | A secret reached GitHub | Treat it as leaked: follow *"A secret reached GitHub"* below. Tell your person straight away |
 | No hooks ran at all on a fresh clone | Hooks aren't activated in this clone | Run `sh scripts/install-hooks.sh` (it sets `core.hooksPath` to `.githooks/`) |
 | A change was made on GitHub's website, by Codex in the cloud, or by ChatGPT | Local hooks never ran | That's expected. After it lands, check that the Guardrails run is green |
@@ -69,6 +70,17 @@ off ggshield's global hook without a word.
    secret.** Name it `GITGUARDIAN_API_KEY` and paste the token **there**, never into a chat or a file.
 4. Push any change and check that the Guardrails run shows the **Secret scan** step running, not
    skipped.
+
+> **Gotcha: a secret can be saved empty without a word.** `gh secret set NAME -R <owner>/<repo>` asks
+> for the value at a hidden prompt. In a shell that **can't** prompt, it stores an **empty** secret and
+> reports success. That includes an AI helper's shell, Claude Code's `!` shell and scripts. The name
+> appears in the list, but the scan still says *skipped*. Use one of these instead:
+> - the repository's **Secrets** page in the browser, or
+> - your own Terminal, or
+> - a pipe from the clipboard, which works anywhere:
+>   `pbpaste | gh secret set NAME -R <owner>/<repo> && pbcopy </dev/null`.
+>
+> Then re-run Guardrails and look for the scan's own result line.
 
 One key per workshop repository. The public `-publish-preview` and `-public` repositories don't need one.
 
