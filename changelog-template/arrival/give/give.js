@@ -164,6 +164,33 @@ const W = Object.assign(
     learnSafeText: "Connecting only shows this page your public address. Nothing moves until you approve it in your wallet, which shows the amount and the network fee first. No one from {who} will ever ask for your recovery phrase (the 12 or 24 words); anyone who does isn't us.",
     learnGetTitle: "Getting a wallet",
     learnGetText: "From their makers' own sites:",
+    // v1.5.2: the practice gift. Nothing in it touches a wallet, a key, a provider or the network.
+    practiceTitle: "A practice gift",
+    practiceEyebrow: "Practice: no money moves",
+    practiceIntro: "Walk through giving exactly as it works, with a practice wallet. No wallet, no money and no address are involved, and nothing leaves this page.",
+    practiceAmount: "How much would you give?",
+    practiceReviewBtn: "Review it in the practice wallet",
+    practiceWalletTitle: "What your wallet would show",
+    practiceFrom: "A request from {site}",
+    practiceSending: "Sending",
+    practiceTo: "To",
+    practiceToNote: "A real wallet shows {org}'s address here. Check its first and last characters against the page before you approve.",
+    practiceToSoon: "{org} hasn't published an address yet, so in real life there's nothing to send to yet.",
+    practiceNetwork: "Network",
+    practiceFee: "Network fee",
+    practiceFeeText: "Set by the network when you send. A real wallet shows it here before you approve.",
+    practiceApprove: "Approve (practice)",
+    practiceDecline: "Decline",
+    practiceDoneTitle: "✓ This is what a real gift looks like. Nothing was sent.",
+    practiceDoneText: "In a real wallet, approving sends the amount and the fee, and gives you a transaction ID you can look up. This was practice: no money moved, nothing was recorded, and this page kept nothing.",
+    practiceReceipt: "Practice receipt",
+    practiceStamp: "Practice",
+    practiceWhen: "When",
+    practiceTx: "Transaction",
+    practiceNoTx: "None: nothing was sent",
+    practiceDeclinedTitle: "You declined. Nothing was sent.",
+    practiceDeclinedText: "That's exactly what a real wallet does when you decline: nothing moves, and nothing is shared.",
+    practiceAgain: "Start over",
     close: "Close",
   },
   /* WORDS:end */
@@ -253,6 +280,9 @@ const S = {
   learn: null,
   learnKind: null,
   learnConnect: null,
+  practice: null, // v1.5.2: the practice gift's dialog; pAmt and pNet live only while it's open
+  pAmt: "",
+  pNet: "",
   n: 0,
 };
 const $ = (sel) => S.sec && S.sec.querySelector(sel);
@@ -873,6 +903,140 @@ function learn(kind, opts) {
   S.learn.show();
 }
 
+/* ── v1.5.2 · the practice gift ─────────────────────────────────────────────────────────────
+   A walk through giving with nothing real in it: no wallet, no key, no provider, no network
+   request and no address (shown or invented). The org is named, never addressed. The amount lives
+   in this dialog only; closing it forgets everything. ARRIVAL.give.practice: false hides it. */
+const PRACTICE_AMOUNTS = ["0.005", "0.01", "0.05"];
+const locale = () => (KIT.lang ? KIT.lang() : "en") || "en";
+function practiceAmountHTML() {
+  const list = nets();
+  const pick = S.pAmt || PRACTICE_AMOUNTS[1];
+  return (
+    '<h3 tabindex="-1" data-gp-focus>' + icon("hand-coins") + esc(W.practiceAmount) + "</h3>" +
+    '<div class="arr-practice-chips" role="group" aria-label="' + esc(W.amount) + '">' +
+    PRACTICE_AMOUNTS.map((a) => '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-gp="amt" data-amt="' + a + '" aria-pressed="' + (a === pick ? "true" : "false") + '">' + esc(a) + " ETH</button>").join("") +
+    "</div>" +
+    '<div class="arr-give-fields"><label class="arr-give-field" for="arr-gp-amt">' + esc(W.amount) +
+    '<span class="arr-input-unit"><input class="arr-input" id="arr-gp-amt" inputmode="decimal" autocomplete="off" value="' + esc(pick) + '"><span>ETH</span></span></label>' +
+    (list.length > 1
+      ? '<label class="arr-give-field" for="arr-gp-net">' + esc(W.network) + '<select class="arr-input" id="arr-gp-net">' +
+        list.map((n) => '<option value="' + n.key + '"' + (S.pNet === n.key ? " selected" : "") + ">" + esc(n.name) + "</option>").join("") + "</select></label>"
+      : "") +
+    "</div>" + (list.length > 1 ? "" : '<p class="arr-fine">' + esc(fill(W.sendOn, { net: list[0].name })) + "</p>") +
+    '<div class="arr-give-actions"><button type="button" class="arr-btn arr-btn-primary arr-shape" data-gp="review">' + icon("eye") + esc(W.practiceReviewBtn) + "</button></div>"
+  );
+}
+function practiceRows(amt, net) {
+  const row = (k, v, note) => "<dt>" + esc(k) + "</dt><dd>" + v + (note ? "<small>" + esc(note) + "</small>" : "") + "</dd>";
+  return (
+    "<dl>" +
+    row(W.practiceSending, esc(amt) + " ETH") +
+    row(W.practiceTo, '<span translate="no">' + esc(WHO) + "</span>", fill(address("eth") ? W.practiceToNote : W.practiceToSoon, { org: WHO })) +
+    row(W.practiceNetwork, esc(net.name)) +
+    "</dl>"
+  );
+}
+function practiceReviewHTML(amt, net) {
+  return (
+    '<h3 tabindex="-1" data-gp-focus>' + icon("wallet") + esc(W.practiceWalletTitle) + "</h3>" +
+    '<div class="arr-practice-wallet arr-shape">' +
+    '<div class="arr-practice-head"><span class="arr-fine">' + esc(fill(W.practiceFrom, { site: location.host || ORG.name || WHO })) + '</span><span class="arr-practice-stamp">' + esc(W.practiceStamp) + "</span></div>" +
+    practiceRows(amt, net).replace("</dl>", "<dt>" + esc(W.practiceFee) + "</dt><dd><small>" + esc(W.practiceFeeText) + "</small></dd></dl>") +
+    "</div>" +
+    '<div class="arr-give-actions">' +
+    '<button type="button" class="arr-btn arr-btn-primary arr-shape" data-gp="approve">' + icon("check") + esc(W.practiceApprove) + "</button>" +
+    '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-gp="decline">' + icon("x") + esc(W.practiceDecline) + "</button></div>"
+  );
+}
+function practiceDoneHTML(ok, amt, net) {
+  const again =
+    '<div class="arr-give-actions"><button type="button" class="arr-btn arr-btn-quiet arr-shape" data-gp="again">' + icon("arrow-counter-clockwise") + esc(W.practiceAgain) + "</button>" +
+    '<button type="button" class="arr-btn arr-btn-quiet arr-shape" data-arr-close>' + esc(W.close) + "</button></div>";
+  if (!ok) return '<h3 tabindex="-1" data-gp-focus>' + icon("hand-palm") + esc(W.practiceDeclinedTitle) + "</h3><p>" + esc(W.practiceDeclinedText) + "</p>" + again;
+  let when = "";
+  try {
+    when = new Date().toLocaleString(locale(), { dateStyle: "medium", timeStyle: "short" });
+  } catch (e) {
+    when = new Date().toLocaleString();
+  }
+  return (
+    // The title carries its own ✓, like the practice pledge's, so no icon beside it.
+    '<h3 tabindex="-1" data-gp-focus>' + esc(W.practiceDoneTitle) + "</h3><p>" + esc(W.practiceDoneText) + "</p>" +
+    '<div class="arr-practice-wallet arr-practice-receipt arr-shape" role="group" aria-label="' + esc(W.practiceReceipt) + '">' +
+    '<div class="arr-practice-head"><strong>' + esc(W.practiceReceipt) + '</strong><span class="arr-practice-stamp">' + esc(W.practiceStamp) + "</span></div>" +
+    practiceRows(amt, net).replace("</dl>", "<dt>" + esc(W.practiceWhen) + "</dt><dd>" + esc(when) + "</dd><dt>" + esc(W.practiceTx) + "</dt><dd>" + esc(W.practiceNoTx) + "</dd></dl>") +
+    "</div>" + again
+  );
+}
+function practiceShow(html) {
+  const body = S.practice.el.querySelector("[data-gp-body]");
+  body.innerHTML = html;
+  const live = S.practice.el.querySelector("[data-gp-live]");
+  if (live) live.textContent = "";
+  const h = body.querySelector("[data-gp-focus]");
+  if (h) h.focus();
+}
+function practice() {
+  if (!KIT.dialog) return;
+  if (!S.practice) {
+    S.practice = KIT.dialog({
+      cls: "arr-practice",
+      title: W.practiceTitle,
+      eyebrow: W.practiceEyebrow,
+      html: "<p>" + esc(W.practiceIntro) + '</p><div data-gp-body></div><p class="arr-give-live" data-gp-live role="status" aria-live="polite"></p>',
+      // Closing forgets the amount: the next practice starts fresh.
+      onClose: () => {
+        S.pAmt = "";
+        S.pNet = "";
+      },
+    });
+    S.practice.el.addEventListener("click", (e) => {
+      const b = e.target.closest && e.target.closest("[data-gp]");
+      if (!b) return;
+      e.preventDefault();
+      const what = b.getAttribute("data-gp");
+      const el = S.practice.el;
+      if (what === "amt") {
+        el.querySelectorAll('[data-gp="amt"]').forEach((x) => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
+        const inp = el.querySelector("#arr-gp-amt");
+        if (inp) {
+          inp.value = b.getAttribute("data-amt");
+          inp.removeAttribute("aria-invalid");
+        }
+      } else if (what === "review") {
+        const inp = el.querySelector("#arr-gp-amt");
+        const amt = String((inp && inp.value) || "").trim().replace(",", ".");
+        if (!toWei(amt)) {
+          const live = el.querySelector("[data-gp-live]");
+          if (live) live.textContent = W.badAmount;
+          if (inp) {
+            inp.setAttribute("aria-invalid", "true");
+            inp.focus();
+          }
+          return;
+        }
+        const sel = el.querySelector("#arr-gp-net");
+        S.pAmt = amt;
+        S.pNet = sel ? sel.value : nets()[0].key;
+        practiceShow(practiceReviewHTML(amt, NETS[S.pNet] || nets()[0]));
+      } else if (what === "approve" || what === "decline") {
+        practiceShow(practiceDoneHTML(what === "approve", S.pAmt, NETS[S.pNet] || nets()[0]));
+      } else if (what === "again") {
+        practiceShow(practiceAmountHTML());
+      }
+    });
+    // Typing an amount un-presses the chips that no longer match.
+    S.practice.el.addEventListener("input", (e) => {
+      if (e.target.id !== "arr-gp-amt") return;
+      e.target.removeAttribute("aria-invalid");
+      S.practice.el.querySelectorAll('[data-gp="amt"]').forEach((x) => x.setAttribute("aria-pressed", x.getAttribute("data-amt") === e.target.value.trim() ? "true" : "false"));
+    });
+  }
+  practiceShow(practiceAmountHTML());
+  S.practice.show(S.practice.el.querySelector("[data-gp-focus]"));
+}
+
 /* ── the kit calls these ─────────────────────────────────────────────────────────────────── */
 function init(sec) {
   if (!sec || sec._give) return;
@@ -897,6 +1061,7 @@ async function act(name, el, sec) {
     return connect();
   }
   if (name === "learn") return learn(S.account ? null : S.state);
+  if (name === "practice") return practice();
   if (name === "disconnect") return disconnect();
   if (name === "qr") return qr(el);
   if (name === "send") {
@@ -925,4 +1090,4 @@ const wallet = {
   learn, // (kind?, { eyebrow, onConnect }) the "New to wallets?" guide
 };
 
-window.ArrivalGive = { init, act, wallet, version: "1.5.1", appkit: APPKIT_VERSION };
+window.ArrivalGive = { init, act, wallet, version: "1.5.2", appkit: APPKIT_VERSION };
