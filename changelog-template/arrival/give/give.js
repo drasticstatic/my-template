@@ -151,6 +151,19 @@ const W = Object.assign(
     qrFailed: "The QR code couldn't be drawn. Copy the address instead.",
     learnTitle: "Wallets, in plain words",
     learnEyebrow: "Give with crypto",
+    // v1.5.1: the guide's own sections, so they follow the visitor's language too.
+    learnWhatTitle: "What a wallet is",
+    learnWhatText: "A crypto wallet is an app that holds the keys to your coins. A website never gets those keys. When a page like this one asks for something (to see your address, or to send a gift), your wallet shows you exactly what's being asked and waits for you to approve or decline.",
+    learnKindsTitle: "Browser wallets and phone wallets",
+    learnKindsText: "Some wallets live in your browser as an extension (MetaMask, Rabby, Brave's built-in wallet) and work in Chrome, Firefox, Brave and Edge. Others are apps on your phone (MetaMask, Rainbow, Trust Wallet and many more). Either kind works here.",
+    learnSafariTitle: "Why Safari can't use a browser wallet",
+    learnSafariText: "A wallet extension works by adding a small connector to every page you open, which the page then talks to. Safari doesn't let extensions add that connector, on a Mac or on an iPhone, so a browser wallet can't reach a page there. That's Apple's choice, not a fault in your wallet or in this page.",
+    learnPhoneTitle: "Use your phone wallet instead",
+    learnPhoneText: "On a computer, choose {connect}, then WalletConnect or your wallet's name: a QR code appears. Scan it with your phone wallet's own scanner (not the camera app) and approve on your phone. On a phone, pick your wallet from the list and it opens for you, or open this page inside your wallet app's own browser.",
+    learnSafeTitle: "Staying safe",
+    learnSafeText: "Connecting only shows this page your public address. Nothing moves until you approve it in your wallet, which shows the amount and the network fee first. No one from {who} will ever ask for your recovery phrase (the 12 or 24 words); anyone who does isn't us.",
+    learnGetTitle: "Getting a wallet",
+    learnGetText: "From their makers' own sites:",
     close: "Close",
   },
   /* WORDS:end */
@@ -813,15 +826,17 @@ const WALLETS = [
   ["Brave Wallet", "https://brave.com/wallet/"],
 ];
 function learnHTML() {
+  // Words are escaped; {connect} becomes the button's own name in bold, {who} the org's name.
   const part = (ic, h, p) => "<section><h3>" + icon(ic) + esc(h) + "</h3><p>" + p + "</p></section>";
+  const say = (s) => fill(esc(s), { connect: "<strong>" + esc(W.connect) + "</strong>", who: esc(WHO) });
   return (
     '<div data-give-notice hidden></div>' +
-    part("wallet", "What a wallet is", "A crypto wallet is an app that holds the keys to your coins. A website never gets those keys. When a page like this one asks for something (to see your address, or to send a gift), your wallet shows you exactly what's being asked and waits for you to approve or decline.") +
-    part("browser", "Browser wallets and phone wallets", "Some wallets live in your browser as an extension (MetaMask, Rabby, Brave's built-in wallet) and work in Chrome, Firefox, Brave and Edge. Others are apps on your phone (MetaMask, Rainbow, Trust Wallet and many more). Either kind works here.") +
-    part("compass", "Why Safari can't use a browser wallet", "A wallet extension works by adding a small connector to every page you open, which the page then talks to. Safari doesn't let extensions add that connector, on a Mac or on an iPhone, so a browser wallet can't reach a page there. That's Apple's choice, not a fault in your wallet or in this page.") +
-    part("device-mobile", "Use your phone wallet instead", "On a computer, choose <strong>Connect a wallet</strong>, then WalletConnect or your wallet's name: a QR code appears. Scan it with your phone wallet's own scanner (not the camera app) and approve on your phone. On a phone, pick your wallet from the list and it opens for you, or open this page inside your wallet app's own browser.") +
-    part("shield-check", "Staying safe", "Connecting only shows this page your public address. Nothing moves until you approve it in your wallet, which shows the amount and the network fee first. No one from " + esc(WHO) + " will ever ask for your recovery phrase (the 12 or 24 words); anyone who does isn't us.") +
-    "<section><h3>" + icon("arrow-square-out") + "Getting a wallet</h3><p>From their makers' own sites:</p>" +
+    part("wallet", W.learnWhatTitle, say(W.learnWhatText)) +
+    part("browser", W.learnKindsTitle, say(W.learnKindsText)) +
+    part("compass", W.learnSafariTitle, say(W.learnSafariText)) +
+    part("device-mobile", W.learnPhoneTitle, say(W.learnPhoneText)) +
+    part("shield-check", W.learnSafeTitle, say(W.learnSafeText)) +
+    "<section><h3>" + icon("arrow-square-out") + esc(W.learnGetTitle) + "</h3><p>" + esc(W.learnGetText) + "</p>" +
     '<ul class="arr-learn-links">' + WALLETS.map((w) => '<li><a class="arr-btn arr-btn-quiet arr-shape" href="' + w[1] + '" rel="noopener">' + esc(w[0]) + "</a></li>").join("") + "</ul></section>" +
     '<div class="arr-give-actions">' +
     // Handled here, not by the kit's [data-give] router, so the guide works on any page (the pledge's too).
@@ -910,4 +925,4 @@ const wallet = {
   learn, // (kind?, { eyebrow, onConnect }) the "New to wallets?" guide
 };
 
-window.ArrivalGive = { init, act, wallet, version: "1.4.0", appkit: APPKIT_VERSION };
+window.ArrivalGive = { init, act, wallet, version: "1.5.1", appkit: APPKIT_VERSION };

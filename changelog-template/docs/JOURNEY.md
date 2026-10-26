@@ -1081,6 +1081,10 @@ Hardhat or Anvil node), and wagmi persists connections to localStorage. Both bre
 nothing saved". The policy-reform dApp got the same practice wallet with viem's `generatePrivateKey`,
 held in a React ref, outside wagmi.
 
+**Also in 1.5.1:** the "New to wallets?" guide was written straight into give.js's HTML, so its
+sections stayed in English on a Spanish page. Its words now live in give.js's `WORDS` table (`learnWhat…`
+through `learnGet…`), with `{connect}` and `{who}` slots, and every pack carries them (389 words each).
+
 ## Future enhancement, not required (can simmer)
 
 `divorce-custody-assistant/vocational-compliance/build_vocational_log.py` generates an animated,
