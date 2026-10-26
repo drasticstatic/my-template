@@ -746,8 +746,11 @@ html.arr-locked {
   display: block;
   cursor: pointer;
 }
+/* border-box: with content-box, height:100% plus padding overflowed the frame by the padding, and
+   the clipped corners hid the last line of a wrapped motto (any narrow card, and most Spanish ones) */
 .arr-card .arr-frame {
   height: 100%;
+  box-sizing: border-box;
   transition: background 0.25s ease;
 }
 .arr-card .arr-in {
@@ -756,6 +759,7 @@ html.arr-locked {
   flex-direction: column;
   gap: 0.15rem;
   height: 100%;
+  box-sizing: border-box;
   padding: 0.75rem 0.9rem 0.85rem;
   background: var(--background);
   color: var(--foreground);
@@ -938,6 +942,7 @@ html.arr-locked {
 }
 .arr-lang .arr-frame {
   height: 100%;
+  box-sizing: border-box;
   transition: background 0.25s ease;
 }
 .arr-lang .arr-in {
