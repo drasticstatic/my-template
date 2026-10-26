@@ -111,6 +111,16 @@ the frame's edges and the footer cut off. Only comparing the images before and a
 **Whenever an update touches something that draws (images, PDFs, cards, charts), open a few
 outputs.**
 
+**The cause and the fix:**
+- **Cause:** satori 0.63 sizes boxes like CSS does (content-box). An element with a set width plus
+  padding or a border grows past its size. 0.18 counted the padding inside (border-box).
+- **Fix:** one line in each card generator's style helper makes every element
+  `boxSizing: "border-box"`.
+- **Proof:** with that line, 0.18's output stayed byte-identical (231 of 231 cards across the
+  AstroLogs), and 0.63 drew the same layout.
+- **Lesson:** fix the code so it works on both versions *before* merging the update, then let the
+  update through.
+
 </details>
 
 <details>
@@ -132,6 +142,13 @@ Check for a nested copy afterwards: `ls node_modules/<parent>/node_modules`.
 astro 7 needs Node 22.23.4 or newer, but the site's `deploy.yml` still pinned Node 20. It built
 locally on a newer Node, then would have failed in CI. Before merging a framework major, check the
 `node-version` in the deploy workflow, and raise it in the same PR if needed.
+
+**Pin the long-term release, not a bare major** (`node-version: 24`, not `22`). Even a *minor* update
+can raise the floor: astro 7.4 needs Node 22.23.4 or newer. On 2026-10-26, GitHub's runner resolved
+`22` to 22.23.3, one patch short. Three sites built fine locally, merged, and then stopped in CI with
+*"Node.js v22.23.3 is not supported by Astro"*. A failed build publishes nothing, so visitors kept
+the last good version, and moving the workflows to 24 fixed it. **Test on the exact version CI
+resolves to.** The setup step's log shows it.
 
 </details>
 
