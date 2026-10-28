@@ -14,6 +14,7 @@ walk me through it").
 | 📝 | [Connect WordPress](CONNECT-WORDPRESS.md) | let your helper read and draft on a WordPress site *(groundwork)* |
 | 📁 | [Connect Google Drive](CONNECT-GOOGLE-DRIVE.md) | let your helper read the documents you keep in Drive |
 | 🕸️ | [Connect Graphify](CONNECT-GRAPHIFY.md) | give your helper a map of a codebase, so it reads less and understands more |
+| 🐦 | [Connect Littlebird](CONNECT-LITTLEBIRD.md) | let your coding helper read your Littlebird briefs and chats, and write project summaries back to her, without leaking anything private |
 
 ## Keeping an organization healthy
 
@@ -28,7 +29,8 @@ walk me through it").
 | | Pattern | For when you want to… |
 |---|---|---|
 | 🌳 | [Version lineage](VERSION-LINEAGE.md) | keep old and rehearsal copies of a site up **without** `noindex`, each greeting visitors once and linking forward to newer versions |
-| 📜 | [Proposals template](../proposals-template/README.md) | give your organization a private `proposals` repo where each idea is a plain-language page and a PDF, decided by the people it affects |
+| 📜 | [P
+| 🚀 | [Ultra runs](ULTRA-RUNS.md) | tell ultracode from ultrareview, stage a review so a free run isn't spent on an empty diff, and pick what deserves one |roposals template](../proposals-template/README.md) | give your organization a private `proposals` repo where each idea is a plain-language page and a PDF, decided by the people it affects |
 
 ## Three promises every guide keeps
 
