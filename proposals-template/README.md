@@ -68,5 +68,7 @@ committee removes a file; the board keeps what it was sent.
 
 </details>
 
+Also: [`TONES.md`](TONES.md), one colour family per organisation so a reader knows whose proposal it is before reading a word; and [why every PDF ships with its markdown](../walkthroughs/MARKDOWN-BESIDE-PDF.md).
+
 Related: [the members' edition of a profile](../walkthroughs/MEMBERS-PROFILE.md) (a members-only
 "What's happening" can point to every proposal), and [version lineage](../walkthroughs/VERSION-LINEAGE.md).

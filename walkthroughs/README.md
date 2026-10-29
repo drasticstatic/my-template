@@ -41,3 +41,4 @@ walk me through it").
    needed, you put it straight into the tool's own settings.
 
 Building your own fleet of helpers? See [BUILD_YOUR_OWN_FLEET.md](../BUILD_YOUR_OWN_FLEET.md).
+- [`MARKDOWN-BESIDE-PDF.md`](MARKDOWN-BESIDE-PDF.md): one document, two readers; why every PDF we send ships with its markdown, and what we ask partners to send.
