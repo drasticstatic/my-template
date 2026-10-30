@@ -58,3 +58,5 @@ See also: [walkthroughs/](../walkthroughs/) · [BUILD_YOUR_OWN_FLEET.md](../BUIL
 ## The `legal` repository
 
 Every organisation also gets one private repository named `legal` (entity, tax, filings, counsel, policies): the convention is in [LEGAL-REPO.md](LEGAL-REPO.md). Proposals ask; `legal` keeps.
+
+**Access, tokens and membership.** Who reads what, what a personal access token is and is not, deploy keys against tokens, and the member-side steps for a team such as a board: [`ACCESS-AND-PATS.md`](./ACCESS-AND-PATS.md). Link it from an organisation's ONBOARDING page; a reader needs no token to read in a browser.

@@ -20,7 +20,7 @@
 ![Taylor'd](https://img.shields.io/badge/Taylor'd_Wraps-magenta-ec4899?style=flat-square)
 ![David](https://img.shields.io/badge/david--amaringo-rainbow-dc2626?style=flat-square)
 ![Lab](https://img.shields.io/badge/drasticstatic_lab-brass_on_slate-d9a441?style=flat-square)
-![For](https://img.shields.io/badge/For-everyone%2C_the_same_violet-6d28d9?style=flat-square)
+![For](https://img.shields.io/badge/For-everyone%2C_the_same_slate-64748b?style=flat-square)
 
 </div>
 

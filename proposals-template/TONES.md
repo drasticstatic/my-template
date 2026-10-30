@@ -16,8 +16,8 @@ else changes. Each family is **four shades**, so a page carries a gradient of on
 | **david-amaringo** | Rainbow (David's art theme; the six hues cycle through the headings, see below) | `dc2626 ea580c ca8a04 16a34a 2563eb 7c3aed` | | | | the `david-amaringo/` child folder of THEF's `proposals` (006 lives there) and of the lab desk; the renderer picks the rainbow by folder name |
 | **drasticstatic lab** (trading-assistant, fortuna-vision, the DEX-arb bot, my-template, `pir-devine-news`, the `pir`/`psanctuary`/`O-R-G` parents) | Brass on slate, **plus the accent of the organisation a proposal serves** | `d9a441` | `334155` | `8a6a2a` | `f1f5f9` | each repo's `proposals/` when one exists |
 
-The "For" badge is the one colour shared across every organisation: **`6d28d9`** (so "For Kenney" looks the same
-whichever repo says it). Semantic icon colours are shared too and never retoned: green `15803d` ready, red `b91c1c`
+The "For" badge is the one colour shared across every organisation: neutral slate **`64748b`** (so "For Kenney" looks the same
+whichever repo says it, and sits apart from PIR's purple; changed from violet `6d28d9` on 2026-10-30 at Christopher's request). Semantic icon colours are shared too and never retoned: green `15803d` ready, red `b91c1c`
 blocked, purple `6d28d9` from-you, grey `4b5563` idle.
 
 ## Where each shade goes
@@ -38,7 +38,7 @@ Body text stays black on white: the tone is a frame, not a wash.
 ![Proposal](https://img.shields.io/badge/Proposal-001-PRIMARY?style=flat-square)
 ![Status](https://img.shields.io/badge/Status-draft-DEEP?style=flat-square)
 ![Date](https://img.shields.io/badge/Date-2026--10--29-MID?style=flat-square)
-![For](https://img.shields.io/badge/For-Name-6d28d9?style=flat-square)
+![For](https://img.shields.io/badge/For-Name-64748b?style=flat-square)
 ```
 
 ## Icons

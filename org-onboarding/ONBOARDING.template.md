@@ -91,3 +91,7 @@ In any repository of {{ORG_NAME}}:
 6. Explain the change in plain words and where to see it on the rehearsal copy.
 
 </details>
+
+## Access, tokens and membership
+
+Before anyone is handed a credential: the fleet's guide, `my-template/org-onboarding/ACCESS-AND-PATS.md` (what a PAT is and is not, the smallest credential that fits, member-side steps). Reading in a browser needs no token.
