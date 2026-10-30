@@ -219,3 +219,7 @@ sh scripts/install-hooks.sh
 
 Human-only commits: `git commit --no-verify`. **Canonical spec — single source of truth. Do not restate the field table locally; link it:**
 [`my-template/AGENT-SYNC/README.md`](https://github.com/drasticstatic/my-template/blob/main/AGENT-SYNC/README.md)
+
+## Proposals and PDFs
+
+When a proposal or any document leaves this repository as a PDF, the markdown it was rendered from goes with it; when one arrives as a PDF, ask for the markdown. Why and how: [Markdown beside the PDF](https://github.com/drasticstatic/my-template/blob/main/walkthroughs/MARKDOWN-BESIDE-PDF.md). Each organisation's colour family for proposals: [TONES.md](https://github.com/drasticstatic/my-template/blob/main/proposals-template/TONES.md).
