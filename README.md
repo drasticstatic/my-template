@@ -1,9 +1,18 @@
+<div align="center">
+
+<img src="assets/banner.svg" width="100%" alt="">
+
 # my-template
 
-> **Reusable repo scaffolding — ignore rules, agent guidance files, commit-attribution hooks, cross-agent coordination lanes, private→public sync workflows, deploy scripts, and branch protection rulesets.**
+**Reusable repo scaffolding for a fleet that people and AI helpers run together:** ignore rules, agent guidance files, commit-attribution hooks, cross-agent coordination lanes, private-to-public sync workflows, deploy scripts, branch-protection rulesets, a proposals kit with one colour family per organisation, and plain-language walkthroughs.
 
-[![Use this template](https://img.shields.io/badge/Use_this_template-2ea44f?style=flat)](https://github.com/drasticstatic/my-template/generate)
-[![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey?style=flat)](https://github.com/drasticstatic/.github)
+[![Use this template](https://img.shields.io/badge/Use_this_template-2ea44f?style=flat-square)](https://github.com/drasticstatic/my-template/generate)
+[![License: MIT](https://img.shields.io/badge/License-MIT-334155?style=flat-square)](https://github.com/drasticstatic/.github)
+![Organisations](https://img.shields.io/badge/Serving-6_organisations-d9a441?style=flat-square)
+![Tones](https://img.shields.io/badge/Proposal_tones-amber_·_purple_·_teal_·_emerald_·_magenta_·_rainbow_·_brass-8a6a2a?style=flat-square)
+![Updated](https://img.shields.io/badge/Updated-2026--10--29-334155?style=flat-square)
+
+</div>
 
 Click **Use this template** above (or the green button at the top of this page) to create a new repo pre-loaded with all scaffolding. Or copy individual files as needed.
 
@@ -75,6 +84,19 @@ Don't skip this — it's the step that gets missed most often (see `anthropas-ar
 | `proposals-template/` | A ready-to-copy private `proposals` repo: plain-language proposals (TL;DR, itinerary, questions, decisions log) rendered to PDF on every push |
 | `walkthroughs/` | Plain-language guides for people and their AI helpers: joining an org, connecting tools, keeping an org healthy |
 | `org-onboarding/` | The onboarding kit every organization's `.github` carries: ONBOARDING.md, an AGENTS.md template, the advisory credit hook |
+
+---
+
+## Find your way
+
+| You are… | Start at |
+|---|---|
+| **starting a new repo** | the two commands above, then the checklist |
+| **a person joining an organisation we serve**, or their AI helper | [`walkthroughs/`](./walkthroughs/) (joining, connecting tools, keeping an org healthy) and [`org-onboarding/`](./org-onboarding/) (the kit every org's `.github` carries, the hook-in note, the `legal` repo) |
+| **writing a proposal** | [`proposals-template/`](./proposals-template/): the shape, the 000 Start-here page, [`TONES.md`](./proposals-template/TONES.md) (one colour family per organisation, four shades each), and [why the markdown travels with the PDF](./walkthroughs/MARKDOWN-BESIDE-PDF.md) |
+| **setting up a nested parent repo** (a folder of independent repos) | [`NESTED-REPOS-GUIDE.md`](./NESTED-REPOS-GUIDE.md) |
+| **publishing a private repo's safe half** | the sync workflows below and [`AGENT-SYNC_PUBLIC/`](./AGENT-SYNC_PUBLIC/) |
+| **an AI helper reading this fleet** | [`AGENTS.md`](./AGENTS.md), then [`AGENT-SYNC/README.md`](./AGENT-SYNC/README.md) for the commit footer |
 
 ---
 
