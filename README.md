@@ -4,68 +4,81 @@
 
 # my-template
 
-**Reusable repo scaffolding for a fleet that people and AI helpers run together:** ignore rules, agent guidance files, commit-attribution hooks, cross-agent coordination lanes, private-to-public sync workflows, deploy scripts, branch-protection rulesets, a proposals kit with one colour family per organisation, and plain-language walkthroughs.
+**The path a new repository walks, laid out once.** Hooks, coordination lanes, private-to-public sync, proposals in every organisation's colour, onboarding kits and plain-language walkthroughs, for a fleet that people and AI helpers run together.
 
 [![Use this template](https://img.shields.io/badge/Use_this_template-2ea44f?style=flat-square)](https://github.com/drasticstatic/my-template/generate)
 [![License: MIT](https://img.shields.io/badge/License-MIT-334155?style=flat-square)](https://github.com/drasticstatic/.github)
-![Organisations](https://img.shields.io/badge/Serving-6_organisations-d9a441?style=flat-square)
-![Tones](https://img.shields.io/badge/Proposal_tones-amber_·_purple_·_teal_·_emerald_·_magenta_·_rainbow_·_brass-8a6a2a?style=flat-square)
-![Updated](https://img.shields.io/badge/Updated-2026--10--29-334155?style=flat-square)
+![Updated](https://img.shields.io/badge/Updated-2026--10--30-334155?style=flat-square)
+
+**The families** (one colour per organisation, four shades each; [`TONES.md`](./proposals-template/TONES.md)):
+
+![THEF](https://img.shields.io/badge/The_Holy_Earth_Foundation-amber-d97706?style=flat-square)
+![PIR](https://img.shields.io/badge/Psychedelics_in_Recovery-purple-5b2bb5?style=flat-square)
+![Psanctuary](https://img.shields.io/badge/Psanctuary_·_Ethereal_Offering-teal-0d9488?style=flat-square)
+![Church](https://img.shields.io/badge/Psanctuary_Church-blue-2563eb?style=flat-square)
+![ORG](https://img.shields.io/badge/O--R--G-emerald-059669?style=flat-square)
+![Taylor'd](https://img.shields.io/badge/Taylor'd_Wraps-magenta-ec4899?style=flat-square)
+![David](https://img.shields.io/badge/david--amaringo-rainbow-dc2626?style=flat-square)
+![Lab](https://img.shields.io/badge/drasticstatic_lab-brass_on_slate-d9a441?style=flat-square)
+![For](https://img.shields.io/badge/For-everyone%2C_the_same_violet-6d28d9?style=flat-square)
 
 </div>
 
-Click **Use this template** above (or the green button at the top of this page) to create a new repo pre-loaded with all scaffolding. Or copy individual files as needed.
-
 ---
 
-## Two commands per clone
+## The path
 
-Everything else here is optional. These are not:
+Follow it top to bottom the first time. After that, jump to the stop you need.
+
+### Stop 1 · Two commands, every clone
 
 ```sh
 sh scripts/install-hooks.sh        # activate the commit-attribution hook
 sh scripts/scaffold-agent-sync.sh  # create the right coordination lanes for this repo's visibility
 ```
 
-Both write local or first-time state that cannot be committed on your behalf. Git deliberately
-refuses to version-control hooks — a repo that shipped code which ran automatically on `git commit`
-would be an attack vector — so a committed hook is inert until a human points the clone at it.
-
-And at the **start of every session**, before reading deeply or editing:
+Git refuses to version-control hooks on purpose, so a committed hook is inert until a human points the clone at it. And at the **start of every session**, before reading deeply or editing:
 
 ```sh
 git pull --rebase --autostash
 ```
 
-Several agents and a human push to these repos, including unattended ones. A stale clone does not
-fail early; it fails at push time as a non-fast-forward rejection, after the work is done, when the
-tempting fix is a force-push that discards someone else's commit. `--autostash` makes this safe on a
-dirty tree.
+Several agents and a human push to these repos, including unattended ones. A stale clone fails at push time, after the work is done, when the tempting fix is a force-push that discards someone else's commit. `--autostash` makes this safe on a dirty tree.
+
+### Stop 2 · Decide visibility before the first commit
+
+`AGENT-SYNC/` and `logs/` must never exist in a public repo, and un-publishing is not something deletion can do ([`AGENT-SYNC_PUBLIC/README.md`](./AGENT-SYNC_PUBLIC/README.md)). Private source with a public twin? Name the twin `<repo>-public-preview` and wire the sync at Stop 5.
+
+### Stop 3 · License, security, contributors, topics
+
+Follow [`how-to-establish-cross_repo_CONTRIBUTORS_SECURITY_LICENSING.md`](https://github.com/drasticstatic/drasticstatic/blob/main/how-to-establish-cross_repo_CONTRIBUTORS_SECURITY_LICENSING.md) end to end: a real `LICENSE` in every public repo (the global `.github` fallback covers `SECURITY.md` and `CONTRIBUTING.md`, never `LICENSE`), a README license section that stays true on both halves of a private/public pair, and a description and topics via `gh repo edit`. Then `CLAUDE.md` and `.github/dependabot.yml` for the stack.
+
+### Stop 4 · Let the helpers read the map
+
+Run `./scripts/init-graphify.sh` from the repo root (keyless; [`workflow-templates/GRAPHIFY_SETUP.md`](./workflow-templates/GRAPHIFY_SETUP.md)). Write `AGENTS.md` from [`org-onboarding/AGENTS.template.md`](./org-onboarding/AGENTS.template.md). Every commit then carries the footer in [`AGENT-SYNC/README.md`](./AGENT-SYNC/README.md).
+
+### Stop 5 · Publish the safe half
+
+Pick a sync model below (allowlist when most is private, exclude list when most is public) and copy it to `.github/workflows/`. Any new root-level path is classified in the same commit that introduces it.
+
+### Stop 6 · Proposals, in your colour
+
+Copy [`proposals-template/repo/`](./proposals-template/repo/) into a private `proposals` repo. It opens with **000 Start here** (how a proposal reads, how to answer, how to bring your helper), renders a PDF on every push, keeps one child folder per site repo, and wears the organisation's family from [`TONES.md`](./proposals-template/TONES.md). [Why the markdown travels with the PDF.](./walkthroughs/MARKDOWN-BESIDE-PDF.md)
+
+### Stop 7 · People, and their helpers
+
+[`walkthroughs/`](./walkthroughs/): joining an organisation, connecting Littlebird, Firecrawl, Google Drive, Wix and WordPress, security settings, secret scans, ultra runs. [`org-onboarding/`](./org-onboarding/): the kit every organisation's `.github` carries, the **hook-in note** on the members' page, and the **`legal` repository** every organisation gets ([`LEGAL-REPO.md`](./org-onboarding/LEGAL-REPO.md)).
+
+### Stop 8 · A folder of repos
+
+[`NESTED-REPOS-GUIDE.md`](./NESTED-REPOS-GUIDE.md): a lightweight git-tracked parent with git-ignored children, no submodules; how `pir`, `psanctuary`, `the-holy-earth-foundation` and `dappu` are laid out.
 
 ---
 
-## ✅ New Repo Checklist
+## What's in the box
 
-Don't skip this — it's the step that gets missed most often (see `anthropas-argus-alfred`, which shipped without it for months):
-
-0. **Run the two commands above.** Then decide visibility *before* the first commit, because
-   `AGENT-SYNC/` and `logs/` must never exist in a public repo and un-publishing is not a thing
-   deletion can do — see [`AGENT-SYNC_PUBLIC/README.md`](./AGENT-SYNC_PUBLIC/README.md).
-1. **License, security & contributors** — follow [`how-to-establish-cross_repo_CONTRIBUTORS_SECURITY_LICENSING.md`](https://github.com/drasticstatic/drasticstatic/blob/main/how-to-establish-cross_repo_CONTRIBUTORS_SECURITY_LICENSING.md) end to end: a real `LICENSE` file in every *public* repo (the global `.github` fallback covers `SECURITY.md`/`CONTRIBUTING.md`, but **not** `LICENSE` — that one is per-repo, always), an accurate README License section (especially if this repo has a private-source + public-preview pair — the same README gets copied to both, so word it so it's true in either context), and topics/description set via `gh repo edit`.
-2. Fill in `CLAUDE.md` and `.github/dependabot.yml` for the new repo's stack.
-3. Wire up the sync workflow (allowlist or excludelist) if this repo has a public-preview counterpart.
-4. Run `./scripts/init-graphify.sh` from the new repo's root — deploys `.graphifyignore` and wires
-   the Claude Code hook (both free/keyless). See `workflow-templates/GRAPHIFY_SETUP.md` for the
-   pointer to the full guide and the keyed extraction step.
-
-## What's Included
-
-| File | Purpose |
-|------|---------|
-| `.gitignore` | Master ignore rules — secrets, OS files, build artifacts, Node, Python, Solidity, React/Vite |
-| `.augmentignore` | Controls what Augment Code indexes — includes dependency context, excludes noise |
-| `CLAUDE.md` | Claude Code CLI persistent instructions — fill in per-repo |
-| `AGENTS.md` | Cross-harness agent instructions (Codex, Cursor, Copilot and others read this) — keep in step with `CLAUDE.md` |
+| File / folder | What it does |
+|---|---|
 | `.githooks/commit-msg` | Enforces the commit-attribution footer; inert until `scripts/install-hooks.sh` runs |
 | `AGENT-SYNC/` | Cross-agent coordination lanes — **private repos only** |
 | `AGENT-SYNC_PUBLIC/` | Coordination safe to publish — the only lane a public repo gets |

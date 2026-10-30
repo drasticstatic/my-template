@@ -9,12 +9,12 @@ else changes. Each family is **four shades**, so a page carries a gradient of on
 |---|---|---|---|---|---|---|
 | **The Holy Earth Foundation** (the `proposals` repo, I Am One Self, Bushido Software / Escape Trainer) | Amber | `d97706` | `6b4f1d` | `b45309` | `fef3c7` | `theholyearthfoundation/proposals`; drafts in `drasticstatic/proposals-thef` |
 | **Psychedelics in Recovery®** (org-wide, committees, the Board's inbox) | Purple | `5b2bb5` | `3b1f6e` | `7c3aed` | `ede9fe` | `psychedelicsinrecovery/proposals`; committee `proposals/` folders |
-| **Psanctuary** and **Ethereal Offering** (gratitude-token-project, `_astro`, `_docs`) | Teal | `0d9488` | `134e4a` | `0f766e` | `ccfbf1` | `gratitude-token-project_astro/proposals/` now; the Psanctuary org when it migrates |
-| **Psanctuary Church** | Emerald (teal's greener sibling, so the church and the sanctuary read as kin) | `059669` | `064e3b` | `047857` | `d1fae5` | when its proposals repo exists |
+| **Psanctuary** and **Ethereal Offering** (gratitude-token-project, the dappu suite) | Teal | `0d9488` | `134e4a` | `0f766e` | `ccfbf1` | `psanctuary/proposals`; drafts in `drasticstatic/proposals-dappu` |
+| **Psanctuary Church** | Blue (psilocybin's blue, the church's logo; teal's deeper sibling) | `2563eb` | `1e3a8a` | `1d4ed8` | `dbeafe` | `psanctuarychurch/proposals` |
+| **O-R-G** (Octagon Religious Research Group) | Emerald | `059669` | `064e3b` | `047857` | `d1fae5` | `Octagon-Religious-Research-Group-ORG/proposals` |
 | **Taylor'd Wraps** (a lab gift) | Magenta | `ec4899` | `9d174d` | `be185d` | `fce7f3` | `taylordwraps/proposals/` (private) |
-| **david-amaringo** | Rainbow (David's art theme; the six hues cycle through the headings, see below) | `dc2626 ea580c ca8a04 16a34a 2563eb 7c3aed` | | | | when his proposals folder exists; THEF's 006 is his today, in amber |
+| **david-amaringo** | Rainbow (David's art theme; the six hues cycle through the headings, see below) | `dc2626 ea580c ca8a04 16a34a 2563eb 7c3aed` | | | | the `david-amaringo/` child folder of THEF's `proposals` (006 lives there) and of the lab desk; the renderer picks the rainbow by folder name |
 | **drasticstatic lab** (trading-assistant, fortuna-vision, the DEX-arb bot, my-template, `pir-devine-news`, the `pir`/`psanctuary`/`O-R-G` parents) | Brass on slate, **plus the accent of the organisation a proposal serves** | `d9a441` | `334155` | `8a6a2a` | `f1f5f9` | each repo's `proposals/` when one exists |
-| **O-R-G** | *not yet chosen* | | | | | |
 
 The "For" badge is the one colour shared across every organisation: **`6d28d9`** (so "For Kenney" looks the same
 whichever repo says it). Semantic icon colours are shared too and never retoned: green `15803d` ready, red `b91c1c`
@@ -75,9 +75,13 @@ render in another family, or set the defaults at the top of the script once per 
 lighter primary, accents in the mid, and `section h1 { … !important }` so the default theme does not win. Render
 with node on PATH and `CHROME_PATH` set, or Marp hangs (`walkthroughs/MARKDOWN-BESIDE-PDF.md`).
 
+## Child folders
+
+Every proposals repo carries one child folder per site or project repo it serves (`theholyearthfoundation/proposals/bushido-code/`, `…/iamoneself-retreats/`, `…/david-amaringo/`), empty but for a `.gitkeep` until a proposal belongs to that repo alone. Org-wide proposals stay at the root. The renderer walks both levels and writes `pdf/<child>/NNN-name.pdf`; a nested page links its icons as `../../assets/icons/`.
+
 ## Adding an organisation
 
 Pick a family no neighbour uses (the table is the register), add the row here with its four shades, set the defaults
 in that repo's render script, retone its icons, and use the badge recipe above in its `_template/README.md`.
 
-<sub>Register started 2026-10-29; four shades, the lab accent, rainbow, Psanctuary and Psanctuary Church added the same night. Related: [`README.md`](README.md) (the template), [`../walkthroughs/MARKDOWN-BESIDE-PDF.md`](../walkthroughs/MARKDOWN-BESIDE-PDF.md) (why every PDF ships with its markdown).</sub>
+<sub>Register started 2026-10-29; four shades, the lab accent and rainbow the same night; Oct 30: Psanctuary Church moved to blue, O-R-G took emerald, child folders per site repo (`<proposals>/<repo>/NNN-…`) with the tone chosen by folder. Related: [`README.md`](README.md) (the template), [`../walkthroughs/MARKDOWN-BESIDE-PDF.md`](../walkthroughs/MARKDOWN-BESIDE-PDF.md) (why every PDF ships with its markdown).</sub>

@@ -1,17 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="220" viewBox="0 0 1200 220" role="img" aria-label="my-template: the fleet's reusable scaffolding">
-  <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1e293b"/><stop offset="1" stop-color="#334155"/></linearGradient>
-    <linearGradient id="w" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#d9a441" stop-opacity="0"/><stop offset=".5" stop-color="#f1d28a" stop-opacity=".95"/><stop offset="1" stop-color="#d9a441" stop-opacity="0"/></linearGradient>
-  </defs>
-  <rect width="1200" height="220" rx="18" fill="url(#g)"/>
-  <path d="M0 150 C 150 110, 250 190, 400 150 S 650 110, 800 150 S 1050 190, 1200 150" fill="none" stroke="url(#w)" stroke-width="3"/>
-  <path d="M0 172 C 150 132, 250 212, 400 172 S 650 132, 800 172 S 1050 212, 1200 172" fill="none" stroke="url(#w)" stroke-width="1.5" opacity=".55"/>
-  <g font-family="Helvetica, Arial, sans-serif" fill="#f8fafc">
-    <text x="60" y="88" font-size="44" font-weight="700">my-template</text>
-    <text x="60" y="124" font-size="20" fill="#f1d28a">the drasticstatic lab's reusable scaffolding, for people and their AI helpers</text>
-    <text x="60" y="152" font-size="15" fill="#cbd5e1" opacity=".9">hooks · coordination lanes · private-to-public sync · proposals in every organisation's tone · onboarding kits · walkthroughs</text>
-  </g>
-  <g transform="translate(1040,50)" fill="none" stroke="#f1d28a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity=".9">
-    <rect x="4" y="4" width="52" height="52" rx="8"/><path d="M18 22 h24 M18 32 h24 M18 42 h14"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="200" viewBox="0 0 1200 200" role="img" aria-label="my-template">
+  <rect width="1200" height="200" rx="16" fill="#1e293b"/>
+  <path d="M0 150 C 200 110, 400 190, 600 150 S 1000 110, 1200 150" fill="none" stroke="#d9a441" stroke-width="3" opacity=".85"/>
+  <text x="60" y="95" font-family="Helvetica, Arial, sans-serif" font-size="54" font-weight="700" fill="#ffffff">my-template</text>
+  <text x="60" y="132" font-family="Helvetica, Arial, sans-serif" font-size="22" fill="#f1d28a">the path a new repo walks, laid out once for people and their helpers</text>
 </svg>
