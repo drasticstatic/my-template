@@ -32,7 +32,7 @@ jobs:
                 "$f" > "$name/_print.md"
             npx -y md-to-pdf@5 "$name/_print.md" \
               --basedir . \
-              --css 'img{display:inline-block !important;vertical-align:-3px;margin:0 3px} h2 img{vertical-align:-5px} details>summary{font-weight:600} img[src*=screenshots]{display:block !important;max-width:100% !important;height:auto !important;margin:6px 0 !important;vertical-align:top} table:has(img[src*=screenshots]){table-layout:fixed;width:100%} table:has(img[src*=screenshots]) td{vertical-align:top}' \
+              --css 'img{display:inline-block !important;vertical-align:-3px;margin:0 3px} h2 img{vertical-align:-5px} details>summary{font-weight:600} h1{color:#6b4f1d} h2{color:#6b4f1d;border-bottom:2px solid #d97706;padding-bottom:4px} h3,h4{color:#b45309} a{color:#d97706} blockquote{border-left:4px solid #d97706;background:#fef3c7;padding:6px 14px;margin-left:0} th{background:#fef3c7;color:#6b4f1d} details>summary{font-weight:600;color:#b45309} hr{border:0;border-top:1px solid #d97706;opacity:.45} sub{color:#b45309} img[src*=screenshots]{display:block !important;max-width:100% !important;height:auto !important;margin:6px 0 !important;vertical-align:top} table:has(img[src*=screenshots]){table-layout:fixed;width:100%} table:has(img[src*=screenshots]) td{vertical-align:top}' \
               --launch-options '{"args":["--no-sandbox"]}' \
               --pdf-options '{"format":"Letter","margin":{"top":"18mm","bottom":"18mm","left":"16mm","right":"16mm"},"printBackground":true}'
             mv "$name/_print.pdf" "pdf/$name.pdf"

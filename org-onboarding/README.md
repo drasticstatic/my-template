@@ -54,3 +54,7 @@ for the helper to read it.
 | Octagon Religious Research Group | ✅ 2026-10-25 | ✅ 2026-10-29 | |
 
 See also: [walkthroughs/](../walkthroughs/) · [BUILD_YOUR_OWN_FLEET.md](../BUILD_YOUR_OWN_FLEET.md)
+
+## The `legal` repository
+
+Every organisation also gets one private repository named `legal` (entity, tax, filings, counsel, policies): the convention is in [LEGAL-REPO.md](LEGAL-REPO.md). Proposals ask; `legal` keeps.
