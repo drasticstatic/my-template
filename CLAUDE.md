@@ -168,6 +168,14 @@ template, don't let this get silently skipped.
 
 ---
 
+## Pull requests and Promotes (October 2026)
+
+Helpers (Claude Code CLI sessions, Littlebird, any agent) may do everything up to the merge: edit, commit, push the
+**working branch** (`preview` where the repository has one), render, open the pull request and post its link.
+**The merge waits for a human with the role.** Merge with a merge commit, never squash, so every commit's
+attribution survives. Procedure: `SOP-OPS-002` in each organisation's `ops-standard-operating-procedures`
+(template: `my-template/sop-template/`); the road itself is `SOP-OPS-001`.
+
 ## Commit Convention
 
 Full fleet convention, shown here regardless of whether this specific repo currently has an Augment

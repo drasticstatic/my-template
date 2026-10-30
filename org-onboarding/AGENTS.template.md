@@ -62,3 +62,11 @@ Co-Authored-By: <Agent> · <Engine> · <Provider> [<Model>]
 
 - `PENDING-TASKS.md`: the shared to-do list. Add, don't erase.
 - `AGENT-SYNC/created-by-<you>/`: handoff notes between helpers.
+
+## Pull requests and Promotes (October 2026)
+
+Helpers (Claude Code CLI sessions, Littlebird, any agent) may do everything up to the merge: edit, commit, push the
+**working branch** (`preview` where the repository has one), render, open the pull request and post its link.
+**The merge waits for a human with the role.** Merge with a merge commit, never squash, so every commit's
+attribution survives. Procedure: `SOP-OPS-002` in each organisation's `ops-standard-operating-procedures`
+(template: `my-template/sop-template/`); the road itself is `SOP-OPS-001`.
