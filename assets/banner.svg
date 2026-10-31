@@ -1,6 +1,67 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="200" viewBox="0 0 1200 200" role="img" aria-label="my-template">
-  <rect width="1200" height="200" rx="16" fill="#1e293b"/>
-  <path d="M0 150 C 200 110, 400 190, 600 150 S 1000 110, 1200 150" fill="none" stroke="#d9a441" stroke-width="3" opacity=".85"/>
-  <text x="60" y="95" font-family="Helvetica, Arial, sans-serif" font-size="54" font-weight="700" fill="#ffffff">my-template</text>
-  <text x="60" y="132" font-family="Helvetica, Arial, sans-serif" font-size="22" fill="#f1d28a">the path a new repo walks, laid out once for people and their helpers</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="260" viewBox="0 0 1200 260" role="img" aria-labelledby="t d">
+  <title id="t">my-template</title>
+  <desc id="d">The path a new repository walks, laid out once: eight stops on a brass line, over a rail of the organisation families' colours.</desc>
+  <defs>
+    <linearGradient id="ground" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1e293b"/>
+      <stop offset="1" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="brass" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#8a6a2a"/>
+      <stop offset=".55" stop-color="#d9a441"/>
+      <stop offset="1" stop-color="#f1d28a"/>
+    </linearGradient>
+    <clipPath id="card"><rect width="1200" height="260" rx="18"/></clipPath>
+  </defs>
+
+  <g clip-path="url(#card)">
+    <!-- opaque slate ground: the banner carries its own background, so it reads the same in light and dark GitHub themes -->
+    <rect width="1200" height="260" fill="url(#ground)"/>
+    <!-- faint grid behind the path, the lab's drafting paper -->
+    <g stroke="#334155" stroke-width="1" opacity=".5">
+      <path d="M680 24V236M746 24V236M812 24V236M878 24V236M944 24V236M1010 24V236M1076 24V236M1142 24V236"/>
+      <path d="M650 50H1176M650 100H1176M650 150H1176M650 200H1176"/>
+    </g>
+
+    <!-- the colour rail: one family per organisation, each in its four shades (deep, mid, primary, tint):
+         THEF amber, PIR purple, Psanctuary teal, Psanctuary Church blue, O-R-G emerald, Taylor'd magenta, the lab brass on slate -->
+    <g transform="translate(0 238)">
+      <g><rect width="43" height="22" fill="#6b4f1d"/><rect x="43" width="43" height="22" fill="#b45309"/><rect x="86" width="43" height="22" fill="#d97706"/><rect x="129" width="43" height="22" fill="#fef3c7"/></g>
+      <g transform="translate(172 0)"><rect width="43" height="22" fill="#3b1f6e"/><rect x="43" width="43" height="22" fill="#7c3aed"/><rect x="86" width="43" height="22" fill="#5b2bb5"/><rect x="129" width="43" height="22" fill="#ede9fe"/></g>
+      <g transform="translate(344 0)"><rect width="43" height="22" fill="#134e4a"/><rect x="43" width="43" height="22" fill="#0f766e"/><rect x="86" width="43" height="22" fill="#0d9488"/><rect x="129" width="43" height="22" fill="#ccfbf1"/></g>
+      <g transform="translate(516 0)"><rect width="43" height="22" fill="#1e3a8a"/><rect x="43" width="43" height="22" fill="#1d4ed8"/><rect x="86" width="43" height="22" fill="#2563eb"/><rect x="129" width="43" height="22" fill="#dbeafe"/></g>
+      <g transform="translate(688 0)"><rect width="43" height="22" fill="#064e3b"/><rect x="43" width="43" height="22" fill="#047857"/><rect x="86" width="43" height="22" fill="#059669"/><rect x="129" width="43" height="22" fill="#d1fae5"/></g>
+      <g transform="translate(860 0)"><rect width="43" height="22" fill="#9d174d"/><rect x="43" width="43" height="22" fill="#be185d"/><rect x="86" width="43" height="22" fill="#ec4899"/><rect x="129" width="43" height="22" fill="#fce7f3"/></g>
+      <g transform="translate(1032 0)"><rect width="42" height="22" fill="#334155"/><rect x="42" width="42" height="22" fill="#8a6a2a"/><rect x="84" width="42" height="22" fill="#d9a441"/><rect x="126" width="42" height="22" fill="#f1f5f9"/></g>
+      <!-- a slate veil keeps the rail quiet, and a hairline seam sits it under the card -->
+      <rect width="1200" height="22" fill="#0f172a" opacity=".3"/>
+      <rect width="1200" height="2" fill="#0f172a"/>
+      <g fill="#0f172a"><rect x="171" width="2" height="22"/><rect x="343" width="2" height="22"/><rect x="515" width="2" height="22"/><rect x="687" width="2" height="22"/><rect x="859" width="2" height="22"/><rect x="1031" width="2" height="22"/></g>
+    </g>
+
+    <!-- the path: eight stops on a brass line, the last one reached -->
+    <polyline points="680,184 746,160 812,170 878,132 944,142 1010,104 1076,112 1142,70" fill="none" stroke="url(#brass)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" text-anchor="middle">
+      <g fill="#0f172a" stroke="#d9a441" stroke-width="2.5">
+        <circle cx="680" cy="184" r="13"/><circle cx="746" cy="160" r="13"/><circle cx="812" cy="170" r="13"/><circle cx="878" cy="132" r="13"/>
+        <circle cx="944" cy="142" r="13"/><circle cx="1010" cy="104" r="13"/><circle cx="1076" cy="112" r="13"/>
+      </g>
+      <circle cx="1142" cy="70" r="16" fill="#d9a441"/>
+      <g fill="#f1d28a">
+        <text x="680" y="188.5">1</text><text x="746" y="164.5">2</text><text x="812" y="174.5">3</text><text x="878" y="136.5">4</text>
+        <text x="944" y="146.5">5</text><text x="1010" y="108.5">6</text><text x="1076" y="116.5">7</text>
+      </g>
+      <text x="1142" y="75" font-size="15" fill="#0f172a">8</text>
+    </g>
+
+    <!-- the words -->
+    <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+      <text x="64" y="68" font-size="14" font-weight="700" letter-spacing="3.5" fill="#d9a441">DRASTICSTATIC LAB · TEMPLATE</text>
+      <text x="61" y="134" font-size="68" font-weight="700" fill="#f8fafc" letter-spacing="-1">my-template</text>
+      <rect x="64" y="152" width="96" height="4" rx="2" fill="#d9a441"/>
+      <text x="64" y="188" font-size="22" fill="#f1d28a">The path a new repository walks, laid out once.</text>
+      <text x="64" y="216" font-size="15" fill="#94a3b8" letter-spacing=".4">hooks · lanes · private → public · proposals · procedures · decks</text>
+    </g>
+  </g>
+  <rect x=".75" y=".75" width="1198.5" height="258.5" rx="17.25" fill="none" stroke="#475569" stroke-width="1.5"/>
 </svg>

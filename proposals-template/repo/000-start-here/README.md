@@ -11,7 +11,7 @@
 ![Proposal](https://img.shields.io/badge/Proposal-000-__P__?style=flat-square)
 ![Status](https://img.shields.io/badge/Status-evergreen-__D__?style=flat-square)
 ![Updated](https://img.shields.io/badge/Updated-__DATE__-__M__?style=flat-square)
-![For](https://img.shields.io/badge/For-__FOR_BADGE__-6d28d9?style=flat-square)
+![For](https://img.shields.io/badge/For-__FOR_BADGE__-64748b?style=flat-square)
 
 </div>
 

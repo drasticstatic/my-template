@@ -8,7 +8,8 @@
 
 [![Use this template](https://img.shields.io/badge/Use_this_template-2ea44f?style=flat-square)](https://github.com/drasticstatic/my-template/generate)
 [![License: MIT](https://img.shields.io/badge/License-MIT-334155?style=flat-square)](https://github.com/drasticstatic/.github)
-![Updated](https://img.shields.io/badge/Updated-2026--10--30-334155?style=flat-square)
+![Updated](https://img.shields.io/badge/Updated-2026--10--31-334155?style=flat-square)
+[![Walkthrough deck](https://img.shields.io/badge/Walkthrough-deck-d9a441?style=flat-square)](./decks/my-template-walkthrough.marp.pdf)
 
 **The families** (one colour per organisation, four shades each; [`TONES.md`](./proposals-template/TONES.md)):
 
@@ -29,6 +30,8 @@
 ## The path
 
 Follow it top to bottom the first time. After that, jump to the stop you need.
+
+> **Rather see it on slides?** [`decks/my-template-walkthrough.marp.pdf`](./decks/my-template-walkthrough.marp.pdf) walks the same eight stops, then hooks and trailers, the AGENT-SYNC lanes, private → public sync, proposals and procedures in every organisation's colour, Gitmoji, and how a change travels: one deck for a new person and their helper ([source](./decks/my-template-walkthrough.marp.md), [html](./decks/my-template-walkthrough.marp.html)).
 
 ### Stop 1 · Two commands, every clone
 
@@ -102,6 +105,8 @@ Copy [`proposals-template/repo/`](./proposals-template/repo/) into a private `pr
 | `walkthroughs/` | Plain-language guides for people and their AI helpers: joining an org, connecting tools, keeping an org healthy |
 | `sop-template/` | Procedures beside proposals: a ready-to-copy `ops-standard-operating-procedures` repository (`SOP-[Department]-[ID]-[name].md`, approved versions as tags) with the universal OPS and IT procedures |
 | `org-onboarding/` | The onboarding kit every organization's `.github` carries: ONBOARDING.md, an AGENTS.md template, the advisory credit hook |
+| `decks/` | The template walked through on slides (Marp source, html, pdf), brass on slate |
+| `decks-template/` | A newcomer's welcome deck for any organisation: placeholders for its name, its four tone shades and its addresses, one `sed` to fill, two commands to render |
 
 ---
 
@@ -114,6 +119,7 @@ Copy [`proposals-template/repo/`](./proposals-template/repo/) into a private `pr
 | **writing a proposal** | [`proposals-template/`](./proposals-template/): the shape, the 000 Start-here page, [`TONES.md`](./proposals-template/TONES.md) (one colour family per organisation, four shades each), and [why the markdown travels with the PDF](./walkthroughs/MARKDOWN-BESIDE-PDF.md) |
 | **setting up a nested parent repo** (a folder of independent repos) | [`NESTED-REPOS-GUIDE.md`](./NESTED-REPOS-GUIDE.md) |
 | **publishing a private repo's safe half** | the sync workflows below and [`AGENT-SYNC_PUBLIC/`](./AGENT-SYNC_PUBLIC/) |
+| **welcoming someone to an organisation** | [`decks-template/`](./decks-template/): the welcome deck, filled in that organisation's colour |
 | **an AI helper reading this fleet** | [`AGENTS.md`](./AGENTS.md), then [`AGENT-SYNC/README.md`](./AGENT-SYNC/README.md) for the commit footer |
 
 ---

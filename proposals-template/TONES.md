@@ -64,7 +64,7 @@ hr { border: 0; border-top: 1px solid #PRIMARY; opacity: .45 }
 
 `TONE=rainbow sh proposals/scripts/render-pdfs.sh` renders David's family: the H1 is a six-hue gradient, the H2s
 cycle red, orange, yellow, green, blue, violet in order, rules are a gradient, and links are the blue. Badges for a
-rainbow proposal take the six hues in order (number red, status orange, date yellow, "For" stays `6d28d9`).
+rainbow proposal take the six hues in order (number red, status orange, date yellow, "For" stays the shared slate `64748b`).
 
 Run `TONE_PRIMARY=5b2bb5 TONE_DEEP=3b1f6e TONE_MID=7c3aed TONE_TINT=ede9fe sh proposals/scripts/render-pdfs.sh` to
 render in another family, or set the defaults at the top of the script once per repo.
