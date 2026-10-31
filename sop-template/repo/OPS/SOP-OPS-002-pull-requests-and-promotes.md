@@ -1,12 +1,12 @@
 # SOP-OPS-002 · Pull requests and Promotes: who opens, who merges, merge not squash, getting the link
 
-**Department:** OPS · **ID:** 002 · **Status:** draft (approved when tagged) · **Owner:** repository steward · **Last changed:** 2026-10-30
+**Department:** OPS · **ID:** 002 · **Status:** draft (approved when tagged) · **Owner:** repository steward · **Last changed:** 2026-10-31
 
 ## Purpose
 A pull request is how a change asks to move. Helpers may prepare everything up to the merge; a human merges. This procedure says how to open one, how to get the link without understanding git, and why the fleet merges with a merge commit and never squashes.
 
 ## Scope
-Every fleet repository. Personal private repositories cannot enforce branch protection on the free plan, so here the rule is a working agreement enforced by permissions and habit, not by GitHub; organisation repositories can add a ruleset (`my-template/branch-protection/ruleset.json`).
+Every fleet repository. Private repositories cannot enforce branch protection on the free plan (personal or organisation; the legend below has the detail), so there the rule is a working agreement enforced by permissions and habit, not by GitHub; public repositories, and private organisation repositories once the organisation is on Team, can add a ruleset (`my-template/branch-protection/ruleset.json`).
 
 ## Roles
 | Role | Does |
@@ -36,6 +36,28 @@ gh api -X PATCH repos/<owner>/<repo> -F allow_squash_merge=false -F allow_rebase
 ```
 (As of 2026-10-30 the API still reported squash allowed on `theholyearthfoundation/proposals` and `drasticstatic/proposals-thef`; the setting above closes it.)
 
+**Merge commits only, set on 2026-10-31** (squash and rebase off, merge commit on; read back from the API the same day) on these twelve:
+
+| Kind | Repositories |
+|---|---|
+| Proposals (7) | `theholyearthfoundation/proposals`, `drasticstatic/proposals-thef`, `drasticstatic/proposals-dappu`, `psychedelicsinrecovery/proposals`, `psanctuary/proposals`, `psanctuarychurch/proposals`, `Octagon-Religious-Research-Group-ORG/proposals` |
+| Procedures (5) | the `ops-standard-operating-procedures` repositories of THEF, the lab desk (`-thef`), PIR, Psanctuary and O-R-G |
+
+**No attribution was lost before the setting changed.** The five earlier Promotes (`proposals-thef` #1 and #2, `bushido-code` #1, `iamoneself-retreats` #15, `david-amaringo` #17) were each checked on 2026-10-31: every merge commit has two parents, so every commit from `preview` reached `main` with its own author and trailers.
+
+## Legend: what is protected, and what runs on pull requests
+GitHub's free plan decides much of this, so the rule depends on what kind of repository you are in. Find your row.
+
+| Repository type | Branch protection or ruleset | Runs on pull requests? | Merge method | Who merges |
+|---|---|---|---|---|
+| **Private, personal account** (a lab desk such as `proposals-thef`, Bushido, a bot) | **none possible** on the free plan (GitHub answers "Upgrade to GitHub Pro"); the rule is kept by habit and by who holds write | where a `preview` branch exists: yes, every change reaches `main` by a Promote. Working repositories without `preview` take the owner's commits on `main` directly | merge commit | the owner |
+| **Private, organisation** (`proposals`, `ops-standard-operating-procedures`, a site workshop) | **not on the free plan either**: GitHub refuses rulesets on private repositories until the organisation is on Team (GitHub for Nonprofits gives Team free once incorporation is confirmed). Until then, permissions and habit | yes: helpers open the pull request (from `preview`, or a short-lived branch where there is no `preview`); a human merges | merge commit only (the twelve above) | a human with the merge role, never a helper |
+| **Public, organisation or personal** (`.github`, `my-template`, a profile or docs site) | **ruleset available**: the strict one, `my-template/branch-protection/ruleset.json` (no deletion, no force-push) | site repositories whose working branch is `main`: a short-lived branch and a pull request. Template and profile repositories: the owner's commits on `main` | merge commit | the owner or a human with the role |
+| **Public twin** (names ending `-public`, `-public-preview`, `-publish-preview`) | **deletion-only ruleset**: the sync or the site build force-pushes into it, so a no-force-push rule would break publishing (`my-template/branch-protection/`) | **never.** Nobody edits a twin by hand; change the source repository's allowlist or content instead | none: it only receives | the workflow |
+| **Site with lanes** (a private workshop with `preview`, feeding a rehearsal twin and a live twin; SOP-OPS-001) | as its row above (private organisation) for the workshop; deletion-only on both twins | yes: every change is a Promote from `preview`; CI flags anything else reaching `main` | merge commit | a human with the role; merging rebuilds the live site |
+
+**The per-repository legend** is generated, not typed: `sh scripts/legend.sh <owner> [<owner>...]` prints one table per owner (visibility, default branch, whether a `preview` branch exists, rulesets, merge methods allowed, Pages, whether it is a public twin). It only reads. Use `--public-only` for anything that will be seen by visitors; private repository names stay in the organisation's private notes. `LEGEND.md` beside this repository's README says how to read and regenerate it.
+
 ## What changed for helpers in October 2026
 Claude Code CLI sessions in the fleet were given permission to do everything up to the merge: edit, commit, push the working branch, render, open the pull request and post its link. The merge itself waits for a human with the role. Littlebird works the same way through her own connection. A helper that cannot push (network, permissions) says so and hands back the commands.
 
@@ -58,3 +80,4 @@ The pull request page shows **Merged** with a merge commit; `git log --merges -1
 | Date | Change | By |
 |---|---|---|
 | 2026-10-30 | Drafted after the first Promotes on `proposals-thef` and `bushido-code` | Alfred (FortunaTradesARB session) |
+| 2026-10-31 | Merge commits only on the twelve proposals and procedures repositories (one PATCH each, read back); the five earlier Promotes verified as two-parent merges; the legend by repository type; `scripts/legend.sh` | Alfred (FortunaTradesARB session) |

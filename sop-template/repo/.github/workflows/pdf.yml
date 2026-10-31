@@ -1,0 +1,71 @@
+name: Render procedures to PDF
+
+# Every <DEPT>/SOP-*.md becomes pdf/<DEPT>/SOP-*.pdf (Letter), committed back by the Actions bot.
+# The local twin is scripts/render-pdfs.sh; both read the same four tone shades.
+# Tone: set the four shades for your organisation (my-template/proposals-template/TONES.md).
+# The template ships brass on slate (the lab's tone). Examples:
+#   THEF amber          d97706 6b4f1d b45309 fef3c7
+#   PIR purple          5b2bb5 3b1f6e 7c3aed ede9fe
+#   Psanctuary teal     0d9488 134e4a 0f766e ccfbf1
+#   Psanctuary Church   2563eb 1e3a8a 1d4ed8 dbeafe
+#   O-R-G emerald       059669 064e3b 047857 d1fae5
+#   Taylor'd magenta    ec4899 9d174d be185d fce7f3
+env:
+  TONE_PRIMARY: d9a441   # rules under H2, horizontal rules, links
+  TONE_DEEP: "334155"    # H1 and H2 text, table-head text
+  TONE_MID: 8a6a2a       # H3 and H4, <details> summaries
+  TONE_TINT: f1f5f9      # the wash behind quotes and table heads
+  TONE_ACCENT: ""        # optional: links and quote bar in a served organisation's primary
+
+on:
+  push:
+    branches: [main]
+    paths: ["*/SOP-*.md", "assets/**", ".github/workflows/pdf.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pdf
+  cancel-in-progress: true
+
+jobs:
+  pdf:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Render each procedure (accordions opened for print)
+        run: |
+          accent="${TONE_ACCENT:-$TONE_PRIMARY}"
+          css="body{font-family:Helvetica,Arial,sans-serif} img{display:inline-block !important;vertical-align:-3px;margin:0 3px} h1{color:#$TONE_DEEP} h2{color:#$TONE_DEEP;border-bottom:2px solid #$TONE_PRIMARY;padding-bottom:4px} h3,h4{color:#$TONE_MID} a{color:#$accent} blockquote{border-left:4px solid #$accent;background:#$TONE_TINT;padding:6px 14px;margin-left:0} th{background:#$TONE_TINT;color:#$TONE_DEEP} details>summary{font-weight:600;color:#$TONE_MID} hr{border:0;border-top:1px solid #$TONE_PRIMARY;opacity:.45} pre{background:#f8fafc;border:1px solid #e2e8f0;padding:8px 10px;white-space:pre-wrap} code{font-size:.92em}"
+          shopt -s nullglob
+          for f in */SOP-*.md; do
+            case "$f" in _template/*|pdf/*) continue;; esac
+            dept="$(dirname "$f")"; base="$(basename "$f" .md)"
+            mkdir -p "pdf/$dept"
+            sed -e 's/<details>/<details open>/g' \
+                -e 's/^> \[!TIP\]/> **Tip.**/' -e 's/^> \[!NOTE\]/> **Note.**/' \
+                -e 's/^> \[!IMPORTANT\]/> **Important.**/' -e 's/^> \[!WARNING\]/> **Warning.**/' \
+                "$f" > "$dept/_print.md"
+            npx -y md-to-pdf@5 "$dept/_print.md" \
+              --basedir . \
+              --css "$css" \
+              --launch-options '{"args":["--no-sandbox"]}' \
+              --pdf-options '{"format":"Letter","margin":{"top":"18mm","bottom":"18mm","left":"16mm","right":"16mm"},"printBackground":true}'
+            mv "$dept/_print.pdf" "pdf/$dept/$base.pdf"
+            rm "$dept/_print.md"
+            echo "pdf/$dept/$base.pdf"
+          done
+      - name: Commit PDFs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pdf
+          git diff --cached --quiet && exit 0
+          git commit -m ":memo: docs(pdf): render procedure PDFs"
+          git pull --rebase --autostash || true
+          git push

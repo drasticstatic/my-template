@@ -11,6 +11,8 @@ beside its `proposals`; the lab keeps a drafting desk per organisation (`-<org>`
 | 🏠 | [`README.md`](repo/README.md) | The index: the SOP table by department, how an SOP is shaped, how versions are approved |
 | 🌱 | [`_template/SOP-DEPT-000-template.md`](repo/_template/SOP-DEPT-000-template.md) | The skeleton to copy for each new procedure |
 | 🧭 | [`OPS/`](repo/OPS/) · [`IT/`](repo/IT/) · [`GOV/`](repo/GOV/) | Departments, one folder each; the universal procedures ship with the template |
+| 📄 | [`.github/workflows/pdf.yml`](repo/.github/workflows/pdf.yml) · [`scripts/render-pdfs.sh`](repo/scripts/render-pdfs.sh) | Every `<DEPT>/SOP-*.md` → `pdf/<DEPT>/SOP-*.pdf` (Letter) on push to `main`, committed by the Actions bot; the script is the local twin. Tone shades at the top of each (ships brass on slate) |
+| 🗺️ | [`LEGEND.md`](repo/LEGEND.md) · [`scripts/legend.sh`](repo/scripts/legend.sh) | Which repositories are protected, have `preview`, allow which merges, serve Pages, are public twins. Read-only generator; `--public-only` for anything visitors see |
 
 ## Naming: `SOP-[Department]-[ID]-[name].md`
 
@@ -26,6 +28,18 @@ A procedure's text changes by pull request like anything else (`preview` → Pro
 `v1.1.0` adds or revises a procedure, `v2.0.0` changes how the repository itself works. Until a tag exists, every SOP is
 a draft and says so in its header. Tagging is an officer's action; a helper prepares the release notes.
 
+## The header: one badge row
+
+```markdown
+![SOP](https://img.shields.io/badge/SOP-OPS--001-PRIMARY?style=flat-square)
+![Status](https://img.shields.io/badge/Status-draft-DEEP?style=flat-square)
+![Changed](https://img.shields.io/badge/Changed-2026--10--31-MID?style=flat-square)
+![For](https://img.shields.io/badge/For-Stewards-64748b?style=flat-square)
+```
+
+The same recipe as the proposals template: the organisation's PRIMARY, DEEP and MID shades from
+[`TONES.md`](../proposals-template/TONES.md), and the **For** badge in the shared slate `64748b` everywhere.
+
 ## Shape of an SOP
 
 Purpose · Scope · Roles · Prerequisites · Steps (numbered, one action each, what you should see after each) ·
@@ -33,9 +47,9 @@ Verification · Troubleshooting (a table that grows) · Related (proposals and o
 
 ## Adopt it in five steps
 
-1. **Copy** `repo/` into a folder named `ops-standard-operating-procedures`, `git init`, keep the universal SOPs.
-2. **Rename** the index for your organisation; delete departments you do not need yet.
-3. **Create the private repository and push** (an owner's action): `gh repo create <org>/ops-standard-operating-procedures --private --source . --push`.
+1. **Copy** `repo/` (including the hidden `.github/`) into a folder named `ops-standard-operating-procedures`, `git init`, keep the universal SOPs.
+2. **Rename** the index for your organisation; delete departments you do not need yet; set your tone's four shades at the top of `.github/workflows/pdf.yml` and `scripts/render-pdfs.sh`; fill in the placeholders in SOP-GOV-001 and the reading-room table in SOP-IT-002.
+3. **Create the private repository and push** (an owner's action): `gh repo create <org>/ops-standard-operating-procedures --private --source . --push`. If the Actions tab says workflows are not being run, click **Enable Actions on this repository**; the first push to `main` then renders `pdf/`.
 4. **Write your first own procedure** by copying `_template/` into its department folder with the next ID; add it to the index.
 5. **Tag `v1.0.0`** when the officers approve the set; from then on, a changed procedure is a new minor tag.
 
