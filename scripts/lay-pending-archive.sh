@@ -57,10 +57,12 @@ while [ $# -gt 0 ]; do
       shift ;;
     --scan)
       [ -d "$2" ] || { echo "✗ --scan: no such directory: $2" >&2; exit 2; }
+      oldifs=$IFS; IFS=$NL   # split find's output on newlines only, so a path with a space stays whole
       for d in $(find "$2" -maxdepth 3 \( -name pending-tasks.md -o -name PENDING-TASKS.md \) \
                    -not -path '*/node_modules/*' 2>/dev/null | sed 's|/[^/]*$||' | sort -u); do
         [ -e "$d/.git" ] && add_repo "$d"
       done
+      IFS=$oldifs
       shift ;;
     -h|--help) usage 0 ;;
     -*) echo "✗ unknown option: $1" >&2; usage 2 ;;

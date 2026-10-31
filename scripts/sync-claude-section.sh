@@ -73,9 +73,11 @@ while [ $# -gt 0 ]; do
       shift ;;
     --scan)
       [ -d "$2" ] || { echo "✗ --scan: no such directory: $2" >&2; exit 2; }
+      oldifs=$IFS; IFS=$NL   # split find's output on newlines only, so a path with a space stays whole
       for f in $(find "$2" -maxdepth 3 -name CLAUDE.md -not -path '*/node_modules/*' 2>/dev/null | sort); do
         add "$f"
       done
+      IFS=$oldifs
       shift ;;
     -h|--help) usage 0 ;;
     -*) echo "✗ unknown option: $1" >&2; usage 2 ;;
