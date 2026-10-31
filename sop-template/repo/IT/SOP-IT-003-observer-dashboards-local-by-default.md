@@ -33,6 +33,16 @@ From this Mac, `curl -s localhost:5050/api/edge/stats` answers. From another dev
 | `401 Unauthorized` from another device | widened without the token, or the token is wrong | add `?token=` / the header; check `.env` |
 | The page loads but shows no data from another device | the token is not reaching the API or socket | open the page with `?token=` in the address bar |
 
+## Where the heads-up came from: the "You should know" reader
+The exposure was first spelled out by Claude Code's built-in **You should know** plugin (`cc-plugin-you-should-know@builtin`), a second reader that runs beside the main agent in a session. Its own heads-up on 2026-10-31 said what it is; keep these four points in mind whenever a helper works on an observer:
+
+| What it is | What it means for you |
+|---|---|
+| Turned on with `/plugin enable cc-plugin-you-should-know@builtin`. Reloading plugins is enough: **no `/restart` is needed**, so a restart refused because background work is running does not matter | to know it runs, look for its **Heads up** note in the session; that note is its own verification |
+| A **second reader with no tools**: it cannot open files, check GitHub or confirm a deploy. It only re-reads the conversation and flags what may have been missed | a heads-up is a reason to check, never a check done. The main agent's requirements ledger, and this procedure's **Verification**, stay the real checklist |
+| **Each check is an extra model request** on the same weekly allowance the session already uses | expect a small, steady cost while long sessions run; switch it off from `/plugin` when the allowance is tight |
+| Its note offers three answers: **Understood**, **Chat in main session** (hands the point to the main agent), **Dismiss** | choose *Chat in main session* when the point needs a file opened or a command run: only the main agent can do that |
+
 ## Related
 - SOP-IT-001 (VPN and DNS stalls), SOP-IT-002 (reading room and helper access)
 - The DEX-arb bot's `RUNBOOK.md` and `helpers/server.js`; the heads-up that first explained this change came from the session's "You should know" reader on 2026-10-31
@@ -41,3 +51,4 @@ From this Mac, `curl -s localhost:5050/api/edge/stats` answers. From another dev
 | Date | Change | By |
 |---|---|---|
 | 2026-10-31 | Drafted from the dashboard gate and the second reader's heads-up | Alfred (FortunaTradesARB session) |
+| 2026-10-31 | The "You should know" reader recorded from its own heads-up (Christopher's screenshot): how to tell it runs, no tools, what it costs, its three answers | Alfred (FortunaTradesARB session) |
