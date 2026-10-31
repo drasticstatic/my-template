@@ -80,11 +80,15 @@ Copy [`proposals-template/repo/`](./proposals-template/repo/) into a private `pr
 | File / folder | What it does |
 |---|---|
 | `.githooks/commit-msg` | Enforces the commit-attribution footer; inert until `scripts/install-hooks.sh` runs |
+| `.githooks/gitmoji-check.sh` | Warn-only hint for the commit subject (`:sparkles: feat(scope): subject`), called by `commit-msg`; the convention is [`GITMOJI.md`](./GITMOJI.md) |
 | `AGENT-SYNC/` | Cross-agent coordination lanes — **private repos only** |
 | `AGENT-SYNC_PUBLIC/` | Coordination safe to publish — the only lane a public repo gets |
 | `logs/` | Chronological session timeline — **private repos only**, no public counterpart exists |
 | `scripts/install-hooks.sh` | Points this clone at `.githooks/` (one-time, per clone) |
 | `scripts/scaffold-agent-sync.sh` | Detects repo visibility and creates the correct lanes |
+| `scripts/test-gitmoji.sh` | Tests for the gitmoji hint, and that the attribution check still rejects and passes exactly as before |
+| `scripts/lay-pending-archive.sh` | Fleet sweep: lays an empty `pending-tasks_archive.md` beside each pending-tasks file, plus one pointer line (dry run by default) |
+| `scripts/sync-claude-section.sh` | Fleet sweep: puts the marked "Pull requests and Promotes" block into CLAUDE.md files (dry run by default) |
 | `.github/dependabot.yml` | Grouped Dependabot version updates — npm + GitHub Actions |
 | `workflow-templates/sync-public-allowlist.yml` | Sync private → public via **allowlist** (strict — everything private by default) — copy to `.github/workflows/` in your repo |
 | `workflow-templates/sync-public-excludelist.yml` | Sync private → public via **exclude list** (open — everything public except named paths) — copy to `.github/workflows/` in your repo |
@@ -200,6 +204,9 @@ destroys that signal *silently*, because the line still reads correctly.
 definitions, the engine roster, and the coordination-lane convention. It is deliberately the only
 copy — an earlier second copy in `scripts/README.md` went stale and spent a release teaching the
 wrong thing. If you need to state the convention somewhere, link it instead.
+
+The **subject line** has its own single source, [`GITMOJI.md`](./GITMOJI.md): one gitmoji in its
+colon-alias form, then a conventional type, `:sparkles: feat(scope): subject`. That check only warns.
 
 ---
 

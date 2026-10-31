@@ -67,10 +67,16 @@ fi
 echo ""
 echo "Active hooks:"
 for h in .githooks/*; do
-  [ -f "$h" ] && echo "  · $(basename "$h")"
+  case "$h" in
+    *.sh) [ -f "$h" ] && echo "  · $(basename "$h")  (helper, called by commit-msg)" ;;
+    *)    [ -f "$h" ] && echo "  · $(basename "$h")" ;;
+  esac
 done
 echo ""
 echo "commit-msg now enforces the fleet attribution convention."
+if [ -f .githooks/gitmoji-check.sh ]; then
+  echo "It also prints a one-line, warn-only gitmoji hint for the subject (GITMOJI.md)."
+fi
 if [ -f .githooks/pre-commit ]; then
   if command -v ggshield >/dev/null 2>&1; then
     echo "pre-commit chains to ggshield — secret scanning still active."

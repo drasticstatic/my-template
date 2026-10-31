@@ -1,7 +1,8 @@
 # `scripts/`
 
 Setup scripts for this template. Two of them matter when bootstrapping a repo or onboarding an
-agent; run both once per clone.
+agent; run both once per clone. The rest are the gitmoji tests and two fleet sweeps (dry run by
+default), described below.
 
 ---
 
@@ -131,6 +132,59 @@ If your repo publishes through a sync workflow, note the related trap: **a new r
 classified in `.github/workflows/sync-public.yml` in the same commit.** Under an allowlist model an
 unclassified directory fails the next sync; under an exclude model it silently publishes. The second
 is worse.
+
+---
+
+## The gitmoji hint: `.githooks/gitmoji-check.sh` and `test-gitmoji.sh`
+
+```sh
+sh scripts/test-gitmoji.sh                       # run the parser tests
+sh .githooks/gitmoji-check.sh .git/COMMIT_EDITMSG  # check one message by hand
+```
+
+`commit-msg` calls `.githooks/gitmoji-check.sh` **only after the attribution check has passed**. It
+reads the subject and, when the subject doesn't follow [`GITMOJI.md`](../GITMOJI.md), prints one
+line, for example `⚠ gitmoji: :bug: goes with 'fix', not 'feat' (GITMOJI.md)`. It **always exits 0**.
+Merge, `Revert "…"`, `fixup!`, `squash!` and `amend!` subjects are exempt. A glyph (`✨ feat: …`) is
+accepted with a nudge towards the alias. The tests also prove that the attribution check still
+rejects and passes exactly as it did before the hint was added. Vendoring the hooks? Copy
+`gitmoji-check.sh` along with `commit-msg`. Without it, `commit-msg` simply skips the hint.
+
+---
+
+## Fleet sweeps: `lay-pending-archive.sh` and `sync-claude-section.sh`
+
+Two batch scripts for changes that touch many repositories at once. Both run as a **dry run unless
+`--apply` is given**, are **idempotent** (a second `--apply` changes nothing), and **never commit**:
+you review `git diff` in each repository and commit there, on its working branch.
+
+Neither script carries the fleet's repository list. This repository is public, and some repository
+names are not for visitors. Keep the list in a private file and pass it with `--list FILE` (one path
+per line, `#` comments allowed, `~` expanded), or let `--scan ROOT` find the files.
+
+```sh
+sh scripts/lay-pending-archive.sh --scan ~/code --scan ~/dappu            # dry run
+sh scripts/lay-pending-archive.sh --apply --list ~/private/pending-repos.txt
+```
+
+For each repository with `pending-tasks.md` or `PENDING-TASKS.md` at its root (matched by exact case,
+because macOS disks ignore case), it creates `pending-tasks_archive.md` / `PENDING-TASKS_ARCHIVE.md`
+to match. That file has a header, the rule (an item moves when it has been done for 30 days or
+superseded, and keeps its date and commit; Christopher decides what moves), and an empty
+`## Archived` section. It also adds one pointer line under the pending file's title, unless the file
+already mentions its archive. Nothing is moved.
+
+```sh
+sh scripts/sync-claude-section.sh --scan ~/code --scan ~/dappu            # dry run, with diffs
+sh scripts/sync-claude-section.sh --apply --quiet --list ~/private/claude-files.txt
+```
+
+It puts the block between `<!-- fleet:pull-requests-and-promotes:start … -->` and
+`<!-- fleet:pull-requests-and-promotes:end -->` in [`../CLAUDE.md`](../CLAUDE.md) (the only place to
+edit it) into each target. If the target already has the markers, it replaces that block. If it has
+the heading without markers, it replaces that section. Otherwise it inserts the block before
+`## Commit Convention`, or appends it at the end. Headings inside code fences are ignored, and a file
+with a start marker but no end marker is skipped and reported.
 
 ---
 
