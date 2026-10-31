@@ -48,7 +48,7 @@ Steps 2 and 3 of the check answer alike; the observer's log shows a new tick; th
 ## Troubleshooting (grows)
 | Date | Symptom | Finding | Fix |
 |---|---|---|---|
-| 2026-10-29 07:35 ET → 10-30 05:59 ET | DEX-arb monitor silent 26 h, process alive, `request timeout` in `monitor.err` | NordLynx resolver `100.64.0.2` on `utun6` stopped resolving `arb-mainnet.g.alchemy.com`; `api.github.com` intermittently too; `1.1.1.1` resolved both | failover to public RPC in the bot; stall alert; custom DNS in NordVPN recommended |
+| 2026-10-29 07:35:51 ET → 10-30 05:56:37 ET (22.35 h, from raw ticks; an earlier note said 26 h) | DEX-arb monitor silent, process alive, `request timeout` in `monitor.err` | NordLynx resolver `100.64.0.2` on `utun6` stopped resolving `arb-mainnet.g.alchemy.com`; `api.github.com` intermittently too; `1.1.1.1` resolved both | failover to public RPC in the bot; stall alert; custom DNS in NordVPN recommended |
 | 2026-10-30 ~05:40 ET | `gh api` to api.github.com `dial tcp … i/o timeout` for ~20 min, then fine | same resolver; Starlink reconnects can make the tunnel re-establish and the resolver stall | wait or reconnect; run pushes in the background with a time limit |
 
 ## Related
