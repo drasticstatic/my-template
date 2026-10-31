@@ -34,13 +34,13 @@ Every commit in this fleet carries who made it and under which session (`Co-Auth
 ```sh
 gh api -X PATCH repos/<owner>/<repo> -F allow_squash_merge=false -F allow_rebase_merge=false -F allow_merge_commit=true
 ```
-(As of 2026-10-30 the API still reported squash allowed on `theholyearthfoundation/proposals` and `drasticstatic/proposals-thef`; the setting above closes it.)
+(The fleet's proposals and procedures repositories were set to merge commits only on 2026-10-31; each organisation keeps its own list in its private copy of this procedure.)
 
 **Merge commits only, set on 2026-10-31** (squash and rebase off, merge commit on; read back from the API the same day) on these twelve:
 
 | Kind | Repositories |
 |---|---|
-| Proposals (7) | `theholyearthfoundation/proposals`, `drasticstatic/proposals-thef`, `drasticstatic/proposals-dappu`, `psychedelicsinrecovery/proposals`, `psanctuary/proposals`, `psanctuarychurch/proposals`, `Octagon-Religious-Research-Group-ORG/proposals` |
+| Proposals (7) | each organisation's own repositories of this kind (listed in its private copy) |
 | Procedures (5) | the `ops-standard-operating-procedures` repositories of THEF, the lab desk (`-thef`), PIR, Psanctuary and O-R-G |
 
 **No attribution was lost before the setting changed.** The five earlier Promotes (`proposals-thef` #1 and #2, `bushido-code` #1, `iamoneself-retreats` #15, `david-amaringo` #17) were each checked on 2026-10-31: every merge commit has two parents, so every commit from `preview` reached `main` with its own author and trailers.
@@ -79,5 +79,5 @@ The pull request page shows **Merged** with a merge commit; `git log --merges -1
 ## Change log
 | Date | Change | By |
 |---|---|---|
-| 2026-10-30 | Drafted after the first Promotes on `proposals-thef` and `bushido-code` | Alfred (FortunaTradesARB session) |
-| 2026-10-31 | Merge commits only on the twelve proposals and procedures repositories (one PATCH each, read back); the five earlier Promotes verified as two-parent merges; the legend by repository type; `scripts/legend.sh` | Alfred (FortunaTradesARB session) |
+| 2026-10-30 | Drafted after the first Promotes on `proposals-thef` and `bushido-code` | Alfred |
+| 2026-10-31 | Merge commits only on the twelve proposals and procedures repositories (one PATCH each, read back); the five earlier Promotes verified as two-parent merges; the legend by repository type; `scripts/legend.sh` | Alfred |

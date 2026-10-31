@@ -109,5 +109,5 @@ A **site** repository goes one step further: a workflow (`.github/workflows/lane
 ## Change log
 | Date | Change | By |
 |---|---|---|
-| 2026-10-30 | Drafted from the Oct 29 topology and the Oct 30 delivery pass | Alfred (FortunaTradesARB session) |
-| 2026-10-31 | "Two things called preview": the `preview` branch versus the publish-preview lanes (`lanes.yml`, deploy keys, `LANES_ENABLED`), the admin panel and Formspree, a diagram and a side-by-side table | Alfred (FortunaTradesARB session) |
+| 2026-10-30 | Drafted from the Oct 29 topology and the Oct 30 delivery pass | Alfred |
+| 2026-10-31 | "Two things called preview": the `preview` branch versus the publish-preview lanes (`lanes.yml`, deploy keys, `LANES_ENABLED`), the admin panel and Formspree, a diagram and a side-by-side table | Alfred |

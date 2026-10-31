@@ -85,5 +85,5 @@ The member opens the page from their own account; the helper's read test passes;
 ## Change log
 | Date | Change | By |
 |---|---|---|
-| 2026-10-30 | Drafted from Littlebird's access draft and the Oct 30 verification | Alfred (FortunaTradesARB session) |
-| 2026-10-31 | The generic reading-room route: an organisation-owned private room, a readers team with Read, a public room with a Pages front end, a fill-in address table | Alfred (FortunaTradesARB session) |
+| 2026-10-30 | Drafted from Littlebird's access draft and the Oct 30 verification | Alfred |
+| 2026-10-31 | The generic reading-room route: an organisation-owned private room, a readers team with Read, a public room with a Pages front end, a fill-in address table | Alfred |

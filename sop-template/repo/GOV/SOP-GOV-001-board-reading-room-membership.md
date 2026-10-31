@@ -81,5 +81,5 @@ The committee repositories exist under `<org>` (not under a personal account: a 
 ## Change log
 | Date | Change | By |
 |---|---|---|
-| 2026-10-30 | Drafted; PIR grants verified by read the same day (three repositories at Read, one member, no pending invitations) | Alfred (FortunaTradesARB session) |
-| 2026-10-31 | Generalised for every organisation's board: placeholders, a fill-in box, PIR's live state moved to a marked worked example; member removal added | Alfred (FortunaTradesARB session) |
+| 2026-10-30 | Drafted; PIR grants verified by read the same day (three repositories at Read, one member, no pending invitations) | Alfred |
+| 2026-10-31 | Generalised for every organisation's board: placeholders, a fill-in box, PIR's live state moved to a marked worked example; member removal added | Alfred |
