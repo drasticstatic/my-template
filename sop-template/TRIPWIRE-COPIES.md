@@ -12,11 +12,98 @@ Swept 2026-11-01 (round four, package 0.b sweep). Master fingerprints at the tim
 md5 `45c2d96c…`, `scan-public-lane.selftest.sh` md5 `7848957c…`. Every copy below was checked byte for byte against
 them. Copy, do not fork: when the master changes, copy it again into each repository on this page.
 
-> **The master has changed since the sweep** (2026-11-01 review): the `.eot` font signature is checked, every
+> **Current master: my-template `06dd9d1`** (2026-11-01 review): the `.eot` font signature is checked, every
 > picture's and font's bytes and every office file's attributes are searched for credentials, and the account,
-> street and number shapes catch an IBAN, a numbered street and a dashed number. New master md5s:
-> `scan-public-lane.sh` `17f46497…`, `scan-public-lane.selftest.sh` `0875af14…`. **Every copy below still carries
-> `45c2d96c…` until it is copied again.**
+> street and number shapes catch an IBAN, a numbered street and a dashed number. Fingerprints:
+> `scan-public-lane.sh` md5 `17f4649733fb425e95e0fc1e747b1833`, `scan-public-lane.selftest.sh` md5
+> `0875af14f5aee3cf7c2ba95d020aed58`. **Every copy on this page was copied again the same day** and now matches
+> them byte for byte (see the re-copy table below). No copy still carries `45c2d96c…`, except one that is left for
+> Christopher and named there.
+
+## <img src="repo/assets/icons/fingerprint.svg" width="24" height="24" alt=""> Re-copy of the 06dd9d1 master (2026-11-01)
+
+Copies were found with `find ~/code ~/dappu ~/theholyearthfoundation ~/Octagon-Religious-Research-Group-ORG ~/psanctuary
+~/psanctuarychurch ~/psychedelicsinrecovery -name 'scan-public-lane*.sh'`. Each clone's `origin/preview` and
+`origin/main` were also checked, to find copies on a branch that was not checked out. In each repository, both files
+were copied from the master and the self-test was run there. It passed everywhere: 40/40, or 42/42 where the copy also
+carries the reading-room checks. (The master's own 44/44 adds two "matches the master" checks.) Each copy was then
+committed on its own and pushed to the working branch. 42 repositories carry the pair, and all 42 match the master.
+Commits are on `main` unless marked `preview`.
+
+| Repository | Commit |
+|---|---|
+| `drasticstatic/alexandrina` | `439043e` |
+| `drasticstatic/anthropas-argus-alfred` | `3e1886f` |
+| `drasticstatic/augment-intent-properties` | `cec8bb6` |
+| `drasticstatic/aunt-harriot` | `fc8a9a6` |
+| `drasticstatic/dpnelson` | `25d5d2b` |
+| `drasticstatic/findyourfeathers` | `b08dbb7` |
+| `drasticstatic/fortuna-vision` | `5a79b54` |
+| `drasticstatic/gratitude-token-project_astro` | `edbf153` |
+| `drasticstatic/trading-bot_arbitrage_DAPPUv3_hardhat_UNI-CAKE` | `31735e7` |
+| `drasticstatic/tax-assistant` | `c0202da` |
+| `drasticstatic/trading-assistant` | `a3ac577` |
+| `drasticstatic/wilson-lawn-ai-assist` | `aa06e79` |
+| `drasticstatic/taylordwraps` | `1655866` |
+| `drasticstatic/psychedelic-policy-reform-astro` | `0284cda` |
+| `drasticstatic/psychedelic-policy-reform-dapp` | `30f9b06` |
+| `drasticstatic/O-R-G` | `777e61b` |
+| `drasticstatic/O-R-G-astro` | `54dd53d` |
+| `drasticstatic/O-R-G-dapp` | `5a201b3` |
+| `drasticstatic/pir` | `6aa267c` |
+| `drasticstatic/pir-devine-news` | `8f08192` |
+| `drasticstatic/proposals-thef` | preview `75a5a96` |
+| `drasticstatic/ops-standard-operating-procedures-thef` | preview `984bdad` |
+| `drasticstatic/david-amaringo` (lab) | preview `654c87e` |
+| `drasticstatic/iamoneself` (lab) | preview `48db96d` |
+| `theholyearthfoundation/david-amaringo` | preview `95ef051` (newly gated, see below) |
+| `theholyearthfoundation/iamoneself-retreats` | preview `fa623e8` (newly gated, see below) |
+| `theholyearthfoundation/reading-room` | `2550d29` |
+| `theholyearthfoundation/ops-standard-operating-procedures` | `ce282fb` |
+| `theholyearthfoundation/legal` | `7216d5d` |
+| `Octagon-Religious-Research-Group-ORG/reading-room` | `d784630` |
+| `Octagon-Religious-Research-Group-ORG/ops-standard-operating-procedures` | `1b25913` |
+| `Octagon-Religious-Research-Group-ORG/legal` | `1f225fa` |
+| `psychedelicsinrecovery/reading-room` | `a806d71` |
+| `psychedelicsinrecovery/ops-standard-operating-procedures` | `d6f4e94` |
+| `psychedelicsinrecovery/changelog-astro` | `ec4b7f9` |
+| `psychedelicsinrecovery/legal` | `4795104` |
+| `psanctuarychurch/reading-room` | `fd9fd56` |
+| `psanctuarychurch/ops-standard-operating-procedures` | `0daf05a` |
+| `psanctuarychurch/changelog-astro` | `88aa174` |
+| `psanctuarychurch/legal` | `430287e` |
+| `taylordwraps/reading-room` | `7cea9f6` |
+| `taylordwraps/ops-standard-operating-procedures` | `04e047a` |
+
+Some copies already matched the master, so they needed no commit: `psanctuary/legal`, `psanctuary/reading-room`,
+`psanctuary/ops-standard-operating-procedures`, the `~/code/psanctuary` lab desk, and this repository's
+`sop-template/repo/scripts/`.
+
+**Left for Christopher:** `~/code/divorce-custody-assistant`. Its `origin/main` still carries `45c2d96c…`. The
+repository is on hold, and the first sweep read only its workflow file there, so it needs his go-ahead before anyone
+touches it.
+
+**THEF's two live site lanes are patched now.** `theholyearthfoundation/david-amaringo` and
+`theholyearthfoundation/iamoneself-retreats` used to publish `out/` to their `-public` repositories through
+`peaceiris/actions-gh-pages` with no tripwire. Their `lanes.yml` now does three things before the peaceiris step:
+
+- it installs poppler-utils, and fails without `pdftotext`;
+- it runs the self-test;
+- it reads every file in `out/`, after the public documents are added, so it reads exactly what `publish_dir` sends.
+
+These are the same steps as the lab rehearsal (`b1d359c`, `72e8339`). Both lanes stay inert until `LANES_ENABLED` and
+the deploy keys exist. A local rehearsal on the Oct 27 builds stops in both:
+
+- david-amaringo refuses 105 of 410 files (89 pictures and 16 fonts outside `assets/`);
+- iamoneself-retreats refuses 72 of 225 (29 pictures, 13 fonts, 27 search-index binaries and 3 birth-date shapes).
+
+**Two more checks the same day:**
+
+- **`gratitude-token-project_astro`:** its sync had stopped at "Validate root path classification", because the root
+  path `.intent` was on neither list. `.intent` is now on the private list, and filter-repo strips it (`cc44945`).
+  The next run (41322031803) passed that step, then stopped at the tripwire as designed (11 refusals at HEAD).
+- **`O-R-G-astro`:** its `deploy-pages.yml` runs the tripwire on `dist/` before the gh-pages push. Runs 41321781414
+  and 41321822507 both show the self-test passed, the tripwire failed and the push was skipped.
 
 ## <img src="repo/assets/icons/workflow.svg" width="24" height="24" alt=""> How a lane is gated now
 
@@ -106,9 +193,10 @@ lane is copied aside as `dot-github/` and read like any other file. An attestati
   `ops-standard-operating-procedures` and the `O-R-G` lab desk, Psanctuary's and PsanctuaryChurch's `reading-room` and
   `ops-standard-operating-procedures`, and PIR's `ops-standard-operating-procedures`. Not yet at sweep time: PIR's
   `reading-room` and `changelog-astro` (both carry it since, from the PIR package the same day), THEF's
-  `changelog-astro`, and THEF's own `david-amaringo` and `iamoneself-retreats`, whose `lanes.yml` publishes the built
-  site to their `-public` repositories with no tripwire yet (the lab copies above are a different pair of
-  repositories, under `drasticstatic`).
+  `changelog-astro` (still none: its `sync-public.yml` carries no scanner), and THEF's own `david-amaringo` and
+  `iamoneself-retreats`, whose `lanes.yml` published the built site to their `-public` repositories with no tripwire.
+  Those two are gated since the 06dd9d1 re-copy (see that section). The lab copies above are a different pair of
+  repositories, under `drasticstatic`.
 - **`~/code/psanctuary`** (the Psanctuary lab desk, two syncs into members-only rooms): left to the Psanctuary package.
 - **`.github/workflows/sync-clean-template.yml`** here: public to public (`my-template` to `my-template-clean`); nothing
   private crosses.
