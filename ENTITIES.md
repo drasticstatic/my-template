@@ -19,7 +19,7 @@
 
 ## <img src="sop-template/repo/assets/icons/compass.svg" width="24" height="24" alt=""> TL;DR
 
-1. <img src="sop-template/repo/assets/icons/sun.svg" width="16" height="16" alt=""> **The divine is named by each house in its own words.** The Holy Earth Foundation and Bushido may name their spiritual founder as Jesus, the Holy Spirit. Psychedelics in Recovery, O-R-G and Psanctuary speak of a Higher Power, Loving Kindness, Great Spirit.
+1. <img src="sop-template/repo/assets/icons/sun.svg" width="16" height="16" alt=""> **The divine is named by each house in its own words.** The Holy Earth Foundation and Bushido may name their spiritual founder as Jesus / the Holy Spirit. Psychedelics in Recovery, O-R-G and Psanctuary speak of a Higher Power, Loving Kindness, Great Spirit.
 2. <img src="sop-template/repo/assets/icons/users.svg" width="16" height="16" alt=""> **Decisions name a human steward, per item**, by role: the lab steward, the project lead, the officers. A DAO is the eventual owner, later.
 3. <img src="sop-template/repo/assets/icons/building-2.svg" width="16" height="16" alt=""> **Each organisation is a house** with its own colour, its own repositories and its own officers.
 4. <img src="sop-template/repo/assets/icons/bot.svg" width="16" height="16" alt=""> **Helpers serve; they do not decide.** Every agent prepares, and a person with the role says yes.
@@ -30,7 +30,7 @@
 ```mermaid
 flowchart TB
   subgraph SOURCE["The divine, named by each house in its own words"]
-    J["Jesus, the Holy Spirit<br/>(THEF, Bushido)"]
+    J["Jesus / the Holy Spirit<br/>(THEF, Bushido)"]
     H["Higher Power · Loving Kindness · Great Spirit<br/>(PIR, O-R-G, Psanctuary)"]
   end
 
@@ -77,7 +77,7 @@ The arrows are the whole idea: **inspiration** comes from the source; **decision
 
 | House | How it speaks of the divine | Notes |
 |---|---|---|
-| The Holy Earth Foundation | its spiritual founder is **Jesus, the Holy Spirit** | the foundation may say so plainly |
+| The Holy Earth Foundation | its spiritual founder is **Jesus / the Holy Spirit** | the foundation may say so plainly |
 | Bushido Code | may name its spiritual founder as the foundation does | |
 | Psychedelics in Recovery | **Higher Power**, **Loving Kindness**, **Great Spirit** | which of these each house prefers is its officers' choice, to be confirmed; no one is told whose Higher Power |
 | O-R-G | **Higher Power**, **Loving Kindness**, **Great Spirit** | as above |

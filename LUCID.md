@@ -61,7 +61,7 @@ The fleet uses [Lucide](https://lucide.dev) (ISC licence), `lucide-static` v0.46
 
 - **Local files, relative paths.** The icon lives in the repository, so it renders on GitHub, in the PDF and on a public twin.
 - **`alt=""`.** The icon sits beside words that already say the idea; a screen reader should not read it twice.
-- **A public twin carries its icons by the allowlist** (`assets/icons` is a line in `PUBLIC-ALLOWLIST.txt`), so they are refreshed on every sync and never go stale. SOP-OPS-003 has the mechanics.
+- **A public twin carries its icons by the allowlist** (an officer adds `assets/icons` as one line in `PUBLIC-ALLOWLIST.txt`; the template's list ships empty), so they are refreshed on every sync and never go stale. SOP-OPS-003 has the mechanics.
 - Need one that is not there? Copy it from the same `lucide-static` release (`https://unpkg.com/lucide-static@0.460.0/icons/<name>.svg`), change `stroke="currentColor"` to `stroke="#7c4dff"`, and commit it beside the others.
 
 ## <img src="sop-template/repo/assets/icons/workflow.svg" width="24" height="24" alt=""> Mermaid diagrams
