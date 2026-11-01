@@ -22,6 +22,12 @@ strip:
   # or a push there would trigger it self-referentially (checkout-and-push
   # to itself, on every push, indefinitely)
   - .github/workflows/sync-clean-template.yml
+  # my-template's own CI for the public-lane tripwire (2026-11-01). The clean
+  # fork has never carried a root workflow, and CLEAN_TEMPLATE_TOKEN has no
+  # `workflow` scope, so mirroring it stopped every sync from 8dbe65e on
+  # ("refusing to allow a Personal Access Token to create or update workflow").
+  # The scanner and its self-test still travel (scripts/, sop-template/repo/).
+  - /.github/workflows/tripwire-selftest.yml
   - workflow-templates/DETACHED_HEAD_GUIDE.md
   - workflow-templates/GITEXPORTER-TO-ACTIONS-SYNC.md
   - workflow-templates/GRAPHIFY_SETUP.md
