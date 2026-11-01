@@ -132,6 +132,8 @@ jobs:
             "AGENT-SYNC"
             "gitexporter.config.json"
             "specs"
+            "PUBLIC-ALLOWLIST-ATTESTED.txt"  # the tripwire's attestations (copied out before filter-repo)
+            # "scripts"  # holds scan-public-lane.sh: classify it here or in public_allowlist, or validation stops
             # Add more private dirs/files here
           )
 

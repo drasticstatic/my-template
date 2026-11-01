@@ -11,7 +11,9 @@
 #                  pages that carry none (a scan, an image-only page), or that cannot be opened, is refused
 #   .docx .xlsx    (and .pptx, OpenDocument) unzipped; the XML text is scanned; embedded pictures or objects are refused
 #   pictures       allowed only under an assets/ or icons/ folder (fonts too), and only when the bytes are the picture
-#                  the name claims; anywhere else they are refused
+#                  the name claims; anywhere else they are refused. Pixels are not read, but every picture's and font's
+#                  bytes, and every office file's XML attributes (link targets, alt text), are searched for credentials
+#                  and agent-note pointers
 #   anything else  a binary no machine can read here, refused
 #
 # Attestation: PUBLIC-ALLOWLIST-ATTESTED.txt names files a person opened and read, one per line:
@@ -94,17 +96,19 @@ BARE_AS = re.compile(AS, re.I)
 SPEC_LINK = re.compile(r"my-template/(?:(?:blob|tree)/[^/\s]+/)?" + AS + r"/README\.md", re.I)
 
 # SENSITIVE: refused unless a person attested the file. The fleet's personal-matter words, plus the Nov 1 additions.
-STREET = (r"\b\d{1,6}[ \t]+(?:[NSEW]\.?[ \t]+)?(?:[A-Z][A-Za-z'.-]*[ \t]+){1,3}"
+STREET = (r"\b\d{1,6}[ \t]+(?:[NSEW]\.?[ \t]+)?(?:(?:[A-Z][A-Za-z'.-]*|\d{1,3}(?:st|nd|rd|th))[ \t]+){1,3}"
           r"(?:Street|St|Avenue|Ave|Road|Rd|Boulevard|Blvd|Lane|Ln|Drive|Dr|Court|Ct|Way|Place|Pl|Terrace|Ter|"
           r"Circle|Cir|Highway|Hwy|Parkway|Pkwy|Trail|Trl|Square|Sq|Pike|Loop)\b")
 # The guardianship-matter word, except its asset senses (held by oneself, by an institution, of keys or funds), which are
 # treasury vocabulary rather than the personal matter.
 CUST = ("".join(f"(?<!{b})" for b in ("self-", "self ", "institutional ", "qualified ", "key ", "asset ", "crypto ", "mpc "))
         + w("cus", "tody") + r"(?!\s+of\s+(?:the\s+)?(?:keys|funds|assets|tokens)\b)")
+# A hyphen, or the dashes a word processor substitutes for one (non-breaking hyphen, en and em dash, minus sign).
+DASH = "[-\u2010-\u2015\u2212]"
 SENSITIVE = [
     ("a personal-matter word", re.compile(r"\b(?:" + w("div", "orce") + "|" + CUST + "|" + w("tax", "-assistant") + ")", re.I)),
-    ("an employer-number shape (NN-NNNNNNN)", re.compile(r"\b\d{2}-\d{7}\b")),
-    ("a social-security-number shape (NNN-NN-NNNN)", re.compile(r"\b\d{3}-\d{2}-\d{4}\b")),
+    ("an employer-number shape (NN-NNNNNNN)", re.compile(r"\b\d{2}" + DASH + r"\d{7}\b")),
+    ("a social-security-number shape (NNN-NN-NNNN)", re.compile(r"\b\d{3}" + DASH + r"\d{2}" + DASH + r"\d{4}\b")),
     ("a tax-identifier label", re.compile(r"\b" + w("ta", "x") + r"[\s_-]*id\b|\b" + w("taxpayer", r"\s+identification"), re.I)),
     ("a birth-date label", re.compile(r"\b" + w("D", r"\.?O\.?B") + r"\b|(?i:\bdate\s+of\s+" + w("bi", "rth") + r"\b)")),
     ("a street-address shape", re.compile(STREET)),
@@ -112,7 +116,7 @@ SENSITIVE = [
     ("a giver-list word", re.compile(r"\b" + w("don", "or") + r"s?\b", re.I)),
 ]
 ACCOUNT = re.compile(r"\b(?:" + w("acc", "ount") + r"|acct|routing|iban|aba)\b(?:[ \t]*(?:number|num|no\.?|#))?[ \t]*[:#.-]?[ \t]*"
-                     r"([0-9][0-9 -]{3,}[0-9])", re.I)
+                     r"((?:[A-Z]{2}[0-9]{2}[ ]?)?[0-9][0-9 -]{3,}[0-9])", re.I)
 EMBEDDED_B64 = re.compile(r"data:[A-Za-z0-9.+/-]+;base64,[A-Za-z0-9+/=\s]{200,}")
 
 # Names that never travel (union of both families), and the legal lanes.
@@ -135,6 +139,8 @@ def magic_ok(ext, data):
     sigs = table.get(ext)
     if ext == ".webp":
         return data[:4] == b"RIFF" and data[8:12] == b"WEBP"
+    if ext == ".eot":
+        return len(data) > 36 and data[34:36] == b"LP"
     if ext in (".avif", ".heic"):
         return data[4:8] == b"ftyp"
     if sigs is None:
@@ -271,7 +277,7 @@ def read_pdf(path):
 def read_office(path):
     try:
         with zipfile.ZipFile(path) as z:
-            parts, embedded, total = [], [], 0
+            parts, embedded, attrs, total = [], [], [], 0
             for info in z.infolist():
                 name = info.filename
                 if name.endswith("/"):
@@ -280,18 +286,22 @@ def read_office(path):
                 if low.endswith((".xml", ".rels")):
                     total += info.file_size
                     if total > MAX_OFFICE_XML:
-                        return None, "an office file too large to read safely"
-                    parts.append(xml_text(z.read(info)))
+                        return None, "an office file too large to read safely", ""
+                    raw = z.read(info)
+                    parts.append(xml_text(raw))
+                    # attribute values are not text a reader sees, but they travel: hyperlink targets, alt text
+                    attrs.extend(html.unescape(v) for v in re.findall(r'="([^"]*)"', raw.decode("utf-8", "replace")))
                 elif low in ("mimetype", "meta-inf/manifest.rdf"):
                     continue
                 else:
                     embedded.append(name)
     except (zipfile.BadZipFile, OSError, RuntimeError, NotImplementedError):
-        return None, "an office file that could not be unzipped (damaged or password-locked)"
+        return None, "an office file that could not be unzipped (damaged or password-locked)", ""
     text = "\n".join(parts)
+    hidden = "\n".join(attrs)
     if embedded:
-        return text, f"an office file carrying {len(embedded)} embedded picture(s) or object(s) no machine read (e.g. {embedded[0]})"
-    return text, None
+        return text, f"an office file carrying {len(embedded)} embedded picture(s) or object(s) no machine read (e.g. {embedded[0]})", hidden
+    return text, None, hidden
 
 
 def decode_text(data):
@@ -338,6 +348,7 @@ def check(full, rel):
     ext = os.path.splitext(base)[1].lower()
     in_assets = bool({d.lower() for d in dirs} & ASSET_DIRS)
     text, unread, paged = None, None, False
+    hidden = ""   # bytes a reader never sees but that travel: office attributes, a picture's or font's own bytes
 
     if ext == ".pdf" or data[:5] == b"%PDF-":
         counts["pdf"] += 1
@@ -345,13 +356,15 @@ def check(full, rel):
         paged = True
     elif ext in OFFICE:
         counts["office"] += 1
-        text, unread = read_office(full)
+        text, unread, hidden = read_office(full)
     elif ext in IMAGES or ext in FONTS:
         counts["picture"] += 1
         if not magic_ok(ext, data):
             return refuse(rel, f"named {ext} but its bytes are not that kind of file; rename or replace it")
         if not in_assets:
             unread = ("a picture" if ext in IMAGES else "a font") + " outside an assets/ or icons/ folder: no machine reads pictures"
+        # its pixels are not read, but its bytes are searched for credentials (metadata, or text appended after the image)
+        hidden = data.decode("latin-1")
     else:
         text = decode_text(data)
         if text is None:
@@ -363,6 +376,8 @@ def check(full, rel):
                 unread = "text that embeds a file as base64 (a picture or document no machine read)"
 
     never, sens = scan_text(text, paged) if text else ([], [])
+    if hidden:
+        never += [f"{x.rsplit(' (', 1)[0]} (in the file's own bytes or attributes)" for x in scan_text(hidden)[0]]
     if never:
         return refuse(rel, "carries " + "; ".join(never) + ". No attestation opens this: remove it from the file")
     problems = sens + ([unread] if unread else [])

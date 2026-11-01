@@ -12,6 +12,12 @@ Swept 2026-11-01 (round four, package 0.b sweep). Master fingerprints at the tim
 md5 `45c2d96c…`, `scan-public-lane.selftest.sh` md5 `7848957c…`. Every copy below was checked byte for byte against
 them. Copy, do not fork: when the master changes, copy it again into each repository on this page.
 
+> **The master has changed since the sweep** (2026-11-01 review): the `.eot` font signature is checked, every
+> picture's and font's bytes and every office file's attributes are searched for credentials, and the account,
+> street and number shapes catch an IBAN, a numbered street and a dashed number. New master md5s:
+> `scan-public-lane.sh` `17f46497…`, `scan-public-lane.selftest.sh` `0875af14…`. **Every copy below still carries
+> `45c2d96c…` until it is copied again.**
+
 ## <img src="repo/assets/icons/workflow.svg" width="24" height="24" alt=""> How a lane is gated now
 
 ```mermaid

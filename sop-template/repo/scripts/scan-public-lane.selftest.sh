@@ -97,6 +97,14 @@ write("speclink/README.md", "Attribution: https://github.com/drasticstatic/my-te
 write("forbidden/CLAUDE.md", "notes\n")
 write("treasury/README.md", "Self-" + "cus" + "tody, institutional " + "cus" + "tody and " + "cus" + "tody of the keys are treasury words.\n")
 write("matter/README.md", "The " + "cus" + "tody hearing is next week.\n")
+# round-four review: holes the first version left open
+write("eot_fake/assets/font.eot", "not a font " + TOKEN)
+write("png_tail/assets/dot.png", png() + TOKEN.encode())
+office("docx_link/memo.docx", {"word/document.xml": f'<w:document {W}><w:body><w:p><w:r><w:t>Click here</w:t></w:r></w:p></w:body></w:document>',
+       "word/_rels/document.xml.rels": '<Relationships><Relationship Id="r1" Target="https://' + "nt" + "fy.sh/" + "abcdefghij" + '" TargetMode="External"/></Relationships>'})
+write("iban/README.md", "IB" + "AN: " + "DE89" + "370400440532013000\n")
+write("street_ordinal/README.md", "Visit 1600 W " + "5th " + "Street" + " today.\n")
+write("ein_dash/README.md", "Number 12" + "\u2013" + "3456789 on file.\n")
 write("b64/page.html", "<img src=\"data:image/png;base64," + "A" * 400 + "\">\n")
 pdf("history/abc123/tax/old.pdf", "Plain words")
 pdf("history/def456/docs/old.pdf")
@@ -160,6 +168,12 @@ expect 1 "never travels"            "CLAUDE.md never travels"                   
 expect 0 "clean"                    "the asset senses of the matter word pass (treasury vocabulary)"        -- "$fx/treasury"
 expect 1 "personal-matter"          "the matter word in its personal sense is refused"                   -- "$fx/matter"
 expect 1 "base64"                   "text embedding a base64 picture outside assets/ is refused"          -- "$fx/b64"
+expect 1 "not that kind of file"    "a font named .eot whose bytes are not a font is refused, even in assets/" -- "$fx/eot_fake"
+expect 1 "GitHub token"             "a token appended to a picture in assets/ is refused"                 -- "$fx/png_tail"
+expect 1 "ntfy topic"               "a .docx link target (an attribute, not text) is still searched"      -- "$fx/docx_link"
+expect 1 "account number"           "an IBAN (country code first) beside its label is refused"           -- "$fx/iban"
+expect 1 "street-address"           "a street address on a numbered street is refused"                   -- "$fx/street_ordinal"
+expect 1 "employer-number"          "an employer-number shape written with an en dash is refused"        -- "$fx/ein_dash"
 attest "photos/dot.png | Test Officer | 01-11-2026 | opened and read"
 expect 1 "malformed"                "a malformed attestation line is refused"                             -- "$fx/stray_image" "$att"
 attest "photos/dot.png | Test Officer | 2026-11-01 | looked at it"

@@ -14,7 +14,7 @@
 #                    everything except RESERVED.
 #   RESERVED         space-separated top-level names the destination keeps as its own (its README, its front end);
 #                    an allowlist line that would land on one of them fails the tripwire.
-#   TRIPWIRE_PUBLIC  1 when the destination is public: adds the personal-matter words to the content check, and runs
+#   TRIPWIRE_PUBLIC  1 when the destination is public: runs
 #                    the public-lane tripwire scripts/scan-public-lane.sh on everything staged (PDF text via pdftotext,
 #                    .docx/.xlsx text, pictures only under assets/ or icons/, legal lanes refused by path). A public lane
 #                    never publishes a file a machine or a person has not read.
@@ -79,7 +79,7 @@ stage () {
   [ ! -s "$out.names" ] || { cat "$out.names" >&2; rm -f "$out.names"; die "file names that look like keys, wallets or environment files"; }
   rm -f "$out.names"
   big="$(find "$out" -type f -size +15M)"; [ -z "$big" ] || die "files over 15 MB: $big"
-  # credentials and agent notes here; on a public lane the personal-matter words (PUBLIC_RE) and every other sensitive
+  # credentials and agent notes here; on a public lane the personal-matter words and every other sensitive
   # shape are checked by scan-public-lane.sh below, where a person's attestation can clear a false alarm
   re="$SECRET_RE"
   find "$out" -type f > "$out.files"

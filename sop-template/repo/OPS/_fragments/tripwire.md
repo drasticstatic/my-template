@@ -23,8 +23,8 @@ kind of file is read its own way, or stopped.
 |---|---|---|---|
 | <img src="../assets/icons/file-text.svg" width="16" height="16" alt=""> | Text (Markdown, HTML, SVG, scripts) | read directly | it carries a credential, a pointer into agent notes, or a sensitive shape (below) |
 | <img src="../assets/icons/file-check.svg" width="16" height="16" alt=""> | PDF | its words are pulled out with `pdftotext` and read the same way | the same, **or** it has no words at all, or some pages have none (a scan, an image-only page), or it will not open |
-| <img src="../assets/icons/files.svg" width="16" height="16" alt=""> | `.docx`, `.xlsx`, `.pptx`, OpenDocument | unzipped; the text inside is read | the same, **or** it carries an embedded picture or object |
-| <img src="../assets/icons/sparkles.svg" width="16" height="16" alt=""> | Pictures and fonts | checked to be what their name says | they sit anywhere other than an `assets/` or `icons/` folder |
+| <img src="../assets/icons/files.svg" width="16" height="16" alt=""> | `.docx`, `.xlsx`, `.pptx`, OpenDocument | unzipped; the text inside is read, and its link targets and other attributes are searched for credentials | the same, **or** it carries an embedded picture or object |
+| <img src="../assets/icons/sparkles.svg" width="16" height="16" alt=""> | Pictures and fonts | checked to be what their name says; the pixels are not read, but the bytes are searched for credentials | they are not what their name says, carry a credential, or sit anywhere other than an `assets/` or `icons/` folder |
 | <img src="../assets/icons/triangle-alert.svg" width="16" height="16" alt=""> | Anything else (archives, old `.doc`, unknown binaries) | cannot be read here | always, unless a person attests it |
 
 **Sensitive shapes** are the ones a public page should almost never carry: an employer or social-security number
