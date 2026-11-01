@@ -42,6 +42,12 @@ name: 🌐 Sync Public Preview (Exclude List Model)
 #    edit the existing token at github.com/settings/tokens; value unchanged, no
 #    need to re-set the secret. See ~/code/drasticstatic/how-to-setup-GITEXPORTER.md
 #    (Step 1) + PAT table. See also: ~/code/anthropas-argus-alfred/REPO-RESURRECTION-PLAYBOOK.md.
+# 4. THE PUBLIC-LANE TRIPWIRE (2026-11-01) closes gotcha 1's silent leak at the file level: after filter-repo,
+#    scripts/scan-public-lane.sh (master: my-template/scripts/) reads every file at HEAD AND every version in the
+#    rewritten history, exactly as in sync-public-allowlist.yml (its gotcha 4). A new private file that slipped past
+#    the strip list still has to pass it: credentials and agent-note pointers are refused outright; sensitive shapes,
+#    unread PDFs, pictures outside assets/ or icons/ and other binaries need a person's line in
+#    PUBLIC-ALLOWLIST-ATTESTED.txt. It does not replace the strip list: a harmless-looking private file still leaks.
 
 on:
   push:
@@ -60,8 +66,19 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Install git-filter-repo
-        run: pip install git-filter-repo
+      - name: Install git-filter-repo and pdftotext (the public-lane tripwire reads every PDF)
+        run: |
+          pip install git-filter-repo
+          sudo apt-get install -y -qq poppler-utils >/dev/null 2>&1 || { sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils; }
+          pdftotext -v 2>&1 | head -1
+
+      - name: Keep the tripwire outside the tree filter-repo rewrites
+        run: |
+          set -eu
+          [ -f scripts/scan-public-lane.sh ] || { echo "::error::scripts/scan-public-lane.sh is missing; copy it from my-template/scripts/ (no reader, no sync)"; exit 1; }
+          cp scripts/scan-public-lane.sh scripts/scan-public-lane.selftest.sh "$RUNNER_TEMP/"
+          if [ -f PUBLIC-ALLOWLIST-ATTESTED.txt ]; then cp PUBLIC-ALLOWLIST-ATTESTED.txt "$RUNNER_TEMP/attested.txt"; else : > "$RUNNER_TEMP/attested.txt"; fi
+          sh "$RUNNER_TEMP/scan-public-lane.selftest.sh"
 
       - name: Strip private content
         run: |
@@ -85,6 +102,28 @@ jobs:
             --invert-paths \
             --filename-callback 'return None if filename is None or (filename.startswith(b".claude/") and not filename.startswith(b".claude/skills/")) else filename' \
             --force
+
+      - name: Public-lane tripwire (every file at HEAD and every version in history is read, or attested, or refused)
+        run: |
+          # a public lane never publishes a file a machine or a person has not read (master: my-template/scripts/scan-public-lane.sh)
+          set -eu
+          scan="$RUNNER_TEMP/scan-public-lane.sh"; att="$RUNNER_TEMP/attested.txt"
+          # HEAD exactly as committed (not the working tree, which may hold leftovers filter-repo untracked)
+          head="$RUNNER_TEMP/head"; rm -rf "$head"; mkdir -p "$head"
+          git --work-tree="$head" checkout -f HEAD -- .
+          sh "$scan" "$head" "$att"
+          # legal lanes by path, in any commit that will be published
+          if git log --all --format= --name-only | grep -Eiq '(^|/)(entity|tax|filings|counsel)/'; then
+            echo "::error::a legal lane (entity/ tax/ filings/ counsel/) appears in the history about to be published"; exit 1
+          fi
+          # every blob the rewritten history carries, laid out as <blob>/<path>; --strip 1 applies the rules to <path>
+          hist="$RUNNER_TEMP/history"; rm -rf "$hist"; mkdir -p "$hist"
+          git rev-list --objects --all | git cat-file --batch-check='%(objecttype) %(objectname) %(rest)' |
+            awk '$1 == "blob" && $3 != ""' | while read -r _type sha p; do
+              mkdir -p "$hist/$sha/$(dirname "$p")"
+              git cat-file blob "$sha" > "$hist/$sha/$p"
+            done
+          sh "$scan" --strip 1 "$hist" "$att"
 
       - name: Configure Git Identity
         run: |

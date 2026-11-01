@@ -244,4 +244,6 @@ unioned. The self-test builds its fixtures at run time (hand-assembled PDFs, off
 committed) and checks that `sop-template/repo/scripts/` holds byte-identical copies; CI runs it in
 `.github/workflows/tripwire-selftest.yml`. Callers: `sop-template/repo/scripts/sync-allowlist.sh` (when
 `TRIPWIRE_PUBLIC=1`) and `workflow-templates/sync-public-allowlist.yml` (HEAD and every historical version, since
-that model publishes history). Copy it, do not fork it.
+that model publishes history), `workflow-templates/sync-public-excludelist.yml` and
+`workflow-templates/publish-masked-public-copy.yml`. Copy it, do not fork it. Every copy in the fleet, with the commit
+that added it and what a rehearsal found: [`sop-template/TRIPWIRE-COPIES.md`](../sop-template/TRIPWIRE-COPIES.md).

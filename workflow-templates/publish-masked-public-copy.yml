@@ -5,7 +5,7 @@ name: Publish public CONTACTS.md
 on:
   push:
     branches: [main]
-    paths: [CONTACTS.md, scripts/publish-public-contacts.py]
+    paths: [CONTACTS.md, scripts/publish-public-contacts.py, scripts/scan-public-lane.sh, PUBLIC-ALLOWLIST-ATTESTED.txt]
   workflow_dispatch: {}
 permissions:
   contents: read
@@ -29,6 +29,11 @@ jobs:
         run: |
           set -euo pipefail
           python3 scripts/publish-public-contacts.py public-dotgithub/CONTACTS.md
+          # the public-lane tripwire reads the masked copy before it is committed (master: my-template/scripts/scan-public-lane.sh);
+          # a street address, an identity number or a labelled account number left unmasked stops the push unless a person
+          # attested the file in PUBLIC-ALLOWLIST-ATTESTED.txt ("CONTACTS.md | officer | YYYY-MM-DD | opened and read | sha256:...")
+          lane="$RUNNER_TEMP/lane"; mkdir -p "$lane"; cp public-dotgithub/CONTACTS.md "$lane/"
+          if [ -f PUBLIC-ALLOWLIST-ATTESTED.txt ]; then sh scripts/scan-public-lane.sh "$lane" PUBLIC-ALLOWLIST-ATTESTED.txt; else sh scripts/scan-public-lane.sh "$lane"; fi
           cd public-dotgithub
           if git diff --quiet -- CONTACTS.md && git ls-files --error-unmatch CONTACTS.md >/dev/null 2>&1; then echo "No change."; exit 0; fi
           git config user.name "github-actions[bot]"
