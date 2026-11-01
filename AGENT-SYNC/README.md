@@ -19,7 +19,7 @@ not who it's for:
 | `created-by-kavanah` | Kavanah (Augment Intent, spec-driven orchestration) |
 | `created-by-mystarch` | Mystarch (Augment Intent, app-level Chief of Staff) |
 | `created-by-auggie` | Auggie (Augment CLI, code builds) |
-| `created-by-littlebird` | LittlebirdAI (app.littlebird.ai, screen context & fleet memory) |
+| `created-by-Littlebird` | LittlebirdAI (app.littlebird.ai, screen context & fleet memory) |
 | `created-by-cosmos` | Any Cosmos agent — Cosmos Advisor and the code-review experts it runs |
 
 For who each of these personas actually is — surface, model, commit attribution, and how they
@@ -53,6 +53,35 @@ names its author in the header.
 
 **General rule:** if a distinction can be stated clearly in a document header, do not encode it in a
 directory name. Paths are for finding things; documents are for explaining them.
+
+## Where the lane lives, and the health check
+
+Four shapes, one rule each. *Learned 2026-11-01: ORG's parent repo had ignored its lane since 2026-09-14 without
+ever making it a repository, so seven weeks of handoffs existed only on one iMac, out of reach of cloud agents.*
+
+| Repository shape | The lane | Rule |
+|---|---|---|
+| A private repo | `AGENT-SYNC/`, tracked | commit handoffs like any other file |
+| A lightweight parent with nested repos (the org hubs) | `AGENT-SYNC-<name>/`, **its own private repo** `drasticstatic/AGENT-SYNC-<name>`, ignored by the parent | ignored *and* its own repo, never just ignored: an ignored folder with no repo lives on one machine only |
+| A public repo with no private lane (Pattern B) | `AGENT-SYNC_PUBLIC/`, tracked | write only what anyone may read; a local `AGENT-SYNC/` must be in `.gitignore` |
+| A private repo with a public twin (Pattern A) | `AGENT-SYNC/` in the private repo | the twin's sync never copies it (allowlist, or the exclude list names it) |
+
+**Inside a lane:** the eight `created-by-*` folders above (`created-by-Littlebird` is capitalised everywhere;
+match it). These are allowed alongside them:
+- `archive*/`, `app-data-<agent>/` (an app's exported data), `VSCode/` (IDE chat exports), and in hub repos
+  `scripts/`, `.githooks/`, `logs/`.
+- Historical lanes kept exactly as they were, because we delete nothing: `created-by-augment-vscode-migration/` and
+  `created-in-claude-cloud/`. New work goes in the canonical lanes.
+- A `README.md` in every lane. A pointer back to this file is enough.
+
+**Health check**, read-only, any time:
+
+```sh
+python3 ~/code/my-template/scripts/agent-sync-health.py
+```
+
+It prints ✓ or ✗ per lane with the reason: files only on this machine, uncommitted or unpushed, a private lane
+committable in a public repo, an unexpected folder, or a missing README. It exits 1 when any lane needs attention.
 
 ## AGENT-SYNC vs AGENT-SYNC_PUBLIC
 
