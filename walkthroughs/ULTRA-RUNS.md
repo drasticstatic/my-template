@@ -29,6 +29,22 @@
 4. Connected tools (MCP servers, the browser extension) signed in **before** the run, not during it.
 5. Approve edits by hand until you're ready, so the switch doesn't flip early.
 
+### Who publishes: the main session, not the agents
+
+**Publishing and repository creation run in the main session; subagents prepare.** In a multi-agent run, the
+safety classifier refuses `gh repo create` (and can refuse a first push to a new public repository) when a
+background agent attempts it, even where `~/.claude/settings.json` allows the command. Plan for it:
+
+| Agents do | The main session does, with the person approving each prompt |
+|---|---|
+| write, commit and push to repositories that already exist; open pull requests | `gh repo create`, a repository's first public push, enabling Pages |
+| stage a new repository in a scratch folder, with its commits and a `CREATE-AND-PUSH.sh` | run that script, then move the clone to its home |
+| list the exact commands they could not run (`main_session_steps`) | run them in small batches and read each result back |
+| prepare deploy-key and ruleset commands | generate keys, add deploy keys, set secrets, apply rulesets |
+
+A run that ignores this ends with work that is staged but not live, and a list of refusals to replay by hand.
+Write the brief so each agent returns its unfinished steps as exact commands.
+
 ## Ultrareview
 
 | | |

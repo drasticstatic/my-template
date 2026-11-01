@@ -15,6 +15,7 @@ walk me through it").
 | 📁 | [Connect Google Drive](CONNECT-GOOGLE-DRIVE.md) | let your helper read the documents you keep in Drive |
 | 🕸️ | [Connect Graphify](CONNECT-GRAPHIFY.md) | give your helper a map of a codebase, so it reads less and understands more |
 | 🐦 | [Connect Littlebird](CONNECT-LITTLEBIRD.md) | let your coding helper read your Littlebird briefs and chats, and write project summaries back to her, without leaking anything private |
+| 🤝 | [Working with the fleet](WORKING-WITH-THE-FLEET.md) | bring an outside helper (ChatGPT, Codex, a Harness Cosmos agent) to work at the fleet's level: read the welcome path, pull first, pull requests into `preview`, never merge, sign every commit |
 
 ## Keeping an organization healthy
 
@@ -29,8 +30,8 @@ walk me through it").
 | | Pattern | For when you want to… |
 |---|---|---|
 | 🌳 | [Version lineage](VERSION-LINEAGE.md) | keep old and rehearsal copies of a site up **without** `noindex`, each greeting visitors once and linking forward to newer versions |
-| 📜 | [P
-| 🚀 | [Ultra runs](ULTRA-RUNS.md) | tell ultracode from ultrareview, stage a review so a free run isn't spent on an empty diff, and pick what deserves one |roposals template](../proposals-template/README.md) | give your organization a private `proposals` repo where each idea is a plain-language page and a PDF, decided by the people it affects |
+| 📜 | [Proposals template](../proposals-template/README.md) | give your organization a private `proposals` repo where each idea is a plain-language page and a PDF, decided by the people it affects |
+| 🚀 | [Ultra runs](ULTRA-RUNS.md) | tell ultracode from ultrareview, stage a review so a free run isn't spent on an empty diff, pick what deserves one, and know why publishing runs in the main session |
 
 ## Three promises every guide keeps
 
