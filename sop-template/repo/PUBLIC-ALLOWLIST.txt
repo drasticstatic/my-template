@@ -1,0 +1,20 @@
+# PUBLIC-ALLOWLIST.txt — the only paths that travel to the public twin <org>/ops-standard-operating-procedures-public
+#
+# One path per line, relative to this repository's root: a file, or a folder copied whole. No globs, no "..",
+# no hidden paths. Lines starting with # are comments. Adding a line is an officer's decision, made by pull request.
+# The sync (.github/workflows/sync-public.yml) copies exactly these paths after two tripwires:
+#   scripts/sync-allowlist.sh   agent notes, keys and credentials stop it
+#   scripts/scan-public-lane.sh every staged file must be read: PDFs through pdftotext, .docx/.xlsx text; a scan, an
+#                               image-only PDF, a picture outside assets/ or icons/ or any other binary stops it unless
+#                               a person attested it in PUBLIC-ALLOWLIST-ATTESTED.txt; entity/ tax/ filings/ counsel/
+#                               stop it whatever this list says
+# Removing a line removes the path from the twin on the next sync. The twin's own README.md is never overwritten.
+#
+# Dry run on your machine (brew install poppler first):
+#   TRIPWIRE_PUBLIC=1 sh scripts/sync-allowlist.sh stage PUBLIC-ALLOWLIST.txt /tmp/sop-public-stage
+#
+# Examples (uncomment only on an officer's yes; publish the PDF beside its markdown):
+# OPS/SOP-OPS-001-how-a-change-travels.md
+# pdf/OPS/SOP-OPS-001-how-a-change-travels.pdf
+#
+# The list is empty: nothing is public yet.

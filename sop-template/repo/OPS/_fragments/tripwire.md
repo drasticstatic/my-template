@@ -1,0 +1,86 @@
+<!--
+  FRAGMENT: tripwire (round four, package 0.b). Written for SOP-OPS-003 "Private houses everything, public lanes
+  witness"; the templates agent includes it there (copy this section in whole, below its allowlist section).
+  Icon paths are written for a page in OPS/ (../assets/icons/), so they resolve once the section sits in
+  OPS/SOP-OPS-003-*.md; seen here, one folder deeper, they do not.
+  Source of truth for the rule's mechanics: my-template/scripts/scan-public-lane.sh (its header comment) and its
+  self-test. Change the script first, then this section.
+-->
+
+## <img src="../assets/icons/shield-check.svg" width="24" height="24" alt=""> The tripwire: a public lane never publishes a file a machine or a person has not read
+
+Every public lane (a `-public` twin, a public reading room, a public monitor) is filled by a sync that copies only
+the allowlisted paths. Before anything is pushed, a tripwire reads **every** staged file. The rule is one sentence:
+
+> **A public lane never publishes a file a machine or a person has not read.**
+
+Before 2026-11-01 the check read only plain text, so a PDF, a picture or a Word file passed through unread. Now each
+kind of file is read its own way, or stopped.
+
+### <img src="../assets/icons/scan-search.svg" width="24" height="24" alt=""> How each file is read
+
+| | Kind of file | How the tripwire reads it | Stopped when |
+|---|---|---|---|
+| <img src="../assets/icons/file-text.svg" width="16" height="16" alt=""> | Text (Markdown, HTML, SVG, scripts) | read directly | it carries a credential, a pointer into agent notes, or a sensitive shape (below) |
+| <img src="../assets/icons/file-check.svg" width="16" height="16" alt=""> | PDF | its words are pulled out with `pdftotext` and read the same way | the same, **or** it has no words at all, or some pages have none (a scan, an image-only page), or it will not open |
+| <img src="../assets/icons/files.svg" width="16" height="16" alt=""> | `.docx`, `.xlsx`, `.pptx`, OpenDocument | unzipped; the text inside is read | the same, **or** it carries an embedded picture or object |
+| <img src="../assets/icons/sparkles.svg" width="16" height="16" alt=""> | Pictures and fonts | checked to be what their name says | they sit anywhere other than an `assets/` or `icons/` folder |
+| <img src="../assets/icons/triangle-alert.svg" width="16" height="16" alt=""> | Anything else (archives, old `.doc`, unknown binaries) | cannot be read here | always, unless a person attests it |
+
+**Sensitive shapes** are the ones a public page should almost never carry: an employer or social-security number
+shape, a label for a tax identifier or a birth date, a street address or post-office box, the word for a giver of
+gifts, an account number longer than four digits beside its label, and the fleet's personal-matter words. The exact
+patterns live in the script, assembled from pieces so the script itself can travel; this page names them in plain
+words so it can travel too.
+
+### <img src="../assets/icons/fingerprint.svg" width="24" height="24" alt=""> When a person reads it instead: attestation
+
+A machine cannot read a scanned letter or a photograph. A person can. When the tripwire stops a file it prints the
+exact line to add, and an officer who has **opened the file and read every page** adds it to
+`PUBLIC-ALLOWLIST-ATTESTED.txt` by pull request:
+
+```text
+pdf/OPS/SOP-OPS-001-how-a-change-travels.pdf | <officer> | 2026-11-01 | opened and read | sha256:<fingerprint>
+```
+
+The fingerprint is optional and recommended: with it, the attestation ends the moment the file changes, and the next
+sync asks for a fresh reading. An attestation clears a sensitive shape, a picture outside `assets/`, and a PDF with
+no words. It never clears the three things below.
+
+### <img src="../assets/icons/folder-lock.svg" width="24" height="24" alt=""> What nothing opens
+
+1. <img src="../assets/icons/key-round.svg" width="16" height="16" alt=""> **A credential or a pointer into agent notes** found in any readable text, attested or not. Remove it from the file.
+2. <img src="../assets/icons/landmark.svg" width="16" height="16" alt=""> **The legal lanes by path:** `entity/`, `tax/`, `filings/`, `counsel/`. A file under any of them is refused whatever the allowlist or an attestation says. The legal public lane carries only its README, its folder map and policy skeletons.
+3. <img src="../assets/icons/lock.svg" width="16" height="16" alt=""> **Names that never travel:** agent-note folders, tool configuration (`CLAUDE.md`, `AGENTS.md`, `.claude/`, `.github/`), keys, wallets, environment files, symbolic links, and any file over 15 MB.
+
+```mermaid
+flowchart TD
+    A["A file the allowlist names"] --> B{"Under entity/, tax/,<br/>filings/ or counsel/?<br/>A name that never travels?"}
+    B -- yes --> R["Refused. Nothing opens it"]
+    B -- no --> C{"Can a machine read it?<br/>text, PDF words, office text"}
+    C -- "yes" --> D{"A credential or<br/>an agent-note pointer?"}
+    D -- yes --> R
+    D -- no --> E{"A sensitive shape?"}
+    E -- no --> P["Published"]
+    C -- "no: a scan, a picture,<br/>a binary" --> F{"Attested: opened and read<br/>(and the fingerprint still matches)?"}
+    E -- yes --> F
+    F -- yes --> P
+    F -- no --> S["Stopped. The log names the file<br/>and prints the line to attest it"]
+```
+
+### <img src="../assets/icons/list-checks.svg" width="24" height="24" alt=""> Running it yourself
+
+```sh
+brew install poppler                                   # once, on a Mac: gives pdftotext
+sh scripts/scan-public-lane.selftest.sh                # proves it: a planted fake number in a PDF must be refused
+TRIPWIRE_PUBLIC=1 sh scripts/sync-allowlist.sh stage PUBLIC-ALLOWLIST.txt /tmp/stage   # a dry run of the sync
+sh scripts/scan-public-lane.sh /tmp/stage PUBLIC-ALLOWLIST-ATTESTED.txt                 # or scan any folder
+```
+
+*You should see:* `every file read; clean`, or a list of refused files, each with its reason. The scanner never
+prints what it matched, only the kind of match and where, so a found secret does not land in a log. On GitHub the
+sync installs `pdftotext` (`poppler-utils`) and runs the self-test before every sync; without a PDF reader, no PDF
+travels.
+
+**Master copy:** `my-template/scripts/scan-public-lane.sh` and its self-test. Every repository's copy is the
+master, byte for byte; the self-test in my-template checks the SOP template's copies.

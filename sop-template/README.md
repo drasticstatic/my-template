@@ -13,6 +13,8 @@ beside its `proposals`; the lab keeps a drafting desk per organisation (`-<org>`
 | 🧭 | [`OPS/`](repo/OPS/) · [`IT/`](repo/IT/) · [`GOV/`](repo/GOV/) | Departments, one folder each; the universal procedures ship with the template |
 | 📄 | [`.github/workflows/pdf.yml`](repo/.github/workflows/pdf.yml) · [`scripts/render-pdfs.sh`](repo/scripts/render-pdfs.sh) | Every `<DEPT>/SOP-*.md` → `pdf/<DEPT>/SOP-*.pdf` (Letter) on push to `main`, committed by the Actions bot; the script is the local twin. Tone shades at the top of each (ships brass on slate) |
 | 🗺️ | [`LEGEND.md`](repo/LEGEND.md) · [`scripts/legend.sh`](repo/scripts/legend.sh) | Which repositories are protected, have `preview`, allow which merges, serve Pages, are public twins. Read-only generator; `--public-only` for anything visitors see |
+| 🛡️ | [`.github/workflows/sync-public.yml`](repo/.github/workflows/sync-public.yml) · [`scripts/sync-allowlist.sh`](repo/scripts/sync-allowlist.sh) · [`PUBLIC-ALLOWLIST.txt`](repo/PUBLIC-ALLOWLIST.txt) | The public twin's sync: only allowlisted paths travel, through a deploy key, inert until the key exists |
+| 🔎 | [`scripts/scan-public-lane.sh`](repo/scripts/scan-public-lane.sh) · [`scan-public-lane.selftest.sh`](repo/scripts/scan-public-lane.selftest.sh) · [`PUBLIC-ALLOWLIST-ATTESTED.txt`](repo/PUBLIC-ALLOWLIST-ATTESTED.txt) | The public-lane tripwire: every staged file is read (PDF words, office text) or attested by a person who opened it, or refused; `entity/ tax/ filings/ counsel/` never travel. Copies of the master in [`../scripts/`](../scripts/); the rule is written up in [`OPS/_fragments/tripwire.md`](repo/OPS/_fragments/tripwire.md) for SOP-OPS-003 |
 
 ## Naming: `SOP-[Department]-[ID]-[name].md`
 

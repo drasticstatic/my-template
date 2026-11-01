@@ -1,0 +1,115 @@
+name: Sync allowlisted procedures to the public twin
+
+# Copies ONLY the paths listed in PUBLIC-ALLOWLIST.txt to <org>/ops-standard-operating-procedures-public, after two
+# tripwires, through a deploy key. Inert until the secret SOP_PUBLIC_DEPLOY_KEY exists: without it every run ends green
+# with a notice and touches nothing.
+#   - scripts/sync-allowlist.sh stages the listed paths and refuses agent notes, keys and credentials;
+#   - scripts/scan-public-lane.sh then reads EVERY staged file (PDF text through pdftotext, .docx/.xlsx text) and
+#     refuses what no machine could read (a scan, an image-only PDF, a picture outside assets/ or icons/, any other
+#     binary) unless a person attested it in PUBLIC-ALLOWLIST-ATTESTED.txt, and refuses entity/ tax/ filings/ counsel/
+#     by path whatever any list says. A public lane never publishes a file a machine or a person has not read.
+# Dry run on your machine (brew install poppler first):
+#   TRIPWIRE_PUBLIC=1 sh scripts/sync-allowlist.sh stage PUBLIC-ALLOWLIST.txt /tmp/stage
+# The push is an ordinary commit on the destination's main (never a force-push), so the destination's deletion-only
+# ruleset is enough. Nobody edits the destination by hand; change the allowlist here instead.
+#
+# Provisioning (an owner's commands, once; the private half never leaves the temp folder):
+#   ssh-keygen -t ed25519 -N "" -C "SOP_PUBLIC_DEPLOY_KEY" -f /tmp/sop_public_key
+#   gh repo deploy-key add /tmp/sop_public_key.pub -R <org>/ops-standard-operating-procedures-public --allow-write -t "sync from <org>/ops-standard-operating-procedures"
+#   gh secret set SOP_PUBLIC_DEPLOY_KEY -R <org>/ops-standard-operating-procedures < /tmp/sop_public_key
+#   shred -u /tmp/sop_public_key /tmp/sop_public_key.pub   # macOS without shred: rm -P
+env:
+  DEST_REPO: <org>/ops-standard-operating-procedures-public
+  ALLOWLIST: PUBLIC-ALLOWLIST.txt
+  ATTESTED: PUBLIC-ALLOWLIST-ATTESTED.txt # files a person opened and read: path | officer | YYYY-MM-DD | opened and read
+  PREFIX: ""          # empty: the sync owns the destination except RESERVED; a folder: it owns only that folder
+  RESERVED: "README.md LICENSE"      # the destination's own top-level files (its README, its front end)
+  TRIPWIRE_PUBLIC: "1" # 1 when the destination is public (runs scan-public-lane.sh)
+  MANIFEST: ""      # optional file listing what was synced, for a front end
+
+on:
+  push:
+    branches: [main]
+    paths: ["PUBLIC-ALLOWLIST.txt", "PUBLIC-ALLOWLIST-ATTESTED.txt", "*/SOP-*.md", "pdf/**", "assets/**",
+            "scripts/sync-allowlist.sh", "scripts/scan-public-lane.sh", "scripts/scan-public-lane.selftest.sh",
+            ".github/workflows/sync-public.yml"]
+  workflow_run:
+    workflows: ["Render procedures to PDF"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sync-public
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Is the deploy key there? (inert without it)
+        id: gate
+        env:
+          KEY: ${{ secrets.SOP_PUBLIC_DEPLOY_KEY }}
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "::notice::SOP_PUBLIC_DEPLOY_KEY is not set, so this sync is inert. Provisioning commands are at the top of this workflow."
+            echo "ready=no" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=yes" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v7
+        if: steps.gate.outputs.ready == 'yes'
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Install pdftotext (the tripwire reads every PDF; no reader, no sync)
+        if: steps.gate.outputs.ready == 'yes'
+        run: |
+          sudo apt-get install -y -qq poppler-utils >/dev/null 2>&1 || { sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils; }
+          pdftotext -v 2>&1 | head -1
+
+      - name: Self-test the tripwire (a planted fake identifier in a PDF must be refused)
+        if: steps.gate.outputs.ready == 'yes'
+        run: sh scripts/scan-public-lane.selftest.sh
+
+      - name: Stage the allowlisted paths and run both tripwires
+        id: stage
+        if: steps.gate.outputs.ready == 'yes'
+        run: |
+          set +e
+          sh scripts/sync-allowlist.sh stage "$ALLOWLIST" "$RUNNER_TEMP/stage"
+          rc=$?
+          set -e
+          case "$rc" in
+            0) echo "staged=yes" >> "$GITHUB_OUTPUT" ;;
+            3) echo "::notice::$ALLOWLIST lists nothing yet; nothing is published until an officer adds a path."
+               echo "staged=no" >> "$GITHUB_OUTPUT" ;;
+            *) echo "::error::the tripwire stopped the sync; nothing was pushed"; exit "$rc" ;;
+          esac
+
+      - name: Push to the destination (an ordinary commit, never a force-push)
+        if: steps.stage.outputs.staged == 'yes'
+        env:
+          KEY: ${{ secrets.SOP_PUBLIC_DEPLOY_KEY }}
+        run: |
+          set -eu
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$KEY" > ~/.ssh/sync_key
+          chmod 600 ~/.ssh/sync_key
+          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
+          export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/sync_key -o IdentitiesOnly=yes"
+          git clone --depth 1 "git@github.com:$DEST_REPO.git" "$RUNNER_TEMP/dest"
+          sh scripts/sync-allowlist.sh apply "$RUNNER_TEMP/stage" "$RUNNER_TEMP/dest"
+          cd "$RUNNER_TEMP/dest"
+          if git diff --cached --quiet; then echo "the destination already matches the allowlist"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m ":rocket: deploy(sync): allowlisted paths from ${GITHUB_REPOSITORY}@${GITHUB_SHA::7}" \
+            -m "Copied by ${GITHUB_WORKFLOW} (run ${GITHUB_RUN_ID}); only the paths in ${ALLOWLIST}, after the tripwires."
+          git push origin HEAD:main || { git pull --rebase -q origin main && git push origin HEAD:main; }
