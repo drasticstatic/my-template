@@ -2,6 +2,8 @@ name: Render procedures to PDF
 
 # Every <DEPT>/SOP-*.md becomes pdf/<DEPT>/SOP-*.pdf (Letter), committed back by the Actions bot.
 # The local twin is scripts/render-pdfs.sh; both read the same four tone shades.
+# ```mermaid blocks become SVG pictures first (scripts/mermaid-prerender.sh: @mermaid-js/mermaid-cli 12.0.0 via npx,
+# provenance in my-template/LUCID.md), because md-to-pdf would otherwise print the diagram's source text.
 # Tone: set the four shades for your organisation (my-template/proposals-template/TONES.md).
 # The template ships brass on slate (the lab's tone). Examples:
 #   THEF amber          d97706 6b4f1d b45309 fef3c7
@@ -20,7 +22,7 @@ env:
 on:
   push:
     branches: [main]
-    paths: ["*/SOP-*.md", "assets/**", ".github/workflows/pdf.yml"]
+    paths: ["*/SOP-*.md", "assets/**", ".github/workflows/pdf.yml", "scripts/mermaid-prerender.sh"]
   workflow_dispatch:
 
 permissions:
@@ -38,10 +40,10 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 24
-      - name: Render each procedure (accordions opened for print)
+      - name: Render each procedure (accordions opened for print, Mermaid drawn as SVG)
         run: |
           accent="${TONE_ACCENT:-$TONE_PRIMARY}"
-          css="body{font-family:Helvetica,Arial,sans-serif} img{display:inline-block !important;vertical-align:-3px;margin:0 3px} h1{color:#$TONE_DEEP} h2{color:#$TONE_DEEP;border-bottom:2px solid #$TONE_PRIMARY;padding-bottom:4px} h3,h4{color:#$TONE_MID} a{color:#$accent} blockquote{border-left:4px solid #$accent;background:#$TONE_TINT;padding:6px 14px;margin-left:0} th{background:#$TONE_TINT;color:#$TONE_DEEP} details>summary{font-weight:600;color:#$TONE_MID} hr{border:0;border-top:1px solid #$TONE_PRIMARY;opacity:.45} pre{background:#f8fafc;border:1px solid #e2e8f0;padding:8px 10px;white-space:pre-wrap} code{font-size:.92em}"
+          css="body{font-family:Helvetica,Arial,sans-serif} img{display:inline-block !important;vertical-align:-3px;margin:0 3px} h1{color:#$TONE_DEEP} h2{color:#$TONE_DEEP;border-bottom:2px solid #$TONE_PRIMARY;padding-bottom:4px} h3,h4{color:#$TONE_MID} a{color:#$accent} blockquote{border-left:4px solid #$accent;background:#$TONE_TINT;padding:6px 14px;margin-left:0} th{background:#$TONE_TINT;color:#$TONE_DEEP} details>summary{font-weight:600;color:#$TONE_MID} hr{border:0;border-top:1px solid #$TONE_PRIMARY;opacity:.45} pre{background:#f8fafc;border:1px solid #e2e8f0;padding:8px 10px;white-space:pre-wrap} code{font-size:.92em} img[src*=_print-]{display:block !important;max-width:100% !important;height:auto !important;margin:10px auto !important}"
           shopt -s nullglob
           for f in */SOP-*.md; do
             case "$f" in _template/*|pdf/*) continue;; esac
@@ -50,14 +52,16 @@ jobs:
             sed -e 's/<details>/<details open>/g' \
                 -e 's/^> \[!TIP\]/> **Tip.**/' -e 's/^> \[!NOTE\]/> **Note.**/' \
                 -e 's/^> \[!IMPORTANT\]/> **Important.**/' -e 's/^> \[!WARNING\]/> **Warning.**/' \
-                "$f" > "$dept/_print.md"
+                "$f" > "$dept/_print.src.md"
+            sh scripts/mermaid-prerender.sh "$dept/_print.src.md" "$dept/_print.md"
+            rm -f "$dept/_print.src.md"
             npx -y md-to-pdf@5 "$dept/_print.md" \
               --basedir . \
               --css "$css" \
               --launch-options '{"args":["--no-sandbox"]}' \
               --pdf-options '{"format":"Letter","margin":{"top":"18mm","bottom":"18mm","left":"16mm","right":"16mm"},"printBackground":true}'
             mv "$dept/_print.pdf" "pdf/$dept/$base.pdf"
-            rm "$dept/_print.md"
+            rm -f "$dept/_print.md" "$dept"/_print-*.svg
             echo "pdf/$dept/$base.pdf"
           done
       - name: Commit PDFs

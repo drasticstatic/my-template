@@ -9,8 +9,9 @@ GitHub. Five organizations in this fleet run it today.
 |---|---|---|
 | 🏠 | [`README.md`](repo/README.md) | The index: the proposals table, how a proposal is shaped, how the org decides |
 | 🌱 | [`_template/README.md`](repo/_template/README.md) | The skeleton to copy for each new proposal (never rendered, because it doesn't start with three digits) |
-| 📄 | [`.github/workflows/pdf.yml`](repo/.github/workflows/pdf.yml) | Renders `NNN-name/README.md` → `pdf/NNN-name.pdf`, accordions opened for print |
-| 🎨 | [`assets/icons/`](repo/assets/icons/) | 33 Lucide icons (ISC licence), one per idea |
+| ✏️ | [`drafts/`](repo/drafts/README.md) | Where a proposal grows before it has a number: not rendered, not indexed, not published; `git mv` to the next number when ready |
+| 📄 | [`.github/workflows/pdf.yml`](repo/.github/workflows/pdf.yml) · [`scripts/render-pdfs.sh`](repo/scripts/render-pdfs.sh) | Renders `NNN-name/README.md` → `pdf/NNN-name.pdf`, accordions opened for print, ` ```mermaid ` blocks drawn as SVG first ([`scripts/mermaid-prerender.sh`](repo/scripts/mermaid-prerender.sh)) |
+| 🎨 | [`assets/icons/`](repo/assets/icons/) | 34 Lucide icons (ISC licence), one per idea; the clarity standard is [`LUCID.md`](../LUCID.md) |
 
 ## 🚀 Adopt it in five steps
 
@@ -36,7 +37,7 @@ our organization, starting with a proposal about …"*
   pick 1 or 2") so answering takes a minute.
 - **The itinerary is the promise.** Mark each stop done as it happens, with the date, so the proposal
   doubles as the progress report. A big proposal can keep a `progress/` folder of stop pages.
-- **One icon per idea**, beside its words, and screenshots where they help. Screenshots go in the
+- **One icon per idea**, beside its words, one Mermaid diagram where a picture explains the mechanism, and screenshots where they help ([`LUCID.md`](../LUCID.md)). Screenshots go in the
   proposal's own folder; the PDF's CSS gives any image whose path contains `screenshots` the full width.
 - **Name people by first name and last initial**, and never put a key, password or private story in a
   proposal. The organization's `AGENTS.md` is where "never publish" rules live.
@@ -51,6 +52,9 @@ our organization, starting with a proposal about …"*
 - Before printing, it opens every `<details>` and turns GitHub's `> [!TIP]`-style alerts into bold labels,
   because print engines don't understand either.
 - It uses `md-to-pdf@5` (Chromium underneath) with `--basedir .`, so relative icon paths resolve.
+- `md-to-pdf` does not draw Mermaid, so `scripts/mermaid-prerender.sh` turns each ` ```mermaid ` block into an SVG beside
+  the print copy first (`@mermaid-js/mermaid-cli`, pinned; provenance in [`LUCID.md`](../LUCID.md)). A proposal without
+  a diagram skips it.
 - It commits the PDFs as `github-actions[bot]` with "📄 Render proposal PDFs". **Pull before your next
   push**, or your push is rejected for being behind.
 - Private repos spend Actions minutes; each render takes about a minute.
@@ -62,7 +66,7 @@ our organization, starting with a proposal about …"*
 
 When committees each keep their own `proposals/`, a board can collect them all into its own repo every
 day with a small workflow and a **read-only** fine-grained token (Contents: Read on the committee repos).
-The workflow clones each repo sparsely, copies finished proposals (never `drafts/`), and commits with the
+The workflow clones each repo sparsely, copies finished proposals (never [`drafts/`](repo/drafts/README.md)), and commits with the
 built-in `GITHUB_TOKEN`, so the token never needs write access anywhere. Nothing is deleted when a
 committee removes a file; the board keeps what it was sent.
 

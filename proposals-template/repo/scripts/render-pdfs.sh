@@ -1,7 +1,8 @@
 #!/bin/sh
 # render-pdfs.sh — the fleet's proposal renderer, runnable locally (the pdf.yml workflow does the same on push).
 #   sh proposals/scripts/render-pdfs.sh      # NNN-*/README.md → pdf/NNN-*.pdf ; <child>/NNN-*/README.md → pdf/<child>/NNN-*.pdf
-# GitHub callouts become bold labels; <details> open; md-to-pdf@5 (Puppeteer/Chromium) renders A4.
+# GitHub callouts become bold labels; <details> open; ```mermaid blocks become SVG pictures (scripts/mermaid-prerender.sh,
+# @mermaid-js/mermaid-cli, pinned; MMDC=<an installed mmdc> when the registry stalls); md-to-pdf@5 (Puppeteer/Chromium) renders A4.
 # Tone: set per organisation; see TONES.md (my-template/proposals-template/TONES.md): four shades (deep H1/H2, mid H3 and summaries, primary rules,
 # a tint behind quotes and table heads) and an accent for links and quote bars that a lab repo borrows from the organisation
 # a proposal serves. A child folder named david-amaringo renders in the rainbow. Override per run with TONE_* variables.
@@ -21,16 +22,20 @@ render () { # $1 = dir (NNN-name or child/NNN-name), $2 = tone key
   name="$1"; out="pdf/$name.pdf"; mkdir -p "$(dirname "$out")"
   sed -e 's/<details>/<details open>/g' \
       -e 's/^> \[!TIP\]/> **Tip.**/' -e 's/^> \[!NOTE\]/> **Note.**/' -e 's/^> \[!IMPORTANT\]/> **Important.**/' -e 's/^> \[!WARNING\]/> **Warning.**/' \
-      "$name/README.md" > "$name/_print.md"
+      "$name/README.md" > "$name/_print.src.md"
+  PUPPETEER_SKIP_DOWNLOAD=1 PUPPETEER_EXECUTABLE_PATH="${PUPPETEER_EXECUTABLE_PATH:-/Applications/Google Chrome.app/Contents/MacOS/Google Chrome}" \
+    TONE_PRIMARY="$TONE_PRIMARY" TONE_DEEP="$TONE_DEEP" TONE_MID="$TONE_MID" TONE_TINT="$TONE_TINT" \
+    sh scripts/mermaid-prerender.sh "$name/_print.src.md" "$name/_print.md"
+  rm -f "$name/_print.src.md"
   PUPPETEER_SKIP_DOWNLOAD=1 PUPPETEER_EXECUTABLE_PATH="${PUPPETEER_EXECUTABLE_PATH:-/Applications/Google Chrome.app/Contents/MacOS/Google Chrome}" npx -y md-to-pdf@5 "$name/_print.md" --basedir . \
-    --css "img{display:inline-block !important;vertical-align:-3px;margin:0 3px} h2 img{vertical-align:-5px} body{font-family:Helvetica,Arial,sans-serif} $(css_for "$2") img[src*=screenshots]{display:block !important;max-width:100% !important;height:auto !important;margin:6px 0 !important}" \
+    --css "img{display:inline-block !important;vertical-align:-3px;margin:0 3px} h2 img{vertical-align:-5px} body{font-family:Helvetica,Arial,sans-serif} $(css_for "$2") img[src*=screenshots]{display:block !important;max-width:100% !important;height:auto !important;margin:6px 0 !important} img[src*=_print-]{display:block !important;max-width:100% !important;height:auto !important;margin:10px auto !important}" \
     --launch-options '{"args":["--no-sandbox"]}' \
     --pdf-options '{"format":"A4","margin":{"top":"18mm","bottom":"18mm","left":"16mm","right":"16mm"},"printBackground":true}'
-  mv "$name/_print.pdf" "$out"; rm "$name/_print.md"; echo "$out"
+  mv "$name/_print.pdf" "$out"; rm -f "$name/_print.md" "$name"/_print-*.svg; echo "$out"
 }
 for dir in [0-9][0-9][0-9]-*/; do [ -f "${dir%/}/README.md" ] && render "${dir%/}" "$TONE"; done
 for dir in */[0-9][0-9][0-9]-*/; do
   [ -f "${dir%/}/README.md" ] || continue
-  case "$dir" in pdf/*|assets/*|scripts/*|decks/*) continue;; david-amaringo/*) t=rainbow;; *) t="$TONE";; esac
+  case "$dir" in pdf/*|assets/*|scripts/*|decks/*|drafts/*) continue;; david-amaringo/*) t=rainbow;; *) t="$TONE";; esac
   render "${dir%/}" "$t"
 done

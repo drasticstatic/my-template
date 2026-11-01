@@ -21,7 +21,8 @@ in the community.
 |---|---|---|---|
 | 001 | [<img src="assets/icons/sprout.svg" width="16" height="16" alt=""> **The first proposal**](001-the-first-proposal/README.md): one line on what it offers | Whom it's for | <img src="assets/icons/message-circle-question.svg" width="16" height="16" alt=""> asking |
 
-Start a new one by copying [`_template/`](_template/README.md) to the next number.
+Start a new one by copying [`_template/`](_template/README.md) into [`drafts/`](drafts/README.md) while it grows, then
+`git mv` it to the next number when it is ready to ask. Drafts are not rendered, indexed or published.
 
 ## <img src="assets/icons/route.svg" width="24" height="24" alt=""> How a proposal is shaped
 
@@ -31,6 +32,14 @@ Start a new one by copying [`_template/`](_template/README.md) to the next numbe
 4. **Questions**: what we need from the people it affects.
 5. **Decisions log**: what was chosen, when, and by whom.
 6. **Details**: technical material in fold-out sections.
+
+## <img src="assets/icons/workflow.svg" width="24" height="24" alt=""> From draft to decision
+
+```mermaid
+flowchart LR
+  D["drafts/short-name/"] -->|"git mv, next number"| N["NNN-short-name/<br/>PDF on push"]
+  N --> A["asked of the people<br/>it affects"] --> L["decisions log"]
+```
 
 ## <img src="assets/icons/users.svg" width="24" height="24" alt=""> How we decide
 

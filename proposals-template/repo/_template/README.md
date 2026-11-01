@@ -17,10 +17,12 @@
 
 <!--
   How to use this template (delete this comment when you're done):
+  0. While it grows, keep it as drafts/short-name/ (not rendered, not indexed); git mv it to the number when ready.
   1. Copy this folder to NNN-short-name/ (three digits, then lowercase words joined by hyphens).
      Only folders that start with three digits are rendered to PDF, so _template/ never is.
   2. Fill each section. Keep the TL;DR to five lines; move detail into the fold-outs at the end.
   3. Pick icons from ../assets/icons/ (Lucide, ISC licence). One icon per idea, beside its words.
+     Where a picture explains the mechanism, add one ```mermaid block; GitHub and the PDF both draw it (my-template/LUCID.md).
   4. Add the proposal to the table in the repo's README.md, then push to main. The PDF appears in pdf/
      about a minute later.
   Status badge words used so far: Asking, Planned, In progress, Done, Paused, Declined.

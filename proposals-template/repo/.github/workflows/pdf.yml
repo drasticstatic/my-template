@@ -1,9 +1,18 @@
 name: Render proposals to PDF
 
+# NNN-*/README.md becomes pdf/NNN-*.pdf. ```mermaid blocks become SVG pictures first (scripts/mermaid-prerender.sh:
+# @mermaid-js/mermaid-cli 12.0.0 via npx, provenance in my-template/LUCID.md), because md-to-pdf would otherwise print
+# the diagram's source text. Diagram colours: the TONE_* shades below (amber as shipped; set them with your CSS colours).
+env:
+  TONE_PRIMARY: d97706
+  TONE_DEEP: 6b4f1d
+  TONE_MID: b45309
+  TONE_TINT: fef3c7
+
 on:
   push:
     branches: [main]
-    paths: ["[0-9][0-9][0-9]-*/README.md", "assets/**"]
+    paths: ["[0-9][0-9][0-9]-*/README.md", "assets/**", "scripts/mermaid-prerender.sh"]
   workflow_dispatch:
 
 permissions:
@@ -21,7 +30,7 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 24
-      - name: Render each proposal README (accordions opened for print)
+      - name: Render each proposal README (accordions opened for print, Mermaid drawn as SVG)
         run: |
           mkdir -p pdf
           for f in [0-9][0-9][0-9]-*/README.md; do
@@ -29,14 +38,16 @@ jobs:
             sed -e 's/<details>/<details open>/g' \
                 -e 's/^> \[!TIP\]/> **Tip**/' -e 's/^> \[!NOTE\]/> **Note**/' \
                 -e 's/^> \[!IMPORTANT\]/> **Important**/' -e 's/^> \[!WARNING\]/> **Warning**/' \
-                "$f" > "$name/_print.md"
+                "$f" > "$name/_print.src.md"
+            sh scripts/mermaid-prerender.sh "$name/_print.src.md" "$name/_print.md"
+            rm -f "$name/_print.src.md"
             npx -y md-to-pdf@5 "$name/_print.md" \
               --basedir . \
-              --css 'img{display:inline-block !important;vertical-align:-3px;margin:0 3px} h2 img{vertical-align:-5px} details>summary{font-weight:600} h1{color:#6b4f1d} h2{color:#6b4f1d;border-bottom:2px solid #d97706;padding-bottom:4px} h3,h4{color:#b45309} a{color:#d97706} blockquote{border-left:4px solid #d97706;background:#fef3c7;padding:6px 14px;margin-left:0} th{background:#fef3c7;color:#6b4f1d} details>summary{font-weight:600;color:#b45309} hr{border:0;border-top:1px solid #d97706;opacity:.45} sub{color:#b45309} img[src*=screenshots]{display:block !important;max-width:100% !important;height:auto !important;margin:6px 0 !important;vertical-align:top} table:has(img[src*=screenshots]){table-layout:fixed;width:100%} table:has(img[src*=screenshots]) td{vertical-align:top}' \
+              --css 'img{display:inline-block !important;vertical-align:-3px;margin:0 3px} h2 img{vertical-align:-5px} details>summary{font-weight:600} h1{color:#6b4f1d} h2{color:#6b4f1d;border-bottom:2px solid #d97706;padding-bottom:4px} h3,h4{color:#b45309} a{color:#d97706} blockquote{border-left:4px solid #d97706;background:#fef3c7;padding:6px 14px;margin-left:0} th{background:#fef3c7;color:#6b4f1d} details>summary{font-weight:600;color:#b45309} hr{border:0;border-top:1px solid #d97706;opacity:.45} sub{color:#b45309} img[src*=screenshots]{display:block !important;max-width:100% !important;height:auto !important;margin:6px 0 !important;vertical-align:top} table:has(img[src*=screenshots]){table-layout:fixed;width:100%} table:has(img[src*=screenshots]) td{vertical-align:top} img[src*=_print-]{display:block !important;max-width:100% !important;height:auto !important;margin:10px auto !important}' \
               --launch-options '{"args":["--no-sandbox"]}' \
               --pdf-options '{"format":"Letter","margin":{"top":"18mm","bottom":"18mm","left":"16mm","right":"16mm"},"printBackground":true}'
             mv "$name/_print.pdf" "pdf/$name.pdf"
-            rm "$name/_print.md"
+            rm -f "$name/_print.md" "$name"/_print-*.svg
           done
       - name: Commit PDFs
         run: |
