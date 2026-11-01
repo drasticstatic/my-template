@@ -70,6 +70,7 @@ flowchart LR
 |---|---|---|
 | **Secrets** | private keys, tokens (`ghp_…`, `github_pat_…`), API keys, `.env` files, wallets, keystores, seed phrases, recovery codes, deploy keys' private halves | the commit-time secret scan, the sync tripwire's credential patterns, file-name refusals |
 | **Personal data** | home addresses, phone numbers, dates of birth, health or recovery details, family and custody matters, donors' identities, account numbers longer than the last four digits | the public-lane tripwire's sensitive-shape scan stops the file. An officer may attest a **false alarm** (a public office address, a policy that names the word "donor"); attesting a person's private details is never allowed, whatever the machine would accept |
+| **A person's account security** | that a named person's account has no two-factor login, uses text-message codes, or is otherwise easy to break into | **no machine catches this:** it holds no password or number, only a weakness. Write it only in that person's own note (a desk proposal addressed to them), never in a procedure, a legend or a shared page; procedures say "a member" and point to the note. *Learned 2026-11-01, from the "You should know" plugin's heads-up about PIR's board procedure.* |
 | **Filings** | entity papers, EIN letters, tax returns and working papers, government filings, counsel's questions and answers | the tripwire refuses `entity/`, `tax/`, `filings/` and `counsel/` **by path**, whatever an allowlist says |
 
 If one of these is found in public: **stop**, tell the steward, rotate any secret first (a deleted commit is still in
@@ -87,5 +88,6 @@ someone's clone), then remove it. Never paste the secret into the report.
 | Date | Change | By |
 |---|---|---|
 | 2026-11-01 | Written from the lab steward's decision ("every repository name may appear publicly; contents stay private") | Alfred |
+| 2026-11-01 | *Never public*: a person's account security, the weakness no scan can see; it lives only in that person's own note | Alfred |
 
 <sub>Related: [LUCID.md](LUCID.md), [ENTITIES.md](ENTITIES.md), SOP-OPS-003 *Private houses everything, public lanes witness* ([`sop-template/repo/OPS/`](sop-template/repo/OPS/)), [`walkthroughs/SECRET-SCAN.md`](walkthroughs/SECRET-SCAN.md). Icons: Lucide (ISC).</sub>
