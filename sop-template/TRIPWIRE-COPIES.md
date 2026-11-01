@@ -27,7 +27,11 @@ Copies were found with `find ~/code ~/dappu ~/theholyearthfoundation ~/Octagon-R
 `origin/main` were also checked, to find copies on a branch that was not checked out. In each repository, both files
 were copied from the master and the self-test was run there. It passed everywhere: 40/40, or 42/42 where the copy also
 carries the reading-room checks. (The master's own 44/44 adds two "matches the master" checks.) Each copy was then
-committed on its own and pushed to the working branch. 42 repositories carry the pair, and all 42 match the master.
+committed on its own and pushed to the working branch. 52 repositories carry the pair, and all 52 match the master.
+(The first pass found 42. A review the same day read every repository on GitHub, not only local clones, and found ten
+more in PsychedelicsInRecovery: committee and desk repositories whose copies were added at 09:46 from `5d4ab42`, just
+before `06dd9d1`. Their only local clones were in a session scratch folder, which the `find` above does not reach.
+They are the last ten rows below.)
 Commits are on `main` unless marked `preview`.
 
 | Repository | Commit |
@@ -74,6 +78,16 @@ Commits are on `main` unless marked `preview`.
 | `psanctuarychurch/legal` | `430287e` |
 | `taylordwraps/reading-room` | `7cea9f6` |
 | `taylordwraps/ops-standard-operating-procedures` | `04e047a` |
+| `psychedelicsinrecovery/alex-desk` | `943f232` |
+| `psychedelicsinrecovery/board-of-directors` | `fcba4a8` |
+| `psychedelicsinrecovery/catalyst-desk` | `00312c3` |
+| `psychedelicsinrecovery/github-desk` | `1ded0f8` |
+| `psychedelicsinrecovery/litcom-desk` | `af6482c` |
+| `psychedelicsinrecovery/literature-committee` | `22ce427` |
+| `psychedelicsinrecovery/pr-desk` | `1a7ee07` |
+| `psychedelicsinrecovery/public-relations` | `fc30714` |
+| `psychedelicsinrecovery/tech-committee` | `cd7cad3` |
+| `psychedelicsinrecovery/techcom-desk` | `ea1f8e8` |
 
 Some copies already matched the master, so they needed no commit: `psanctuary/legal`, `psanctuary/reading-room`,
 `psanctuary/ops-standard-operating-procedures`, the `~/code/psanctuary` lab desk, and this repository's
