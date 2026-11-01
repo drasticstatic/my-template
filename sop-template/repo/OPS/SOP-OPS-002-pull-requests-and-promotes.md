@@ -75,7 +75,7 @@ GitHub's free plan decides much of this, so the rule depends on what kind of rep
 
 ## <img src="../assets/icons/history.svg" width="24" height="24" alt=""> Honest history: auditing past merges for squashes
 
-A procedure that says "never squash" should say plainly whether the organisation ever did. Each organisation runs this audit once, records the result in its private copy of this procedure, and reruns it after any doubt.
+A procedure that says "never squash" should say plainly whether the organisation ever did. Each organisation runs this audit once, records the result in a members-only page beside this procedure (`OPS/SOP-OPS-002-honest-history.md`, never on `PUBLIC-ALLOWLIST.txt`, because this procedure itself usually goes public), and reruns it after any doubt.
 
 ### <img src="../assets/icons/scan-search.svg" width="20" height="20" alt=""> How to audit (read-only; run under `sh`)
 ```sh
@@ -96,7 +96,7 @@ done
 
 ### <img src="../assets/icons/notebook-pen.svg" width="20" height="20" alt=""> What a squash costs, and how it can come back (a worked example)
 
-> Generic, from a real audit in this fleet; each organisation keeps its own table in its private copy.
+> Generic, from a real audit in this fleet; each organisation keeps its own table in a members-only page.
 
 A site repository had four Promotes squashed over two days, before merge commits only was set. Each squash commit:
 - was **authored by the person who clicked merge**, though the pull request held 7 to 25 commits by a person, a helper and dependabot;
@@ -136,3 +136,4 @@ The pull request page shows **Merged** with a merge commit; `git log --merges -1
 | 2026-10-30 | Drafted after the first Promotes on `proposals-thef` and `bushido-code` | Alfred |
 | 2026-10-31 | Merge commits only on the twelve proposals and procedures repositories (one PATCH each, read back); the five earlier Promotes verified as two-parent merges; the legend by repository type; `scripts/legend.sh` | Alfred |
 | 2026-11-01 | Lucid pass (icons, a `gitGraph` of a merge commit); **Honest history**: the squash audit, what a squash costs and how a later merge restores it, with a generic worked example; the 2026-10-31 "no attribution was lost" corrected (it checked only the latest Promotes); names may be public | Alfred |
+| 2026-11-01 | Each organisation's audit result goes on a members-only page beside this procedure (`SOP-OPS-002-honest-history.md`), not in this procedure, which usually travels to the public twin | Alfred |
