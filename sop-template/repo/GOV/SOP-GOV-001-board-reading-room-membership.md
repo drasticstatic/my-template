@@ -66,9 +66,16 @@ With the organisation's base permission at **No permission** (SOP-GOV-002), this
    *You should see:* `state: pending` until they accept, then `active`.
 4. Verify as a member would: ask one member to open `<board-inbox>` and one link per committee from their own account. An owner's successful read proves nothing about a member's access.
 
+5. **Every new repository joins the board's list.** A team sees only the repositories someone added to it, one by one; once the base permission is *No permission*, a repository created next month is invisible to the board until it is added. So, right after creating any private repository, and once a month:
+   ```sh
+   sh scripts/board-sees-everything.sh <org> <board-team>          # lists what the board cannot read (read-only)
+   sh scripts/board-sees-everything.sh <org> <board-team> --apply  # grants Read on each one
+   ```
+   *You should see:* `<org>/<board-team> reads all N private repositories.` The script never adds or removes people.
+
 ## <img src="../assets/icons/list-checks.svg" width="24" height="24" alt=""> Steps: member
 1. Give the steward your GitHub handle privately.
-2. Accept the organisation invitation (email, or the bell icon on GitHub); turn on two-factor authentication.
+2. Turn on two-factor authentication **first**, with a passkey or an authenticator app (not text messages): GitHub will not add an account without it to a team in an organisation that requires it ([SECURE-TWO-FACTOR.md](https://github.com/drasticstatic/my-template/blob/main/walkthroughs/SECURE-TWO-FACTOR.md)). Then accept the organisation invitation (email, or the bell icon on GitHub).
 3. Accept the team assignment if GitHub asks.
 4. Open `<board-inbox>` and one link from each committee; if one does not open, report the address and the error, never a credential.
 5. Read in the browser. Bringing an AI helper is a separate request (SOP-IT-002).
@@ -81,7 +88,7 @@ With the organisation's base permission at **No permission** (SOP-GOV-002), this
 |---|---|---|
 | Inbox links open for the owner but not for members | repositories not attached to the team, or members still pending | steps 2–3; wait for acceptance |
 | A member sees more than Read | another team, or the organisation's base permission, grants it | inspect inherited roles under the organisation's settings; set the base permission to *No permission* (SOP-GOV-002 says why and how) |
-| A committee repository is missing from the team | it was created after step 2 | run step 2 again for that repository; add it to `<committee-repos>` here |
+| A repository is missing from the team | it was created after step 2 (teams do not pick up new repositories by themselves) | step 5: `sh scripts/board-sees-everything.sh <org> <board-team> --apply` |
 | A member left the Board | the officers said so | `gh api -X DELETE orgs/<org>/teams/<board-team>/memberships/<login>`; their organisation membership is a separate decision |
 
 ## <img src="../assets/icons/notebook-pen.svg" width="24" height="24" alt=""> Worked example: Psychedelics in Recovery® (live state, read 2026-10-30)
@@ -103,3 +110,4 @@ With the organisation's base permission at **No permission** (SOP-GOV-002), this
 | 2026-10-30 | Drafted; PIR grants verified by read the same day (three repositories at Read, one member, no pending invitations) | Alfred |
 | 2026-10-31 | Generalised for every organisation's board: placeholders, a fill-in box, PIR's live state moved to a marked worked example; member removal added | Alfred |
 | 2026-11-01 | Lucid pass: Lucide icons, the order of hands in Mermaid; base permission none (SOP-GOV-002) makes the board team the true list | Alfred |
+| 2026-11-01 | Step 5: every new repository joins the board's list (`scripts/board-sees-everything.sh`, read-only unless `--apply`); two-factor first for members (GitHub refuses a team add without it) | Alfred |
