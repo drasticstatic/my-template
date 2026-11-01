@@ -203,6 +203,24 @@ safe even with a dirty working tree.
 
 See `AGENTS.md` § *Start of session* for the full rule.
 
+### `sync-local.sh` — every clone on this machine at once
+
+VS Code and every helper read local files, so when GitHub has moved on (another helper pushed, the PDF bot
+committed, a Promote was merged) a stale clone shows the old page. This brings them all up to date:
+
+```sh
+sh scripts/sync-local.sh                 # fetch, then pull --rebase --autostash each clone that is behind
+sh scripts/sync-local.sh --dry-run       # fetch and report only
+sh scripts/sync-local.sh --no-fetch      # report from local knowledge, no network
+sh scripts/sync-local.sh --quiet ~/code  # one root; print only what is behind, ahead, dirty or in trouble
+```
+
+It looks up to three folders deep under `~/code`, `~/dappu` and `~/theholyearthfoundation` (or the roots you give),
+skips `node_modules`, and reports each clone's branch, ahead/behind and local changes. A clone that would conflict is
+aborted at once and left exactly as it was. It **never** pushes, clones, switches branches or forces anything; it
+skips detached clones, clones without an upstream, and clones already mid-rebase. Public lanes are never cloned by
+it; one already cloned is pulled like any other (it only reads), or left out with `--skip-lanes`.
+
 ---
 
 ## `scan-public-lane.sh` — the public-lane tripwire (master copy)

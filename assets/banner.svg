@@ -1,6 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="260" viewBox="0 0 1200 260" role="img" aria-labelledby="t d">
   <title id="t">my-template</title>
-  <desc id="d">The path a new repository walks, laid out once: eight stops on a brass line, over a rail of the organisation families' colours.</desc>
+  <desc id="d">The path a new repository walks, laid out once: eight stops on a brass line, over a rail of the organisation families' colours. The line draws itself and the stops arrive one by one; with reduced motion, the finished picture shows at once.</desc>
+  <style>
+    /* Motion, only for readers who have not asked for less. Without it (prefers-reduced-motion: reduce, or a viewer that
+       ignores CSS) every element shows in its finished state, because nothing is hidden outside this block. */
+    @media (prefers-reduced-motion: no-preference) {
+      .road { stroke-dasharray: 100; animation: draw 3.2s cubic-bezier(.4,0,.2,1) .3s both; }
+      .stop { animation: arrive .45s ease-out both; }
+      .s1 { animation-delay: .35s } .s2 { animation-delay: .8s } .s3 { animation-delay: 1.2s } .s4 { animation-delay: 1.6s }
+      .s5 { animation-delay: 2.0s } .s6 { animation-delay: 2.4s } .s7 { animation-delay: 2.8s } .s8 { animation-delay: 3.3s }
+      .halo { transform-box: fill-box; transform-origin: center; animation: halo 3.2s ease-out 3.8s infinite; }
+    }
+    @keyframes draw { from { stroke-dashoffset: 100 } to { stroke-dashoffset: 0 } }
+    @keyframes arrive { from { opacity: 0 } to { opacity: 1 } }
+    @keyframes halo { 0% { opacity: .55; transform: scale(1) } 70%, 100% { opacity: 0; transform: scale(2.1) } }
+    .halo { opacity: 0 }
+  </style>
   <defs>
     <linearGradient id="ground" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#1e293b"/>
@@ -40,18 +55,17 @@
     </g>
 
     <!-- the path: eight stops on a brass line, the last one reached -->
-    <polyline points="680,184 746,160 812,170 878,132 944,142 1010,104 1076,112 1142,70" fill="none" stroke="url(#brass)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <polyline class="road" pathLength="100" points="680,184 746,160 812,170 878,132 944,142 1010,104 1076,112 1142,70" fill="none" stroke="url(#brass)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
     <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" text-anchor="middle">
-      <g fill="#0f172a" stroke="#d9a441" stroke-width="2.5">
-        <circle cx="680" cy="184" r="13"/><circle cx="746" cy="160" r="13"/><circle cx="812" cy="170" r="13"/><circle cx="878" cy="132" r="13"/>
-        <circle cx="944" cy="142" r="13"/><circle cx="1010" cy="104" r="13"/><circle cx="1076" cy="112" r="13"/>
-      </g>
-      <circle cx="1142" cy="70" r="16" fill="#d9a441"/>
-      <g fill="#f1d28a">
-        <text x="680" y="188.5">1</text><text x="746" y="164.5">2</text><text x="812" y="174.5">3</text><text x="878" y="136.5">4</text>
-        <text x="944" y="146.5">5</text><text x="1010" y="108.5">6</text><text x="1076" y="116.5">7</text>
-      </g>
-      <text x="1142" y="75" font-size="15" fill="#0f172a">8</text>
+      <g class="stop s1"><circle cx="680" cy="184" r="13" fill="#0f172a" stroke="#d9a441" stroke-width="2.5"/><text x="680" y="188.5" fill="#f1d28a">1</text></g>
+      <g class="stop s2"><circle cx="746" cy="160" r="13" fill="#0f172a" stroke="#d9a441" stroke-width="2.5"/><text x="746" y="164.5" fill="#f1d28a">2</text></g>
+      <g class="stop s3"><circle cx="812" cy="170" r="13" fill="#0f172a" stroke="#d9a441" stroke-width="2.5"/><text x="812" y="174.5" fill="#f1d28a">3</text></g>
+      <g class="stop s4"><circle cx="878" cy="132" r="13" fill="#0f172a" stroke="#d9a441" stroke-width="2.5"/><text x="878" y="136.5" fill="#f1d28a">4</text></g>
+      <g class="stop s5"><circle cx="944" cy="142" r="13" fill="#0f172a" stroke="#d9a441" stroke-width="2.5"/><text x="944" y="146.5" fill="#f1d28a">5</text></g>
+      <g class="stop s6"><circle cx="1010" cy="104" r="13" fill="#0f172a" stroke="#d9a441" stroke-width="2.5"/><text x="1010" y="108.5" fill="#f1d28a">6</text></g>
+      <g class="stop s7"><circle cx="1076" cy="112" r="13" fill="#0f172a" stroke="#d9a441" stroke-width="2.5"/><text x="1076" y="116.5" fill="#f1d28a">7</text></g>
+      <circle class="halo" cx="1142" cy="70" r="16" fill="none" stroke="#f1d28a" stroke-width="2"/>
+      <g class="stop s8"><circle cx="1142" cy="70" r="16" fill="#d9a441"/><text x="1142" y="75" font-size="15" fill="#0f172a">8</text></g>
     </g>
 
     <!-- the words -->

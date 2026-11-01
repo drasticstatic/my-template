@@ -8,7 +8,8 @@
 
 [![Use this template](https://img.shields.io/badge/Use_this_template-2ea44f?style=flat-square)](https://github.com/drasticstatic/my-template/generate)
 [![License: MIT](https://img.shields.io/badge/License-MIT-334155?style=flat-square)](https://github.com/drasticstatic/.github)
-![Updated](https://img.shields.io/badge/Updated-2026--10--31-334155?style=flat-square)
+![Updated](https://img.shields.io/badge/Updated-2026--11--01-334155?style=flat-square)
+[![Lucid](https://img.shields.io/badge/Standard-Lucid-8a6a2a?style=flat-square)](./LUCID.md)
 [![Walkthrough deck](https://img.shields.io/badge/Walkthrough-deck-d9a441?style=flat-square)](./decks/my-template-walkthrough.marp.pdf)
 
 **The families** (one colour per organisation, four shades each; [`TONES.md`](./proposals-template/TONES.md)):
@@ -46,7 +47,7 @@ Git refuses to version-control hooks on purpose, so a committed hook is inert un
 git pull --rebase --autostash
 ```
 
-Several agents and a human push to these repos, including unattended ones. A stale clone fails at push time, after the work is done, when the tempting fix is a force-push that discards someone else's commit. `--autostash` makes this safe on a dirty tree.
+Several agents and a human push to these repos, including unattended ones. A stale clone fails at push time, after the work is done, when the tempting fix is a force-push that discards someone else's commit. `--autostash` makes this safe on a dirty tree. For every clone on the machine at once: `sh scripts/sync-local.sh` (it never pushes; [`scripts/README.md`](./scripts/README.md#sync-localsh--every-clone-on-this-machine-at-once)).
 
 ### Stop 2 · Decide visibility before the first commit
 
@@ -70,7 +71,7 @@ Copy [`proposals-template/repo/`](./proposals-template/repo/) into a private `pr
 
 ### Stop 7 · People, and their helpers
 
-[`walkthroughs/`](./walkthroughs/): joining an organisation, connecting Littlebird, Firecrawl, Google Drive, Wix and WordPress, security settings, secret scans, ultra runs. [`org-onboarding/`](./org-onboarding/): the kit every organisation's `.github` carries, the **hook-in note** on the members' page, and the **`legal` repository** every organisation gets ([`LEGAL-REPO.md`](./org-onboarding/LEGAL-REPO.md)).
+[`walkthroughs/`](./walkthroughs/): joining an organisation, connecting Littlebird, Firecrawl, Google Drive, Wix and WordPress, security settings, secret scans, ultra runs, and [working with the fleet](./walkthroughs/WORKING-WITH-THE-FLEET.md) for a helper from outside it. [`org-onboarding/`](./org-onboarding/): the kit every organisation's `.github` carries, the **hook-in note** on the members' page, and the **`legal` repository** every organisation gets ([`LEGAL-REPO.md`](./org-onboarding/LEGAL-REPO.md)).
 
 ### Stop 8 · A folder of repos
 
@@ -92,6 +93,10 @@ Copy [`proposals-template/repo/`](./proposals-template/repo/) into a private `pr
 | `scripts/test-gitmoji.sh` | Tests for the gitmoji hint, and that the attribution check still rejects and passes exactly as before |
 | `scripts/lay-pending-archive.sh` | Fleet sweep: lays an empty `pending-tasks_archive.md` beside each pending-tasks file, plus one pointer line (dry run by default) |
 | `scripts/sync-claude-section.sh` | Fleet sweep: puts the marked "Pull requests and Promotes" block into CLAUDE.md files (dry run by default) |
+| `scripts/sync-local.sh` | Pulls (`--rebase --autostash`) every local clone under `~/code`, `~/dappu`, `~/theholyearthfoundation` that is behind GitHub, and reports ahead/behind/dirty; never pushes |
+| `LUCID.md` | The fleet's clarity standard: plain words, a Lucide icon beside each idea, Mermaid where a picture explains the mechanism, and Mermaid drawn in every PDF |
+| `ENTITIES.md` | How we speak of the divine (per house), of people (stewards), of organisations and of helpers ("we are all Alfred"); a draft we refine as we go |
+| `NAMES-POLICY.md` | Names may be public, contents stay private; what never goes public on any list |
 | `.github/dependabot.yml` | Grouped Dependabot version updates — npm + GitHub Actions |
 | `workflow-templates/sync-public-allowlist.yml` | Sync private → public via **allowlist** (strict — everything private by default) — copy to `.github/workflows/` in your repo |
 | `workflow-templates/sync-public-excludelist.yml` | Sync private → public via **exclude list** (open — everything public except named paths) — copy to `.github/workflows/` in your repo |
@@ -120,7 +125,8 @@ Copy [`proposals-template/repo/`](./proposals-template/repo/) into a private `pr
 | **setting up a nested parent repo** (a folder of independent repos) | [`NESTED-REPOS-GUIDE.md`](./NESTED-REPOS-GUIDE.md) |
 | **publishing a private repo's safe half** | the sync workflows below and [`AGENT-SYNC_PUBLIC/`](./AGENT-SYNC_PUBLIC/) |
 | **welcoming someone to an organisation** | [`decks-template/`](./decks-template/): the welcome deck, filled in that organisation's colour |
-| **an AI helper reading this fleet** | [`AGENTS.md`](./AGENTS.md), then [`AGENT-SYNC/README.md`](./AGENT-SYNC/README.md) for the commit footer |
+| **an AI helper reading this fleet** | [`AGENTS.md`](./AGENTS.md), then [`AGENT-SYNC/README.md`](./AGENT-SYNC/README.md) for the commit footer; from outside the fleet, [`walkthroughs/WORKING-WITH-THE-FLEET.md`](./walkthroughs/WORKING-WITH-THE-FLEET.md) |
+| **writing any page** | [`LUCID.md`](./LUCID.md) (how), [`ENTITIES.md`](./ENTITIES.md) (whom we name, and how), [`NAMES-POLICY.md`](./NAMES-POLICY.md) (what may be public) |
 
 ---
 
