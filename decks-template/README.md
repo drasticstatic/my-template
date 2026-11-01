@@ -1,14 +1,20 @@
 # decks-template: a welcome deck for any organisation
 
-`welcome.marp.md` is a newcomer's first walk through an organisation: its proposals, its procedures,
-its decks, the reading room, the road a change travels (`preview` → Promote → `main` → public twin),
-and how to answer. It is the sibling of [`../decks/my-template-walkthrough.marp.md`](../decks/my-template-walkthrough.marp.md),
-which walks the template itself in the lab's brass on slate.
+`welcome.marp.md` is a newcomer's first walk through an organisation in **seven numbered stops**, in the
+style of its sibling [`../decks/my-template-walkthrough.marp.md`](../decks/my-template-walkthrough.marp.md):
+your first hour (your own account and password, two-factor, the invitation), five words, proposals,
+procedures, the reading room and your helper, how a change travels (`preview` → Promote → `main` → public
+twin), and how to answer. It follows SOP-COM-001 *New to GitHub: your first hour* and the clarity standard
+in [`../LUCID.md`](../LUCID.md): a Lucide icon beside each idea, drawn inline so the deck needs no files beside it.
 
-The deck wears the organisation's colour family from [`TONES.md`](../proposals-template/TONES.md):
-the **deep** shade tints the dark ground, headings are the **tint** with a **primary** rule, links and
-second-level headings are a lightened primary, and table heads are deep with tint text. That
-arrangement keeps every family legible on a dark ground, purple included, so no colour is hand-tuned.
+The deck sits on the walkthrough's slate ground for every family, and wears the organisation's colour
+family from [`TONES.md`](../proposals-template/TONES.md) in the left rule, the numbered stops, the rule
+under each heading, the icons and the colour strip. Headings, links and icons mix the **primary** with
+white, so every family reads on slate, purple and blue included; no colour is hand-tuned.
+
+**See it filled:** [`example/welcome.marp.pdf`](example/welcome.marp.pdf) ([html](example/welcome.marp.html),
+[markdown](example/welcome.marp.md)) is the template filled for "Your Organisation" in amber, with
+placeholder addresses: a look at the result, not a deck to send.
 
 ## The placeholders
 
@@ -61,7 +67,7 @@ marp --no-stdin --html --allow-local-files welcome.marp.md -o welcome.marp.html
 marp --no-stdin --html --allow-local-files welcome.marp.md --pdf -o welcome.marp.pdf
 ```
 
-- `--html` keeps the colour strip (`<div class="shades">`) and the small print; without it Marp drops them.
+- `--html` keeps the inline icons, the numbered stops, the colour strip (`<div class="rail">`) and the small print; without it Marp drops them.
 - `--no-stdin` stops Marp waiting on standard input when it runs from a script or a helper's shell.
 - **Look at the PDF pages before calling it done.** A long organisation name or URL can wrap a
   title or a table cell; shorten the words rather than shrinking the type.
@@ -69,4 +75,4 @@ marp --no-stdin --html --allow-local-files welcome.marp.md --pdf -o welcome.marp
 Commit the three files together (`welcome.marp.md`, `.html`, `.pdf`), the markdown beside the PDF as
 everywhere else in the fleet, and link the deck from the organisation's `.github` profile README.
 
-<sub>Added 2026-10-31 with the my-template walkthrough deck. Related: [`../proposals-template/TONES.md`](../proposals-template/TONES.md) (the families), [`../sop-template/`](../sop-template/) (the procedures the deck points at).</sub>
+<sub>Added 2026-10-31 with the my-template walkthrough deck; redesigned 2026-11-01 in the walkthrough's style (seven stops, inline Lucide icons, SOP-COM-001's first hour). Related: [`../proposals-template/TONES.md`](../proposals-template/TONES.md) (the families), [`../sop-template/`](../sop-template/) (the procedures the deck points at).</sub>
