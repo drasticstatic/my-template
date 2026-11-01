@@ -104,8 +104,11 @@ lane is copied aside as `dot-github/` and read like any other file. An attestati
 - **Organisation lanes** (THEF, PIR, Psanctuary, PsanctuaryChurch, ORG) belong to the organisation packages. At sweep
   time the scanner was already in THEF's `reading-room` and `ops-standard-operating-procedures`, ORG's `reading-room`,
   `ops-standard-operating-procedures` and the `O-R-G` lab desk, Psanctuary's and PsanctuaryChurch's `reading-room` and
-  `ops-standard-operating-procedures`, and PIR's `ops-standard-operating-procedures`. Not yet: PIR's `reading-room` and
-  `changelog-astro`, THEF's `changelog-astro`.
+  `ops-standard-operating-procedures`, and PIR's `ops-standard-operating-procedures`. Not yet at sweep time: PIR's
+  `reading-room` and `changelog-astro` (both carry it since, from the PIR package the same day), THEF's
+  `changelog-astro`, and THEF's own `david-amaringo` and `iamoneself-retreats`, whose `lanes.yml` publishes the built
+  site to their `-public` repositories with no tripwire yet (the lab copies above are a different pair of
+  repositories, under `drasticstatic`).
 - **`~/code/psanctuary`** (the Psanctuary lab desk, two syncs into members-only rooms): left to the Psanctuary package.
 - **`.github/workflows/sync-clean-template.yml`** here: public to public (`my-template` to `my-template-clean`); nothing
   private crosses.
