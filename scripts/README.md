@@ -202,3 +202,28 @@ rejection. `--autostash` stashes uncommitted changes, rebases, and reapplies the
 safe even with a dirty working tree.
 
 See `AGENTS.md` § *Start of session* for the full rule.
+
+---
+
+## `scan-public-lane.sh` — the public-lane tripwire (master copy)
+
+```sh
+sh scripts/scan-public-lane.sh [--strip N] <directory-about-to-be-published> [PUBLIC-ALLOWLIST-ATTESTED.txt]
+sh scripts/scan-public-lane.selftest.sh     # needs pdftotext: brew install poppler
+```
+
+**A public lane never publishes a file a machine or a person has not read.** The scanner reads every file under the
+directory: text directly, PDFs through `pdftotext`, `.docx`/`.xlsx`/`.pptx` through their XML. It refuses (exit 1,
+naming each file) a credential or agent-note pointer anywhere; a sensitive shape (identity-number shapes, tax and
+birth-date labels, street addresses, labelled account numbers over four digits, the fleet's personal-matter words);
+a PDF with no words or with wordless pages; a picture outside `assets/` or `icons/`; any other binary; and, by path,
+`entity/ tax/ filings/ counsel/`. A person who opened a file can clear the attestable cases with one line in
+`PUBLIC-ALLOWLIST-ATTESTED.txt` (`path | officer | YYYY-MM-DD | opened and read`, optionally `| sha256:<hex>`); the
+credential, legal-lane and never-travels refusals cannot be attested away. Matched text is never printed.
+
+It keeps every pattern of the fleet's two `sync-allowlist.sh` families (THEF `stage|apply`, Psanctuary `--check`),
+unioned. The self-test builds its fixtures at run time (hand-assembled PDFs, office zips, a PNG; no fixture is
+committed) and checks that `sop-template/repo/scripts/` holds byte-identical copies; CI runs it in
+`.github/workflows/tripwire-selftest.yml`. Callers: `sop-template/repo/scripts/sync-allowlist.sh` (when
+`TRIPWIRE_PUBLIC=1`) and `workflow-templates/sync-public-allowlist.yml` (HEAD and every historical version, since
+that model publishes history). Copy it, do not fork it.

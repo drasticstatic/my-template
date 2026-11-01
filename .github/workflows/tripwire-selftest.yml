@@ -1,0 +1,28 @@
+name: Public-lane tripwire self-test
+
+# Runs scripts/scan-public-lane.selftest.sh whenever the master tripwire or the SOP template's copies change:
+# a planted fake identifier in a PDF must be refused, an image-only PDF refused, an attested one passed, tax/ refused,
+# and the SOP template's copies must match the master byte for byte.
+on:
+  push:
+    paths: ["scripts/scan-public-lane*", "sop-template/repo/scripts/**", ".github/workflows/tripwire-selftest.yml"]
+  pull_request:
+    paths: ["scripts/scan-public-lane*", "sop-template/repo/scripts/**", ".github/workflows/tripwire-selftest.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  selftest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install pdftotext
+        run: |
+          sudo apt-get install -y -qq poppler-utils >/dev/null 2>&1 || { sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils; }
+          pdftotext -v 2>&1 | head -1
+      - name: Self-test
+        run: sh scripts/scan-public-lane.selftest.sh
