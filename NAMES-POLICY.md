@@ -69,7 +69,7 @@ flowchart LR
 | Kind | Examples | Enforced by |
 |---|---|---|
 | **Secrets** | private keys, tokens (`ghp_…`, `github_pat_…`), API keys, `.env` files, wallets, keystores, seed phrases, recovery codes, deploy keys' private halves | the commit-time secret scan, the sync tripwire's credential patterns, file-name refusals |
-| **Personal data** | home addresses, phone numbers, dates of birth, health or recovery details, family and custody matters, donors' identities, account numbers longer than the last four digits | the public-lane tripwire's sensitive-shape scan; an attestation can never open a personal matter |
+| **Personal data** | home addresses, phone numbers, dates of birth, health or recovery details, family and custody matters, donors' identities, account numbers longer than the last four digits | the public-lane tripwire's sensitive-shape scan stops the file. An officer may attest a **false alarm** (a public office address, a policy that names the word "donor"); attesting a person's private details is never allowed, whatever the machine would accept |
 | **Filings** | entity papers, EIN letters, tax returns and working papers, government filings, counsel's questions and answers | the tripwire refuses `entity/`, `tax/`, `filings/` and `counsel/` **by path**, whatever an allowlist says |
 
 If one of these is found in public: **stop**, tell the steward, rotate any secret first (a deleted commit is still in

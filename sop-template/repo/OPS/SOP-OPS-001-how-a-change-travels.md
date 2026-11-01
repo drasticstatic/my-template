@@ -2,13 +2,13 @@
 
 **Department:** OPS · **ID:** 001 · **Status:** draft (approved when tagged) · **Owner:** repository steward · **Last changed:** 2026-10-31
 
-## Purpose
+## <img src="../assets/icons/compass.svg" width="24" height="24" alt=""> Purpose
 So that anyone reading a page knows which copy they are looking at, and so that nothing reaches the public unless someone put its path on a list.
 
-## Scope
+## <img src="../assets/icons/map.svg" width="24" height="24" alt=""> Scope
 Every repository in the fleet that has a `preview` branch (sites, drafting desks, Bushido). Organisation `proposals` repositories without a `preview` branch use pull requests into `main` directly; the public-twin rule still applies.
 
-## Roles
+## <img src="../assets/icons/users.svg" width="24" height="24" alt=""> Roles
 | Role | Does |
 |---|---|
 | Author (person or helper) | edits on `preview`, opens the Promote pull request |
@@ -16,12 +16,18 @@ Every repository in the fleet that has a `preview` branch (sites, drafting desks
 | Merger (a human with the role) | merges the Promote; never a helper |
 | Steward | keeps the allowlist and the deploy key |
 
-## The road
-```
-edit → preview (rehearsal) → "Promote" pull request → main (live) → allowlist sync → public twin
+## <img src="../assets/icons/route.svg" width="24" height="24" alt=""> The road
+```mermaid
+flowchart LR
+  E["edit<br/>(a person or a helper)"] --> P["preview<br/>the rehearsal"]
+  P -->|"Promote pull request<br/>a person merges,<br/>merge commit"| M["main<br/>the live copy"]
+  M -->|"allowlist sync<br/>after the tripwire"| T["public twin<br/>only listed pages"]
+  P -. "comments, review" .-> P
 ```
 
-## Two things called "preview"
+<img src="../assets/icons/pencil-line.svg" width="16" height="16" alt=""> edit · <img src="../assets/icons/git-branch.svg" width="16" height="16" alt=""> `preview` · <img src="../assets/icons/git-pull-request.svg" width="16" height="16" alt=""> Promote · <img src="../assets/icons/git-merge.svg" width="16" height="16" alt=""> `main` · <img src="../assets/icons/globe.svg" width="16" height="16" alt=""> public twin (SOP-OPS-003 has the twin's rule)
+
+## <img src="../assets/icons/git-branch.svg" width="24" height="24" alt=""> Two things called "preview"
 
 The fleet uses the word *preview* for two different things. They often sit side by side in one repository, which is why they get confused. If you have never used a `preview` branch before, start here.
 
@@ -82,32 +88,33 @@ A **site** repository goes one step further: a workflow (`.github/workflows/lane
 
 **Which one am I looking at?** A URL on `github.com` with `/tree/preview` or `/blob/preview` is the branch. A website with a "Rehearsal" ribbon is the rehearsal lane. A custom domain without a ribbon is live.
 
-## Steps
+## <img src="../assets/icons/list-checks.svg" width="24" height="24" alt=""> Steps
 1. Make the change on `preview`. *You should see:* the commit on the `preview` branch on GitHub; nothing on `main` yet.
 2. Open a pull request from `preview` to `main` titled `Promote: <what>` (SOP-OPS-002 says how, and how a helper does it for you). *You should see:* a pull request link.
 3. A reviewer reads the pages on `preview` and comments. *You should see:* comments on the pull request, or a plain yes.
 4. A human with the role merges with a **merge commit**, never squash (SOP-OPS-002 explains why). *You should see:* `main` carries every commit that was on `preview`, with each author's attribution intact.
 5. If the repository has a public twin, the sync copies **only the paths on the allowlist** from `main` to the twin, after a tripwire check. *You should see:* the twin updated minutes later; nothing off the list.
 
-## Verification
+## <img src="../assets/icons/circle-check.svg" width="24" height="24" alt=""> Verification
 `git log origin/main..origin/preview` is empty after the merge; the public twin's tree contains exactly the allowlisted paths.
 
-## Troubleshooting
+## <img src="../assets/icons/wrench.svg" width="24" height="24" alt=""> Troubleshooting
 | Symptom | Likely cause | What to do |
 |---|---|---|
 | The GitHub `main` link shows an old file while the local copy is new | the change is on `preview`; no Promote has been merged | open or merge the Promote (SOP-OPS-002) |
 | A page is on `main` but not on the public twin | its path is not on the allowlist | add the path by pull request, on an officer's yes |
 | The sync fails on the twin | the strict branch ruleset was applied to a twin that the sync force-pushes to | use the deletion-only ruleset for twins (`my-template/branch-protection/`) |
 
-## Related
+## <img src="../assets/icons/book-marked.svg" width="24" height="24" alt=""> Related
 - Proposal: THEF 013 *Procedures beside proposals* (why the fleet writes SOPs and how they are approved)
 - Proposal: THEF 012 *Your reading room, and how your helper joins you*
 - `bushido-code/DEPLOY.md` (the topology this procedure describes), `my-template/branch-protection/README.md`, `my-template/workflow-templates/sync-public-allowlist.yml`
 - A site's `.github/workflows/lanes.yml`, `transition-package/keys-and-locks.md` and `how-it-works.md` (the lanes, their keys, the form backend)
 - SOP-OPS-002 (the legend of what is protected and what runs on pull requests), SOP-IT-002
 
-## Change log
+## <img src="../assets/icons/history.svg" width="24" height="24" alt=""> Change log
 | Date | Change | By |
 |---|---|---|
 | 2026-10-30 | Drafted from the Oct 29 topology and the Oct 30 delivery pass | Alfred |
 | 2026-10-31 | "Two things called preview": the `preview` branch versus the publish-preview lanes (`lanes.yml`, deploy keys, `LANES_ENABLED`), the admin panel and Formspree, a diagram and a side-by-side table | Alfred |
+| 2026-11-01 | Lucid pass: Lucide icons on every section, the road drawn in Mermaid (on GitHub and in the PDF), SOP-OPS-003 linked for the twin's rule | Alfred |

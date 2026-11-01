@@ -1,7 +1,7 @@
 #!/bin/sh
 # legend.sh — read-only: one markdown table per owner, one row per repository, showing how each repository is guarded.
 #   sh scripts/legend.sh <owner> [<owner>...]                 # every repository the signed-in gh account can see
-#   sh scripts/legend.sh --public-only <owner> [<owner>...]   # public repositories only (safe to paste into a public page)
+#   sh scripts/legend.sh --public-only <owner> [<owner>...]   # public repositories only (what a visitor can open; names are public anyway: NAMES-POLICY)
 # "not on this plan": GitHub Free offers no rulesets or branch protection on private repositories (organisation or personal).
 # Rulesets show name:enforcement[rule types]; a twin should show [deletion] only, a strict one also non_fast_forward.
 # Columns: visibility · default branch · has a preview branch · rulesets (name:enforcement) · merge methods allowed · Pages · public twin.
