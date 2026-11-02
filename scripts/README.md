@@ -1,7 +1,7 @@
 # `scripts/`
 
 Setup scripts for this template. Two of them matter when bootstrapping a repo or onboarding an
-agent; run both once per clone. The rest are the gitmoji tests and two fleet sweeps (dry run by
+agent; run both once per clone. The rest are the gitmoji tests, the banner maker and two fleet sweeps (dry run by
 default), described below.
 
 ---
@@ -221,6 +221,24 @@ skips `node_modules`, and reports each clone's branch, ahead/behind and local ch
 aborted at once and left exactly as it was. It **never** pushes, clones, switches branches or forces anything; it
 skips detached clones, clones without an upstream, and clones already mid-rebase. Public lanes are never cloned by
 it; one already cloned is pulled like any other (it only reads), or left out with `--skip-lanes`.
+
+---
+
+## `make-banner.py` — a repository's front door
+
+```sh
+python3 scripts/make-banner.py --list                     # the colour families and the seven pictures
+python3 scripts/make-banner.py --title NAME --subtitle "WHAT IT IS" --kicker "WHOSE IT IS" \
+        --family amber --motif waves --out assets/banner.svg
+python3 scripts/make-banner.py --check assets/banner.svg  # any banner, by hand or not
+python3 scripts/make-banner.py --check-readme README.md   # the page, as far as a machine can read it
+python3 scripts/make-banner.py --icons README.md --family amber   # copy the Lucide icons the page names, toned
+sh scripts/test-make-banner.sh                            # its own tests: no network, no browser
+```
+
+Python 3 standard library only. The same words draw the same picture and other words another. It never writes
+outside `--out` and the page's own icon folder, and it never commits. The rules it keeps, and why, are in
+[`README-STANDARD.md`](../README-STANDARD.md).
 
 ---
 

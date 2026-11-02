@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="260" viewBox="0 0 1200 260" role="img" aria-labelledby="t d">
+  <title id="t">README standard</title>
+  <desc id="d">A front door for every repository: where you are, what this is, how to help. The picture: an arch of 13 stones lights from both sides inward until the keystone is reached. With reduced motion, the finished picture shows at once.</desc>
+  <style>
+    /* Motion only for readers who have not asked for less. Outside this block everything is in its finished state. */
+    @media (prefers-reduced-motion: no-preference) {
+      .draw { stroke-dasharray: 100; animation: draw 2.6s cubic-bezier(.4,0,.2,1) both; }
+      .arrive { animation: arrive .5s ease-out both; }
+      .breathe { transform-box: fill-box; transform-origin: center; animation: breathe 8s steps(48) 3s infinite; }
+      .halo { transform-box: fill-box; transform-origin: center; animation: halo 5s steps(60) 3.6s infinite; }
+    }
+    @keyframes draw { from { stroke-dashoffset: 100 } to { stroke-dashoffset: 0 } }
+    @keyframes arrive { from { opacity: 0 } to { opacity: 1 } }
+    @keyframes breathe { 0%, 100% { transform: scale(1) } 50% { transform: scale(1.07) } }
+    @keyframes halo { 0% { opacity: .55; transform: scale(1) } 70%, 100% { opacity: 0; transform: scale(2.1) } }
+    .halo { opacity: 0 }
+  </style>
+  <defs>
+    <linearGradient id="ground" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1a2230"/><stop offset="1" stop-color="#101622"/></linearGradient>
+    <linearGradient id="line" gradientUnits="userSpaceOnUse" x1="668" y1="0" x2="1160" y2="0"><stop offset="0.00" stop-color="#8a6a2a"/><stop offset="0.50" stop-color="#d9a441"/><stop offset="1.00" stop-color="#e6d1a6"/></linearGradient>
+    <linearGradient id="fade" gradientUnits="userSpaceOnUse" x1="620" y1="0" x2="1200" y2="0"><stop offset="0" stop-color="#d9a441" stop-opacity="0"/><stop offset=".35" stop-color="#d9a441"/><stop offset="1" stop-color="#e6d1a6"/></linearGradient>
+    <clipPath id="card"><rect width="1200" height="260" rx="18"/></clipPath>
+  </defs>
+  <g clip-path="url(#card)">
+    <!-- an opaque ground: the same picture on GitHub's light and dark themes -->
+    <rect width="1200" height="260" fill="url(#ground)"/>
+    <path d="M839.0 220A120 120 0 0 1 1079.0 220Z" fill="#403c33" fill-opacity=".28"/>
+    <path class="arrive" style="animation-delay:0.30s" d="M817.1 217.4A142 142 0 0 1 820.6 188.5" fill="none" stroke="#705c38" stroke-width="28"/>
+    <path class="arrive" style="animation-delay:0.58s" d="M821.8 183.5A142 142 0 0 1 832.1 156.3" fill="none" stroke="#82683a" stroke-width="28"/>
+    <path class="arrive" style="animation-delay:0.86s" d="M834.5 151.8A142 142 0 0 1 851.1 127.8" fill="none" stroke="#93743b" stroke-width="28"/>
+    <path class="arrive" style="animation-delay:1.14s" d="M854.5 123.9A142 142 0 0 1 876.3 104.6" fill="none" stroke="#a4803c" stroke-width="28"/>
+    <path class="arrive" style="animation-delay:1.42s" d="M880.5 101.7A142 142 0 0 1 906.3 88.2" fill="none" stroke="#b68c3e" stroke-width="28"/>
+    <path class="arrive" style="animation-delay:1.70s" d="M911.1 86.3A142 142 0 0 1 939.4 79.4" fill="none" stroke="#c89840" stroke-width="28"/>
+    <path class="arrive" style="animation-delay:1.98s" d="M944.5 78.8A142 142 0 0 1 973.6 78.8" fill="none" stroke="#e6d1a6" stroke-width="34"/>
+    <path class="arrive" style="animation-delay:1.70s" d="M978.7 79.4A142 142 0 0 1 1007.0 86.3" fill="none" stroke="#c89840" stroke-width="28"/>
+    <path class="arrive" style="animation-delay:1.42s" d="M1011.8 88.2A142 142 0 0 1 1037.6 101.7" fill="none" stroke="#b68c3e" stroke-width="28"/>
+    <path class="arrive" style="animation-delay:1.14s" d="M1041.8 104.6A142 142 0 0 1 1063.6 123.9" fill="none" stroke="#a4803c" stroke-width="28"/>
+    <path class="arrive" style="animation-delay:0.86s" d="M1067.0 127.8A142 142 0 0 1 1083.6 151.8" fill="none" stroke="#93743b" stroke-width="28"/>
+    <path class="arrive" style="animation-delay:0.58s" d="M1085.9 156.3A142 142 0 0 1 1096.3 183.5" fill="none" stroke="#82683a" stroke-width="28"/>
+    <path class="arrive" style="animation-delay:0.30s" d="M1097.5 188.5A142 142 0 0 1 1101.0 217.4" fill="none" stroke="#705c38" stroke-width="28"/>
+    <circle class="halo" cx="959.0" cy="78.0" r="22" fill="none" stroke="#e6d1a6" stroke-width="2"/>
+    <circle cx="1025.3" cy="154.9" r="2.5" fill="#e6d1a6" opacity=".7"/>
+    <circle cx="956.1" cy="141.5" r="2.4" fill="#e6d1a6" opacity=".7"/>
+    <circle cx="956.6" cy="169.7" r="2.5" fill="#e6d1a6" opacity=".7"/>
+    <circle cx="1011.2" cy="200.6" r="2.2" fill="#e6d1a6" opacity=".7"/>
+    <rect x="0.0" y="248" width="300.5" height="12" fill="#334155"/><rect x="300.0" y="248" width="300.5" height="12" fill="#8a6a2a"/><rect x="600.0" y="248" width="300.5" height="12" fill="#d9a441"/><rect x="900.0" y="248" width="300.5" height="12" fill="#f1f5f9"/>
+    <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif"><text x="56" y="56.6" fill="#d9a441" font-size="15" font-weight="700" letter-spacing=".6">my-template · a living standard</text><text x="56" y="122.2" fill="#f1f5f9" font-size="60" font-weight="700" letter-spacing="-.5">README standard</text><text x="56" y="166.0" fill="#d3d7dd" font-size="23">A front door for every repository: where you are,</text><text x="56" y="196.8" fill="#d3d7dd" font-size="23">what this is, how to help.</text></g>
+  </g>
+</svg>

@@ -1,6 +1,7 @@
+<!-- readme-standard: 2026-11-02 -->
 <div align="center">
 
-<img src="assets/banner.svg" width="100%" alt="">
+<img src="assets/banner.svg" width="100%" alt="my-template: a brass line draws itself through eight numbered stops, over a rail of the organisation families' colours.">
 
 # my-template
 
@@ -8,8 +9,9 @@
 
 [![Use this template](https://img.shields.io/badge/Use_this_template-2ea44f?style=flat-square)](https://github.com/drasticstatic/my-template/generate)
 [![License: MIT](https://img.shields.io/badge/License-MIT-334155?style=flat-square)](https://github.com/drasticstatic/.github)
-![Updated](https://img.shields.io/badge/Updated-2026--11--01-334155?style=flat-square)
+![Updated](https://img.shields.io/badge/Updated-2026--11--02-334155?style=flat-square)
 [![Lucid](https://img.shields.io/badge/Standard-Lucid-8a6a2a?style=flat-square)](./LUCID.md)
+[![README standard](https://img.shields.io/badge/Standard-README-8a6a2a?style=flat-square)](./README-STANDARD.md)
 [![Walkthrough deck](https://img.shields.io/badge/Walkthrough-deck-d9a441?style=flat-square)](./decks/my-template-walkthrough.marp.pdf)
 
 **The families** (one colour per organisation, four shades each; [`TONES.md`](./proposals-template/TONES.md)):
@@ -24,17 +26,28 @@
 ![Lab](https://img.shields.io/badge/drasticstatic_lab-brass_on_slate-d9a441?style=flat-square)
 ![For](https://img.shields.io/badge/For-everyone%2C_the_same_slate-64748b?style=flat-square)
 
+<img src="sop-template/repo/assets/icons/map-pin.svg" width="16" height="16" alt=""> **You are here:** drasticstatic lab › `my-template` · public, a GitHub template · `main` is the working branch · its clean fork: [`my-template-clean`](https://github.com/drasticstatic/my-template-clean)
+
 </div>
 
 ---
 
-## The path
+## <img src="sop-template/repo/assets/icons/compass.svg" width="24" height="24" alt=""> TL;DR
+
+1. <img src="sop-template/repo/assets/icons/route.svg" width="16" height="16" alt=""> **What this is.** Everything a new repository needs to begin well: hooks that sign every commit, coordination lanes, private-to-public sync, proposals, procedures, walkthroughs.
+2. <img src="sop-template/repo/assets/icons/users-round.svg" width="16" height="16" alt=""> **Who it is for.** Anyone starting a repository, on their own or with an AI helper. Press **Use this template**, or copy only the parts you want.
+3. <img src="sop-template/repo/assets/icons/footprints.svg" width="16" height="16" alt=""> **Do this first.** In a fresh clone, `sh scripts/install-hooks.sh` and then `sh scripts/scaffold-agent-sync.sh`. Then [walk the path](#-the-path), one stop at a time.
+4. <img src="sop-template/repo/assets/icons/door-open.svg" width="16" height="16" alt=""> **Writing a README?** [`README-STANDARD.md`](./README-STANDARD.md) is the living standard: a boilerplate to copy, a banner generator, a check.
+
+---
+
+## <img src="sop-template/repo/assets/icons/route.svg" width="24" height="24" alt=""> The path
 
 Follow it top to bottom the first time. After that, jump to the stop you need.
 
 > **Rather see it on slides?** [`decks/my-template-walkthrough.marp.pdf`](./decks/my-template-walkthrough.marp.pdf) walks the same eight stops, then hooks and trailers, the AGENT-SYNC lanes, private → public sync, proposals and procedures in every organisation's colour, Gitmoji, and how a change travels: one deck for a new person and their helper ([source](./decks/my-template-walkthrough.marp.md), [html](./decks/my-template-walkthrough.marp.html)).
 
-### Stop 1 · Two commands, every clone
+### <img src="sop-template/repo/assets/icons/footprints.svg" width="20" height="20" alt=""> Stop 1 · Two commands, every clone
 
 ```sh
 sh scripts/install-hooks.sh        # activate the commit-attribution hook
@@ -49,37 +62,37 @@ git pull --rebase --autostash
 
 Several agents and a human push to these repos, including unattended ones. A stale clone fails at push time, after the work is done, when the tempting fix is a force-push that discards someone else's commit. `--autostash` makes this safe on a dirty tree. For every clone on the machine at once: `sh scripts/sync-local.sh` (it never pushes; [`scripts/README.md`](./scripts/README.md#sync-localsh--every-clone-on-this-machine-at-once)).
 
-### Stop 2 · Decide visibility before the first commit
+### <img src="sop-template/repo/assets/icons/lock.svg" width="20" height="20" alt=""> Stop 2 · Decide visibility before the first commit
 
 `AGENT-SYNC/` and `logs/` must never exist in a public repo, and un-publishing is not something deletion can do ([`AGENT-SYNC_PUBLIC/README.md`](./AGENT-SYNC_PUBLIC/README.md)). Private source with a public twin? Name the twin `<repo>-public-preview` and wire the sync at Stop 5.
 
-### Stop 3 · License, security, contributors, topics
+### <img src="sop-template/repo/assets/icons/scroll-text.svg" width="20" height="20" alt=""> Stop 3 · License, security, contributors, topics
 
-Follow [`how-to-establish-cross_repo_CONTRIBUTORS_SECURITY_LICENSING.md`](https://github.com/drasticstatic/drasticstatic/blob/main/how-to-establish-cross_repo_CONTRIBUTORS_SECURITY_LICENSING.md) end to end: a real `LICENSE` in every public repo (the global `.github` fallback covers `SECURITY.md` and `CONTRIBUTING.md`, never `LICENSE`), a README license section that stays true on both halves of a private/public pair, and a description and topics via `gh repo edit`. Then `CLAUDE.md` and `.github/dependabot.yml` for the stack.
+Follow [`how-to-establish-cross_repo_CONTRIBUTORS_SECURITY_LICENSING.md`](https://github.com/drasticstatic/drasticstatic/blob/main/how-to-establish-cross_repo_CONTRIBUTORS_SECURITY_LICENSING.md) end to end: a real `LICENSE` in every public repo (the global `.github` fallback covers `SECURITY.md` and `CONTRIBUTING.md`, never `LICENSE`), a README license section that stays true on both halves of a private/public pair, and a description and topics via `gh repo edit`. Then `CLAUDE.md` and `.github/dependabot.yml` for the stack, and a front door: [`README-STANDARD.md`](./README-STANDARD.md) has the boilerplate and the banner generator.
 
-### Stop 4 · Let the helpers read the map
+### <img src="sop-template/repo/assets/icons/map.svg" width="20" height="20" alt=""> Stop 4 · Let the helpers read the map
 
 Run `./scripts/init-graphify.sh` from the repo root (keyless; [`workflow-templates/GRAPHIFY_SETUP.md`](./workflow-templates/GRAPHIFY_SETUP.md)). Write `AGENTS.md` from [`org-onboarding/AGENTS.template.md`](./org-onboarding/AGENTS.template.md). Every commit then carries the footer in [`AGENT-SYNC/README.md`](./AGENT-SYNC/README.md).
 
-### Stop 5 · Publish the safe half
+### <img src="sop-template/repo/assets/icons/globe.svg" width="20" height="20" alt=""> Stop 5 · Publish the safe half
 
 Pick a sync model below (allowlist when most is private, exclude list when most is public) and copy it to `.github/workflows/`. Any new root-level path is classified in the same commit that introduces it.
 
-### Stop 6 · Proposals, in your colour
+### <img src="sop-template/repo/assets/icons/pencil-line.svg" width="20" height="20" alt=""> Stop 6 · Proposals, in your colour
 
 Copy [`proposals-template/repo/`](./proposals-template/repo/) into a private `proposals` repo. It opens with **000 Start here** (how a proposal reads, how to answer, how to bring your helper), renders a PDF on every push, keeps one child folder per site repo, and wears the organisation's family from [`TONES.md`](./proposals-template/TONES.md). [Why the markdown travels with the PDF.](./walkthroughs/MARKDOWN-BESIDE-PDF.md)
 
-### Stop 7 · People, and their helpers
+### <img src="sop-template/repo/assets/icons/users-round.svg" width="20" height="20" alt=""> Stop 7 · People, and their helpers
 
 [`walkthroughs/`](./walkthroughs/): joining an organisation, connecting Littlebird, Firecrawl, Google Drive, Wix and WordPress, security settings, secret scans, ultra runs, and [working with the fleet](./walkthroughs/WORKING-WITH-THE-FLEET.md) for a helper from outside it. [`org-onboarding/`](./org-onboarding/): the kit every organisation's `.github` carries, the **hook-in note** on the members' page, and the **`legal` repository** every organisation gets ([`LEGAL-REPO.md`](./org-onboarding/LEGAL-REPO.md)).
 
-### Stop 8 · A folder of repos
+### <img src="sop-template/repo/assets/icons/folder-lock.svg" width="20" height="20" alt=""> Stop 8 · A folder of repos
 
 [`NESTED-REPOS-GUIDE.md`](./NESTED-REPOS-GUIDE.md): a lightweight git-tracked parent with git-ignored children, no submodules; how `pir`, `psanctuary`, `the-holy-earth-foundation` and `dappu` are laid out.
 
 ---
 
-## What's in the box
+## <img src="sop-template/repo/assets/icons/layers.svg" width="24" height="24" alt=""> What's in the box
 
 | File / folder | What it does |
 |---|---|
@@ -93,7 +106,9 @@ Copy [`proposals-template/repo/`](./proposals-template/repo/) into a private `pr
 | `scripts/test-gitmoji.sh` | Tests for the gitmoji hint, and that the attribution check still rejects and passes exactly as before |
 | `scripts/lay-pending-archive.sh` | Fleet sweep: lays an empty `pending-tasks_archive.md` beside each pending-tasks file, plus one pointer line (dry run by default) |
 | `scripts/sync-claude-section.sh` | Fleet sweep: puts the marked "Pull requests and Promotes" block into CLAUDE.md files (dry run by default) |
+| `scripts/make-banner.py` | Draws a repository's banner from a title, a subtitle and a colour family, unique and honouring reduced motion; also `--check` for a banner, `--check-readme` for a page, `--icons` to copy the Lucide icons a page names |
 | `scripts/sync-local.sh` | Pulls (`--rebase --autostash`) every local clone under `~/code`, `~/dappu`, `~/theholyearthfoundation` that is behind GitHub, and reports ahead/behind/dirty; never pushes |
+| `README-STANDARD.md` | The living standard for a repository's front door: banner, *You are here*, badges, TL;DR, Lucide icons, *Suggest a change*, and a boilerplate to copy. Take it, improve it, tell us |
 | `LUCID.md` | The fleet's clarity standard: plain words, a Lucide icon beside each idea, Mermaid where a picture explains the mechanism, and Mermaid drawn in every PDF |
 | `ENTITIES.md` | How we speak of the divine (per house), of people (stewards), of organisations and of helpers ("we are all Alfred"); a draft we refine as we go |
 | `NAMES-POLICY.md` | Names may be public, contents stay private; what never goes public on any list |
@@ -115,7 +130,7 @@ Copy [`proposals-template/repo/`](./proposals-template/repo/) into a private `pr
 
 ---
 
-## Find your way
+## <img src="sop-template/repo/assets/icons/map.svg" width="24" height="24" alt=""> Find your way
 
 | You are… | Start at |
 |---|---|
@@ -126,11 +141,12 @@ Copy [`proposals-template/repo/`](./proposals-template/repo/) into a private `pr
 | **publishing a private repo's safe half** | the sync workflows below and [`AGENT-SYNC_PUBLIC/`](./AGENT-SYNC_PUBLIC/) |
 | **welcoming someone to an organisation** | [`decks-template/`](./decks-template/): the welcome deck, filled in that organisation's colour |
 | **an AI helper reading this fleet** | [`AGENTS.md`](./AGENTS.md), then [`AGENT-SYNC/README.md`](./AGENT-SYNC/README.md) for the commit footer; from outside the fleet, [`walkthroughs/WORKING-WITH-THE-FLEET.md`](./walkthroughs/WORKING-WITH-THE-FLEET.md) |
+| **writing a README** | [`README-STANDARD.md`](./README-STANDARD.md): the boilerplate, `scripts/make-banner.py`, and how to suggest a better way |
 | **writing any page** | [`LUCID.md`](./LUCID.md) (how), [`ENTITIES.md`](./ENTITIES.md) (whom we name, and how), [`NAMES-POLICY.md`](./NAMES-POLICY.md) (what may be public) |
 
 ---
 
-## Workflow Patterns
+## <img src="sop-template/repo/assets/icons/workflow.svg" width="24" height="24" alt=""> Workflow Patterns
 
 ### Sync to public repo — which model to use?
 
@@ -177,7 +193,7 @@ truth** for this convention — same role `AGENT-SYNC/README.md` plays for attri
 
 ---
 
-## Making Your Own Repo a Template
+## <img src="sop-template/repo/assets/icons/gift.svg" width="24" height="24" alt=""> Making Your Own Repo a Template
 
 Once you've customised this scaffolding for your own use, you can share it the same way — mark your repo as a GitHub Template Repository so others get the green **"Use this template"** button too.
 
@@ -197,7 +213,7 @@ The `/generate` path takes visitors directly to the "create repo from template" 
 
 ---
 
-## Agent coordination and commit attribution
+## <img src="sop-template/repo/assets/icons/bot.svg" width="24" height="24" alt=""> Agent coordination and commit attribution
 
 Every commit in this fleet carries a footer naming the agent, the harness, who ran the weights, and
 which model:
@@ -222,7 +238,7 @@ colon-alias form, then a conventional type, `:sparkles: feat(scope): subject`. T
 
 ---
 
-## Related How-To Guides
+## <img src="sop-template/repo/assets/icons/book-open.svg" width="24" height="24" alt=""> Related How-To Guides
 
 Full setup walkthroughs live in the [`drasticstatic` profile repo](https://github.com/drasticstatic/drasticstatic):
 
@@ -231,6 +247,14 @@ Full setup walkthroughs live in the [`drasticstatic` profile repo](https://githu
 - [`how-to-establish-cross_repo_CONTRIBUTORS_SECURITY_LICENSING.md`](https://github.com/drasticstatic/drasticstatic/blob/main/how-to-establish-cross_repo_CONTRIBUTORS_SECURITY_LICENSING.md) — Community health files at scale
 - [`how-to-publish-react-APPS-to-ghPAGES.md`](https://github.com/drasticstatic/drasticstatic/blob/main/how-to-publish-react-APPS-to-ghPAGES.md) — CRA and Vite apps to GitHub Pages
 - [`how-to-setup-BRANCH-PROTECTION-and-TOPICS.md`](https://github.com/drasticstatic/drasticstatic/blob/main/how-to-setup-BRANCH-PROTECTION-and-TOPICS.md) — Branch protection rulesets and GitHub topics via `gh api`
+
+---
+
+## <img src="sop-template/repo/assets/icons/git-pull-request.svg" width="24" height="24" alt=""> Suggest a change
+
+Noticed something wrong, or know a better way? Open an [issue](https://github.com/drasticstatic/my-template/issues) or a pull request against `main`; the lab steward reads them, and a person with the role merges with a merge commit so your name stays on it. Not on GitHub? Tell any steward you know, or your helper, in your own words.
+
+<sub>The front door follows the living [README standard](./README-STANDARD.md). Copy it, improve it. MIT ([`LICENSE`](./LICENSE)); icons Lucide (ISC).</sub>
 
 ---
 

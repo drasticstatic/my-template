@@ -179,6 +179,7 @@ attribution survives. Procedure: `SOP-OPS-002` in each organisation's `ops-stand
 Commit subjects start with one gitmoji and a type, `:sparkles: feat(scope): subject` (warn-only hint; the twelve
 and why the alias form are in [`my-template/GITMOJI.md`](https://github.com/drasticstatic/my-template/blob/main/GITMOJI.md)).
 Run `sh ~/code/my-template/scripts/sync-local.sh` when the iMac may be behind GitHub (VS Code reads local files).
+A main README follows [`my-template/README-STANDARD.md`](https://github.com/drasticstatic/my-template/blob/main/README-STANDARD.md): its own banner (`scripts/make-banner.py`), *You are here*, badges, TL;DR, Lucide icons, *Suggest a change*.
 <!-- fleet:pull-requests-and-promotes:end -->
 
 ## Commit Convention
