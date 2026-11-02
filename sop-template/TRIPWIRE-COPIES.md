@@ -25,8 +25,102 @@ them. Copy, do not fork: when the master changes, copy it again into each reposi
 > `PUBLIC-LANE-MEDIA.txt` names folders a lane publishes on purpose (a person chose them; a machine still reads what it
 > can), base64 in text is decoded and read, and an SVG that can run something is refused. Fingerprints:
 > `scan-public-lane.sh` md5 `3b313e7bae73bfc66205db40018351ab`, `scan-public-lane.selftest.sh` md5
-> `e125c6059e63a29019f7905ff2801b1f`. **The fleet still carries 06dd9d1 until the round-five re-copy is recorded here;**
-> everything below this note describes that earlier state.
+> `e125c6059e63a29019f7905ff2801b1f`. **The round-five re-copy is recorded in the next section;**
+> the sections after it describe the earlier state.
+
+## <img src="repo/assets/icons/fingerprint.svg" width="24" height="24" alt=""> Re-copy of the 28188db master (2026-11-02)
+
+Copies were found two ways: `find` under `~/code ~/dappu ~/theholyearthfoundation ~/psychedelicsinrecovery
+~/Octagon-Religious-Research-Group-ORG ~/psanctuary ~/psanctuarychurch ~/taylordwraps-org`, and the GitHub contents API
+on every repository of the seven owners, on `main` and `preview`, which also reaches a repository with no local clone. In
+each repository the pair was copied from the master, the self-test was run there, and it was committed on its own and
+pushed to the working branch. The self-test passed everywhere: 92/92, or 96/96 where `scripts/sync-allowlist.sh` sits
+beside it (the master's own 98/98 adds two "matches the master" checks). The table is what GitHub held when this was
+written: 57 copies match the master, each with the commit that last changed its scanner. Some rows were re-copied by
+the lane packages of the same round.
+
+| Repository | Commit |
+|---|---|
+| `drasticstatic/alexandrina` | `24f5a83` |
+| `drasticstatic/anthropas-argus-alfred` | `5084a94` |
+| `drasticstatic/augment-intent-properties` | `a2ac077` |
+| `drasticstatic/aunt-harriot` | `335cd7b` |
+| `drasticstatic/dpnelson` | `c5a2393` |
+| `drasticstatic/findyourfeathers` | `16839d2` |
+| `drasticstatic/fortuna-vision` | `06382c5` |
+| `drasticstatic/gratitude-token-project_astro` | `f20085e` |
+| `drasticstatic/my-template` | `28188db` |
+| `drasticstatic/my-template-clean` | `b76f5b4` |
+| `drasticstatic/O-R-G` | `fa76728` |
+| `drasticstatic/O-R-G-astro` | `04c1d59` |
+| `drasticstatic/O-R-G-dapp` | `b7a0881` |
+| `drasticstatic/ops-standard-operating-procedures-thef` | preview `0fa39ec` |
+| `drasticstatic/pir` | `7de2910` |
+| `drasticstatic/pir-devine-news` | `79cadb2` |
+| `drasticstatic/proposals-thef` | preview `efc37df` |
+| `drasticstatic/Psanctuary` | `9b49916` |
+| `drasticstatic/psychedelic-policy-reform-astro` | `bee5f8c` |
+| `drasticstatic/psychedelic-policy-reform-dapp` | `4ff8390` |
+| `drasticstatic/tax-assistant` | `55a0bb5` |
+| `drasticstatic/taylordwraps` | `c115cc9` |
+| `drasticstatic/trading-bot_arbitrage_DAPPUv3_hardhat_UNI-CAKE` | `18c11a2` |
+| `drasticstatic/wilson-lawn-ai-assist` | `64a1052` |
+| `Octagon-Religious-Research-Group-ORG/legal` | `411ebd4` |
+| `Octagon-Religious-Research-Group-ORG/ops-standard-operating-procedures` | `b501baf` |
+| `Octagon-Religious-Research-Group-ORG/reading-room` | `9bd4e2d` |
+| `psanctuary/changelog-astro` | `196cfbe` |
+| `psanctuary/legal` | `1887ea1` |
+| `psanctuary/ops-standard-operating-procedures` | `4bb2606` |
+| `psanctuary/reading-room` | `173483c` |
+| `psanctuarychurch/changelog-astro` | `2d5a8cc` |
+| `psanctuarychurch/legal` | `b4b4b87` |
+| `psanctuarychurch/ops-standard-operating-procedures` | `e701a6a` |
+| `psanctuarychurch/reading-room` | `5691889` |
+| `psychedelicsinrecovery/alex-desk` | `bd863e5` |
+| `psychedelicsinrecovery/board-of-directors` | `ce1a5c3` |
+| `psychedelicsinrecovery/catalyst-desk` | `6c52008` |
+| `psychedelicsinrecovery/changelog-astro` | `f386e1f` |
+| `psychedelicsinrecovery/github-desk` | `6260360` |
+| `psychedelicsinrecovery/legal` | `f7e72d4` |
+| `psychedelicsinrecovery/litcom-desk` | `211b955` |
+| `psychedelicsinrecovery/literature-committee` | `95a6e4b` |
+| `psychedelicsinrecovery/ops-standard-operating-procedures` | `63f3613` |
+| `psychedelicsinrecovery/pr-desk` | `fba5c86` |
+| `psychedelicsinrecovery/public-relations` | `9416adc` |
+| `psychedelicsinrecovery/reading-room` | `b1e5af0` |
+| `psychedelicsinrecovery/tech-committee` | `d0bff40` |
+| `psychedelicsinrecovery/techcom-desk` | `51412ca` |
+| `taylordwraps/ops-standard-operating-procedures` | `d4011eb` |
+| `taylordwraps/reading-room` | `be2847f` |
+| `theholyearthfoundation/changelog-astro` | `3e1df4f` |
+| `theholyearthfoundation/david-amaringo` | preview `672ba50` |
+| `theholyearthfoundation/iamoneself-retreats` | preview `3998e68` |
+| `theholyearthfoundation/legal` | `774a45b` |
+| `theholyearthfoundation/ops-standard-operating-procedures` | `fd1204c` |
+| `theholyearthfoundation/reading-room` | `d951ee3` |
+
+**`sync-allowlist.sh` went with the scanner,** because the self-test now drives the media list through it. Lanes on the
+template's family took `sop-template/repo/scripts/sync-allowlist.sh` byte for byte (md5 `504181e2…`). Psanctuary's
+`--check` family keeps its own script with the call site edited: the church's three copies are md5 `dd33f0d0…`. The
+`~/code/psanctuary` desk's copy (md5 `2a55f582…`) also gained the `stage` form it never had, which is why its self-test
+was already failing one case (41/42) before this round. No lane in this re-copy gained a list by this step, except the one below;
+the lanes the other round-five packages own add theirs there.
+
+**Newly gated:** `theholyearthfoundation/changelog-astro` (`3e1df4f`). Its `sync-public.yml` had no scanner; it now reads
+the built site and the filtered history, in report mode as PsychedelicsInRecovery's live lane does. Its
+`PUBLIC-LANE-MEDIA.txt` lists the four folders the site already shows. A rehearsal on the public tree is clean at HEAD;
+seven past versions of its `README.md` still carry the agent-notes folder name, so `TRIPWIRE_ENFORCE` stays `0` until they
+are dealt with.
+
+**Still on an older copy when this was written:**
+
+- `drasticstatic/proposals-thef` `main`: its `preview` matches; `main` follows by Promote, a person's merge.
+- `drasticstatic/trading-assistant`, `drasticstatic/david-amaringo` `preview` and `drasticstatic/iamoneself` `preview`: left to
+  the lane packages that own them, and not yet re-copied.
+- `drasticstatic/divorce-custody-assistant`: `3cd4b9a9…`, for the main session.
+
+**Carries no scanner at all:** `Octagon-Religious-Research-Group-ORG/changelog-astro`, whose `sync-public.yml` publishes to
+a public repository as THEF's did.
 
 ## <img src="repo/assets/icons/fingerprint.svg" width="24" height="24" alt=""> Re-copy of the 06dd9d1 master (2026-11-01)
 
