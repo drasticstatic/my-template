@@ -63,6 +63,30 @@ running `/cd <new-path>` *inside* a still-open session for that project, which i
 sessions that already ended before the move. Skip this if the encoded path would exceed roughly 200
 characters — Claude Code truncates and hashes long paths, and the hash won't match after a move.
 
+## Where a clone lives: labs under `~/code`, organisation clones at `~/<org>/`
+
+The pattern above is for a person's own work. A repository an organisation owns does not nest inside it.
+
+| What it is | Where it lives | Example |
+|---|---|---|
+| A lab: a person's own working copy, on a personal account, drafts and all | `~/code/<lab>/` | `~/code/pir` |
+| A clone of a repository an organisation owns | `~/<org>/<repository>`, the folder named exactly as the GitHub organisation | `~/psychedelicsinrecovery/reading-room` |
+
+A lab never holds an organisation's clone, not even git-ignored. Why:
+
+- **`grep` tells the truth.** `grep -r` over `~/<org>/` searches everything that organisation holds and nothing else.
+  Searching a lab searches the drafts, without the organisation's published pages mixed in under the same names
+  (a lab and its organisation each have a `proposals`).
+- **One place to look.** "Where is that organisation's reading room?" has one answer, for a person and for a helper,
+  and it is the same answer for every organisation.
+- **The tools know the roots.** `scripts/sync-local.sh` and `scripts/agent-sync-health.py` walk `~/code`, `~/dappu` and
+  every `~/<org>/` by default. A new organisation's folder gets added to both defaults the day it is created.
+
+**Moving a clone home.** Check first that its remote is the organisation's and that it has nothing uncommitted, unpushed or
+stashed; skip it if the destination exists. Plain `mv` is enough, since `.git/` travels with it. Keep the name in the lab's
+`.gitignore` with a comment saying where the clone went, so a stray clone there can never be tracked. The session-continuity
+note above applies if anyone ran Claude Code from inside the old path.
+
 ## Worked examples (private, real-world detail lives there, not here)
 
 This guide stays generic and public-safe on purpose — real founder names, org details, and

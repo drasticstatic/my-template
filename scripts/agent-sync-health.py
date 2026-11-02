@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """agent-sync-health.py: check every local clone's AGENT-SYNC lanes against my-template/AGENT-SYNC/README.md.
 
-    python3 ~/code/my-template/scripts/agent-sync-health.py [root ...]     # default: ~/code ~/dappu ~/theholyearthfoundation
+    python3 ~/code/my-template/scripts/agent-sync-health.py [root ...]     # default: ~/code ~/dappu ~/theholyearthfoundation ~/psychedelicsinrecovery ~/Octagon-Religious-Research-Group-ORG ~/psanctuary ~/psanctuarychurch ~/taylordwraps-org
 
 my-template's own AGENT-SYNC/ is the public skeleton every repo copies, so it is exempt from the public-repo rule.
 Read-only. It runs `git` locally and `gh repo list` once per owner (to learn each repository's visibility).
@@ -31,7 +31,8 @@ for o in OWNERS:
     for line in out.splitlines():
         k, v = line.split(); vis[k] = v.lower()
 
-roots = [os.path.expanduser(r) for r in (sys.argv[1:] or ["~/code", "~/dappu", "~/theholyearthfoundation"])]
+roots = [os.path.expanduser(r) for r in (sys.argv[1:] or ["~/code", "~/dappu", "~/theholyearthfoundation", "~/psychedelicsinrecovery",
+     "~/Octagon-Religious-Research-Group-ORG", "~/psanctuary", "~/psanctuarychurch", "~/taylordwraps-org"])]
 repos = set()
 for root in roots:
     for dp, dn, _ in os.walk(root):

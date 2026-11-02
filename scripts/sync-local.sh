@@ -8,7 +8,8 @@
 #   --no-fetch    report from what is already known locally (no network at all); implies --dry-run
 #   --skip-lanes  leave out clones whose origin is a public lane (-public, -public-preview, -publish-preview)
 #   --quiet       print only clones that are behind, ahead, dirty or in trouble, and the summary
-#   ROOT ...      where to look (default: ~/code ~/dappu ~/theholyearthfoundation)
+#   ROOT ...      where to look (default: ~/code ~/dappu ~/theholyearthfoundation ~/psychedelicsinrecovery
+#                 ~/Octagon-Religious-Research-Group-ORG ~/psanctuary ~/psanctuarychurch ~/taylordwraps-org)
 #
 # What it does, per clone found up to three folders deep under each ROOT (node_modules skipped):
 #   - fetches its upstream, each network call time-limited (a stalling resolver: SOP-IT-001);
@@ -35,7 +36,7 @@ while [ $# -gt 0 ]; do
     --no-fetch) FETCH=0; DRY=1 ;;
     --skip-lanes) SKIP_LANES=1 ;;
     --quiet) QUIET=1 ;;
-    -h|--help) sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help) sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     -*) echo "unknown option: $1" >&2; exit 2 ;;
     *) ROOTS="$ROOTS
 $1" ;;
@@ -44,7 +45,12 @@ $1" ;;
 done
 [ -n "$ROOTS" ] || ROOTS="$HOME/code
 $HOME/dappu
-$HOME/theholyearthfoundation"
+$HOME/theholyearthfoundation
+$HOME/psychedelicsinrecovery
+$HOME/Octagon-Religious-Research-Group-ORG
+$HOME/psanctuary
+$HOME/psanctuarychurch
+$HOME/taylordwraps-org"
 
 limit () { perl -e 'alarm shift; exec @ARGV' "$@"; }   # limit SECONDS cmd...
 

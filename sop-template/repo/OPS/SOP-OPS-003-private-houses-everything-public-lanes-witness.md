@@ -2,10 +2,10 @@
 
 ![SOP](https://img.shields.io/badge/SOP-OPS--003-d9a441?style=flat-square)
 ![Status](https://img.shields.io/badge/Status-draft-334155?style=flat-square)
-![Changed](https://img.shields.io/badge/Changed-2026--11--01-8a6a2a?style=flat-square)
+![Changed](https://img.shields.io/badge/Changed-2026--11--02-8a6a2a?style=flat-square)
 ![For](https://img.shields.io/badge/For-Stewards_and_officers-64748b?style=flat-square)
 
-**Department:** OPS · **ID:** 003 · **Status:** draft (approved when tagged) · **Owner:** repository steward; officers decide each allowlist line · **Last changed:** 2026-11-01
+**Department:** OPS · **ID:** 003 · **Status:** draft (approved when tagged) · **Owner:** repository steward; officers decide each allowlist line · **Last changed:** 2026-11-02
 
 ## <img src="../assets/icons/compass.svg" width="24" height="24" alt=""> Purpose
 Everything the organisation writes lives first in a **private** repository: the house. A **public lane** (a repository whose name ends `-public`) is a witness: it carries only the pages an officer listed, copied by a machine after a tripwire, and nobody edits it by hand. This procedure says how a page reaches a public lane, how the reading room is built from the same mechanism, and why its icons never go stale.
@@ -193,6 +193,11 @@ flowchart LR
 ### <img src="../assets/icons/sparkles.svg" width="20" height="20" alt=""> Icons that never go stale
 Every page draws its icons from the repository's own `assets/icons/` with a relative path (`../assets/icons/route.svg`). Put **`assets/icons`** on the allowlist as one line, and every sync carries the whole folder from the house to the lane. A recoloured or added icon in the house reaches the lane on the next sync; nobody copies icons by hand, so the lane's icons cannot drift. (Pictures under `assets/` or `icons/` are the one kind of image tripwire 2 accepts without an attestation.)
 
+## <img src="../assets/icons/map-pin.svg" width="24" height="24" alt=""> Where the clones live on a machine
+**Labs under `~/code`; organisation clones at `~/<org>/`**, the folder named exactly as the GitHub organisation. The house, its lane, the reading room and its public half all sit side by side there (`~/<org>/reading-room`, `~/<org>/reading-room-public`). A lab never holds an organisation's clone, not even git-ignored.
+
+Why: `grep` over `~/<org>/` searches everything the organisation holds and nothing else, a search of a lab does not mix drafts with the published pages of the same name, and there is one place to look, the same for every organisation. `scripts/sync-local.sh` and `scripts/agent-sync-health.py` in `my-template` walk these folders by default. How to move a clone home: `my-template/NESTED-REPOS-GUIDE.md`.
+
 ## <img src="../assets/icons/list-checks.svg" width="24" height="24" alt=""> Steps: publishing a page
 1. Open a pull request that adds the page's path (and its PDF's path, and `assets/icons` if not already there) to `PUBLIC-ALLOWLIST.txt`. *You should see:* a one-line diff per path.
 2. Run the dry run above, and paste its result into the pull request. *You should see:* no `tripwire:` line.
@@ -220,9 +225,11 @@ The lane's tree contains exactly the allowlisted paths plus its reserved files; 
 - SOP-OPS-001 *How a change travels* · SOP-OPS-002 *Pull requests and Promotes* · SOP-IT-002 *Reading room and helper access* · SOP-GOV-002 *GitHub collaboration*
 - `my-template/NAMES-POLICY.md` (names may be public, contents stay private), `my-template/LUCID.md` (icons and diagrams)
 - `my-template/workflow-templates/sync-public-allowlist.yml` (the same pattern for any repository)
+- `my-template/NESTED-REPOS-GUIDE.md` (labs under `~/code`, organisation clones at `~/<org>/`)
 
 ## <img src="../assets/icons/history.svg" width="24" height="24" alt=""> Change log
 | Date | Change | By |
 |---|---|---|
 | 2026-11-01 | Drafted: the rule (a public lane never publishes a file a machine or a person has not read), the allowlist files, the reading room's mechanics, icons carried by the sync; the tripwire section included whole from `OPS/_fragments/tripwire.md` (the tripwire package's own text) | Alfred |
 | 2026-11-02 | The media list `PUBLIC-LANE-MEDIA.txt`: a person chose these folders, a machine still reads what it can. Base64 in text is decoded and read; an SVG that can run something is refused. The Nov 1 scanner had refused every picture outside `assets/`, which stopped lanes whose pictures were put there to be shown | Alfred |
+| 2026-11-02 | Where the clones live on a machine: labs under `~/code`, organisation clones at `~/<org>/`, and why. | Alfred |
