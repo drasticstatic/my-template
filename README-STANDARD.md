@@ -36,7 +36,7 @@ flowchart LR
   M[What does this<br/>repository mean?] --> B[make-banner.py<br/>or draw your own]
   B --> W[Fill in the<br/>boilerplate]
   W --> I[Copy the icons<br/>the page names]
-  I --> C{--check-readme}
+  I --> C{"--check-readme"}
   C -->|a line says FAIL| W
   C -->|all ok| R[A person opens<br/>the page]
   R --> P[Commit on the<br/>working branch]
