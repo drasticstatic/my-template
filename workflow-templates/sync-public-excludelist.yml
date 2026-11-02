@@ -46,8 +46,9 @@ name: 🌐 Sync Public Preview (Exclude List Model)
 #    scripts/scan-public-lane.sh (master: my-template/scripts/) reads every file at HEAD AND every version in the
 #    rewritten history, exactly as in sync-public-allowlist.yml (its gotcha 4). A new private file that slipped past
 #    the strip list still has to pass it: credentials and agent-note pointers are refused outright; sensitive shapes,
-#    unread PDFs, pictures outside assets/ or icons/ and other binaries need a person's line in
-#    PUBLIC-ALLOWLIST-ATTESTED.txt. It does not replace the strip list: a harmless-looking private file still leaks.
+#    unread PDFs, pictures outside assets/, icons/ and the folders in PUBLIC-LANE-MEDIA.txt, and other binaries need a
+#    person's line in PUBLIC-ALLOWLIST-ATTESTED.txt. It does not replace the strip list: a harmless-looking private file
+#    still leaks.
 
 on:
   push:
@@ -78,6 +79,7 @@ jobs:
           [ -f scripts/scan-public-lane.sh ] || { echo "::error::scripts/scan-public-lane.sh is missing; copy it from my-template/scripts/ (no reader, no sync)"; exit 1; }
           cp scripts/scan-public-lane.sh scripts/scan-public-lane.selftest.sh "$RUNNER_TEMP/"
           if [ -f PUBLIC-ALLOWLIST-ATTESTED.txt ]; then cp PUBLIC-ALLOWLIST-ATTESTED.txt "$RUNNER_TEMP/attested.txt"; else : > "$RUNNER_TEMP/attested.txt"; fi
+          if [ -f PUBLIC-LANE-MEDIA.txt ]; then cp PUBLIC-LANE-MEDIA.txt "$RUNNER_TEMP/media.txt"; else : > "$RUNNER_TEMP/media.txt"; fi
           sh "$RUNNER_TEMP/scan-public-lane.selftest.sh"
 
       - name: Strip private content
@@ -99,6 +101,7 @@ jobs:
             --path "logs/" \
             --path "strategies/" \
             --path "graphify-out/" \
+            --path "PUBLIC-LANE-MEDIA.txt" \
             --invert-paths \
             --filename-callback 'return None if filename is None or (filename.startswith(b".claude/") and not filename.startswith(b".claude/skills/")) else filename' \
             --force
@@ -111,7 +114,7 @@ jobs:
           # HEAD exactly as committed (not the working tree, which may hold leftovers filter-repo untracked)
           head="$RUNNER_TEMP/head"; rm -rf "$head"; mkdir -p "$head"
           git --work-tree="$head" checkout -f HEAD -- .
-          sh "$scan" "$head" "$att"
+          sh "$scan" --media "$RUNNER_TEMP/media.txt" "$head" "$att"
           # legal lanes by path, in any commit that will be published
           if git log --all --format= --name-only | grep -Eiq '(^|/)(entity|tax|filings|counsel)/'; then
             echo "::error::a legal lane (entity/ tax/ filings/ counsel/) appears in the history about to be published"; exit 1
@@ -123,7 +126,7 @@ jobs:
               mkdir -p "$hist/$sha/$(dirname "$p")"
               git cat-file blob "$sha" > "$hist/$sha/$p"
             done
-          sh "$scan" --strip 1 "$hist" "$att"
+          sh "$scan" --strip 1 --media "$RUNNER_TEMP/media.txt" "$hist" "$att"
 
       - name: Configure Git Identity
         run: |

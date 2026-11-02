@@ -226,7 +226,7 @@ it; one already cloned is pulled like any other (it only reads), or left out wit
 ## `scan-public-lane.sh` — the public-lane tripwire (master copy)
 
 ```sh
-sh scripts/scan-public-lane.sh [--strip N] <directory-about-to-be-published> [PUBLIC-ALLOWLIST-ATTESTED.txt]
+sh scripts/scan-public-lane.sh [--strip N] [--media PUBLIC-LANE-MEDIA.txt] <directory-about-to-be-published> [PUBLIC-ALLOWLIST-ATTESTED.txt]
 sh scripts/scan-public-lane.selftest.sh     # needs pdftotext: brew install poppler
 ```
 
@@ -234,10 +234,16 @@ sh scripts/scan-public-lane.selftest.sh     # needs pdftotext: brew install popp
 directory: text directly, PDFs through `pdftotext`, `.docx`/`.xlsx`/`.pptx` through their XML. It refuses (exit 1,
 naming each file) a credential or agent-note pointer anywhere; a sensitive shape (identity-number shapes, tax and
 birth-date labels, street addresses, labelled account numbers over four digits, the fleet's personal-matter words);
-a PDF with no words or with wordless pages; a picture outside `assets/` or `icons/`; any other binary; and, by path,
+a PDF with no words or with wordless pages; a picture outside `assets/`, `icons/` and the folders the lane's media list
+names; an SVG that can run something; base64 embedding a script, HTML, a PDF or an executable; any other binary; and, by path,
 `entity/ tax/ filings/ counsel/`. A person who opened a file can clear the attestable cases with one line in
 `PUBLIC-ALLOWLIST-ATTESTED.txt` (`path | officer | YYYY-MM-DD | opened and read`, optionally `| sha256:<hex>`); the
 credential, legal-lane and never-travels refusals cannot be attested away. Matched text is never printed.
+
+`PUBLIC-LANE-MEDIA.txt` lists folders whose pictures and fonts the lane publishes on purpose, each under
+`approved by <name> | YYYY-MM-DD`. A person chose these folders; a machine still reads what it can: bytes must match the
+name and are searched for credentials, and nothing but pictures and fonts is opened. `--media` names the file, and the
+scanner never looks for one inside the folder it reads.
 
 It keeps every pattern of the fleet's two `sync-allowlist.sh` families (THEF `stage|apply`, Psanctuary `--check`),
 unioned. The self-test builds its fixtures at run time (hand-assembled PDFs, office zips, a PNG; no fixture is

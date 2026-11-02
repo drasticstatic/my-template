@@ -1,7 +1,8 @@
 # PUBLIC-ALLOWLIST-ATTESTED.txt — files a person opened and read before they travel to the public twin
 #
 # The public-lane tripwire (scripts/scan-public-lane.sh) reads every file it can. When it cannot (a scan or an
-# image-only PDF, a picture outside assets/ or icons/, a .docx with a picture in it, any other binary), or when it
+# image-only PDF, a picture outside assets/, icons/ and the folders in PUBLIC-LANE-MEDIA.txt, a .docx with a picture
+# in it, any other binary), or when it
 # finds a sensitive shape (an identity number, an address, a labelled account number, a personal-matter word), it
 # refuses the file. An officer may then open the file, read every page, and add one line here:
 #

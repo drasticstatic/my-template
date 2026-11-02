@@ -5,9 +5,10 @@ name: Sync allowlisted procedures to the public twin
 # with a notice and touches nothing.
 #   - scripts/sync-allowlist.sh stages the listed paths and refuses agent notes, keys and credentials;
 #   - scripts/scan-public-lane.sh then reads EVERY staged file (PDF text through pdftotext, .docx/.xlsx text) and
-#     refuses what no machine could read (a scan, an image-only PDF, a picture outside assets/ or icons/, any other
-#     binary) unless a person attested it in PUBLIC-ALLOWLIST-ATTESTED.txt, and refuses entity/ tax/ filings/ counsel/
-#     by path whatever any list says. A public lane never publishes a file a machine or a person has not read.
+#     refuses what no machine could read (a scan, an image-only PDF, a picture outside assets/, icons/ and the folders
+#     in PUBLIC-LANE-MEDIA.txt, any other binary) unless a person attested it in PUBLIC-ALLOWLIST-ATTESTED.txt, and
+#     refuses entity/ tax/ filings/ counsel/ by path whatever any list says. A public lane never publishes a file a
+#     machine or a person has not read.
 # Dry run on your machine (brew install poppler first):
 #   TRIPWIRE_PUBLIC=1 sh scripts/sync-allowlist.sh stage PUBLIC-ALLOWLIST.txt /tmp/stage
 # The push is an ordinary commit on the destination's main (never a force-push), so the destination's deletion-only
@@ -22,6 +23,7 @@ env:
   DEST_REPO: <org>/ops-standard-operating-procedures-public
   ALLOWLIST: PUBLIC-ALLOWLIST.txt
   ATTESTED: PUBLIC-ALLOWLIST-ATTESTED.txt # files a person opened and read: path | officer | YYYY-MM-DD | opened and read
+  MEDIA: PUBLIC-LANE-MEDIA.txt # folders whose pictures and fonts this lane publishes on purpose: approved by <name> | YYYY-MM-DD
   PREFIX: ""          # empty: the sync owns the destination except RESERVED; a folder: it owns only that folder
   RESERVED: "README.md LICENSE"      # the destination's own top-level files (its README, its front end)
   TRIPWIRE_PUBLIC: "1" # 1 when the destination is public (runs scan-public-lane.sh)
@@ -30,7 +32,7 @@ env:
 on:
   push:
     branches: [main]
-    paths: ["PUBLIC-ALLOWLIST.txt", "PUBLIC-ALLOWLIST-ATTESTED.txt", "*/SOP-*.md", "pdf/**", "assets/**",
+    paths: ["PUBLIC-ALLOWLIST.txt", "PUBLIC-ALLOWLIST-ATTESTED.txt", "PUBLIC-LANE-MEDIA.txt", "*/SOP-*.md", "pdf/**", "assets/**",
             "scripts/sync-allowlist.sh", "scripts/scan-public-lane.sh", "scripts/scan-public-lane.selftest.sh",
             ".github/workflows/sync-public.yml"]
   workflow_run:

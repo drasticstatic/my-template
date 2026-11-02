@@ -5,9 +5,9 @@
 # The sync (.github/workflows/sync-public.yml) copies exactly these paths after two tripwires:
 #   scripts/sync-allowlist.sh   agent notes, keys and credentials stop it
 #   scripts/scan-public-lane.sh every staged file must be read: PDFs through pdftotext, .docx/.xlsx text; a scan, an
-#                               image-only PDF, a picture outside assets/ or icons/ or any other binary stops it unless
-#                               a person attested it in PUBLIC-ALLOWLIST-ATTESTED.txt; entity/ tax/ filings/ counsel/
-#                               stop it whatever this list says
+#                               image-only PDF, a picture outside assets/, icons/ and the folders in
+#                               PUBLIC-LANE-MEDIA.txt, or any other binary stops it unless a person attested it in
+#                               PUBLIC-ALLOWLIST-ATTESTED.txt; entity/ tax/ filings/ counsel/ stop it whatever this list says
 # Removing a line removes the path from the twin on the next sync. The twin's own README.md is never overwritten.
 #
 # Dry run on your machine (brew install poppler first):

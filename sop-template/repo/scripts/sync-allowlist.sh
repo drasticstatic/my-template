@@ -16,10 +16,12 @@
 #                    an allowlist line that would land on one of them fails the tripwire.
 #   TRIPWIRE_PUBLIC  1 when the destination is public: runs
 #                    the public-lane tripwire scripts/scan-public-lane.sh on everything staged (PDF text via pdftotext,
-#                    .docx/.xlsx text, pictures only under assets/ or icons/, legal lanes refused by path). A public lane
-#                    never publishes a file a machine or a person has not read.
+#                    .docx/.xlsx text, pictures only under assets/ or icons/ or a listed folder, legal lanes refused by
+#                    path). A public lane never publishes a file a machine or a person has not read.
 #   ATTESTED         the attestation file for that tripwire (default PUBLIC-ALLOWLIST-ATTESTED.txt, used when it exists):
 #                    "path | officer | YYYY-MM-DD | opened and read" for files a person opened and read.
+#   MEDIA            the media list for that tripwire (default PUBLIC-LANE-MEDIA.txt, used when it exists): folders whose
+#                    pictures and fonts this lane publishes on purpose, under "approved by <name> | YYYY-MM-DD".
 #   MANIFEST         a file name (e.g. room-manifest.json): apply writes the list of synced files there, for a front end.
 #
 # Exit codes: 0 done · 1 tripwire or usage · 3 the allowlist is empty (nothing to do).
@@ -101,6 +103,8 @@ stage () {
     [ -f "$scanner" ] || die "scripts/scan-public-lane.sh is missing; a public lane does not run without it (copy it from my-template/scripts/)"
     att="${ATTESTED:-PUBLIC-ALLOWLIST-ATTESTED.txt}"
     if [ -f "$att" ]; then set -- "$out${prefix:+/$prefix}" "$att"; else set -- "$out${prefix:+/$prefix}"; fi
+    media="${MEDIA:-PUBLIC-LANE-MEDIA.txt}"
+    if [ -f "$media" ]; then set -- --media "$media" "$@"; fi
     sh "$scanner" "$@" || die "the public-lane tripwire refused the files named above; nothing was published"
   fi
   echo "staged $n allowlisted path(s) into $out${prefix:+/$prefix}; tripwire clean"

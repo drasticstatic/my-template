@@ -1,19 +1,23 @@
 #!/bin/sh
 # scan-public-lane.sh — the public-lane tripwire: a public lane never publishes a file a machine or a person has not read.
 #
-#   sh scripts/scan-public-lane.sh [--strip N] <directory-about-to-be-published> [<PUBLIC-ALLOWLIST-ATTESTED.txt>]
+#   sh scripts/scan-public-lane.sh [--strip N] [--media <PUBLIC-LANE-MEDIA.txt>] <directory-about-to-be-published> [<PUBLIC-ALLOWLIST-ATTESTED.txt>]
 #
 # It reads EVERY file under the directory (only the top-level .git is skipped) and exits non-zero, naming each file,
 # when anything there has not been read:
 #   text           scanned for credentials, agent-note pointers and sensitive shapes (identity numbers, labelled tax
-#                  identifiers, birth dates, street addresses, giver lists, labelled account numbers, personal matters)
+#                  identifiers, birth dates, street addresses, giver lists, labelled account numbers, personal matters).
+#                  Base64 embedded as a data: address is decoded and read: a plain picture passes; a script, HTML, a PDF
+#                  or an executable is refused; a font passes only where a font file would; a credential inside is
+#                  refused like any other; any other long embed is refused outside assets/ or icons/. An .svg that
+#                  carries a script, an event handler or a code link is refused, wherever it sits
 #   PDF            its text is extracted with pdftotext (poppler) and scanned the same way; a PDF with no text, or with
 #                  pages that carry none (a scan, an image-only page), or that cannot be opened, is refused
 #   .docx .xlsx    (and .pptx, OpenDocument) unzipped; the XML text is scanned; embedded pictures or objects are refused
-#   pictures       allowed only under an assets/ or icons/ folder (fonts too), and only when the bytes are the picture
-#                  the name claims; anywhere else they are refused. Pixels are not read, but every picture's and font's
-#                  bytes, and every office file's XML attributes (link targets, alt text), are searched for credentials
-#                  and agent-note pointers
+#   pictures       allowed only under an assets/ or icons/ folder or a folder the lane's media list names (fonts too),
+#                  and only when the bytes are the picture the name claims; anywhere else they are refused. Pixels are
+#                  not read, but every picture's and font's bytes, and every office file's XML attributes (link targets,
+#                  alt text), are searched for credentials and agent-note pointers
 #   anything else  a binary no machine can read here, refused
 #
 # Attestation: PUBLIC-ALLOWLIST-ATTESTED.txt names files a person opened and read, one per line:
@@ -26,8 +30,20 @@
 #   - names that never travel (agent notes, tool configuration, keys, wallets, environment files), symbolic links,
 #     files over 15 MB
 #
-# --strip N   apply the path rules and the attestation to the path with its first N folders removed (used when a
-#             workflow lays every historical version out as <blob>/<path>).
+# Media list: PUBLIC-LANE-MEDIA.txt names folders whose pictures and fonts this lane publishes on purpose. A person chose
+# them; a machine still reads what it can. One folder per line, relative to the directory being scanned, each under a
+# header that says who chose it and when (comments and blank lines allowed):
+#   approved by <name> | YYYY-MM-DD
+#   public/images
+#   .                     (the top level only, for a favicon: never its subfolders)
+# A listed folder covers its subfolders. It opens pictures and fonts whose bytes match their names, and nothing else: text,
+# PDFs, office files and binaries under it are read and refused exactly as anywhere else. A folder with no header above it,
+# a wildcard, a '..' or a legal lane makes the line malformed, which refuses the run. Without --media nothing is listed.
+#
+# --strip N   apply the path rules, the attestation and the media list to the path with its first N folders removed
+#             (used when a workflow lays every historical version out as <blob>/<path>).
+# --media F   the media list to honour (a missing file means nothing is listed). The scanner never looks for one inside
+#             the directory it reads: what is being published does not get to vouch for itself.
 # PDFTOTEXT   environment: the pdftotext to use (default: the one on PATH). Install: brew install poppler (macOS),
 #             sudo apt-get install -y poppler-utils (Ubuntu runners).
 #
@@ -37,12 +53,15 @@
 set -eu
 command -v python3 >/dev/null 2>&1 || { echo "scan-public-lane: python3 is required" >&2; exit 2; }
 exec python3 -I - "$@" <<'PY'
-import datetime, hashlib, html, os, re, shutil, stat, subprocess, sys, zipfile
+import base64, datetime, hashlib, html, os, re, shutil, stat, subprocess, sys, urllib.parse, zipfile
 
 ME = "scan-public-lane"
 GHA = os.environ.get("GITHUB_ACTIONS") == "true"
 MAX_BYTES = 15 * 1024 * 1024
 MAX_OFFICE_XML = 64 * 1024 * 1024
+LONG_EMBED = 200     # base64 characters: a shorter embed of an unknown kind is not worth stopping a lane for
+MAX_EMBED_DEPTH = 3  # an embed inside an embed inside an embed, then refused
+USAGE = f"usage: sh scripts/{ME}.sh [--strip N] [--media <PUBLIC-LANE-MEDIA.txt>] <directory> [<attested-file>]"
 
 
 def w(*parts):
@@ -52,18 +71,22 @@ def w(*parts):
 
 def usage(msg):
     print(f"{ME}: {msg}", file=sys.stderr)
-    print(f"usage: sh scripts/{ME}.sh [--strip N] <directory> [<attested-file>]", file=sys.stderr)
+    print(USAGE, file=sys.stderr)
     sys.exit(2)
 
 
 args = sys.argv[1:]
 strip = 0
+media_file = ""
 while args and args[0].startswith("-"):
     if args[0] == "--strip" and len(args) >= 2 and args[1].isdigit():
         strip = int(args[1])
         args = args[2:]
+    elif args[0] == "--media" and len(args) >= 2:
+        media_file = args[1]
+        args = args[2:]
     elif args[0] in ("-h", "--help"):
-        print(f"usage: sh scripts/{ME}.sh [--strip N] <directory> [<attested-file>]  (details: the comment at the top of the script)")
+        print(f"{USAGE}  (details: the comment at the top of the script)")
         sys.exit(0)
     else:
         usage(f"unknown option {args[0]}")
@@ -117,7 +140,16 @@ SENSITIVE = [
 ]
 ACCOUNT = re.compile(r"\b(?:" + w("acc", "ount") + r"|acct|routing|iban|aba)\b(?:[ \t]*(?:number|num|no\.?|#))?[ \t]*[:#.-]?[ \t]*"
                      r"((?:[A-Z]{2}[0-9]{2}[ ]?)?[0-9][0-9 -]{3,}[0-9])", re.I)
-EMBEDDED_B64 = re.compile(r"data:[A-Za-z0-9.+/-]+;base64,[A-Za-z0-9+/=\s]{200,}")
+EMBED = re.compile(r"data:([A-Za-z0-9.+/-]*)(?:;[A-Za-z0-9=._-]+)*?;base64,([A-Za-z0-9+/=%\s]*)", re.I)
+# What an embed may not be, by its label or by its bytes.
+ACTIVE_MIME = re.compile(r"html|script|wasm|pdf|executable|msdownload|dosexec|portable-exec|x-sh\b|x-elf|mach-?o|x-msi|java-archive", re.I)
+ACTIVE_BYTES = ((b"MZ", "an executable"), (b"\x7fELF", "an executable"), (b"\xfe\xed\xfa\xce", "an executable"),
+                (b"\xfe\xed\xfa\xcf", "an executable"), (b"\xce\xfa\xed\xfe", "an executable"), (b"\xcf\xfa\xed\xfe", "an executable"),
+                (b"\xca\xfe\xba\xbe", "an executable"), (b"\x00asm", "an executable"), (b"#!", "a script"), (b"%PDF-", "a PDF"))
+ACTIVE_TEXT = re.compile(r"<\s*(?:script|html|body|iframe|object|embed|!doctype\s+html)\b", re.I)
+# What makes an SVG more than a picture: an active element, an event handler, a link that runs code.
+SVG_TAGS = re.compile(r"<\s*(?:[a-z0-9_-]+:)?(?:script|iframe|embed|object)\b|<[^>]*[\s/\"']on[a-z]+\s*=", re.I)
+SVG_LINK = re.compile(r"=\s*[\"']?\s*(?:javascript|vbscript):", re.I)
 
 # Names that never travel (union of both families), and the legal lanes.
 SEG_NEVER = re.compile(r"^(?:" + AS + r".*|\.git|\.github|\.claude|\.env.*|CLAUDE\.md|AGENTS(?:\.override)?\.md|"
@@ -204,6 +236,64 @@ if attested_file:
                     refuse(f"{attested_file}:{n}", f"attestation line {n} is malformed: {bad}")
                     continue
                 attest.setdefault(p, []).append((officer, day, fp[7:] if fp else None, n))
+
+# ── media list ────────────────────────────────────────────────────────────────────────────────────────────────────────
+media = {}      # listed folder -> (who approved it, date, how many pictures and fonts it let through)
+APPROVED = re.compile(r"approved by:?\s+(\S.*?)\s*\|\s*(\S+)", re.I)
+# Never listable: the legal lanes, what never travels, and the word for a private tax folder in its plural.
+NOT_LISTABLE = LEGAL_LANES | {w("tax", "es")}
+
+if media_file:
+    if not os.path.isfile(media_file):
+        notes.append(f"media list {media_file} not found; no folder is listed")
+    else:
+        approved = None
+        with open(media_file, encoding="utf-8", errors="replace") as fh:
+            for n, raw in enumerate(fh, 1):
+                line = re.sub(r"(?:^|\s)#.*$", "", raw).strip()
+                if not line:
+                    continue
+                bad = None
+                head = APPROVED.fullmatch(line)
+                if head:
+                    who, day = head.groups()
+                    try:
+                        d = datetime.date.fromisoformat(day) if re.fullmatch(r"\d{4}-\d{2}-\d{2}", day) else None
+                    except ValueError:
+                        d = None
+                    if d is None:
+                        bad = "the date must be a real YYYY-MM-DD"
+                    elif d > datetime.date.today() + datetime.timedelta(days=1):
+                        bad = "the date is in the future"
+                    else:
+                        approved = (who, day)
+                elif "|" in line or line.lower().startswith("approved"):
+                    bad = "a header must read 'approved by <name> | YYYY-MM-DD'"
+                else:
+                    p = line.rstrip("/")
+                    segs = p.split("/")
+                    if p.startswith("/") or any(c in p for c in "*?[") or (p != "." and any(x in ("", ".", "..") for x in segs)):
+                        bad = "a folder must be relative, one real path, with no '..' or wildcards"
+                    elif {x.lower() for x in segs} & NOT_LISTABLE or any(SEG_NEVER.match(x) for x in segs):
+                        bad = f"'{p}' can never be listed (a legal lane, or a name that never travels)"
+                    elif approved is None:
+                        bad = "it needs a line 'approved by <name> | YYYY-MM-DD' above it: a person chooses these folders"
+                    else:
+                        media[p] = (approved[0], approved[1], 0)
+                if bad:
+                    refuse(f"{media_file}:{n}", f"media list line {n} is malformed: {bad}")
+
+
+def listed_folder(dirs):
+    """The media-list folder covering this file's folder, or None. '.' covers the top level only."""
+    if not dirs:
+        return "." if "." in media else None
+    for i in range(len(dirs), 0, -1):
+        key = "/".join(dirs[:i])
+        if key in media:
+            return key
+    return None
+
 
 # ── reading ───────────────────────────────────────────────────────────────────────────────────────────────────────────
 pdftotext = os.environ.get("PDFTOTEXT") or shutil.which("pdftotext")
@@ -316,6 +406,69 @@ def decode_text(data):
         return data.decode("latin-1")
 
 
+def svg_active(text):
+    """True when an SVG can run something. Entities and the blanks a browser ignores cannot hide a code link."""
+    return bool(SVG_TAGS.search(text) or SVG_LINK.search(re.sub(r"[\t\r\n]", "", html.unescape(text))))
+
+
+def decode_embed(payload):
+    s = urllib.parse.unquote(re.sub(r"\s+", "", payload))
+    s = re.match(r"[A-Za-z0-9+/]*", s).group(0)
+    if len(s) % 4 == 1:
+        s = s[:-1]
+    return base64.b64decode(s + "=" * (-len(s) % 4))
+
+
+def embed_active(mime, data):
+    """What this embed is, if it is something that runs or a document no reader sees: a phrase, or None."""
+    for sig, kind in ACTIVE_BYTES:
+        if data.startswith(sig):
+            return kind
+    if ACTIVE_MIME.search(mime):
+        return "a PDF" if "pdf" in mime else "a script or HTML"
+    if ACTIVE_TEXT.search(data[:65536].decode("latin-1")):
+        return "a script or HTML"
+    return None
+
+
+def read_embeds(text, in_assets, in_media, depth=0):
+    """Decode every base64 data: address in this text. -> (never, sensitive, unread), as check() reads them."""
+    never, sens, unread = [], [], []
+    for m in EMBED.finditer(text):
+        mime, payload = (m.group(1) or "text/plain").lower(), m.group(2)
+        data = decode_embed(payload)
+        if not data:
+            continue    # the label with nothing after it: code that builds an address, or a page describing one
+        at = where(text, m.start(), False)
+        picture = mime.startswith("image/") and "svg" not in mime and any(magic_ok(x, data) for x in IMAGES)
+        font = "font" in mime and any(magic_ok(x, data) for x in FONTS)
+        decoded = None if picture or font else decode_text(data)
+        n, s = scan_text(decoded) if decoded else (scan_text(data.decode("latin-1"))[0], [])
+        never += [f"{x.rsplit(' (', 1)[0]} (inside a base64 embed, {at})" for x in n]
+        sens += [f"{x.rsplit(' (', 1)[0]} (inside a base64 embed, {at})" for x in s]
+        if picture:
+            continue
+        if font:
+            if not (in_assets or in_media):
+                unread.append(f"a font embedded as base64 ({at}) in a folder that is neither assets/ or icons/ nor in PUBLIC-LANE-MEDIA.txt")
+            continue
+        if "svg" in mime and decoded:
+            if svg_active(decoded):
+                unread.append(f"text that embeds an SVG as base64 that carries a script or an event handler ({at})")
+            if depth >= MAX_EMBED_DEPTH:
+                unread.append(f"base64 embeds nested too deep to read ({at})")
+            else:
+                inner = read_embeds(decoded, in_assets, in_media, depth + 1)
+                never, sens, unread = never + inner[0], sens + inner[1], unread + inner[2]
+            continue
+        active = embed_active(mime, data)
+        if active:
+            unread.append(f"text that embeds {active} as base64: decoded and refused ({at})")
+        elif len(payload) >= LONG_EMBED and not in_assets:
+            unread.append(f"text that embeds a file as base64 that is not a plain picture ({mime}, {at})")
+    return never, sens, unread
+
+
 def check(full, rel):
     parts = rel.split("/")
     rule_parts = parts[strip:] if len(parts) > strip else parts[-1:]
@@ -347,7 +500,9 @@ def check(full, rel):
     digest = hashlib.sha256(data).hexdigest()
     ext = os.path.splitext(base)[1].lower()
     in_assets = bool({d.lower() for d in dirs} & ASSET_DIRS)
+    folder = listed_folder(dirs)
     text, unread, paged = None, None, False
+    embed_never, embed_sens = [], []
     hidden = ""   # bytes a reader never sees but that travel: office attributes, a picture's or font's own bytes
 
     if ext == ".pdf" or data[:5] == b"%PDF-":
@@ -361,8 +516,11 @@ def check(full, rel):
         counts["picture"] += 1
         if not magic_ok(ext, data):
             return refuse(rel, f"named {ext} but its bytes are not that kind of file; rename or replace it")
-        if not in_assets:
-            unread = ("a picture" if ext in IMAGES else "a font") + " outside an assets/ or icons/ folder: no machine reads pictures"
+        if folder is None and not in_assets:
+            here = "/".join(dirs) or "."
+            unread = (("a picture" if ext in IMAGES else "a font") + " outside an assets/ or icons/ folder and outside any folder "
+                      f"this lane lists: no machine reads pictures. If a person chose to publish this folder, add '{here}' to "
+                      "PUBLIC-LANE-MEDIA.txt, under a line 'approved by <name> | YYYY-MM-DD'")
         # its pixels are not read, but its bytes are searched for credentials (metadata, or text appended after the image)
         hidden = data.decode("latin-1")
     else:
@@ -372,16 +530,23 @@ def check(full, rel):
             unread = "a binary file no machine here can read"
         else:
             counts["text"] += 1
-            if not in_assets and EMBEDDED_B64.search(text):
-                unread = "text that embeds a file as base64 (a picture or document no machine read)"
+            embed_never, embed_sens, embed_unread = read_embeds(text, in_assets, folder is not None)
+            if ext == ".svg" and svg_active(text):
+                embed_unread.insert(0, "an SVG that carries a script, an event handler or a link that runs code")
+            if embed_unread:
+                unread = "; ".join(embed_unread[:3]) + (f"; and {len(embed_unread) - 3} more" if len(embed_unread) > 3 else "")
 
     never, sens = scan_text(text, paged) if text else ([], [])
+    never, sens = never + embed_never, sens + embed_sens
     if hidden:
         never += [f"{x.rsplit(' (', 1)[0]} (in the file's own bytes or attributes)" for x in scan_text(hidden)[0]]
     if never:
         return refuse(rel, "carries " + "; ".join(never) + ". No attestation opens this: remove it from the file")
     problems = sens + ([unread] if unread else [])
     if not problems:
+        if folder is not None and (ext in IMAGES or ext in FONTS) and not in_assets:
+            who, day, seen = media[folder]
+            media[folder] = (who, day, seen + 1)
         return
     entries = attest.get(rule, [])
     ok = [e for e in entries if e[2] is None or e[2] == digest]
@@ -417,6 +582,10 @@ for dirpath, dirnames, filenames in os.walk(root, followlinks=False):
 for p in sorted(set(attest) - used):
     if strip == 0:
         notes.append(f"unused attestation: {p} is not in this lane or needed no attestation")
+
+for folder, (who, day, seen) in sorted(media.items()):
+    notes.append(f"listed    {folder}: {seen} picture(s) and font(s) published on purpose; approved by {who}, {day}"
+                 + ("" if seen else " (nothing here needed the list)"))
 
 for note in notes:
     print(f"{ME}: {note}")

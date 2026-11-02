@@ -1,0 +1,21 @@
+# PUBLIC-LANE-MEDIA.txt — folders whose pictures and fonts this lane publishes on purpose
+#
+# A person chose these folders; a machine still reads what it can. The public-lane tripwire
+# (scripts/scan-public-lane.sh) lets a picture or font under a folder named here pass when its bytes match its name, and
+# still searches those bytes for credentials. It does not read pixels, so whoever lists a folder is its reader: look for
+# an account number in a screenshot, or a location in a photo, before adding a line.
+#
+# One folder per line, relative to the folder the tripwire reads (this repository's root on a sync). A listed folder
+# covers its subfolders. "." means the top level only, for a favicon, never its subfolders. Each folder sits under a
+# header saying who chose it and when; a later header starts a new group:
+#
+#   approved by <name> | YYYY-MM-DD
+#   public/images
+#   docs/screenshots   # a comment may follow a folder
+#
+# The list opens nothing else. Text, PDFs, office files and binaries under a listed folder are read and refused exactly as
+# anywhere else. A folder with no header above it, a wildcard, a "..", a legal lane or a name that never travels stops the
+# run. Adding a line is a person's decision, made by pull request like the allowlist; a helper never decides one.
+# The file itself travels nowhere unless PUBLIC-ALLOWLIST.txt lists it.
+#
+# No folder is listed yet.

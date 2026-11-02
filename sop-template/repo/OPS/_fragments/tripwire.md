@@ -21,10 +21,10 @@ kind of file is read its own way, or stopped.
 
 | | Kind of file | How the tripwire reads it | Stopped when |
 |---|---|---|---|
-| <img src="../assets/icons/file-text.svg" width="16" height="16" alt=""> | Text (Markdown, HTML, SVG, scripts) | read directly | it carries a credential, a pointer into agent notes, or a sensitive shape (below) |
+| <img src="../assets/icons/file-text.svg" width="16" height="16" alt=""> | Text (Markdown, HTML, SVG, scripts) | read directly; base64 inside it is decoded and read | it carries a credential, a pointer into agent notes, or a sensitive shape (below); it embeds a script, HTML, a PDF or an executable; or it is an SVG that can run something |
 | <img src="../assets/icons/file-check.svg" width="16" height="16" alt=""> | PDF | its words are pulled out with `pdftotext` and read the same way | the same, **or** it has no words at all, or some pages have none (a scan, an image-only page), or it will not open |
 | <img src="../assets/icons/files.svg" width="16" height="16" alt=""> | `.docx`, `.xlsx`, `.pptx`, OpenDocument | unzipped; the text inside is read, and its link targets and other attributes are searched for credentials | the same, **or** it carries an embedded picture or object |
-| <img src="../assets/icons/sparkles.svg" width="16" height="16" alt=""> | Pictures and fonts | checked to be what their name says; the pixels are not read, but the bytes are searched for credentials | they are not what their name says, carry a credential, or sit anywhere other than an `assets/` or `icons/` folder |
+| <img src="../assets/icons/sparkles.svg" width="16" height="16" alt=""> | Pictures and fonts | checked to be what their name says; the pixels are not read, but the bytes are searched for credentials | they are not what their name says, carry a credential, or sit anywhere other than an `assets/` or `icons/` folder or a folder the lane's media list names |
 | <img src="../assets/icons/triangle-alert.svg" width="16" height="16" alt=""> | Anything else (archives, old `.doc`, unknown binaries) | cannot be read here | always, unless a person attests it |
 
 **Sensitive shapes** are the ones a public page should almost never carry: an employer or social-security number
@@ -44,8 +44,38 @@ pdf/OPS/SOP-OPS-001-how-a-change-travels.pdf | <officer> | 2026-11-01 | opened a
 ```
 
 The fingerprint is optional and recommended: with it, the attestation ends the moment the file changes, and the next
-sync asks for a fresh reading. An attestation clears a sensitive shape, a picture outside `assets/`, and a PDF with
-no words. It never clears the three things below.
+sync asks for a fresh reading. An attestation clears a sensitive shape, one picture outside `assets/` and the media
+list, and a PDF with no words. It never clears the three things below.
+
+### <img src="../assets/icons/eye.svg" width="24" height="24" alt=""> When a person chose the folder: the media list
+
+> **A person chose these folders; a machine still reads what it can.**
+
+A lane shows pictures on purpose: a site's images, a project's screenshots, a brand's fonts. Asking an officer to attest
+each one, or moving them all into `assets/`, is not reading; it is paperwork. So a lane may keep one more list,
+`PUBLIC-LANE-MEDIA.txt`, of the folders whose pictures and fonts it publishes on purpose:
+
+```text
+# Folders this lane shows on purpose. A person chose them.
+approved by <name> | 2026-11-02
+public/images
+docs/screenshots
+.                     # the top level only, for a favicon; never its subfolders
+```
+
+| | What the list does | What it does not do |
+|---|---|---|
+| <img src="../assets/icons/circle-check.svg" width="16" height="16" alt=""> | Opens a picture or font under a listed folder, subfolders too, when its bytes match its name | Open anything else: text, PDFs, office files and binaries under the folder are read and refused exactly as anywhere else |
+| <img src="../assets/icons/scan-search.svg" width="16" height="16" alt=""> | Leaves every other check running: the picture's own bytes are still searched for credentials | Read the pixels. **Nothing reads a picture's pixels, so whoever lists a folder is the reader:** a screenshot showing an account number, or a photo carrying its location, is theirs to catch before listing |
+| <img src="../assets/icons/lock.svg" width="16" height="16" alt=""> | Records who chose and when, in the header above each folder | Reach the legal lanes, names that never travel, symbolic links or files over 15 MB; a line naming one, or a line with no header above it, stops the run |
+
+No list, or a picture outside it, is refused as before, and the refusal names the folder and how to add it. Adding a line
+is a person's decision, made by pull request like the allowlist. A helper may propose a line; a helper never decides one.
+
+**Base64 inside text is read too.** A `data:` address is decoded: a plain picture passes; a script, HTML, a PDF or an
+executable is refused, and so is a credential inside it. An `.svg` is text, so it is read as text, and one that carries a
+script, an event handler or a link that runs code is refused wherever it sits, in `assets/` too. Those refusals are not
+credentials: a person who opened the file may still attest it.
 
 ### <img src="../assets/icons/folder-lock.svg" width="24" height="24" alt=""> What nothing opens
 
@@ -62,7 +92,12 @@ flowchart TD
     D -- yes --> R
     D -- no --> E{"A sensitive shape?"}
     E -- no --> P["Published"]
-    C -- "no: a scan, a picture,<br/>a binary" --> F{"Attested: opened and read<br/>(and the fingerprint still matches)?"}
+    C -- "a picture or a font" --> M{"Bytes match the name,<br/>no credential in them?"}
+    M -- no --> R
+    M -- yes --> L{"Under assets/, icons/ or a folder<br/>in PUBLIC-LANE-MEDIA.txt?"}
+    L -- yes --> P
+    L -- no --> F
+    C -- "no: a scan, a binary" --> F{"Attested: opened and read<br/>(and the fingerprint still matches)?"}
     E -- yes --> F
     F -- yes --> P
     F -- no --> S["Stopped. The log names the file<br/>and prints the line to attest it"]

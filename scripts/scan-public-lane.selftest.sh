@@ -22,7 +22,7 @@ if [ -n "${PDFTOTEXT:-}" ]; then [ -x "$PDFTOTEXT" ] || have_pdf=0; else command
 
 # ── fixtures ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 python3 -I - "$work/fx" <<'PY'
-import os, struct, sys, zipfile, zlib
+import base64, os, struct, sys, zipfile, zlib
 fx = sys.argv[1]
 os.makedirs(fx)
 EIN = "12" + "-" + "3456789"                     # a fake employer number
@@ -108,6 +108,53 @@ write("ein_dash/README.md", "Number 12" + "\u2013" + "3456789 on file.\n")
 write("b64/page.html", "<img src=\"data:image/png;base64," + "A" * 400 + "\">\n")
 pdf("history/abc123/tax/old.pdf", "Plain words")
 pdf("history/def456/docs/old.pdf")
+# round five: PUBLIC-LANE-MEDIA.txt, folders whose pictures and fonts a person chose to publish, and base64 that is read
+SHOTS = "gallery/shots"
+def b64(data):
+    return base64.b64encode(data).decode()
+def big_png():                     # long enough that the embed is over the scanner's short-embed line
+    def chunk(t, d):
+        return struct.pack(">I", len(d)) + t + d + struct.pack(">I", zlib.crc32(t + d) & 0xffffffff)
+    return png()[:-12] + chunk(b"tEXt", b"Comment\x00" + b"plain " * 80) + png()[-12:]
+SCRIPT = "<scr" + "ipt>alert(1)</scr" + "ipt>"
+def page(kind, data):
+    return "<img src=\"data:" + kind + ";base" + "64," + b64(data) + "\">\n"
+write("media_ok/" + SHOTS + "/dot.png", png())
+write("media_ok/" + SHOTS + "/deeper/still/dot.png", png())
+write("media_ok/" + SHOTS + "/font.woff2", b"wOF2" + b"\x00" * 32)
+write("media_ok/README.md", "A public page.\n")
+write("media_sibling/gallery/shots-old/dot.png", png())
+write("media_fake/" + SHOTS + "/dot.png", b"PK\x03\x04 not a picture")
+write("media_tail/" + SHOTS + "/dot.png", png() + TOKEN.encode())
+write("media_root/favicon.ico", b"\x00\x00\x01\x00" + b"\x00" * 32)
+write("media_root_deep/sub/dot.png", png())
+write("media_secret/" + SHOTS + "/notes.txt", "A note: " + TOKEN + "\n")
+write("media_shape/" + SHOTS + "/notes.txt", "Number " + SSN + "\n")
+write("media_binary/" + SHOTS + "/blob.bin", b"\x00\x01\x02\x03binary")
+write("media_keyname/" + SHOTS + "/id_rsa.png", png())
+write("media_legal/" + SHOTS + "/tax/dot.png", png())
+with open(os.path.join(fx, "media_big.png"), "wb") as fh:   # sparse: over the limit without using the room
+    fh.write(png()); fh.truncate(16 * 1024 * 1024)
+pdf("media_pdf/" + SHOTS + "/letter.pdf", "Our EIN is " + EIN)
+write("svg_clean/" + SHOTS + "/art.svg", '<svg xmlns="http://www.w3.org/2000/svg"><circle r="4"/><text>one = two</text></svg>\n')
+write("svg_script/" + SHOTS + "/art.svg", '<svg xmlns="http://www.w3.org/2000/svg">' + SCRIPT + '</svg>\n')
+write("svg_script_assets/assets/art.svg", '<svg xmlns="http://www.w3.org/2000/svg">' + SCRIPT + '</svg>\n')
+write("svg_handler/" + SHOTS + "/art.svg", '<svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)"><circle r="4"/></svg>\n')
+write("svg_link/" + SHOTS + "/art.svg", '<svg xmlns="http://www.w3.org/2000/svg"><a href="&#106;ava\tscript:alert(1)"><circle r="4"/></a></svg>\n')
+write("b64_png/page.html", page("image/png", big_png()))
+write("b64_png_inner/art.svg", '<svg xmlns="http://www.w3.org/2000/svg"><image href="data:image/png;charset=x;base' + '64,' + b64(big_png()) + '"/></svg>\n')
+write("b64_svg_ok/style.css", "a { background: url(data:image/svg+xml;base" + "64," + b64(b'<svg xmlns="http://www.w3.org/2000/svg"><circle r="4"/></svg>') + "); }\n")
+write("b64_svg_script/style.css", "a { background: url(data:image/svg+xml;base" + "64," + b64(('<svg>' + SCRIPT + '</svg>').encode()) + "); }\n")
+write("b64_html/page.html", page("text/html", ("<html><body>" + SCRIPT + "</body></html>").encode()))
+write("b64_short/page.html", page("text/html", SCRIPT.encode()))
+write("b64_assets/assets/page.html", page("text/html", SCRIPT.encode()))
+write("b64_liar/page.html", page("image/png", SCRIPT.encode() * 20))
+write("b64_exe/page.html", page("application/octet-stream", b"MZ" + b"\x90" * 300))
+write("b64_pdf/page.html", page("application/pdf", b"%PDF-1.4 plain" + b" " * 300))
+write("b64_secret/page.html", page("text/plain", ("A note: " + TOKEN).encode()))
+write("b64_png_secret/page.html", page("image/png", big_png() + TOKEN.encode()))
+write("b64_font/style.css", "@font-face { src: url(data:font/woff2;base" + "64," + b64(b"wOF2" + b"\x00" * 300) + "); }\n")
+write("b64_label_only/app.js", 'var a = "data:image/png;base' + '64," + x;\n')
 PY
 
 # ── harness ───────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -167,7 +214,7 @@ expect 0 "clean"                    "the public attribution-spec link passes"   
 expect 1 "never travels"            "CLAUDE.md never travels"                                             -- "$fx/forbidden"
 expect 0 "clean"                    "the asset senses of the matter word pass (treasury vocabulary)"        -- "$fx/treasury"
 expect 1 "personal-matter"          "the matter word in its personal sense is refused"                   -- "$fx/matter"
-expect 1 "base64"                   "text embedding a base64 picture outside assets/ is refused"          -- "$fx/b64"
+expect 1 "base64"                   "a long base64 embed whose bytes are not a picture is refused"        -- "$fx/b64"
 expect 1 "not that kind of file"    "a font named .eot whose bytes are not a font is refused, even in assets/" -- "$fx/eot_fake"
 expect 1 "GitHub token"             "a token appended to a picture in assets/ is refused"                 -- "$fx/png_tail"
 expect 1 "ntfy topic"               "a .docx link target (an attribute, not text) is still searched"      -- "$fx/docx_link"
@@ -183,6 +230,82 @@ expect 1 "symbolic link"            "a symbolic link is refused"                
 saved="${PDFTOTEXT-__unset__}"; export PDFTOTEXT=/nonexistent/pdftotext
 expect 1 "pdftotext is not installed" "without pdftotext a PDF is refused (fail closed)"                 -- "$fx/ein_pdf"
 if [ "$saved" = __unset__ ]; then unset PDFTOTEXT; else PDFTOTEXT="$saved"; fi
+# ── PUBLIC-LANE-MEDIA.txt: a person chose these folders; a machine still reads what it can ───────────────────────────
+med="$work/PUBLIC-LANE-MEDIA.txt"
+list () { printf '%s\n' "$@" > "$med"; }
+list "# folders this lane shows on purpose" "" "approved by Test Officer | 2026-11-01" "gallery/shots   # the screenshots"
+expect 0 "published on purpose"     "a picture and a font under a listed folder pass, subfolders too"     -- --media "$med" "$fx/media_ok"
+expect 1 "PUBLIC-LANE-MEDIA.txt"    "the same pictures with no list are refused, naming how to add one"   -- "$fx/media_ok"
+expect 1 "add 'gallery/shots'"      "the refusal names the very folder to add"                            -- "$fx/media_ok"
+expect 1 "outside any folder"       "a picture outside the listed folder is refused"                      -- --media "$med" "$fx/stray_image"
+expect 1 "outside any folder"       "a sibling whose name starts the same is outside the list"            -- --media "$med" "$fx/media_sibling"
+expect 1 "not found"                "a media list that is not there lists nothing"                        -- --media "$work/none.txt" "$fx/media_ok"
+expect 1 "not that kind of file"    "a listed picture whose bytes are not a picture is refused"           -- --media "$med" "$fx/media_fake"
+expect 1 "GitHub token"             "a token appended to a listed picture is refused"                     -- --media "$med" "$fx/media_tail"
+expect 1 "GitHub token"             "a secret in a text file under a listed folder is refused"            -- --media "$med" "$fx/media_secret"
+expect 1 "No attestation opens"     "and no attestation opens it"                                         -- --media "$med" "$fx/media_secret"
+expect 1 "social-security"          "a sensitive shape in a text file under a listed folder is refused"   -- --media "$med" "$fx/media_shape"
+expect 1 "binary file"              "a binary under a listed folder is refused"                           -- --media "$med" "$fx/media_binary"
+expect 1 "never travels"            "a key's name under a listed folder is refused"                       -- --media "$med" "$fx/media_keyname"
+expect 1 "a legal lane (tax/)"      "tax/ under a listed folder is refused"                               -- --media "$med" "$fx/media_legal"
+if [ "$have_pdf" = 1 ]; then
+  expect 1 "employer-number"        "a PDF under a listed folder is still read"                           -- --media "$med" "$fx/media_pdf"
+fi
+mkdir -p "$fx/media_big/gallery/shots"; mv "$fx/media_big.png" "$fx/media_big/gallery/shots/big.png"
+expect 1 "over 15 MB"               "the size limit holds under a listed folder"                          -- --media "$med" "$fx/media_big"
+ln -s "$fx/clean/README.md" "$fx/media_keyname/gallery/shots/link.png"
+expect 1 "symbolic link"            "a symbolic link under a listed folder is refused"                    -- --media "$med" "$fx/media_keyname"
+mkdir -p "$work/hist/abc/gallery" "$work/hist/def/photos"; cp -R "$fx/media_ok/gallery/shots" "$work/hist/abc/gallery/shots"
+expect 0 "published on purpose"     "--strip 1: the list applies to the path inside a version folder"     -- --strip 1 --media "$med" "$work/hist"
+cp "$fx/stray_image/photos/dot.png" "$work/hist/def/photos/dot.png"
+expect 1 "add 'photos'"             "--strip 1: an unlisted folder in a version is refused"               -- --strip 1 --media "$med" "$work/hist"
+list "approved by Test Officer | 2026-11-01" "."
+expect 0 "published on purpose"     "'.' lists the top level, for a favicon"                              -- --media "$med" "$fx/media_root"
+expect 1 "outside any folder"       "'.' never covers a subfolder"                                        -- --media "$med" "$fx/media_root_deep"
+list "gallery/shots"
+expect 1 "above it"                 "a folder with no header above it makes the list malformed"           -- --media "$med" "$fx/media_ok"
+list "approved by | 2026-11-01" "gallery/shots"
+expect 1 "header must read"         "a header with no name is malformed"                                  -- --media "$med" "$fx/media_ok"
+list "approved by Test Officer | 01-11-2026" "gallery/shots"
+expect 1 "real YYYY-MM-DD"          "a header with a bad date is malformed"                               -- --media "$med" "$fx/media_ok"
+list "approved by Test Officer | 2999-01-01" "gallery/shots"
+expect 1 "in the future"            "a header dated in the future is malformed"                           -- --media "$med" "$fx/media_ok"
+list "approved by Test Officer | 2026-11-01" "gallery/*"
+expect 1 "wildcards"                "a wildcard is malformed"                                             -- --media "$med" "$fx/media_ok"
+list "approved by Test Officer | 2026-11-01" "../gallery"
+expect 1 "wildcards"                "a '..' is malformed"                                                 -- --media "$med" "$fx/media_ok"
+list "approved by Test Officer | 2026-11-01" "tax/photos"
+expect 1 "can never be listed"      "a legal lane can never be listed"                                    -- --media "$med" "$fx/media_ok"
+list "approved by Test Officer | 2026-11-01" "tax""es/scans"
+expect 1 "can never be listed"      "a private tax folder in its plural can never be listed"              -- --media "$med" "$fx/media_ok"
+list "approved by Test Officer | 2026-11-01" "memory"
+expect 1 "can never be listed"      "a name that never travels can never be listed"                       -- --media "$med" "$fx/media_ok"
+list "approved by Test Officer | 2026-11-01" "gallery/shots"
+# ── an SVG is text: read, and refused if it can run something, wherever it sits ──────────────────────────────────────
+expect 0 "clean"                    "a plain SVG under a listed folder passes (words like 'one =' are fine)" -- --media "$med" "$fx/svg_clean"
+expect 0 "clean"                    "a plain SVG passes with no list, as text always has"                 -- "$fx/svg_clean"
+expect 1 "an SVG that carries"      "an SVG with a script under a listed folder is refused"               -- --media "$med" "$fx/svg_script"
+expect 1 "an SVG that carries"      "an SVG with a script in assets/ is refused"                          -- "$fx/svg_script_assets"
+expect 1 "an SVG that carries"      "an SVG with an event handler is refused"                             -- --media "$med" "$fx/svg_handler"
+expect 1 "an SVG that carries"      "an SVG whose link runs code, hidden behind an entity, is refused"    -- --media "$med" "$fx/svg_link"
+# ── base64 embedded in text is decoded and read ──────────────────────────────────────────────────────────────────────
+expect 0 "clean"                    "a base64 PNG in text passes"                                         -- "$fx/b64_png"
+expect 0 "clean"                    "a base64 PNG inside an SVG passes, parameters in its label too"      -- "$fx/b64_png_inner"
+expect 0 "clean"                    "a plain base64 SVG passes"                                           -- "$fx/b64_svg_ok"
+expect 0 "clean"                    "the label with nothing after it is not an embed"                     -- "$fx/b64_label_only"
+expect 1 "carries a script"         "a base64 SVG with a script is refused"                               -- "$fx/b64_svg_script"
+expect 1 "a script or HTML"         "base64 HTML is refused"                                              -- "$fx/b64_html"
+expect 1 "a script or HTML"         "a short base64 script is refused"                                    -- "$fx/b64_short"
+expect 1 "a script or HTML"         "a base64 script in assets/ is refused"                               -- "$fx/b64_assets"
+expect 1 "a script or HTML"         "a base64 script labelled as a picture is refused"                    -- "$fx/b64_liar"
+expect 1 "an executable"            "a base64 executable is refused"                                      -- "$fx/b64_exe"
+expect 1 "a PDF"                    "a base64 PDF is refused"                                             -- "$fx/b64_pdf"
+expect 1 "GitHub token"             "a token inside a base64 embed is refused"                            -- "$fx/b64_secret"
+expect 1 "No attestation opens"     "and no attestation opens it"                                         -- "$fx/b64_secret"
+expect 1 "GitHub token"             "a token inside a base64 picture is refused"                          -- "$fx/b64_png_secret"
+expect 1 "a font embedded"          "a base64 font outside any font folder is refused"                    -- "$fx/b64_font"
+mkdir -p "$work/b64_font_listed/gallery/shots"; cp "$fx/b64_font/style.css" "$work/b64_font_listed/gallery/shots/style.css"
+expect 0 "clean"                    "a base64 font under a listed folder passes"                          -- --media "$med" "$work/b64_font_listed"
 # the scanner and this test are publishable through a lane: they trip nothing themselves
 mkdir -p "$work/self/scripts"; cp "$scan" "$0" "$work/self/scripts/"
 expect 0 "clean"                    "the scanner and its self-test pass their own tripwire"               -- "$work/self"
@@ -201,6 +324,16 @@ if [ -n "$sync" ] && [ "$have_pdf" = 1 ] && grep -q 'scan-public-lane' "$sync"; 
     set +e; out="$(cd "$repo" && TRIPWIRE_PUBLIC=1 sh scripts/sync-allowlist.sh stage PUBLIC-ALLOWLIST.txt "$work/stage-$case" 2>&1)"; got=$?; set -e
     if [ "$got" = "$want" ]; then echo "ok    sync-allowlist.sh stage ($case lane) exits $want"; else
       echo "FAIL  sync-allowlist.sh stage ($case lane): wanted $want, got $got"; printf '%s\n' "$out" | sed 's/^/      /'; fails=$((fails + 1)); fi
+  done
+  # stage honours PUBLIC-LANE-MEDIA.txt beside the allowlist, and a lane without one still refuses the picture
+  mkdir -p "$repo/gallery"; cp "$fx/clean/icons/dot.png" "$repo/gallery/dot.png"
+  printf 'gallery\n' > "$repo/PUBLIC-ALLOWLIST.txt"
+  for case in unlisted listed; do
+    total=$((total + 1))
+    if [ "$case" = unlisted ]; then want=1; else want=0; printf 'approved by Test Officer | 2026-11-01\ngallery\n' > "$repo/PUBLIC-LANE-MEDIA.txt"; fi
+    set +e; out="$(cd "$repo" && TRIPWIRE_PUBLIC=1 sh scripts/sync-allowlist.sh stage PUBLIC-ALLOWLIST.txt "$work/stage-$case" 2>&1)"; got=$?; set -e
+    if [ "$got" = "$want" ]; then echo "ok    sync-allowlist.sh stage (a picture, $case) exits $want"; else
+      echo "FAIL  sync-allowlist.sh stage (a picture, $case): wanted $want, got $got"; printf '%s\n' "$out" | sed 's/^/      /'; fails=$((fails + 1)); fi
   done
 fi
 # the SOP template's copies must be the master, byte for byte

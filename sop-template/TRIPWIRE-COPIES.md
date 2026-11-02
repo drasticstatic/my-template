@@ -20,6 +20,14 @@ them. Copy, do not fork: when the master changes, copy it again into each reposi
 > them byte for byte (see the re-copy table below). No copy still carries `45c2d96c…`, except one that is left for
 > Christopher and named there.
 
+> **Newer master, 2026-11-02 (round five): the media list.** The 06dd9d1 scanner refused every picture and font outside
+> `assets/` or `icons/`, which stopped about nine public lanes whose pictures were put there to be shown. Now
+> `PUBLIC-LANE-MEDIA.txt` names folders a lane publishes on purpose (a person chose them; a machine still reads what it
+> can), base64 in text is decoded and read, and an SVG that can run something is refused. Fingerprints:
+> `scan-public-lane.sh` md5 `3b313e7bae73bfc66205db40018351ab`, `scan-public-lane.selftest.sh` md5
+> `e125c6059e63a29019f7905ff2801b1f`. **The fleet still carries 06dd9d1 until the round-five re-copy is recorded here;**
+> everything below this note describes that earlier state.
+
 ## <img src="repo/assets/icons/fingerprint.svg" width="24" height="24" alt=""> Re-copy of the 06dd9d1 master (2026-11-01)
 
 Copies were found with `find ~/code ~/dappu ~/theholyearthfoundation ~/Octagon-Religious-Research-Group-ORG ~/psanctuary
