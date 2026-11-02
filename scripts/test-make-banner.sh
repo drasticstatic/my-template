@@ -43,7 +43,10 @@ python3 "$MB" --check "$T/d" >/dev/null && ! grep -q '<script' "$T/d" && ok "wor
 printf '<svg xmlns="http://www.w3.org/2000/svg"><title>t</title><circle r="1"><animate attributeName="r" values="1;2" dur="1s"/></circle></svg>' > "$T/e"
 printf '<svg xmlns="http://www.w3.org/2000/svg"><title>t</title><style>.a{animation:b 1s}</style></svg>' > "$T/f"
 printf '<svg xmlns="http://www.w3.org/2000/svg"><title>t</title><style>@media (prefers-reduced-motion: no-preference){.a{animation:b 1s}}</style><script>1</script></svg>' > "$T/g"
-for f in e f g; do python3 "$MB" --check "$T/$f" >/dev/null && no "--check passed a bad banner ($f)" || ok "--check refuses bad banner $f"; done
+printf '<svg xmlns="http://www.w3.org/2000/svg"><title>t</title><style>@media (prefers-reduced-motion: no-preference){.a{animation:b 1s}}</style><image href="https://example.com/a.png"/></svg>' > "$T/h"
+printf '<svg xmlns="http://www.w3.org/2000/svg"><title>t</title><style>@media (prefers-reduced-motion: no-preference){.a{animation:b 1s}}</style><image class="a" href="data:image/webp;base64,UklGRg=="/></svg>' > "$T/i"
+python3 "$MB" --check "$T/i" >/dev/null && ok "--check allows a picture baked into the file" || no "--check refused a baked picture"
+for f in e f g h; do python3 "$MB" --check "$T/$f" >/dev/null && no "--check passed a bad banner ($f)" || ok "--check refuses bad banner $f"; done
 
 # a title or subtitle that cannot fit is refused, not squeezed
 python3 "$MB" --title "$(printf 'x%.0s' 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0)" --subtitle s --family lab >/dev/null 2>&1 && no "an unbreakable long title was accepted" || ok "a title too long is refused"

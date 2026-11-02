@@ -425,13 +425,17 @@ def lint_svg(text):
         bad.append("carries something that can run or embed (script, foreignObject, iframe, embed, object)")
     if re.search(r"\son\w+\s*=", text, re.I):
         bad.append("has an event handler attribute")
-    if re.search(r"<image\b|@import|url\(\s*['\"]?https?:", text, re.I):
+    # A picture baked into the file is fine, and a fair way to have a glow without a filter. Only reaching out is refused.
+    inside = re.sub(r"""(?:xlink:)?href\s*=\s*['"]data:image/(?:png|jpeg|webp|gif);base64,[^'"]*['"]""", "", text, flags=re.I)
+    if re.search(r"@import|url\(\s*['\"]?https?:", inside, re.I):
         bad.append("loads something from outside the file; an SVG in an <img> cannot")
-    if re.search(r"(?:xlink:)?href\s*=\s*['\"](?!#)", text, re.I):
+    if re.search(r"(?:xlink:)?href\s*=\s*['\"](?!#)", inside, re.I):
         bad.append("links outside the file")
     if re.search(r"<(animate|animateTransform|animateMotion|set)\b", text):
         bad.append("uses SMIL (<animate>), which ignores prefers-reduced-motion; use CSS animation")
-    if not re.search(r"animation\s*:", text):
+    if re.search(r"<(animate|animateTransform|animateMotion)\b", text):
+        pass  # already refused above; "does not move" would be wrong
+    elif not re.search(r"animation\s*:", text):
         bad.append("does not move; the standard asks for motion that honours reduced motion")
     elif "prefers-reduced-motion" not in text:
         bad.append("moves without honouring prefers-reduced-motion")
@@ -447,6 +451,10 @@ def lint_svg(text):
 def check_svgs(paths):
     failed = 0
     for p in paths:
+        if not Path(p).is_file():
+            print(f"FAIL  {p}\n      no such file")
+            failed += 1
+            continue
         bad, warn = lint_svg(Path(p).read_text(encoding="utf-8", errors="replace"))
         print(f"{'ok  ' if not bad else 'FAIL'}  {p}")
         for x in bad:
@@ -465,6 +473,9 @@ def prose(text):
 def check_readme(path):
     """The standard's checklist, as far as a machine can read it. A person still reads the page."""
     readme = Path(path)
+    if not readme.is_file():
+        print(f"--- {path}\nFAIL  no such file")
+        return 1
     text = prose(readme.read_text(encoding="utf-8", errors="replace"))
     head = "\n".join(text.splitlines()[:40])
     res = []
