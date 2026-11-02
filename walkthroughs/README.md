@@ -6,6 +6,7 @@ walk me through it").
 
 | | Guide | For when you want to… |
 |---|---|---|
+| 🎁 | [Opening your gift](OPENING-YOUR-GIFT.md) | understand what you were given, if someone set you up on GitHub and you have never heard of it: what to expect, the first ten minutes, what it could become |
 | 🚪 | [Join an organization](JOIN-AN-ORGANIZATION.md) | accept an invitation, turn on two-factor login, connect Claude, Codex, ChatGPT, Littlebird or Cosmos, and start building in plain words |
 | 🛡️ | [The secret scan (GitGuardian)](SECRET-SCAN.md) | set up the one check that stops a commit, and **help someone who forgot** (written for AI helpers too) |
 | 🤝 | [Many AI tools, one team](MANY-AI-TOOLS-ONE-TEAM.md) | understand how several AI helpers share one rulebook, one notebook and one credit line |
@@ -15,6 +16,7 @@ walk me through it").
 | 📁 | [Connect Google Drive](CONNECT-GOOGLE-DRIVE.md) | let your helper read the documents you keep in Drive |
 | 🕸️ | [Connect Graphify](CONNECT-GRAPHIFY.md) | give your helper a map of a codebase, so it reads less and understands more |
 | 🐦 | [Connect Littlebird](CONNECT-LITTLEBIRD.md) | let your coding helper read your Littlebird briefs and chats, and write project summaries back to her, without leaking anything private |
+| 👁️ | [Show hidden files](SHOW-HIDDEN-FILES.md) | see `.git` and friends on a Mac (⌘⇧.), and check where a copied folder pushes before it pushes to the wrong place |
 | 🤝 | [Working with the fleet](WORKING-WITH-THE-FLEET.md) | bring an outside helper (ChatGPT, Codex, a Harness Cosmos agent) to work at the fleet's level: read the welcome path, pull first, pull requests into `preview`, never merge, sign every commit |
 
 ## Keeping an organization healthy

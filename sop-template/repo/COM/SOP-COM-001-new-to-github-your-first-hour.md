@@ -2,10 +2,10 @@
 
 ![SOP](https://img.shields.io/badge/SOP-COM--001-d9a441?style=flat-square)
 ![Status](https://img.shields.io/badge/Status-draft-334155?style=flat-square)
-![Changed](https://img.shields.io/badge/Changed-2026--11--01-8a6a2a?style=flat-square)
+![Changed](https://img.shields.io/badge/Changed-2026--11--02-8a6a2a?style=flat-square)
 ![For](https://img.shields.io/badge/For-Every_newcomer-64748b?style=flat-square)
 
-**Department:** COM · **ID:** 001 · **Status:** draft (approved when tagged) · **Owner:** the organisation's stewards · **Last changed:** 2026-11-01
+**Department:** COM · **ID:** 001 · **Status:** draft (approved when tagged) · **Owner:** the organisation's stewards · **Last changed:** 2026-11-02
 
 ## <img src="../assets/icons/compass.svg" width="24" height="24" alt=""> Purpose
 A person who has never used GitHub can, within one hour, have their own account, be inside the organisation, know five words, read the reading room in a browser, and bring an AI helper if they want one. Nothing in this hour asks them to type a command.
@@ -89,6 +89,17 @@ That is all the vocabulary this hour needs. SOP-GOV-002 has the rest when you wa
 2. Click it. The deck is in `.github/decks/` as a PDF (slides you page through), an HTML page and the markdown it was made from. *You should see:* the first slide, *Welcome to …*.
 3. Page through it once. It walks the same road as this hour and points at the real pages.
 
+## <img src="../assets/icons/eye.svg" width="24" height="24" alt=""> Later, on a Mac: hidden files
+This isn't part of the hour. It's for the day you keep a copy of a repository on your own computer and copy a folder.
+
+- <img src="../assets/icons/eye.svg" width="16" height="16" alt=""> **In Finder, ⌘⇧. (Command, Shift, full stop) shows hidden files.** Press it again to hide them. Names that start with a dot are normally hidden, among them `.git`, which holds the folder's whole history and the address it pushes to.
+- <img src="../assets/icons/files.svg" width="16" height="16" alt=""> **Copying a folder copies its `.git`, address included.** Rename the copy, swap everything inside, and it still pushes to the original.
+- <img src="../assets/icons/list-checks.svg" width="16" height="16" alt=""> **After any copy, check where it pushes:** open Terminal, go into the copy (`cd`), and run `git remote -v`. *You should see:* two lines with the address of the repository this copy belongs to. If the organisation's name is wrong, don't push.
+
+**A worked example.** Two organisations each keep their logos in a `brand-assets` repository. You copy Organisation A's folder to start Organisation B's, and swap in B's logos. The copy's `.git` still says A, so `git push` from there puts B's logos into A's repository, and if A's is public, in front of everyone. Nothing warns you: to git it's an ordinary push.
+
+**If the copy is the start of something new,** drag its `.git` to the Trash and start with `git init`. Changing only the address would carry the old history along. The full walkthrough is `my-template/walkthroughs/SHOW-HIDDEN-FILES.md`.
+
 ## <img src="../assets/icons/circle-check.svg" width="24" height="24" alt=""> Verification
 The newcomer: has two-factor sign-in on; sees the organisation under **Organizations**; opened the reading room's README and one PDF from their own account; can say the five words in their own words. The steward: sees them as a member (and in the readers team) on the organisation's **People** page.
 
@@ -100,14 +111,17 @@ The newcomer: has two-factor sign-in on; sees the organisation under **Organizat
 | "Your organization requires two-factor authentication" | step 2 not done | do step 2, then accept again |
 | Lost phone | the authenticator is gone | sign in with a recovery code, then set up two-factor again |
 | A helper asks for your password | it should not | say no; follow step 6 or SOP-IT-002 |
+| You copied a folder and aren't sure where it pushes | a copied folder keeps its `.git`, address included | run `git remote -v` in the copy; see *Later, on a Mac: hidden files* |
 
 ## <img src="../assets/icons/book-marked.svg" width="24" height="24" alt=""> Related
 - SOP-GOV-002 *GitHub collaboration* (organisations, teams, issues, pull requests, Pages)
 - SOP-IT-002 *Reading room and helper access* (a helper's own key, in depth)
 - SOP-OPS-001 *How a change travels* (what `preview` and `main` mean in practice)
 - `my-template/walkthroughs/JOIN-AN-ORGANIZATION.md`, `my-template/decks-template/` (the welcome deck)
+- `my-template/walkthroughs/SHOW-HIDDEN-FILES.md` (hidden files and copied folders), `my-template/walkthroughs/OPENING-YOUR-GIFT.md` (for someone who has never heard of GitHub)
 
 ## <img src="../assets/icons/history.svg" width="24" height="24" alt=""> Change log
 | Date | Change | By |
 |---|---|---|
 | 2026-11-01 | Drafted for every organisation in the fleet: account (your own password), two-factor, invitation, five words, the reading room in a browser, a helper, the welcome deck | Alfred |
+| 2026-11-02 | *Later, on a Mac: hidden files*: ⌘⇧. shows `.git`, copying a folder copies where it pushes, check with `git remote -v` | Alfred |

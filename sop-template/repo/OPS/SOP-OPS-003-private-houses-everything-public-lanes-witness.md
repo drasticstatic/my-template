@@ -207,6 +207,67 @@ Why: `grep` over `~/<org>/` searches everything the organisation holds and nothi
 
 **To withdraw a page:** remove its line by pull request. The next sync removes it from the lane. (Git history in the lane keeps the old commit; if the page should never have been public, tell the steward, who decides whether the lane's history needs more.)
 
+## <img src="../assets/icons/key-round.svg" width="24" height="24" alt=""> Rotating a deploy key
+A deploy key lets one repository's sync write to one lane. **Rotate it** when someone who could have reached it leaves, when a machine or a secret may have been exposed, or when the steward's yearly habit comes round. The lane just waits while you do this: no site goes down and nothing is lost.
+
+| Source → lane | Secret on the source |
+|---|---|
+| `<org>/ops-standard-operating-procedures` → `<org>/ops-standard-operating-procedures-public` | `SOP_PUBLIC_DEPLOY_KEY` |
+| `<org>/reading-room` → `<org>/reading-room-public` | `READING_ROOM_PUBLIC_DEPLOY_KEY` |
+| `<org>/legal` → `<org>/legal-public` | `LEGAL_PUBLIC_DEPLOY_KEY` |
+| a lab desk → `<org>/reading-room` | `READING_ROOM_DEPLOY_KEY` |
+
+```mermaid
+flowchart LR
+  G["1 · Generate<br/>a new pair"] --> A["2 · Add the public half<br/>to the lane"]
+  A --> S["3 · Set the private half<br/>as the source's secret"]
+  S --> R["4 · Remove the old key<br/>from the lane"]
+  R --> V["5 · Verify: run the sync,<br/>read its commit"]
+```
+
+**The private half is never printed, opened or pasted.** It goes from a temporary file straight into `gh secret set`, then the file is deleted. Only the steward's machine ever holds it, and only for these few minutes. A helper may prepare the commands; the steward runs them.
+
+1. **Generate.** In a temporary folder that only you can read:
+   ```sh
+   umask 077; T="$(mktemp -d)"
+   ssh-keygen -t ed25519 -N "" -C "<secret name>" -f "$T/key"
+   ssh-keygen -lf "$T/key.pub"
+   ```
+   *You should see:* one line with a fingerprint starting `SHA256:`. Note it; the fingerprint is safe to write down.
+2. **Add** the public half to the lane, with today's date in its title:
+   ```sh
+   gh repo deploy-key add "$T/key.pub" -R <lane> --allow-write --title "sync from <source> (<secret name>, YYYY-MM-DD)"
+   ```
+   *You should see:* a confirmation. The lane now has two keys, the old and the new.
+3. **Set** the private half as the secret on the source, and on a second source if two share this key (see below):
+   ```sh
+   gh secret set <secret name> -R <source> < "$T/key"
+   ```
+   *You should see:* `Set Actions secret`.
+4. **Remove** the old key from the lane, and delete the temporary files:
+   ```sh
+   gh repo deploy-key list -R <lane>
+   gh repo deploy-key delete <id of the old key> -R <lane>
+   rm -f "$T/key" "$T/key.pub"; rmdir "$T"
+   ```
+   *You should see:* the list showing both keys, then, listed again, only the new one. The old one goes before you test, because a key being rotated for a reason shouldn't stay open while you check.
+5. **Verify.** Run the source's sync workflow (its file is in `.github/workflows/`), from its **Actions** tab or here, then watch it:
+   ```sh
+   gh workflow run <sync workflow file> -R <source>
+   gh run list -R <source> --limit 3
+   ```
+   *You should see:* the sync green, and the lane's newest commit holding only allowlisted paths. **A run with nothing new to carry makes no commit, and proves only that the key can read;** the next real change proves it can write, so look at the lane once more after that one.
+
+**Two sources, one lane.** Each deploy key belongs to one repository, and GitHub refuses the same public half twice. When two sources feed one room, they either share one key, with the same private half set as a secret on both, or each has its own key on the lane. Before you delete the temporary files, set every secret that used the old key, or that source's next sync stops.
+
+**Afterwards,** record the title, fingerprint and date in the steward's key record. Never the private half.
+
+| Symptom | Likely cause | What to do |
+|---|---|---|
+| `key is already in use` when adding | that public half is on another repository | generate a new pair; never reuse one |
+| The sync fails with `Permission denied (publickey)` | the secret and the lane's key don't match, or `--allow-write` was left off | start again from step 1, and remove the key that didn't work |
+| The sync is green but says it's inert | the secret's name doesn't match the workflow's | `gh secret list -R <source>`, and compare with the workflow |
+
 ## <img src="../assets/icons/circle-check.svg" width="24" height="24" alt=""> Verification
 The lane's tree contains exactly the allowlisted paths plus its reserved files; the last sync run is green; every non-text file in the lane outside `assets/` and `icons/` sits under a folder in `PUBLIC-LANE-MEDIA.txt`, whose header names who chose it and when, or has an officer and a date in `PUBLIC-ALLOWLIST-ATTESTED.txt`.
 
@@ -233,3 +294,4 @@ The lane's tree contains exactly the allowlisted paths plus its reserved files; 
 | 2026-11-01 | Drafted: the rule (a public lane never publishes a file a machine or a person has not read), the allowlist files, the reading room's mechanics, icons carried by the sync; the tripwire section included whole from `OPS/_fragments/tripwire.md` (the tripwire package's own text) | Alfred |
 | 2026-11-02 | The media list `PUBLIC-LANE-MEDIA.txt`: a person chose these folders, a machine still reads what it can. Base64 in text is decoded and read; an SVG that can run something is refused. The Nov 1 scanner had refused every picture outside `assets/`, which stopped lanes whose pictures were put there to be shown | Alfred |
 | 2026-11-02 | Where the clones live on a machine: labs under `~/code`, organisation clones at `~/<org>/`, and why. | Alfred |
+| 2026-11-02 | *Rotating a deploy key*: generate, add, set the secret, remove the old, verify; the private half is never printed | Alfred |
