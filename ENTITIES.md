@@ -7,7 +7,7 @@
 *One map, so every page names each one the same honourable way.*
 
 ![Status](https://img.shields.io/badge/Status-draft%2C_we_massage_this_as_we_go-d9a441?style=flat-square)
-![Changed](https://img.shields.io/badge/Changed-2026--11--01-8a6a2a?style=flat-square)
+![Changed](https://img.shields.io/badge/Changed-2026--11--02-8a6a2a?style=flat-square)
 ![For](https://img.shields.io/badge/For-Every_writer_and_helper-64748b?style=flat-square)
 
 </div>
@@ -84,6 +84,9 @@ The arrows are the whole idea: **inspiration** comes from the source; **decision
 | Psanctuary | **Higher Power**, **Loving Kindness**, **Great Spirit** | as above; "Psanctuary · Ethereal Offering" |
 | Psanctuary Church | in its own words, to be confirmed by its stewards | steward of the Ethereal Offering |
 | Taylor'd Wraps | not named | a business; the fleet's courtesy, not its faith, is what it carries |
+
+> [!NOTE]
+> **Waiting on each house's officers (2026-11-02).** The names in this table are a working draft until each house's officers confirm them. O-R-G's own deck, *ORG Spirituality Centers*, says **The Universal Creator**, which this table doesn't carry yet; whether it joins or replaces the words above is for O-R-G's officers to say. Nothing changes here until they do.
 
 - **Honour, never borrow.** A page about one house uses that house's words. A shared template uses none, or all, side by side.
 - **Never put words in a person's mouth.** "The foundation names…", not "we all believe…".
