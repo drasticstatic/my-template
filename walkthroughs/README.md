@@ -18,6 +18,7 @@ walk me through it").
 | 🐦 | [Connect Littlebird](CONNECT-LITTLEBIRD.md) | let your coding helper read your Littlebird briefs and chats, and write project summaries back to her, without leaking anything private |
 | 👁️ | [Show hidden files](SHOW-HIDDEN-FILES.md) | see `.git` and friends on a Mac (⌘⇧.), and check where a copied folder pushes before it pushes to the wrong place |
 | 🔔 | [Session messaging](SESSION-MESSAGING.md) | let your Claude Code sessions tell each other there is a new handoff: git stays the record, a message is only the doorbell, and the token stays alone |
+| ☁️ | [iCloud and GitHub, together](ICLOUD-AND-GITHUB-TOGETHER.md) | keep uncommitted and unpushed work safe in iCloud Drive as verified git bundles, without ever putting a repository in iCloud or a secret in a backup, and get it back after losing the machine |
 | 🤝 | [Working with the fleet](WORKING-WITH-THE-FLEET.md) | bring an outside helper (ChatGPT, Codex, a Harness Cosmos agent) to work at the fleet's level: read the welcome path, pull first, pull requests into `preview`, never merge, sign every commit |
 
 ## Keeping an organization healthy
