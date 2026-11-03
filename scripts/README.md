@@ -242,6 +242,25 @@ outside `--out` and the page's own icon folder, and it never commits. The rules 
 
 ---
 
+## `git-safety-backup.sh` — what GitHub lacks, as finished files in iCloud Drive
+
+```sh
+sh scripts/git-safety-backup.sh --init       # once per machine: write the skip list, then read it
+sh scripts/git-safety-backup.sh --dry-run    # report what would be written, write nothing
+sh scripts/git-safety-backup.sh              # write
+sh scripts/git-safety-backup.selftest.sh     # prove it in a throwaway folder, restore included
+```
+
+GitHub keeps what is committed and pushed. iCloud only receives finished files holding what GitHub does not yet have.
+Repositories never live in iCloud. For each repository with uncommitted work or unpushed commits, it writes one thin,
+verified git bundle to `GitBackups/<repo-path-slug>/<UTC timestamp>.bundle` and keeps the newest seven. A clean, pushed
+repository writes nothing. Your index and stash list are never touched, and paths named like secrets are dropped and only
+counted. It refuses to run until a skip list exists, so a new Mac cannot send a private repository anywhere first.
+
+`launchd/git-safety-backup.plist.template` runs it every two hours on `StartCalendarInterval`, because `StartInterval`
+misses a sleeping Mac. Why it works this way, the restore steps and its limits:
+[`walkthroughs/ICLOUD-AND-GITHUB-TOGETHER.md`](../walkthroughs/ICLOUD-AND-GITHUB-TOGETHER.md).
+
 ## `scan-public-lane.sh` — the public-lane tripwire (master copy)
 
 ```sh

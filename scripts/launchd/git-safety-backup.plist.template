@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  git-safety-backup, every two hours. A template: fill it in, read a dry run first, then load it.
+  Steps: walkthroughs/ICLOUD-AND-GITHUB-TOGETHER.md. launchd does not expand ~, so the paths must be whole.
+
+  StartCalendarInterval, not StartInterval: man launchd.plist says a StartInterval firing is missed while the Mac
+  sleeps, and that a calendar firing runs on wake, with several missed ones folded into one.
+  RunAtLoad covers a Mac that was off rather than asleep, by running at login.
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>local.git-safety-backup</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/sh</string>
+        <string>__SCRIPT__</string>
+    </array>
+    <key>StartCalendarInterval</key>
+    <array>
+        <dict><key>Hour</key><integer>0</integer><key>Minute</key><integer>17</integer></dict>
+        <dict><key>Hour</key><integer>2</integer><key>Minute</key><integer>17</integer></dict>
+        <dict><key>Hour</key><integer>4</integer><key>Minute</key><integer>17</integer></dict>
+        <dict><key>Hour</key><integer>6</integer><key>Minute</key><integer>17</integer></dict>
+        <dict><key>Hour</key><integer>8</integer><key>Minute</key><integer>17</integer></dict>
+        <dict><key>Hour</key><integer>10</integer><key>Minute</key><integer>17</integer></dict>
+        <dict><key>Hour</key><integer>12</integer><key>Minute</key><integer>17</integer></dict>
+        <dict><key>Hour</key><integer>14</integer><key>Minute</key><integer>17</integer></dict>
+        <dict><key>Hour</key><integer>16</integer><key>Minute</key><integer>17</integer></dict>
+        <dict><key>Hour</key><integer>18</integer><key>Minute</key><integer>17</integer></dict>
+        <dict><key>Hour</key><integer>20</integer><key>Minute</key><integer>17</integer></dict>
+        <dict><key>Hour</key><integer>22</integer><key>Minute</key><integer>17</integer></dict>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>ProcessType</key>
+    <string>Background</string>
+    <key>LowPriorityIO</key>
+    <true/>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+    </dict>
+    <key>StandardOutPath</key>
+    <string>__HOME__/Library/Logs/git-safety-backup.log</string>
+    <key>StandardErrorPath</key>
+    <string>__HOME__/Library/Logs/git-safety-backup.log</string>
+</dict>
+</plist>
