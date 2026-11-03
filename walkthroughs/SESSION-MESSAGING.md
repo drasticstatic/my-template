@@ -117,7 +117,7 @@ is not enough. A walled-off lane should also seal itself, in its own project or 
 ```
 
 - `refuse` from project or local settings applies over every other source. The deny rule stops that session sending and listing, and it also removes messaging to its own subagents and teammates.
-- **It does not hide the session.** A refusing session looks normal in other sessions' lists, working directory included, and a message to it is dropped without any sign to the sender. So the sender's rule still applies: no message, not even a test.
+- **It does not hide the session.** On this machine, Anthropic says a refusing session shows no visible change in other sessions' listings. `refuse` drops the message, so we expect the sender sees no sign, though that part is our reading. Beyond this machine it differs: the row says `can't receive cross-session messages`, and the send is refused before it leaves. So the sender's rule still applies: no message, not even a test.
 
 Applying this is a person's decision, lane by lane. Nothing in this template sets it for you.
 
@@ -130,7 +130,7 @@ Applying this is a person's decision, lane by lane. Nothing in this template set
 | your subagents and teammates | across a container boundary, or between WSL 2 and native Windows |
 
 It is not a record either. Delivery queues at most 50 accepted messages, Claude Code holds at most 100 and then drops the
-oldest, and a message the default rules hold for approval is dropped after five minutes if nobody answers. Only git keeps
+oldest, and a message the default rules hold for approval is dropped after five minutes by default if nobody answers. Only git keeps
 the work, shows who wrote it, and lets a person review it later.
 
 **To keep messages on this machine unless you approve otherwise,** set `"isolatePeerMachines": true`. Claude Code then asks
@@ -207,7 +207,7 @@ A pasted note, source unknown, described these variables. Anthropic's documentat
 
 **Third party, not Anthropic's, used only as leads:**
 - [Florian Bruniaux's guide](https://github.com/FlorianBruniaux/claude-code-ultimate-guide/blob/main/guide/workflows/cross-session-messaging.md) matches the documentation on the points we compared, and links back to it.
-- [Blake Crosley's article](https://blakecrosley.com/blog/claude-code-cross-session-messaging) reports his own check on one machine (Claude Code 2.1.246), and is otherwise drawn from the documentation and release notes. It gives v2.1.239 for native Windows; the documentation says v2.1.234, and we go with the documentation.
+- [Blake Crosley's article](https://blakecrosley.com/blog/claude-code-cross-session-messaging) reports his own check on one machine (Claude Code 2.1.246), and is otherwise drawn from the documentation and release notes. It gives v2.1.239 for native Windows, where the release notes first announce it, and calls that the safe floor; the documentation says v2.1.234. We quote the documentation, and would test first on Windows.
 
 Neither article says how long a token lives. Version numbers and limits can change, so open the primary page before
 building on one.

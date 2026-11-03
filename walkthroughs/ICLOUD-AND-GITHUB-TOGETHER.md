@@ -17,7 +17,7 @@
 1. <img src="../sop-template/repo/assets/icons/git-branch.svg" width="16" height="16" alt=""> **Commit and push is still the backup.** Everything else on this page covers the gap before you push.
 2. <img src="../sop-template/repo/assets/icons/cloud.svg" width="16" height="16" alt=""> **iCloud holds finished files, never a live repository.** One script writes a verified git bundle for each repository that has something GitHub lacks. A clean, fully pushed repository writes nothing.
 3. <img src="../sop-template/repo/assets/icons/shield-check.svg" width="16" height="16" alt=""> **Your staging is not touched.** The script works in a temporary copy of the index and a temporary object folder. It captures staged, unstaged and untracked work without changing your index or your stash list.
-4. <img src="../sop-template/repo/assets/icons/key-round.svg" width="16" height="16" alt=""> **Secrets stay behind.** There is no tar of your folder, so a `.env` ignored by git never travels. Paths named like secrets are dropped and counted, never listed.
+4. <img src="../sop-template/repo/assets/icons/key-round.svg" width="16" height="16" alt=""> **Files named like secrets stay behind.** There is no tar of your folder, so a `.env` ignored by git never travels. Paths named like secrets are dropped and counted, never listed. It goes by name only, so a secret in `notes.txt` would travel: see [what this does not do](#-what-this-does-not-do).
 5. <img src="../sop-template/repo/assets/icons/history.svg" width="16" height="16" alt=""> **Restoring is a fresh clone plus one bundle.** The steps below are run by the self-test every time.
 6. <img src="../sop-template/repo/assets/icons/triangle-alert.svg" width="16" height="16" alt=""> **This does not replace Time Machine.** It saves repository work, not your Mac.
 
@@ -46,7 +46,7 @@ flowchart TD
 | | Keeps | Does not keep | If you lose your Mac |
 |---|---|---|---|
 | **GitHub** | commits you pushed | anything not pushed | clone it again |
-| **iCloud Drive, through this script** | staged, unstaged and untracked work; stashes; unpushed commits and tags; repositories with no remote | secrets, ignored files, anything already on GitHub | restore on top of the clone |
+| **iCloud Drive, through this script** | staged, unstaged and untracked work; stashes; unpushed commits and tags; repositories with no remote | files named like secrets, ignored files, anything already on GitHub | restore on top of the clone |
 | **Time Machine** | your files, apps and settings, to an external drive | anything since the last backup, or if the drive is lost with the Mac | restore the machine |
 | **A password manager** | `.env` values, keys, seed phrases | code | fill your `.env` files in again |
 
@@ -175,7 +175,7 @@ Left-out paths are counted and never named, so the log itself cannot leak a file
 ## <img src="../sop-template/repo/assets/icons/triangle-alert.svg" width="24" height="24" alt=""> What this does not do
 
 - <img src="../sop-template/repo/assets/icons/lock.svg" width="16" height="16" alt=""> **Bundles are not encrypted by this script.** Under iCloud's standard data protection, iCloud Drive is encrypted but Apple holds the keys. Under Advanced Data Protection, only your trusted devices hold them, and Apple cannot help you recover the data. For private repositories, make that choice knowingly, and use the skip list for anything that should never leave.
-- <img src="../sop-template/repo/assets/icons/key-round.svg" width="16" height="16" alt=""> **Name matching is broad, and it is only names.** `wallet*` also drops `WalletConnect.jsx`, and a secret in a file called `notes.txt` travels. Keep secrets in ignored files, and keep your [secret scan](SECRET-SCAN.md) on. To the count in the log, a real secret and a false alarm look the same.
+- <img src="../sop-template/repo/assets/icons/key-round.svg" width="16" height="16" alt=""> **Name matching is broad, and it is only names.** `wallet*` also drops `WalletConnect.jsx`, and a secret in a file called `notes.txt` travels. The list covers forms like `client_secret_*.json`, `my-wallet.json`, `.git-credentials` and `*.gpg`, and it will still miss a name nobody thought of. Keep secrets in ignored files, and keep your [secret scan](SECRET-SCAN.md) on. To the count in the log, a real secret and a false alarm look the same.
 - <img src="../sop-template/repo/assets/icons/cloud.svg" width="16" height="16" alt=""> **iCloud Drive syncs; it is not an archive.** Delete a file on one device and it goes on all of them, recoverable for 30 days. The free tier is 5 GB, shared with photos and device backups. Plan for up to seven bundles per repository, though the seven usually overlap.
 - <img src="../sop-template/repo/assets/icons/git-branch.svg" width="16" height="16" alt=""> **"What GitHub lacks" is judged offline,** from your clone's last fetch. If a branch was deleted on GitHub and your clone has not noticed, a bundle may need commits a fresh clone cannot get. `git bundle verify` names them. The same goes for commits from another remote, such as `upstream` in a fork: add that remote and fetch before you restore.
 - <img src="../sop-template/repo/assets/icons/files.svg" width="16" height="16" alt=""> **Not carried:** ignored files, `node_modules`, a repository's own hooks and config, and Git LFS objects for commits already made. A changed LFS-tracked file travels whole, within the size cap.
@@ -187,6 +187,17 @@ Left-out paths are counted and never named, so the log itself cannot leak a file
 staged, unstaged, untracked and unpushed work all came back in a fresh clone from a bundle read out of real iCloud Drive; the
 index, stash list, refs and object store were unchanged; a planted `.env` and `.pem` were absent from `git ls-tree` on every
 ref, and from every object. That test bundle was then removed.
+
+**A second, independent check the same day found three things the first had missed.** It hunted for planted text in every
+object each bundle adds, across more repository shapes. The first two are fixed, and the third corrects the sentence above.
+
+- **A stash could carry a secret in its history.** With `.env` committed, a stash made, and that commit then amended away, the
+  stash still pointed at it, and the `.env` went into the bundle. Such a stash now stays behind and is counted.
+- **Ordinary names got through.** `secret.json`, `client_secret_*.json`, `my-wallet.json`, `.git-credentials` and 12 others all
+  travelled. The list is wider now, and the self-test plants these names.
+- **"Object store unchanged" was slightly too strong.** No object is added or changed, and the index is the same byte for byte.
+  But when captured work matches an object the repository already has, git refreshes that file's modified time, as any
+  `git add` does. Time Machine may then copy that file again, packfiles included. How often that matters is **UNVERIFIED**.
 
 **Confirmed in the source:**
 
