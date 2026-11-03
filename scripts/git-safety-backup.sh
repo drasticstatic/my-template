@@ -18,7 +18,8 @@ exec python3 -I "$0" "$@"
 # For each repository found under the roots, up to eight folders deep:
 #   - a repository with a lock, or a rebase, merge, cherry-pick, revert or bisect under way is left alone until next run;
 #   - uncommitted work (staged, unstaged, untracked) is captured through a temporary copy of the index, into a temporary
-#     object folder. The repository's own index, stash list, refs and object store are only read, never written;
+#     object folder. The repository's own index, stash list and refs are only read, and no object is added or changed.
+#     (When captured work matches an object it already has, git refreshes that file's modified time, as any `git add` does);
 #   - paths named like secrets are left out and counted, never listed. An untracked one is not opened at all; a tracked
 #     one git may hash to learn whether it changed, and that hash goes nowhere (see SECRET_NAMES);
 #   - the bundle holds that work, the stash entries, and the branches and tags GitHub lacks. The rest of the history
@@ -78,10 +79,17 @@ GIT_TIMEOUT = 900
 
 # Matched against every part of a path, in lower case, so keystore/UTC--x.json and WALLET.DAT both count.
 SECRET_NAMES = [
-    ".env*", "*.pem", "*.key", "*.p12", "keystore*", "wallet*", "*mnemonic*", "*.secret*", "id_rsa*",
+    ".env*", "*.pem", "*.pem.*", "*.key", "*.key.*", "*.p12", "keystore*", "wallet*", "*mnemonic*", "*.secret*", "id_rsa*",
     "secrets*", "id_ed25519*", "id_ecdsa*", "id_dsa*", "*.pfx", "*.keystore", "*.jks", "*.ppk", "*.kdbx",
-    "*seed*phrase*", "service-account*", "credentials*", ".npmrc", ".netrc", ".pgpass",
+    "*seed*phrase*", "service-account*", "credentials*", "*credentials", ".npmrc", ".netrc", ".pgpass",
+    ".git-credentials", ".pypirc", ".dockercfg", "*.gpg", "*.asc", "*.age", "utc--*", "token.json", "token.pickle",
+    ".ssh", ".aws", ".gnupg",
 ]
+# These words name source code too (useWallet.ts, resetPassword.tsx), so they only count on a file that holds data.
+SECRET_WORDS = ["wallet", "secret", "credential", "password", "passwd", "private*key", "privatekey", "api*key", "apikey",
+                "access*token", "auth*token", "api*token", "service*account", "serviceaccount"]
+DATA_ENDINGS = ["json", "yaml", "yml", "toml", "ini", "txt", "csv", "dat", "cfg", "conf", "xml", "plist", "bak", "pickle"]
+SECRET_NAMES += ["*%s*.%s" % (word, ending) for word in SECRET_WORDS for ending in DATA_ENDINGS]
 # Templates by name; these may sit in history, and only in history. Uncommitted, they are left out with the rest.
 SAFE_IN_HISTORY = {".env.example", ".env.sample", ".env.template", ".env.dist"}
 NOISE_NAMES = {"node_modules", ".venv", "venv", "__pycache__", ".DS_Store"}
@@ -436,7 +444,8 @@ def unpushed_refs(repo, env):
 
 
 def stash_refs(repo, env):
-    """Stash entries are uncommitted work too. One holding a secret-named path stays behind, and is counted."""
+    """Stash entries are uncommitted work too. One holding a secret-named path stays behind, and is counted. So does one
+    built on a commit GitHub lacks that touches one: amend that commit away and the stash still carries it."""
     if git(["rev-parse", "-q", "--verify", "refs/stash"], repo, env, check=False) is None:
         return {}, 0
     out, left = {}, 0
@@ -447,7 +456,7 @@ def stash_refs(repo, env):
         names += nul_list(git(["diff-tree", "-r", "-z", "--name-only", parents[0], parents[1]], repo, env))
         if len(parents) > 2:
             names += nul_list(git(["ls-tree", "-r", "-z", "--name-only", parents[2]], repo, env))
-        if any(is_secret(p) for p in names):
+        if any(is_secret(p) for p in names) or secret_names_in_history(repo, env, [parents[0]]):
             left += 1
         else:
             out["refs/safety/stash/%d" % n] = sha

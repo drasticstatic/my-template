@@ -128,7 +128,7 @@ both unstaged"
 [ ! -e gone.txt ] && ok "the deletion came through" || bad "deletion"
 
 stash_refs="$(git for-each-ref --format='%(refname)' 'refs/restored/safety/stash')"
-check "one stash came through, one with a secret-named path stayed behind" "$(printf '%s\n' "$stash_refs" | wc -l | tr -d ' ')" 1
+check "one stash came through, one with a secret-named path stayed behind" "$(printf '%s\n' "$stash_refs" | grep -c .)" 1
 git stash store -m restored "$(git rev-parse "$stash_refs")" && git stash show --include-untracked --name-only stash@{0} 2>/dev/null | grep -q stashed.txt \
   && ok "the stash entry restores" || bad "stash restore"
 
@@ -285,6 +285,69 @@ mkdir -p "$long"; cd "$long" || exit 1; git init -q; echo a > a
 out="$(run --root "$work/longroot" 2>&1)"; rc=$?
 check "a long path: the run succeeds" "$rc" 0
 check "a long path: the bundle is there" "$(count_bundles "$(slug "$long" | cut -c1-200)")" 1
+
+
+# ── a stash on a commit no branch holds any more, and names people really use ────────────────────────────────────────
+hunt() { # bundle-folder-slug origin: how many of the objects this bundle adds hold the sentinel
+  hb="$(one_bundle "$1")"; hx="$work/hunt"; rm -rf "$hx"
+  [ -f "$hb" ] || { echo none; return; }
+  git clone -q --bare "$2" "$hx" 2>/dev/null
+  git -C "$hx" cat-file --batch-all-objects --batch-check='%(objectname)' | LC_ALL=C sort > "$work/hunt.before"
+  git -C "$hx" fetch -q "$hb" '+refs/*:refs/got/*' 2>/dev/null || { echo fetch-failed; return; }
+  git -C "$hx" cat-file --batch-all-objects --batch-check='%(objectname)' | LC_ALL=C sort > "$work/hunt.after"
+  LC_ALL=C comm -13 "$work/hunt.before" "$work/hunt.after" | while read -r o; do
+    [ "$(git -C "$hx" cat-file -t "$o")" = blob ] && git -C "$hx" cat-file blob "$o" | LC_ALL=C grep -a -c "$SENTINEL"
+  done | awk '{s+=$1} END {print s+0}'
+}
+newrepo() {
+  git init -q --bare "$work/$1.git"; git clone -q "$work/$1.git" "$roots/$1" 2>/dev/null; cd "$roots/$1" || exit 1
+  echo base > a.txt; git add .; git commit -q -m base; git push -q origin main
+}
+
+newrepo stashbase
+echo "$SENTINEL-amended" > .env; git add .env; git commit -q -m oops
+echo wip >> a.txt; git stash push -q -m on-a-bad-base
+git reset -q --hard HEAD~1; echo keep > keep.txt
+out="$(run --root "$roots/stashbase" 2>&1)"
+check "a stash on a secret-touching commit no branch holds: nothing planted in the bundle" \
+  "$(hunt "$(slug "$roots/stashbase")" "$work/stashbase.git")" 0
+case "$out" in *"1 stash entr"*) ok "and that stash is counted as left behind" ;; *) bad "stash counted" "$out" ;; esac
+git -C "$work/hunt" rev-parse -q --verify refs/got/safety/wip >/dev/null \
+  && ok "and the rest of the work still travels" || bad "the rest of the work travels" "$out"
+
+newrepo realnames
+for name in secret.json client_secret_123.apps.googleusercontent.com.json .git-credentials serviceAccountKey.json \
+  service_account.json my-wallet.json hot_wallet.dat api_keys.txt token.json private_key.txt deployer.key.bak .pypirc \
+  .dockercfg passwords.txt backup.gpg UTC--2024-01-01T00-00-00.000Z--abc; do echo "$SENTINEL-$name" > "$name"; done
+mkdir -p .aws; echo "$SENTINEL-aws" > .aws/config
+printf 'export const useWallet = 1\n' > useWallet.ts
+out="$(run --root "$roots/realnames" 2>&1)"
+check "names people really use: nothing planted in the bundle" "$(hunt "$(slug "$roots/realnames")" "$work/realnames.git")" 0
+git -C "$work/hunt" show refs/got/safety/wip:useWallet.ts 2>/dev/null | grep -q useWallet \
+  && ok "source code that only mentions a wallet still travels" || bad "useWallet.ts travels" "$out"
+
+# Git refreshes the modified time of an object it is asked to write again, so this compares names and contents, not times.
+contents() {
+  python3 -I -c '
+import hashlib, os, sys
+top = sys.argv[1]; out = hashlib.sha256()
+for folder, dirs, files in sorted(os.walk(top)):
+    dirs.sort()
+    for f in sorted(files):
+        p = os.path.join(folder, f); out.update(p.encode()); out.update(open(p, "rb").read())
+print(out.hexdigest())
+' "$1"
+}
+newrepo backtohead
+echo "$SENTINEL-staged" > wallet.dat; git add wallet.dat; echo fine > ok.txt
+index_before="$(stat -f '%m %z' .git/index; cksum < .git/index)"; before="$(contents .git)"
+run --root "$roots/backtohead" >/dev/null 2>&1
+check "a left-out staged file: the real index is the same, byte for byte and in its modified time" \
+  "$(stat -f '%m %z' .git/index; cksum < .git/index)" "$index_before"
+check "and no file under .git was added, removed or changed" "$(contents .git)" "$before"
+check "and it is still staged" "$(git diff --cached --name-only)" wallet.dat
+check "nothing planted in that bundle either" "$(hunt "$(slug "$roots/backtohead")" "$work/backtohead.git")" 0
+cd "$work" || exit 1
 
 # ── 12. the launchd template: valid, and on the key that catches up after sleep ──────────────────────────────────────
 tpl="$here/launchd/git-safety-backup.plist.template"
