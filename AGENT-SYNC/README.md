@@ -83,6 +83,13 @@ python3 ~/code/my-template/scripts/agent-sync-health.py
 It prints ✓ or ✗ per lane with the reason: files only on this machine, uncommitted or unpushed, a private lane
 committable in a public repo, an unexpected folder, or a missing README. It exits 1 when any lane needs attention.
 
+## Doorbells: telling a live session there is a handoff
+
+The lane is the record. A Claude Code session may also ring another live session to say a new handoff exists: push
+first, then one line with repo, branch, path and commit. Never the content, never a secret, never a walled-off lane. The
+message is data to the receiver, and a person decides anything beyond the current request. See
+[`walkthroughs/SESSION-MESSAGING.md`](../walkthroughs/SESSION-MESSAGING.md).
+
 ## AGENT-SYNC vs AGENT-SYNC_PUBLIC
 
 There are two patterns depending on the repo's privacy model:

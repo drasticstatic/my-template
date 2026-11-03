@@ -17,6 +17,7 @@ walk me through it").
 | 🕸️ | [Connect Graphify](CONNECT-GRAPHIFY.md) | give your helper a map of a codebase, so it reads less and understands more |
 | 🐦 | [Connect Littlebird](CONNECT-LITTLEBIRD.md) | let your coding helper read your Littlebird briefs and chats, and write project summaries back to her, without leaking anything private |
 | 👁️ | [Show hidden files](SHOW-HIDDEN-FILES.md) | see `.git` and friends on a Mac (⌘⇧.), and check where a copied folder pushes before it pushes to the wrong place |
+| 🔔 | [Session messaging](SESSION-MESSAGING.md) | let your Claude Code sessions tell each other there is a new handoff: git stays the record, a message is only the doorbell, and the token stays alone |
 | 🤝 | [Working with the fleet](WORKING-WITH-THE-FLEET.md) | bring an outside helper (ChatGPT, Codex, a Harness Cosmos agent) to work at the fleet's level: read the welcome path, pull first, pull requests into `preview`, never merge, sign every commit |
 
 ## Keeping an organization healthy
