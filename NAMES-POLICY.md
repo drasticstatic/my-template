@@ -19,6 +19,7 @@
 2. <img src="sop-template/repo/assets/icons/folder-lock.svg" width="16" height="16" alt=""> **Contents stay private.** What is inside a private repository reaches the public only through an allowlist, after a tripwire (SOP-OPS-003).
 3. <img src="sop-template/repo/assets/icons/shield-alert.svg" width="16" height="16" alt=""> **Some things never go public, on any list:** secrets, personal data, filings (below).
 4. <img src="sop-template/repo/assets/icons/scan-search.svg" width="16" height="16" alt=""> **The security monitor checks against this page:** a private repository's *name* in public is not a finding; its *contents* are.
+5. <img src="sop-template/repo/assets/icons/fingerprint.svg" width="16" height="16" alt=""> **Real hardware identifiers stay out of docs,** private docs included. Write a placeholder ([below](#-hardware-identifiers)).
 
 ## <img src="sop-template/repo/assets/icons/workflow.svg" width="24" height="24" alt=""> The line
 
@@ -73,14 +74,47 @@ flowchart LR
 | **A person's account security** | that a named person's account has no two-factor login, uses text-message codes, or is otherwise easy to break into | **no machine catches this:** it holds no password or number, only a weakness. Write it only in that person's own note (a desk proposal addressed to them), never in a procedure, a legend or a shared page; procedures say "a member" and point to the note. *Learned 2026-11-01, from the "You should know" plugin's heads-up about PIR's board procedure.* |
 | **Filings** | entity papers, EIN letters, tax returns and working papers, government filings, counsel's questions and answers | the tripwire refuses `entity/`, `tax/`, `filings/` and `counsel/` **by path**, whatever an allowlist says |
 
+| **Hardware identifiers** | serial numbers, hardware and provisioning UUIDs | see [below](#-hardware-identifiers). **No machine catches this reliably:** a serial looks like any other short code |
+
 If one of these is found in public: **stop**, tell the steward, rotate any secret first (a deleted commit is still in
 someone's clone), then remove it. Never paste the secret into the report.
+
+## <img src="sop-template/repo/assets/icons/fingerprint.svg" width="24" height="24" alt=""> Hardware identifiers
+
+> **TL;DR.** A page about a machine needs its model, not its unit. Write `iMac, 2024`, or a placeholder such as `<SERIAL-NUMBER>`, and leave the real number out.
+
+**The rule.** A real serial number, hardware UUID or provisioning UDID doesn't go in a document, a procedure, a proposal, a log or a chat that gets pasted into one. That holds for private pages too, because private pages get offered to readers later, and git history keeps what the current page no longer shows.
+
+**Why.**
+
+- **It points at one physical machine, for that machine's whole life.** Nobody can change it afterwards.
+- **It is a lookup key.** Apple's [Check Coverage](https://checkcoverage.apple.com/) page takes a serial number and shows that device's coverage.
+- **It lends a stranger credibility.** Someone who can quote your serial number sounds like support. That is our judgment, not a documented attack.
+- **The page never needed it.** Nothing a reader does with a guide depends on which unit it was written on.
+
+**What it isn't.** It isn't a password. It unlocks nothing: knowing one opens no account and no file. It also rotates nothing: there is no new number to issue. So don't treat a slip like a leaked key. There is nothing to revoke, and no alarm to raise.
+
+**How it gets in.** Mostly by pasting a machine report. `system_profiler SPHardwareDataType` prints `Serial Number (system)`, `Hardware UUID` and `Provisioning UDID` among its lines (read on macOS 15.4, 2026-11-03). Filter before you paste, or before a script saves it:
+
+```sh
+system_profiler SPHardwareDataType | grep -viE 'serial|hardware uuid|provisioning udid'
+```
+
+*You should see:* the model, chip and memory lines, with those three gone.
+
+**If you find one.**
+
+1. <img src="sop-template/repo/assets/icons/file-check.svg" width="16" height="16" alt=""> Replace it with a placeholder in the current file, and in any PDF made from it.
+2. <img src="sop-template/repo/assets/icons/message-circle-question.svg" width="16" height="16" alt=""> Tell the steward the file and the line, never the number.
+3. <img src="sop-template/repo/assets/icons/history.svg" width="16" height="16" alt=""> Leave history alone unless the steward decides otherwise. On a public repository, treat the number as already copied. On a private one, ask whether its history could ever travel: an allowlist sync copies files, not history, while a history export or making the repository public would carry it.
+
+**Where the real number does belong:** your own records of the machine, such as a password manager note, for warranty or a stolen-device report.
 
 ## <img src="sop-template/repo/assets/icons/scan-search.svg" width="24" height="24" alt=""> For the security monitor and for helpers
 
 - A **private repository's name** in a public file: **not a finding.** Do not open a pull request to hide it.
 - A private repository's **contents** in a public file without an allowlist line: **a finding.** Name the file and the line, not the content.
-- Anything in *Never public*: **a finding, urgent,** whatever the allowlist says.
+- Anything in *Never public*: **a finding, urgent,** whatever the allowlist says. A hardware identifier is a finding too, but not an emergency: nothing needs rotating.
 - **Kenney's Home base deck** is the worked example of the boundary: its *name* may be mentioned anywhere; the deck itself stays members-only in the THEF reading room. Public `.github/decks/` folders carry only welcome decks.
 
 ## <img src="sop-template/repo/assets/icons/history.svg" width="24" height="24" alt=""> Change log
@@ -89,5 +123,6 @@ someone's clone), then remove it. Never paste the secret into the report.
 |---|---|---|
 | 2026-11-01 | Written from the lab steward's decision ("every repository name may appear publicly; contents stay private") | Alfred |
 | 2026-11-01 | *Never public*: a person's account security, the weakness no scan can see; it lives only in that person's own note | Alfred |
+| 2026-11-03 | Hardware identifiers stay out of docs: a placeholder, the why, and the plain note that one unlocks nothing and rotates nothing | Alfred |
 
 <sub>Related: [LUCID.md](LUCID.md), [ENTITIES.md](ENTITIES.md), SOP-OPS-003 *Private houses everything, public lanes witness* ([`sop-template/repo/OPS/`](sop-template/repo/OPS/)), [`walkthroughs/SECRET-SCAN.md`](walkthroughs/SECRET-SCAN.md). Icons: Lucide (ISC).</sub>
