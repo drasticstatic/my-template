@@ -196,7 +196,7 @@ Every page draws its icons from the repository's own `assets/icons/` with a rela
 ## <img src="../assets/icons/map-pin.svg" width="24" height="24" alt=""> Where the clones live on a machine
 **Labs under `~/code`; organisation clones at `~/<org>/`**, the folder named exactly as the GitHub organisation. The house, its lane, the reading room and its public half all sit side by side there (`~/<org>/reading-room`, `~/<org>/reading-room-public`). A lab never holds an organisation's clone, not even git-ignored.
 
-Why: `grep` over `~/<org>/` searches everything the organisation holds and nothing else, a search of a lab does not mix drafts with the published pages of the same name, and there is one place to look, the same for every organisation. `scripts/sync-local.sh` and `scripts/agent-sync-health.py` in `my-template` walk these folders by default. How to move a clone home: `my-template/NESTED-REPOS-GUIDE.md`.
+Why: `grep` over `~/<org>/` searches everything the organisation holds and nothing else, a search of a lab does not mix drafts with the published pages of the same name, and there is one place to look, the same for every organisation. `scripts/sync-local.sh` and the fleet's lane health check in `my-template` walk these folders by default. How to move a clone home: `my-template/NESTED-REPOS-GUIDE.md`.
 
 ## <img src="../assets/icons/list-checks.svg" width="24" height="24" alt=""> Steps: publishing a page
 1. Open a pull request that adds the page's path (and its PDF's path, and `assets/icons` if not already there) to `PUBLIC-ALLOWLIST.txt`. *You should see:* a one-line diff per path.
