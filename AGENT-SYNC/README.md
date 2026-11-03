@@ -16,8 +16,8 @@ not who it's for:
 | `created-by-christopher` | Christopher himself — prompts, direct notes, manual context |
 | `created-by-alfred` | Alfred (Claude Code CLI, system coordinator) |
 | `created-by-fortuna` | Fortuna (Claude Code CLI, trading domain) |
-| `created-by-kavanah` | Kavanah (Augment Intent, spec-driven orchestration) |
-| `created-by-mystarch` | Mystarch (Augment Intent, app-level Chief of Staff) |
+| `created-by-kavanah` | Kavanah (Augment Intent, spec-driven orchestration). **Sunset Nov 3, 2026;** the folder stays as the record |
+| `created-by-mystarch` | Mystarch (Chief of Staff; Claude Code CLI or `ClaudeMent`) |
 | `created-by-auggie` | Auggie (Augment CLI, code builds) |
 | `created-by-Littlebird` | LittlebirdAI (app.littlebird.ai, screen context & fleet memory) |
 | `created-by-cosmos` | Any Cosmos agent — Cosmos Advisor and the code-review experts it runs |

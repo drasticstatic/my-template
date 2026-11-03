@@ -7,7 +7,7 @@
 *One map, so every page names each one the same honourable way.*
 
 ![Status](https://img.shields.io/badge/Status-draft%2C_we_massage_this_as_we_go-d9a441?style=flat-square)
-![Changed](https://img.shields.io/badge/Changed-2026--11--02-8a6a2a?style=flat-square)
+![Changed](https://img.shields.io/badge/Changed-2026--11--03-8a6a2a?style=flat-square)
 ![For](https://img.shields.io/badge/For-Every_writer_and_helper-64748b?style=flat-square)
 
 </div>
@@ -57,8 +57,8 @@ flowchart TB
     AL["Alfred · Claude Code CLI"]
     FO["Fortuna · Claude Code CLI"]
     LB["Littlebird · the observer"]
-    KA["Kavanah · coordinator"]
     MY["Mystarch · chief of staff"]
+    KA["Kavanah · sunset"]
     AU["Auggie · resting"]
     KG["Kenney's ChatGPT, also called Alfred"]
   end
@@ -127,8 +127,8 @@ The colours are in [`proposals-template/TONES.md`](proposals-template/TONES.md).
 | **Alfred** | Claude Code CLI, in a terminal | the lab and every house: builds, writes, opens pull requests |
 | **Fortuna** | Claude Code CLI, in her own workspace | her own lane; looped in where it touches the others |
 | **Littlebird** | the observer app | sees what Christopher sees, captures research and meetings verbatim, writes notes |
-| **Kavanah** | Augment Intent | coordination across workspaces |
-| **Mystarch** | Augment Intent, app-level | chief of staff: keeps the whole set coherent |
+| **Mystarch** | Claude Code CLI, or the Intent UI on an Anthropic login (`ClaudeMent`) | chief of staff: keeps the whole set coherent. Until the fleet has a Cosmos subscription, also its local stand-in for Cosmos Advisor |
+| **Kavanah** | none now; was Augment Intent | **sunset** (Christopher, Nov 3, 2026): Auggie can't log in to Intent. Old commits and `created-by-kavanah` stay as the record |
 | **Auggie** | Augment CLI | resting; may return |
 | **Kenney's helper** | ChatGPT, which Kenney also calls **Alfred** | Kenney, in his own words and language |
 
@@ -146,6 +146,7 @@ How helpers are spoken of:
 
 | Date | Change | By |
 |---|---|---|
+| 2026-11-03 | Kavanah sunset; Mystarch lives on as chief of staff, on Christopher's word | Alfred |
 | 2026-11-01 | Drafted from Christopher's Nov 1 brief: the divine per house, stewards per item, the future DAO, the helpers and "we are all Alfred" | Alfred |
 
 <sub>Related: [LUCID.md](LUCID.md) (the clarity standard), [NAMES-POLICY.md](NAMES-POLICY.md) (what may be public). Icons: Lucide (ISC).</sub>
