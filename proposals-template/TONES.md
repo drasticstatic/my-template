@@ -15,10 +15,15 @@ else changes. Each family is **four shades**, so a page carries a gradient of on
 | **Taylor'd Wraps** (a lab gift) | Magenta | `ec4899` | `9d174d` | `be185d` | `fce7f3` | `taylordwraps/proposals/` (private) |
 | **david-amaringo** | Rainbow (David's art theme; the six hues cycle through the headings, see below) | `dc2626 ea580c ca8a04 16a34a 2563eb 7c3aed` | | | | the `david-amaringo/` child folder of THEF's `proposals` (006 lives there) and of the lab desk; the renderer picks the rainbow by folder name |
 | **drasticstatic lab** (trading-assistant, fortuna-vision, the DEX-arb bot, my-template, `pir-devine-news`, the `pir`/`psanctuary`/`O-R-G` parents) | Brass on slate, **plus the accent of the organisation a proposal serves** | `d9a441` | `334155` | `8a6a2a` | `f1f5f9` | each repo's `proposals/` when one exists |
+| **drasticstatic Labs, the lab's own desks** (the ARB `ops/`, `ops-arb`, `tax-assistant/business`, `legal`, `trading-assistant`'s pages: what the lab runs for itself, not a proposal it serves to an organisation) | Electric blue on navy, gold accent (Alfred's palette: the profile badges' `2962ff`, the deck's `feca57` gold and `1a1a2e` navy). Icons stroke electric blue, never the violet template stroke | `2962ff` | `1a1a2e` | `0f3460` | `e8f1ff` | the lab's `ops/` folders and `business/`; `TONE_ACCENT=feca57` |
 
 The "For" badge is the one colour shared across every organisation: neutral slate **`64748b`** (so "For Kenney" looks the same
 whichever repo says it, and sits apart from PIR's purple; changed from violet `6d28d9` on 2026-10-30 at Christopher's request). Semantic icon colours are shared too and never retoned: green `15803d` ready, red `b91c1c`
 blocked, purple `6d28d9` from-you, grey `4b5563` idle.
+
+## Which lab look is which
+
+**Brass on slate** is the lab as *author*: a proposal or procedure the lab writes for an organisation keeps brass headings and takes the organisation's accent. **Electric blue on navy** is the lab as *itself*: its own operating procedures, ledgers and desks (Christopher, Nov 3, 2026: the ARB ops pages "shall be taking the drasticstatic Labs special look", and tax-assistant, legal and trading-assistant "the same tones to know they are part of the family"). Retone a Labs repository's icons with `retone-icons.sh 2962ff 0f3460` after copying them from the violet template set.
 
 ## Where each shade goes
 
