@@ -199,6 +199,9 @@ the full rule.
 - Kavanah-AugmentIntentUI-AuggieLogin: `Co-Authored-By: Kavanah · AugmentIntent · [model]`
 - Kavanah-AugmentIntentUI-AnthropicLogin ("ClaudeMent"): `Co-Authored-By: Kavanah · ClaudeMent · Anthropic [model]`
 - Kavanah-TerminalUI(macOS/Intent/VSCode standard terminal instance)-AnthropicLogin: `Co-Authored-By: Kavanah · ClaudeCodeCLI · Anthropic [model]`
+  (Kavanah was sunset on 2026-11-03: Intent's login never came back. Sunset is not deletion; she may return
+  through Mystarch's ACP liaison work or a Harness/Cosmos endpoint, so her three lines stay. Mystarch is her
+  Chief of Staff meanwhile. Record: `anthropas-argus-alfred/sandbox/AGENT_IDENTITY_REFERENCE.md`.)
 - Mystarch (app-level Chief of Staff, cross-workspace reach): same engine options as Kavanah above, swap the agent name
 - Auggie (native Augment CLI — currently hibernating, may return): `Co-Authored-By: Auggie · AugmentCLI · [model]`
 
