@@ -24,8 +24,9 @@
 #   Only that link token is exempt, and only from the personal-matter words; a street address inside it, or the same word
 #   elsewhere on the line, still trips. The guardianship word negated (no ..., non-...) is a compliance note, not the
 #   matter. Pagefind's search index under a folder named pagefind/ passes when its bytes are what pagefind writes (gzip
-#   for *.pf_fragment *.pf_index *.pf_meta, WebAssembly for wasm.*.pagefind; its js, json and css are text and read as
-#   text); the compressed text is inflated and searched for credentials, and anything else there is refused as before.
+#   for *.pf_fragment *.pf_index *.pf_meta; for wasm.*.pagefind gzip that inflates to WebAssembly behind pagefind's
+#   marker, or a bare WebAssembly module; its js, json and css are text and read as text); the compressed bytes are
+#   inflated and searched for credentials, and anything else there is refused as before.
 #
 # Attestation: PUBLIC-ALLOWLIST-ATTESTED.txt names files a person opened and read, one per line:
 #   path | officer | YYYY-MM-DD | opened and read
@@ -429,19 +430,22 @@ def pagefind_kind(dirs, base):
 
 
 def read_pagefind(kind, data):
-    """-> (the bytes a machine can search, as text; or None and the reason it is not what pagefind writes)"""
-    if kind == "wasm":
-        if not data.startswith(b"\x00asm"):
-            return None, "named like pagefind's WebAssembly but its bytes are not WebAssembly; rebuild the search index or remove it"
+    """-> (the bytes a machine can search, as text; or None and the reason it is not what pagefind writes)
+    Pagefind gzips everything it writes, the WebAssembly too: inflated, each file opens with its marker 'pagefind_dcd',
+    and the wasm's marker is followed by the WebAssembly magic. A bare WebAssembly module is accepted as well."""
+    what = "pagefind's WebAssembly" if kind == "wasm" else "a pagefind index file"
+    if kind == "wasm" and data.startswith(b"\x00asm"):
         return data.decode("latin-1"), None
     if not data.startswith(b"\x1f\x8b"):
-        return None, "named like a pagefind index file but its bytes are not the gzip pagefind writes; rebuild the search index or remove it"
+        return None, f"named like {what} but its bytes are not the gzip pagefind writes; rebuild the search index or remove it"
     try:
         inner = gzip.GzipFile(fileobj=io.BytesIO(data)).read(MAX_INFLATE + 1)
     except (OSError, EOFError, zlib.error):
-        return None, "named like a pagefind index file but its gzip cannot be inflated; rebuild the search index or remove it"
+        return None, f"named like {what} but its gzip cannot be inflated; rebuild the search index or remove it"
     if len(inner) > MAX_INFLATE:
-        return None, "a pagefind index file that inflates to more than 64 MB: too large to read safely"
+        return None, f"{what} that inflates to more than 64 MB: too large to read safely"
+    if kind == "wasm" and not (inner.startswith(b"pagefind_dcd\x00asm") or inner.startswith(b"\x00asm")):
+        return None, "named like pagefind's WebAssembly but what inflates is not WebAssembly; rebuild the search index or remove it"
     return inner.decode("latin-1"), None
 
 

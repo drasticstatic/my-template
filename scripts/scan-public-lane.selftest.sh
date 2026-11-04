@@ -175,7 +175,9 @@ PF = "pagefind_ok/pagefind/"
 write(PF + "fragment/en_abc12.pf_fragment", GZ)
 write(PF + "index/en_def34.pf_index", GZ)
 write(PF + "pagefind.en_9f8e7.pf_meta", GZ)
-write(PF + "wasm.en.pagefind", b"\x00asm\x01\x00\x00\x00" + b"\x00" * 16)
+WASM = b"\x00asm\x01\x00\x00\x00" + b"\x00" * 16
+write(PF + "wasm.en.pagefind", gzip.compress(b"pagefind_dcd" + WASM))   # as pagefind writes it: gzip, marker, then wasm
+write(PF + "wasm.unknown.pagefind", WASM)                                # a bare module is accepted too
 write(PF + "pagefind-entry.json", '{"version":"1.3.0","languages":{"en":{"hash":"en_9f8e7","wasm":"en","page_count":3}}}\n')
 write(PF + "pagefind.js", "export async function init() {}\n")
 write(PF + "pagefind-ui.js", "class PagefindUI {}\n")
@@ -184,6 +186,7 @@ write(PF + "pagefind-highlight.js", "class PagefindHighlight {}\n")
 write("pagefind_fake/pagefind/fragment/en_abc12.pf_fragment", b"\x00\x01\x02 not gzip")
 write("pagefind_fake_text/pagefind/pagefind.en_9f8e7.pf_meta", "plain words where gzip should be\n")
 write("pagefind_fake_wasm/pagefind/wasm.en.pagefind", b"\x00\x01\x02 not wasm")
+write("pagefind_fake_wasm_gz/pagefind/wasm.en.pagefind", gzip.compress(b"pagefind_dcd" + b"\x00\x01\x02 not wasm"))
 write("pagefind_outside/search/en_abc12.pf_fragment", GZ)
 write("pagefind_secret/pagefind/fragment/en_abc12.pf_fragment", gzip.compress(('{"content":"' + TOKEN + '"}').encode()))
 write("pagefind_other_binary/pagefind/blob.bin", b"\x00\x01\x02\x03binary")
@@ -361,7 +364,8 @@ expect 1 "personal-matter"          "a word that merely ends in the negation doe
 expect 0 "clean"                    "pagefind's index under pagefind/ passes when its bytes are what pagefind writes" -- "$fx/pagefind_ok"
 expect 1 "not the gzip"             "a .pf_fragment whose bytes are not gzip is refused"                  -- "$fx/pagefind_fake"
 expect 1 "not the gzip"             "a .pf_meta that is plain text is refused: pagefind never writes one" -- "$fx/pagefind_fake_text"
-expect 1 "not WebAssembly"          "a wasm.*.pagefind whose bytes are not WebAssembly is refused"        -- "$fx/pagefind_fake_wasm"
+expect 1 "not the gzip"             "a wasm.*.pagefind that is neither gzip nor WebAssembly is refused"   -- "$fx/pagefind_fake_wasm"
+expect 1 "not WebAssembly"          "a gzip named wasm.*.pagefind that does not inflate to WebAssembly is refused" -- "$fx/pagefind_fake_wasm_gz"
 expect 1 "binary file"              "the same gzip outside a pagefind/ folder is still refused"           -- "$fx/pagefind_outside"
 expect 1 "GitHub token"             "a token inside a compressed fragment is inflated, found and refused" -- "$fx/pagefind_secret"
 expect 1 "No attestation opens"     "and no attestation opens it"                                         -- "$fx/pagefind_secret"
