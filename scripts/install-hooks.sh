@@ -83,5 +83,8 @@ if [ -f .githooks/pre-commit ]; then
   else
     echo "pre-commit will chain to ggshield if you install it later."
   fi
+  if grep -q IMG_REFUSE .githooks/pre-commit 2>/dev/null; then
+    echo "pre-commit also refuses a staged image over 15 MB and warns over 2 MB (scripts/shrink-images.sh)."
+  fi
 fi
 echo "See AGENT-SYNC/README.md. Human-only commits: git commit --no-verify"

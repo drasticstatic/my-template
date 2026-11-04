@@ -1,24 +1,113 @@
 #!/bin/sh
-# pre-commit — chain to ggshield's secret scan.
+# pre-commit — the image guard, then chain to ggshield's secret scan.
 #
-# Real gap found 2026-09-14: ggshield installs itself via a GLOBAL
-# `core.hooksPath` (`~/Library/Application Support/ggshield/git-hooks/`). Once
-# a repo activates this fleet's own `.githooks/` via `core.hooksPath` (per
-# `scripts/install-hooks.sh`), that LOCAL setting takes precedence over the
-# global one — and since `.githooks/` had no `pre-commit` file, git simply
-# stopped looking for one at all. Net effect: activating the fleet's
-# commit-attribution hook silently disabled ggshield's secret scanning in
-# every repo it touched, with no warning at commit time. Found after running
-# `install-hooks.sh` fleet-wide and noticing ggshield's output had gone
-# quiet.
+# Two jobs, in this order:
 #
-# This file closes that gap by re-chaining to ggshield explicitly, matching
-# what its own global hook does (see the file above, if it's on your
-# machine). Installed via core.hooksPath alongside commit-msg — no separate
-# activation step needed beyond scripts/install-hooks.sh.
+#   1. Image guard (2026-11-04). Refuses any STAGED image over 15 MB, which is the
+#      public-lane tripwire's own limit (scripts/scan-public-lane.sh, MAX_BYTES): a picture
+#      that size would be committed here only to be refused at the twin, after the work is
+#      done. Warns (commit allowed) over 2 MB, printing the exact pngquant line, because a
+#      README banner or a screenshot that size is nearly always a resize away from a tenth
+#      of it. Sizes are read from the staged blob (git cat-file -s), not the working file,
+#      so a shrink that has not been `git add`ed again is still caught.
+#      Extensions: png jpg jpeg gif webp svg heic, any case.
+#      Fix: scripts/shrink-images.sh.  Skill: .claude/skills/compress-images.md.
+#      CI twin: sop-template/repo/.github/workflows/image-size-check.yml.
+#
+#   2. ggshield. Real gap found 2026-09-14: ggshield installs itself via a GLOBAL
+#      `core.hooksPath` (`~/Library/Application Support/ggshield/git-hooks/`). Once a repo
+#      activates this fleet's own `.githooks/` via `core.hooksPath` (per
+#      `scripts/install-hooks.sh`), that LOCAL setting takes precedence over the global
+#      one — and since `.githooks/` had no `pre-commit` file, git simply stopped looking
+#      for one at all. Net effect: activating the fleet's commit-attribution hook silently
+#      disabled ggshield's secret scanning in every repo it touched, with no warning at
+#      commit time. Found after running `install-hooks.sh` fleet-wide and noticing
+#      ggshield's output had gone quiet. This file closes that gap by re-chaining to
+#      ggshield explicitly, matching what its own global hook does (see the file above, if
+#      it's on your machine).
+#
+# Installed via core.hooksPath alongside commit-msg — no separate activation step needed
+# beyond scripts/install-hooks.sh.
 #
 # Human-only commits bypass both hooks the same way: git commit --no-verify
+# Bypassing the image guard only moves the refusal to the lane: the scanner's 15 MB holds there.
 
+# ---------------------------------------------------------------------------
+# 1. Image guard
+# ---------------------------------------------------------------------------
+IMG_REFUSE=$((15 * 1024 * 1024))   # 15 MB: scripts/scan-public-lane.sh MAX_BYTES
+IMG_WARN=$((2 * 1024 * 1024))      # 2 MB: a banner or screenshot is a resize away from a tenth of this
+IMG_EXT='png|jpg|jpeg|gif|webp|svg|heic'
+
+mb() { awk -v b="$1" 'BEGIN { printf "%.1f MB", b / 1048576 }'; }
+
+# How to fix, by type. PNG gets the exact pngquant line (it quantises to 256 colours: right
+# for a banner, a diagram or a screenshot; lossy for a photograph, which shrink-images.sh
+# --no-quantise resizes instead). See .claude/skills/compress-images.md.
+fix_for() {
+  case "$1" in
+    *.[Pp][Nn][Gg])
+      printf '      pngquant --quality=65-80 --speed=1 --skip-if-larger --ext .png --force "%s"\n' "$1"
+      printf '      (resize first, then quantise:)  sh scripts/shrink-images.sh "%s"\n' "$1" ;;
+    *.[Ss][Vv][Gg])
+      printf '      an SVG this size usually embeds a raster: export it as a PNG and shrink that, or\n'
+      printf '      redraw it; sh scripts/shrink-images.sh --check "%s" only reports it.\n' "$1" ;;
+    *)
+      printf '      sh scripts/shrink-images.sh "%s"\n' "$1" ;;
+  esac
+}
+
+# Staged, added or modified; quotePath off so a non-ASCII name arrives as itself. A path with
+# a newline in it is not something this fleet makes; spaces and unicode survive the loop.
+STAGED_IMAGES=$(git -c core.quotePath=false diff --cached --name-only --diff-filter=AM 2>/dev/null \
+  | grep -iE "\.($IMG_EXT)$")
+
+IMG_FAIL=0
+if [ -n "$STAGED_IMAGES" ]; then
+  OLDIFS=$IFS
+  IFS='
+'
+  for f in $STAGED_IMAGES; do
+    IFS=$OLDIFS
+    size=$(git cat-file -s ":$f" 2>/dev/null) || { IFS='
+'; continue; }
+    if [ "$size" -gt "$IMG_REFUSE" ]; then
+      IMG_FAIL=1
+      {
+        echo ""
+        echo "  ✗ commit rejected — a staged image is over 15 MB, the public-lane scanner's limit."
+        echo ""
+        echo "      $f  ($(mb "$size"))"
+        echo ""
+        echo "    scripts/scan-public-lane.sh refuses a file this size on every lane, so it would be"
+        echo "    committed here only to be stopped at the twin. Shrink it, then git add it again:"
+        echo ""
+        fix_for "$f"
+        echo ""
+        echo "    See what is oversize:  sh scripts/shrink-images.sh --check <files or folder>"
+        echo "    Skill: .claude/skills/compress-images.md    Human-only commit? git commit --no-verify"
+        echo ""
+      } >&2
+    elif [ "$size" -gt "$IMG_WARN" ]; then
+      {
+        echo ""
+        echo "  ⚠ image over 2 MB: $f  ($(mb "$size")). Commit allowed, but a README banner or a"
+        echo "    screenshot that size is usually a resize away from a tenth of it:"
+        echo ""
+        fix_for "$f"
+        echo ""
+      } >&2
+    fi
+    IFS='
+'
+  done
+  IFS=$OLDIFS
+fi
+[ "$IMG_FAIL" = 0 ] || exit 1
+
+# ---------------------------------------------------------------------------
+# 2. ggshield chain
+# ---------------------------------------------------------------------------
 if [ -f .git/hooks/pre-commit ]; then
   if ! .git/hooks/pre-commit "$@"; then
     echo "Local pre-commit hook failed, please see output above" >&2

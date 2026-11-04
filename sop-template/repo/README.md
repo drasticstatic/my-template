@@ -30,3 +30,10 @@ Mermaid diagram where a picture explains the mechanism; the PDF pipeline draws t
 
 **Legend.** [`LEGEND.md`](LEGEND.md) says how each of the organisation's repositories is guarded (protection, `preview`,
 merge methods, Pages, public twins); regenerate it with `sh scripts/legend.sh <owner>`.
+
+**Images.** A picture goes in at the size it is seen. Nothing over 15 MB is committed or uploaded (the public-lane
+scanner refuses it, so the `pre-commit` hook refuses it first and
+[`.github/workflows/image-size-check.yml`](.github/workflows/image-size-check.yml) fails the pull request); over 2 MB
+both print the `pngquant` line to shrink it. Before adding a picture, a helper follows the skill
+`my-template/.claude/skills/compress-images.md`: `sh scripts/shrink-images.sh --check <files>`, then
+`shrink-images.sh` on anything over 2 MB (`--no-quantise` for a photograph that must keep its colours).

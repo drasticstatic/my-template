@@ -83,6 +83,18 @@ in a comment. A comment protects whoever reads it; a check protects whoever does
 If you are copying hooks into a repo by hand, **copy both files.** One without the other is worse
 than neither.
 
+### The image guard in `pre-commit` (2026-11-04)
+
+Before chaining to ggshield, `pre-commit` reads the size of every **staged** image (`png jpg jpeg gif
+webp svg heic`, from the staged blob, so a shrink that was not `git add`ed again is still caught).
+Over **15 MB** it refuses the commit: that is the public-lane tripwire's limit
+(`scan-public-lane.sh`, `MAX_BYTES`), so the file would be committed only to be stopped at the twin.
+Over **2 MB** it warns and prints the exact line to fix it: for a PNG
+`pngquant --quality=65-80 --speed=1 --skip-if-larger --ext .png --force <file>`, otherwise
+`sh scripts/shrink-images.sh <file>`. The CI twin for organisation repositories is
+`sop-template/repo/.github/workflows/image-size-check.yml` (plain bash and `git diff`; fails over
+15 MB, comments the same line on a pull request over 2 MB).
+
 ### Escape hatches
 
 ```sh
@@ -221,6 +233,31 @@ skips `node_modules`, and reports each clone's branch, ahead/behind and local ch
 aborted at once and left exactly as it was. It **never** pushes, clones, switches branches or forces anything; it
 skips detached clones, clones without an upstream, and clones already mid-rebase. Public lanes are never cloned by
 it; one already cloned is pulled like any other (it only reads), or left out with `--skip-lanes`.
+
+---
+
+## `shrink-images.sh` — pictures small enough to commit and publish
+
+```sh
+sh scripts/shrink-images.sh --check assets                    # list size, pixels and verdict; touch nothing; exit 1 if any is over 15 MB
+sh scripts/shrink-images.sh assets/cover.png                   # resize to 2500 px on the longer side, then pngquant
+sh scripts/shrink-images.sh --no-quantise photos/              # resize only: a photograph as PNG keeps its colours
+sh scripts/shrink-images.sh --max 1600 --quality 70-85 FILE    # a README banner needs no more than ~1600 px
+```
+
+For given files or a folder (searched to any depth, `node_modules` and `.git` skipped). Raster images are
+resized with `sips -Z` **only when the longer side is over the limit** (`sips` would otherwise upscale);
+then PNG goes through `pngquant --quality=65-80 --speed=1 --skip-if-larger --ext .png --force` and JPEG is
+re-saved by `sips` at quality 80. A file is replaced only when the result is smaller; otherwise it is left
+exactly as it was and the line says so. GIF (an animation would be flattened) and SVG (text) are listed and
+left alone. It never runs git: `git add` the shrunk files again.
+
+`pngquant` is **lossy**: it quantises to a 256-colour palette, which a banner, diagram or screenshot survives
+unchanged to the eye and a photograph does not (gradients band). The skill
+[`.claude/skills/compress-images.md`](../.claude/skills/compress-images.md) says to flag a photograph and run
+`--no-quantise`, never force it. On this machine `sips` (macOS) and `pngquant` (`/opt/homebrew/bin`, 3.0.3)
+are installed; `oxipng`, `jpegoptim`, `cwebp` and `magick` are not, and the script says so in its header and
+falls back to `sips` for everything.
 
 ---
 

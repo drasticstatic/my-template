@@ -142,6 +142,10 @@ Noticed something? Open an [issue](../../issues) or a pull request against `<BRA
 
 A private repository whose README syncs to a public twin carries its pictures with it. `assets/banner.svg` and `assets/icons` must be on the twin's list, or the public page shows broken images. In an organisation's repository that list is an officer's to change ([`NAMES-POLICY.md`](./NAMES-POLICY.md), SOP-OPS-003), so ask rather than add. The tripwire [`scripts/scan-public-lane.sh`](./scripts/scan-public-lane.sh) reads a banner like any other file, and banners from `make-banner.py` pass it.
 
+## <img src="sop-template/repo/assets/icons/scan-search.svg" width="24" height="24" alt=""> Images
+
+**Images.** A banner or screenshot goes in at the size it is seen, not the size it was made: run `sh scripts/shrink-images.sh --check assets` before `git add`, and `sh scripts/shrink-images.sh <files>` when anything is over 2 MB (it resizes to 2500 px on the longer side, then quantises PNG with pngquant and re-saves JPEG at quality 80; `--no-quantise` for a photograph that must keep its colours). Nothing over 15 MB is ever committed or uploaded: that is the public-lane scanner's limit, so [`.githooks/pre-commit`](./.githooks/pre-commit) refuses it at commit time, the organisation template's [`image-size-check.yml`](./sop-template/repo/.github/workflows/image-size-check.yml) fails the pull request, and both print the pngquant line over 2 MB. The procedure an AI helper follows is the skill [`.claude/skills/compress-images.md`](./.claude/skills/compress-images.md). An SVG banner from `make-banner.py` is a few kilobytes and never meets either line.
+
 ## <img src="sop-template/repo/assets/icons/shield-alert.svg" width="24" height="24" alt=""> What a front door never says
 
 Secrets of any kind. Personal data, or anything about someone's family, health or legal matters. Filings. A person's account-security status. The contents of a private repository, when the page is public. A repository that publishes in costume keeps its costume in the banner and the alt text too. A picture of markets is illustration, never data.
@@ -172,5 +176,6 @@ Not on GitHub? Tell any steward you know, or your helper, in your own words. A c
 | Date | What changed |
 |---|---|
 | 2026-11-02 | First version, drawn from the banners and READMEs the fleet made by hand |
+| 2026-11-04 | *Images*: the 2 MB warning and 15 MB refusal (the scanner's limit), `scripts/shrink-images.sh`, the `pre-commit` image guard, `image-size-check.yml`, the `/compress-images` skill |
 
 <sub>Related: [`LUCID.md`](./LUCID.md) (how a page reads), [`ENTITIES.md`](./ENTITIES.md) (whom we name, and how), [`NAMES-POLICY.md`](./NAMES-POLICY.md) (what may be public), [`proposals-template/TONES.md`](./proposals-template/TONES.md) (colours), [`GITMOJI.md`](./GITMOJI.md) (commit subjects). Icons: Lucide (ISC). Diagrams: Mermaid (MIT). Words and script: MIT.</sub>

@@ -1,0 +1,119 @@
+name: Image size check
+
+# Fails when any image added or changed by this push or pull request is over 15 MB, the public-lane
+# tripwire's limit (scripts/scan-public-lane.sh, MAX_BYTES): a picture that size is refused at every
+# public twin, so it is refused here first. Over 2 MB it passes with a warning and the exact pngquant
+# line, as .githooks/pre-commit does on a machine; on a pull request the same line is posted as a
+# comment. Plain bash and git diff: no third-party action. Sizes are read from the committed blob.
+# The local twin is scripts/shrink-images.sh (my-template); the skill is .claude/skills/compress-images.md.
+#
+# Extensions: png jpg jpeg gif webp svg heic, any case. A file deleted or renamed without change is not read.
+
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write   # only to post the pngquant line as a comment; a fork's token is read-only and the step tolerates that
+
+concurrency:
+  group: image-size-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  images:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Measure every image this change adds or alters
+        id: measure
+        shell: bash
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          set -u
+          REFUSE=$((15 * 1024 * 1024))
+          WARN=$((2 * 1024 * 1024))
+          EXT='png|jpg|jpeg|gif|webp|svg|heic'
+          mb() { awk -v b="$1" 'BEGIN { if (b < 1048576) printf "%d KB", (b + 1023) / 1024; else printf "%.1f MB", b / 1048576 }'; }
+
+          # What to diff against. A pull request: its base. A push: the commit before it, unless the branch
+          # is new (all zeros) or that commit is unknown here, in which case the parent of HEAD.
+          case "$EVENT" in
+            pull_request) from="$BASE_SHA" ;;
+            push) from="$BEFORE_SHA" ;;
+            *) from="" ;;
+          esac
+          case "$from" in ""|0000000000000000000000000000000000000000) from="" ;; esac
+          if [ -n "$from" ] && ! git cat-file -e "$from^{commit}" 2>/dev/null; then from=""; fi
+          if [ -z "$from" ]; then
+            from=$(git rev-parse --verify -q HEAD^ || true)
+          fi
+          if [ -n "$from" ]; then
+            files=$(git -c core.quotePath=false diff --name-only --diff-filter=AM "$from" HEAD -- | grep -iE "\.($EXT)$" || true)
+          else
+            # A repository with a single commit: every tracked image is new.
+            files=$(git -c core.quotePath=false ls-files | grep -iE "\.($EXT)$" || true)
+          fi
+
+          fail=0; warned=0; note=""
+          summary="### Image size check\n\n| size | verdict | file |\n|---|---|---|\n"
+          if [ -z "$files" ]; then
+            echo "No image was added or changed between ${from:-the beginning} and ${GITHUB_SHA::7}."
+            printf 'No image was added or changed by this change.\n' >> "$GITHUB_STEP_SUMMARY"
+            echo "comment=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          while IFS= read -r f; do
+            [ -n "$f" ] || continue
+            size=$(git cat-file -s "HEAD:$f" 2>/dev/null) || continue
+            case "$f" in
+              *.[Pp][Nn][Gg]) fix="pngquant --quality=65-80 --speed=1 --skip-if-larger --ext .png --force \"$f\"" ;;
+              *.[Ss][Vv][Gg]) fix="an SVG this size embeds a raster: export it as PNG and shrink that" ;;
+              *) fix="sh scripts/shrink-images.sh \"$f\"   (my-template/scripts/shrink-images.sh)" ;;
+            esac
+            if [ "$size" -gt "$REFUSE" ]; then
+              fail=1
+              echo "::error file=$f::$f is $(mb "$size"): over 15 MB, the public-lane scanner's limit. Shrink it: $fix"
+              summary="$summary| $(mb "$size") | **REFUSED** over 15 MB | \`$f\` |\n"
+              note="$note- **$f** is $(mb "$size"), over the 15 MB limit the public-lane scanner holds; this check fails until it is smaller.\n  \`$fix\`\n"
+            elif [ "$size" -gt "$WARN" ]; then
+              warned=1
+              echo "::warning file=$f::$f is $(mb "$size"): over 2 MB. Usually a resize away from a tenth of it: $fix"
+              summary="$summary| $(mb "$size") | warn, over 2 MB | \`$f\` |\n"
+              note="$note- **$f** is $(mb "$size"), over 2 MB. A banner or screenshot that size is usually a resize away from a tenth of it:\n  \`$fix\`\n"
+            else
+              echo "ok  $(mb "$size")  $f"
+              summary="$summary| $(mb "$size") | ok | \`$f\` |\n"
+            fi
+          done <<< "$files"
+          printf '%b' "$summary" >> "$GITHUB_STEP_SUMMARY"
+          if [ -n "$note" ]; then
+            {
+              echo 'comment<<COMMENT_EOF'
+              printf '**Image size check** (limits: 15 MB refused, the public-lane scanner'"'"'s; 2 MB warned)\n\n'
+              printf '%b' "$note"
+              printf '\nShrink, `git add` again, push. Skill: `.claude/skills/compress-images.md`; script: `scripts/shrink-images.sh` in my-template. A PNG photograph that must stay lossless: `--no-quantise`.\n'
+              echo 'COMMENT_EOF'
+            } >> "$GITHUB_OUTPUT"
+          else
+            echo "comment=" >> "$GITHUB_OUTPUT"
+          fi
+          [ "$fail" = 0 ] || { echo "::error::an image over 15 MB was committed; nothing on a public lane will accept it"; exit 1; }
+
+      - name: Post the pngquant line on the pull request
+        if: always() && github.event_name == 'pull_request' && steps.measure.outputs.comment != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BODY: ${{ steps.measure.outputs.comment }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body "$BODY" \
+            || echo "::notice::could not comment (a fork's token is read-only); the lines are in the job summary and annotations above"
