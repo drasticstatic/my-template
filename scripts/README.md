@@ -287,8 +287,9 @@ Three narrow exceptions (Nov 4). A link to `github.com/drasticstatic/<name>-publ
 `drasticstatic.github.io/<name>-public-preview/` is not a personal-matter hit (a public preview is public by definition;
 only that link token, only for those words: a street address inside it still trips). The guardianship word negated
 (`no …`, `non-…`) is a compliance note, not the matter. Pagefind's search index under a `pagefind/` folder passes when
-its bytes are what pagefind writes (gzip for `*.pf_fragment` `*.pf_index` `*.pf_meta`, WebAssembly for
-`wasm.*.pagefind`); the gzip is inflated and searched for credentials, and anything else there is refused as before.
+its bytes are what pagefind writes (gzip for `*.pf_fragment` `*.pf_index` `*.pf_meta`; for `wasm.*.pagefind` gzip that
+inflates to WebAssembly behind pagefind's marker, or a bare module); the gzip is inflated and searched for credentials,
+and anything else there is refused as before.
 
 It keeps every pattern of the fleet's two `sync-allowlist.sh` families (THEF `stage|apply`, Psanctuary `--check`),
 unioned. The self-test builds its fixtures at run time (hand-assembled PDFs, office zips, a PNG; no fixture is

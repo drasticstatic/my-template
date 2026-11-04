@@ -2,7 +2,7 @@
 
 **TL;DR:** the public-lane tripwire ([`scripts/scan-public-lane.sh`](../scripts/scan-public-lane.sh), self-test beside
 it) reads every file a lane is about to publish, and stops the lane when something has not been read. This page says
-where each copy stands on 2026-11-04. 59 repositories are listed below; every copy was refreshed to the `120bee1` master that day. Nine lanes were finished
+where each copy stands on 2026-11-04. 59 repositories are listed below; every copy was refreshed to the `8002408` master that day. Nine lanes were finished
 this round and **their fixes wait on branch `r5-lanes`, not yet pushed.** Six of the nine rehearse clean. Two others each
 need one decision from Christopher, and the lab `iamoneself` needs a master rule.
 
@@ -13,23 +13,24 @@ need one decision from Christopher, and the lab `iamoneself` needs a master rule
 
 | File | Commit | md5 |
 |---|---|---|
-| `scripts/scan-public-lane.sh` | `120bee1` | `aa0f78b6911ec87ade8ef71f85fc69b9` |
-| `scripts/scan-public-lane.selftest.sh` | `120bee1` | `a7b26e3208b336a72246ffe6594435cc` |
+| `scripts/scan-public-lane.sh` | `8002408` | `a9d35d6d2162ec0d4df47a4d7f8d7fc8` |
+| `scripts/scan-public-lane.selftest.sh` | `8002408` | `c6bcd75658dafa6856da97aed9f7abf2` |
 
 Copy, do not fork: when the master changes, copy it again into each repository on this page. The self-test reports
-111/111 in a copy, 115/115 where `scripts/sync-allowlist.sh` sits beside it, and 117/117 here. Lanes on the template's family
+112/112 in a copy, 116/116 where `scripts/sync-allowlist.sh` sits beside it, and 118/118 here. Lanes on the template's family
 carry `sop-template/repo/scripts/sync-allowlist.sh` byte for byte (md5 `504181e2…`). Psanctuary's `--check` family keeps
 its own script with the call site edited.
 
-**2026-11-04, four exceptions, each narrow (`120bee1`, re-copied the same day: see the next section).** (a) A link whose
+**2026-11-04, four exceptions, each narrow (`120bee1`, then `8002408` minutes later; both re-copied the same day: see the next section).** (a) A link whose
 target is `github.com/drasticstatic/<name>-public-preview` or `drasticstatic.github.io/<name>-public-preview/` is not a
 personal-matter hit: a public preview is public by definition. Only that link token is exempt, and only from the
 personal-matter words; the same word elsewhere on the line, a preview under another owner, or a name that goes on after
 `-public-preview` still trips. (b) The guardianship word negated ("no …", "non-…", so "no payments, no …" and "no …, no
 tokens") is a compliance note, not the matter, so Taylor's compliance notes pass; the negation must sit right before the
 word. (c) Pagefind's search index under a folder named `pagefind/` passes the "binary no machine here can read" rule when
-its bytes are what pagefind writes: gzip (`1f 8b`) for `*.pf_fragment`, `*.pf_index` and `*.pf_meta`, WebAssembly
-(`00 61 73 6d`) for `wasm.*.pagefind`; `pagefind-entry.json`, `pagefind.js`, `pagefind-ui.js/.css` and
+its bytes are what pagefind writes: gzip (`1f 8b`) for `*.pf_fragment`, `*.pf_index` and `*.pf_meta`, and for
+`wasm.*.pagefind` gzip that inflates to pagefind's marker `pagefind_dcd` followed by the WebAssembly magic (`00 61 73 6d`),
+or a bare WebAssembly module (pagefind gzips its wasm too, which the first live run showed; `8002408` reads that shape); `pagefind-entry.json`, `pagefind.js`, `pagefind-ui.js/.css` and
 `pagefind-highlight.js` are plain text and are read as text. The gzip is inflated (capped at 64 MB) and searched for
 credentials, which no attestation opens; a `.pf_*` that is not gzip, a wasm that is not WebAssembly, the same gzip
 outside `pagefind/` and any other binary there are refused. This is the master rule the `iamoneself` lanes waited for.
@@ -40,90 +41,92 @@ The 28188db master (2026-11-02) added the media list. `PUBLIC-LANE-MEDIA.txt` na
 lane publishes on purpose: a person chose them, and a machine still reads what it can. Base64 in text is decoded and
 read, and an SVG that can run something is refused.
 
-## <img src="repo/assets/icons/fingerprint.svg" width="24" height="24" alt=""> Re-copy of the 120bee1 master (2026-11-04)
+## <img src="repo/assets/icons/fingerprint.svg" width="24" height="24" alt=""> Re-copy of the 8002408 master (2026-11-04)
 
-Copies were found the round-five way: `find` under `~/code ~/dappu ~/theholyearthfoundation ~/psychedelicsinrecovery
+Two passes the same day: every copy below first took `120bee1`, and then `8002408` after the first live run
+(`iamoneself-retreats`, `preview`) showed pagefind gzips its WebAssembly too; the table shows the second commit in each
+repository, the first sits just below it in each history. Copies were found the round-five way: `find` under `~/code ~/dappu ~/theholyearthfoundation ~/psychedelicsinrecovery
 ~/Octagon-Religious-Research-Group-ORG ~/psanctuary ~/psanctuarychurch ~/taylordwraps-org` (to eight folders deep this
 time: four clones sit one level further down than the round-five search reached). In each repository the clone was pulled
 (`git pull --rebase --autostash`), the pair was copied from the master, the self-test was run there and had to be green,
 and the two files were committed on their own and pushed to the working branch (`preview` where the repository has one).
 Four clones were parked on a feature branch (`nav-reading-room`, `genesis`), so their working branch was checked out in a
 temporary worktree for the copy. Three held `r5-lanes` branches carry their own scanner copy; those were refreshed by a
-commit on the held branch and **not pushed**, as the hold says. The self-test passed everywhere: 111/111, or 115/115
-where `scripts/sync-allowlist.sh` sits beside it (the master's own 117/117 adds two "matches the master" checks). Every
+commit on the held branch and **not pushed**, as the hold says. The self-test passed everywhere: 112/112, or 116/116
+where `scripts/sync-allowlist.sh` sits beside it (the master's own 118/118 adds two "matches the master" checks). Every
 copy below was checked by md5 against the master after the push: all 60 rows match
-`aa0f78b6911ec87ade8ef71f85fc69b9` / `a7b26e3208b336a72246ffe6594435cc`. The two duplicate clones of
+`a9d35d6d2162ec0d4df47a4d7f8d7fc8` / `c6bcd75658dafa6856da97aed9f7abf2`. The two duplicate clones of
 `theholyearthfoundation/changelog-astro` and `psychedelicsinrecovery/changelog-astro` were pulled afterwards and match.
 
 | Repository | Branch | Commit | Self-test |
 |---|---|---|---|
-| `drasticstatic/alexandrina` | main | `273d705` | 111/111, matches |
-| `drasticstatic/anthropas-argus-alfred` | main | `bff2820` | 111/111, matches |
-| `drasticstatic/augment-intent-properties` | main | `9cc6e11` | 111/111, matches |
-| `drasticstatic/aunt-harriot` | main | `37d7203` | 111/111, matches |
-| `drasticstatic/david-amaringo` | preview | `6f0aa9c` | 111/111, matches |
-| `drasticstatic/david-amaringo` | r5-lanes | `c453555` | 111/111, matches, on the held branch, not pushed |
-| `drasticstatic/dpnelson` | main | `e8a51a2` | 111/111, matches |
-| `drasticstatic/findyourfeathers` | main | `1b113b4` | 111/111, matches |
-| `drasticstatic/fortuna-vision` | main | `3c236ed` | 111/111, matches |
-| `drasticstatic/gratitude-token-project_astro` | main | `fb97294` | 111/111, matches |
-| `drasticstatic/iamoneself` | preview | `8b4cd89` | 111/111, matches |
-| `drasticstatic/iamoneself` | r5-lanes | `f73761b` | 111/111, matches, on the held branch, not pushed |
-| `drasticstatic/O-R-G` | main | `2d00c87` | 111/111, matches |
-| `drasticstatic/O-R-G-astro` | main | `d461124` | 111/111, matches |
-| `drasticstatic/O-R-G-dapp` | main | `ead878e` | 111/111, matches |
-| `drasticstatic/ops-standard-operating-procedures-thef` | preview | `00d6029` | 115/115, matches |
-| `drasticstatic/pir` | main | `4fade07` | 111/111, matches |
-| `drasticstatic/pir-devine-news` | main | `f25d840` | 111/111, matches |
-| `drasticstatic/proposals-thef` | preview | `b4703f3` | 115/115, matches |
-| `drasticstatic/Psanctuary` | main | `dd2cabe` | 115/115, matches |
-| `drasticstatic/psychedelic-policy-reform-astro` | main | `aabdd64` | 111/111, matches |
-| `drasticstatic/psychedelic-policy-reform-dapp` | main | `d912f84` | 111/111, matches |
-| `drasticstatic/taylordwraps` | main | `14f4363` | 111/111, matches |
-| `drasticstatic/trading-assistant` | main | `55d0fad` | 111/111, matches |
-| `drasticstatic/trading-bot_arbitrage_DAPPUv3_hardhat_UNI-CAKE` | main | `bb03f65` | 111/111, matches |
-| `drasticstatic/wilson-lawn-ai-assist` | main | `7a084f2` | 111/111, matches |
-| `Octagon-Religious-Research-Group-ORG/changelog-astro` | r5-lanes | `df177b9` | 111/111, matches, on the held branch, not pushed |
-| `Octagon-Religious-Research-Group-ORG/legal` | main | `7d44860` | 111/111, matches |
-| `Octagon-Religious-Research-Group-ORG/ops-standard-operating-procedures` | main | `e2f7cd9` | 111/111, matches |
-| `Octagon-Religious-Research-Group-ORG/reading-room` | main | `3abb3b6` | 111/111, matches |
-| `psanctuary/changelog-astro` | main | `70c605a` | 111/111, matches |
-| `psanctuary/legal` | main | `5d03f56` | 115/115, matches |
-| `psanctuary/ops-standard-operating-procedures` | main | `20ef91f` | 115/115, matches |
-| `psanctuary/reading-room` | main | `c81e347` | 111/111, matches |
-| `psanctuarychurch/changelog-astro` | main | `c10adda` | 111/111, matches |
-| `psanctuarychurch/legal` | main | `00f5b07` | 115/115, matches |
-| `psanctuarychurch/ops-standard-operating-procedures` | main | `db2d097` | 115/115, matches |
-| `psanctuarychurch/reading-room` | main | `9180964` | 115/115, matches |
-| `psychedelicsinrecovery/alex-desk` | main | `126eb14` | 111/111, matches |
-| `psychedelicsinrecovery/board-of-directors` | main | `a67018b` | 111/111, matches |
-| `psychedelicsinrecovery/catalyst-desk` | main | `8c6bc65` | 111/111, matches |
-| `psychedelicsinrecovery/changelog-astro` | main | `548e796` | 111/111, matches |
-| `psychedelicsinrecovery/github-desk` | main | `321c9c4` | 111/111, matches |
-| `psychedelicsinrecovery/legal` | main | `1a9ec7a` | 115/115, matches |
-| `psychedelicsinrecovery/litcom-desk` | main | `76c7c98` | 111/111, matches |
-| `psychedelicsinrecovery/literature-committee` | main | `6bc8761` | 111/111, matches |
-| `psychedelicsinrecovery/ops-standard-operating-procedures` | main | `d502d57` | 115/115, matches |
-| `psychedelicsinrecovery/pr-desk` | main | `859883f` | 111/111, matches |
-| `psychedelicsinrecovery/public-relations` | main | `66e2777` | 111/111, matches |
-| `psychedelicsinrecovery/reading-room` | main | `3b64c2e` | 115/115, matches |
-| `psychedelicsinrecovery/tech-committee` | main | `a440471` | 111/111, matches |
-| `psychedelicsinrecovery/techcom-desk` | main | `3b15423` | 111/111, matches |
-| `taylordwraps/ops-standard-operating-procedures` | main | `2818667` | 115/115, matches |
-| `taylordwraps/reading-room` | main | `7729b79` | 115/115, matches |
-| `theholyearthfoundation/changelog-astro` | main | `9baab36` | 111/111, matches |
-| `theholyearthfoundation/david-amaringo` | preview | `a20c018` | 111/111, matches |
-| `theholyearthfoundation/iamoneself-retreats` | preview | `daad181` | 111/111, matches |
-| `theholyearthfoundation/legal` | main | `dd55994` | 115/115, matches |
-| `theholyearthfoundation/ops-standard-operating-procedures` | main | `d1c920a` | 115/115, matches |
-| `theholyearthfoundation/reading-room` | main | `b6e6414` | 115/115, matches |
+| `drasticstatic/alexandrina` | main | `f9fdcfa` | 112/112, matches |
+| `drasticstatic/anthropas-argus-alfred` | main | `e37830d` | 112/112, matches |
+| `drasticstatic/augment-intent-properties` | main | `e7d1a5a` | 112/112, matches |
+| `drasticstatic/aunt-harriot` | main | `c462fc3` | 112/112, matches |
+| `drasticstatic/david-amaringo` | preview | `54b0dfb` | 112/112, matches |
+| `drasticstatic/david-amaringo` | r5-lanes | `9a1f22f` | 112/112, matches, on the held branch, not pushed |
+| `drasticstatic/dpnelson` | main | `c79ce72` | 112/112, matches |
+| `drasticstatic/findyourfeathers` | main | `539c584` | 112/112, matches |
+| `drasticstatic/fortuna-vision` | main | `075d1b0` | 112/112, matches |
+| `drasticstatic/gratitude-token-project_astro` | main | `2ef7581` | 112/112, matches |
+| `drasticstatic/iamoneself` | preview | `7389cea` | 112/112, matches |
+| `drasticstatic/iamoneself` | r5-lanes | `bdb5ecd` | 112/112, matches, on the held branch, not pushed |
+| `drasticstatic/O-R-G` | main | `3f8cd51` | 112/112, matches |
+| `drasticstatic/O-R-G-astro` | main | `e65d916` | 112/112, matches |
+| `drasticstatic/O-R-G-dapp` | main | `81fe465` | 112/112, matches |
+| `drasticstatic/ops-standard-operating-procedures-thef` | preview | `f7fc502` | 116/116, matches |
+| `drasticstatic/pir` | main | `8a29400` | 112/112, matches |
+| `drasticstatic/pir-devine-news` | main | `3b45af2` | 112/112, matches |
+| `drasticstatic/proposals-thef` | preview | `19c0841` | 116/116, matches |
+| `drasticstatic/Psanctuary` | main | `6d5e04b` | 116/116, matches |
+| `drasticstatic/psychedelic-policy-reform-astro` | main | `cc36365` | 112/112, matches |
+| `drasticstatic/psychedelic-policy-reform-dapp` | main | `d06e983` | 112/112, matches |
+| `drasticstatic/taylordwraps` | main | `1a290a4` | 112/112, matches |
+| `drasticstatic/trading-assistant` | main | `7c45252` | 112/112, matches |
+| `drasticstatic/trading-bot_arbitrage_DAPPUv3_hardhat_UNI-CAKE` | main | `1f90a80` | 112/112, matches |
+| `drasticstatic/wilson-lawn-ai-assist` | main | `39ece62` | 112/112, matches |
+| `Octagon-Religious-Research-Group-ORG/changelog-astro` | r5-lanes | `81d252b` | 112/112, matches, on the held branch, not pushed |
+| `Octagon-Religious-Research-Group-ORG/legal` | main | `d8606e4` | 112/112, matches |
+| `Octagon-Religious-Research-Group-ORG/ops-standard-operating-procedures` | main | `74a7564` | 112/112, matches |
+| `Octagon-Religious-Research-Group-ORG/reading-room` | main | `33b196f` | 112/112, matches |
+| `psanctuary/changelog-astro` | main | `c627c74` | 112/112, matches |
+| `psanctuary/legal` | main | `893d87f` | 116/116, matches |
+| `psanctuary/ops-standard-operating-procedures` | main | `d5c5b34` | 116/116, matches |
+| `psanctuary/reading-room` | main | `6208517` | 112/112, matches |
+| `psanctuarychurch/changelog-astro` | main | `36497a6` | 112/112, matches |
+| `psanctuarychurch/legal` | main | `3b5955b` | 116/116, matches |
+| `psanctuarychurch/ops-standard-operating-procedures` | main | `3d3c625` | 116/116, matches |
+| `psanctuarychurch/reading-room` | main | `a94b027` | 116/116, matches |
+| `psychedelicsinrecovery/alex-desk` | main | `4e4af64` | 112/112, matches |
+| `psychedelicsinrecovery/board-of-directors` | main | `e4fd5b7` | 112/112, matches |
+| `psychedelicsinrecovery/catalyst-desk` | main | `cdcabc8` | 112/112, matches |
+| `psychedelicsinrecovery/changelog-astro` | main | `8bd784b` | 112/112, matches |
+| `psychedelicsinrecovery/github-desk` | main | `dabeb3d` | 112/112, matches |
+| `psychedelicsinrecovery/legal` | main | `dbe4043` | 116/116, matches |
+| `psychedelicsinrecovery/litcom-desk` | main | `753fc6e` | 112/112, matches |
+| `psychedelicsinrecovery/literature-committee` | main | `c15c23e` | 112/112, matches |
+| `psychedelicsinrecovery/ops-standard-operating-procedures` | main | `883bb9d` | 116/116, matches |
+| `psychedelicsinrecovery/pr-desk` | main | `442ec82` | 112/112, matches |
+| `psychedelicsinrecovery/public-relations` | main | `438a495` | 112/112, matches |
+| `psychedelicsinrecovery/reading-room` | main | `c229fc8` | 116/116, matches |
+| `psychedelicsinrecovery/tech-committee` | main | `585682e` | 112/112, matches |
+| `psychedelicsinrecovery/techcom-desk` | main | `0171fe0` | 112/112, matches |
+| `taylordwraps/ops-standard-operating-procedures` | main | `eedc9c0` | 116/116, matches |
+| `taylordwraps/reading-room` | main | `1059c7d` | 116/116, matches |
+| `theholyearthfoundation/changelog-astro` | main | `a09c13e` | 112/112, matches |
+| `theholyearthfoundation/david-amaringo` | preview | `e7efe88` | 112/112, matches |
+| `theholyearthfoundation/iamoneself-retreats` | preview | `adad907` | 112/112, matches |
+| `theholyearthfoundation/legal` | main | `1a9863d` | 116/116, matches |
+| `theholyearthfoundation/ops-standard-operating-procedures` | main | `ac9a877` | 116/116, matches |
+| `theholyearthfoundation/reading-room` | main | `1450371` | 116/116, matches |
 
 **Not refreshed, and why:**
 
 - `drasticstatic/divorce-custody-assistant` (`45c2d96c…`) and `drasticstatic/tax-assistant`: the two personal repositories
   this page leaves to the main session, as before.
 - `drasticstatic/my-template-clean`: it takes `scripts/` and `sop-template/repo/` from this repository by
-  `sync-clean-template.yml` on push, so it follows `120bee1` on its own; it is not a hand copy.
+  `sync-clean-template.yml` on push, so it follows `8002408` on its own; it is not a hand copy.
 - `Octagon-Religious-Research-Group-ORG/changelog-astro` on `main`: GitHub's `main` carries no scanner yet; the held
   `r5-lanes` branch does, and is refreshed above.
 
@@ -160,7 +163,7 @@ paths.
 - `pir-devine-news`: one edition picture over the scanner's 15 MB limit, at HEAD and in one past version. A person
   chooses a smaller copy or keeps it private.
 - `iamoneself` (lab) and `iamoneself-retreats` (THEF): the built site carries a search index, 27 binary files whose names
-  change with each build, so they cannot be attested by path. The `120bee1` master (Nov 4) reads them: pagefind's files
+  change with each build, so they cannot be attested by path. The Nov 4 master (`8002408`) reads them: pagefind's files
   under `pagefind/` pass when their bytes are what pagefind writes. The apply form's birth-date label still appears in
   three built files and needs a person's reading.
 - `changelog-astro` (ORG): `TRIPWIRE_ENFORCE` stays `0` until a run on GitHub is clean, then it can become `1`.
