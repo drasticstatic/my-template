@@ -2,7 +2,7 @@
 
 **TL;DR:** the public-lane tripwire ([`scripts/scan-public-lane.sh`](../scripts/scan-public-lane.sh), self-test beside
 it) reads every file a lane is about to publish, and stops the lane when something has not been read. This page says
-where each copy stands on 2026-11-04. 61 repositories are listed below; every copy was refreshed to the `8002408` master that day, and again that evening to `06ac002` (v3: own-repo links and their anchor text). Nine lanes were finished
+where each copy stands on 2026-11-04. 61 repositories are listed below; every copy was refreshed to the `8002408` master that day, and again that evening to `06ac002` (v3: own-repo links and their anchor text) and `3d1a6c7` (v4: repository names are public). Nine lanes were finished
 this round and **their fixes wait on branch `r5-lanes`, not yet pushed.** Six of the nine rehearse clean. Two others each
 need one decision from Christopher, and the lab `iamoneself` needs a master rule.
 
@@ -13,12 +13,12 @@ need one decision from Christopher, and the lab `iamoneself` needs a master rule
 
 | File | Commit | md5 |
 |---|---|---|
-| `scripts/scan-public-lane.sh` | `06ac002` | `fc54aa60a95f278eb366280f30049dae` |
-| `scripts/scan-public-lane.selftest.sh` | `06ac002` | `639a7c43b7314ff48cf8c9e6640dbdfd` |
+| `scripts/scan-public-lane.sh` | `3d1a6c7` | `e0a8a277e4048adeaec5698227f2ea3b` |
+| `scripts/scan-public-lane.selftest.sh` | `3d1a6c7` | `e0b53b25122f4fa5af6ad7e4cba4a3cb` |
 
 Copy, do not fork: when the master changes, copy it again into each repository on this page. The self-test reports
-127/127 in a copy, 131/131 where `scripts/sync-allowlist.sh` sits beside it, and 133/133 here (the `8002408` master
-reported 112, 116 and 118). Lanes on the template's family
+131/131 in a copy, 135/135 where `scripts/sync-allowlist.sh` sits beside it, and 137/137 here (the `06ac002` master
+reported 127, 131 and 133; `8002408` 112, 116 and 118). Lanes on the template's family
 carry `sop-template/repo/scripts/sync-allowlist.sh` byte for byte (md5 `504181e2…`). Psanctuary's `--check` family keeps
 its own script with the call site edited.
 
@@ -53,13 +53,27 @@ inside it. Everything else stays: the same word in prose outside a link still tr
 which names the repository in backticks, now surfaces as the next refusal), a street address or a credential inside the
 link or its text still trips, a link under another owner or domain is not exempt. Fifteen self-test cases were added, the
 five real lines among them, copied verbatim; the case "a name that goes on after `-public-preview`" flipped to pass, since
-that is one of our own repositories too. The self-test here reports 133/133.
+that is one of our own repositories too. The self-test here reported 133/133.
+
+**2026-11-04 evening, v4: repository names are public (`3d1a6c7`).** The tax desk's repository name leaves the personal-matter
+words altogether: under Christopher's standing rule a bare own-repo name in prose (the tax desk's *You are here* line, which
+v3 surfaced) is not a matter. The walled-off repository's two words stay, since they name the matter itself and not only a
+repository; a matter word or a credential in the same prose still trips, and no attestation opens the credential. Four
+self-test cases added, the real README line among them, verbatim; 137/137 here.
 
 The 28188db master (2026-11-02) added the media list. `PUBLIC-LANE-MEDIA.txt` names folders whose pictures and fonts a
 lane publishes on purpose: a person chose them, and a machine still reads what it can. Base64 in text is decoded and
 read, and an SVG that can run something is refused.
 
-## <img src="repo/assets/icons/fingerprint.svg" width="24" height="24" alt=""> Re-copy of the 06ac002 master (2026-11-04, evening)
+## <img src="repo/assets/icons/fingerprint.svg" width="24" height="24" alt=""> Re-copy of the 3d1a6c7 master (2026-11-04, evening, v4)
+
+The v4 master followed v3 into the same 63 copies the same evening, by the same mechanism (subject
+`:lock: security(tripwire): scanner copy refreshed (repository names are public)`); held `r5-lanes` branches committed and
+not pushed, parked clones through their worktrees. Every copy was checked by md5 against `e0a8a277…` / `e0b53b25…`.
+
+<!-- v4 re-copy table: filled after the fan-out -->
+
+## <img src="repo/assets/icons/fingerprint.svg" width="24" height="24" alt=""> Re-copy of the 06ac002 master (2026-11-04, evening, v3)
 
 The v3 master was copied into every repository of the previous section the same way, the same evening: clone pulled
 (`git pull --rebase --autostash`), the pair copied from the master, the self-test run there and green, the two files
