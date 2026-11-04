@@ -71,7 +71,75 @@ The v4 master followed v3 into the same 63 copies the same evening, by the same 
 `:lock: security(tripwire): scanner copy refreshed (repository names are public)`); held `r5-lanes` branches committed and
 not pushed, parked clones through their worktrees. Every copy was checked by md5 against `e0a8a277…` / `e0b53b25…`.
 
-<!-- v4 re-copy table: filled after the fan-out -->
+| Repository | Branch | Commit | Self-test |
+|---|---|---|---|
+| `drasticstatic/alexandrina` | main | c622c20 | 131/131, matches |
+| `drasticstatic/anthropas-argus-alfred` | main | 61b9545 | 131/131, matches |
+| `drasticstatic/augment-intent-properties` | main | 72a268d | 131/131, matches |
+| `drasticstatic/aunt-harriot` | main | 077dbab | 131/131, matches |
+| `drasticstatic/david-amaringo` | preview | 384bf2d | 131/131, matches |
+| `drasticstatic/david-amaringo` | r5-lanes | 2fd79e2 | 131/131, matches, on the held branch, not pushed |
+| `drasticstatic/dpnelson` | main | 54bd72f | 131/131, matches |
+| `drasticstatic/findyourfeathers` | main | 3183cdc | 131/131, matches |
+| `drasticstatic/fortuna-vision` | main | bf51ccd | 131/131, matches |
+| `drasticstatic/gratitude-token-project_astro` | main | 83b4de6 | 131/131, matches |
+| `drasticstatic/iamoneself` | preview | b2991c0 | 131/131, matches |
+| `drasticstatic/iamoneself` | r5-lanes | 59116e9 | 131/131, matches, on the held branch, not pushed |
+| `drasticstatic/littlebird-ambassador` | main | e8fc057 | 131/131, matches |
+| `drasticstatic/O-R-G` | main | 2ab5ec7 | 131/131, matches |
+| `drasticstatic/O-R-G-astro` | main | c8974d4 | 131/131, matches |
+| `drasticstatic/O-R-G-dapp` | main | b6b8f7f | 131/131, matches |
+| `drasticstatic/ops-standard-operating-procedures-thef` | preview | e3f0b58 | 135/135, matches |
+| `drasticstatic/pir` | main | 44e7c1b | 131/131, matches |
+| `drasticstatic/pir-devine-news` | main | 118cbf1 | 131/131, matches |
+| `drasticstatic/proposals-thef` | preview | a24423b | 135/135, matches |
+| `drasticstatic/Psanctuary` | main | 1c3d4d9 | 135/135, matches |
+| `drasticstatic/psychedelic-policy-reform-astro` | main | e77ac1f | 131/131, matches |
+| `drasticstatic/psychedelic-policy-reform-dapp` | main | 983e7d5 | 131/131, matches |
+| `drasticstatic/tax-assistant` | main | 5b8341b | 131/131, matches |
+| `drasticstatic/taylordwraps` | main | 3a183ab | 131/131, matches |
+| `drasticstatic/trading-assistant` | main | d6cf67d | 131/131, matches |
+| `drasticstatic/trading-bot_arbitrage_DAPPUv3_hardhat_UNI-CAKE` | main | 49f9d40 | 131/131, matches |
+| `drasticstatic/wilson-lawn-ai-assist` | main | c53e0b4 | 131/131, matches |
+| `Octagon-Religious-Research-Group-ORG/changelog-astro` | r5-lanes | 92abcd9 | 131/131, matches, on the held branch, not pushed |
+| `Octagon-Religious-Research-Group-ORG/legal` | main | 0d5d10b | 131/131, matches |
+| `Octagon-Religious-Research-Group-ORG/ops-standard-operating-procedures` | main | c295156 | 131/131, matches |
+| `Octagon-Religious-Research-Group-ORG/reading-room` | main | 3e16927 | 131/131, matches |
+| `psanctuary/changelog-astro` | main | 4423baf | 131/131, matches |
+| `psanctuary/legal` | main | b6ba201 | 135/135, matches |
+| `psanctuary/ops-standard-operating-procedures` | main | 5a042d8 | 135/135, matches |
+| `psanctuary/reading-room` | main | ba8ceb6 | 131/131, matches |
+| `psanctuarychurch/changelog-astro` | main | 3f097aa | 131/131, matches |
+| `psanctuarychurch/legal` | main | aa0dfe4 | 135/135, matches |
+| `psanctuarychurch/ops-standard-operating-procedures` | main | b7eb331 | 135/135, matches |
+| `psanctuarychurch/reading-room` | main | c9ef4d0 | 135/135, matches |
+| `psychedelicsinrecovery/.github-private` | main | d743cbc | 131/131, matches |
+| `psychedelicsinrecovery/alex-desk` | main | 8796c74 | 131/131, matches |
+| `psychedelicsinrecovery/board-of-directors` | main | 1352c69 | 131/131, matches |
+| `psychedelicsinrecovery/catalyst-desk` | main | dd5909f | 131/131, matches |
+| `psychedelicsinrecovery/changelog-astro` | main | b75ec4c | 131/131, matches |
+| `psychedelicsinrecovery/github-desk` | main | 75e2b89 | 131/131, matches |
+| `psychedelicsinrecovery/legal` | main | 84c51d1 | 135/135, matches |
+| `psychedelicsinrecovery/litcom-desk` | main | 455ac4a | 131/131, matches |
+| `psychedelicsinrecovery/literature-committee` | main | c983cee | 131/131, matches |
+| `psychedelicsinrecovery/ops-standard-operating-procedures` | main | df2c896 | 135/135, matches |
+| `psychedelicsinrecovery/pr-desk` | main | c51d7a2 | 131/131, matches |
+| `psychedelicsinrecovery/public-relations` | main | 15d8999 | 131/131, matches |
+| `psychedelicsinrecovery/reading-room` | main | 919a8a8 | 135/135, matches |
+| `psychedelicsinrecovery/tech-committee` | main | 8ef7b07 | 131/131, matches |
+| `psychedelicsinrecovery/techcom-desk` | main | c676447 | 131/131, matches |
+| `taylordwraps/ops-standard-operating-procedures` | main | c1117e2 | 135/135, matches |
+| `taylordwraps/reading-room` | main | 2c5347f | 135/135, matches |
+| `theholyearthfoundation/changelog-astro` | main | 714422e | 131/131, matches |
+| `theholyearthfoundation/david-amaringo` | preview | 6f84180 | 131/131, matches |
+| `theholyearthfoundation/iamoneself-retreats` | preview | 76e21a2 | 131/131, matches |
+| `theholyearthfoundation/legal` | main | 300604f | 135/135, matches |
+| `theholyearthfoundation/ops-standard-operating-procedures` | main | cd8df85 | 135/135, matches |
+| `theholyearthfoundation/reading-room` | main | 53cc6a7 | 135/135, matches |
+
+**Not refreshed, and why:** as for v3 below: `divorce-custody-assistant` (detached old checkout), `my-template-clean`
+(follows on its own), ORG `changelog-astro` on `main` (no scanner there yet). The two duplicate `changelog-astro` clones
+were pulled afterwards and match.
 
 ## <img src="repo/assets/icons/fingerprint.svg" width="24" height="24" alt=""> Re-copy of the 06ac002 master (2026-11-04, evening, v3)
 
