@@ -19,7 +19,8 @@
 #                  not read, but every picture's and font's bytes, and every office file's XML attributes (link targets,
 #                  alt text), are searched for credentials and agent-note pointers
 #   anything else  a binary no machine can read here, refused
-#   Three narrow exceptions (Nov 4; the first widened the same evening, v3). A link to one of Christopher's own
+#   Three narrow exceptions (Nov 4; the first widened the same evening, v3; v4 dropped the tax desk's repository name from the
+#   personal-matter words altogether, so a bare own-repo name in prose no longer trips). A link to one of Christopher's own
 #   repositories, github.com/drasticstatic/<name>, drasticstatic.github.io/<name> or git@github.com:drasticstatic/<name>,
 #   with or without -public-preview and with any path after it, is not a personal matter: repository names are public,
 #   their contents are what the lane protects. The link token is exempt, and so is its anchor text, HTML
@@ -181,7 +182,9 @@ def personal_hay(text):
 
 
 SENSITIVE = [
-    (PERSONAL, re.compile(r"\b(?:" + w("div", "orce") + "|" + CUST + "|" + w("tax", "-assistant") + ")", re.I)),
+    # v4 (Nov 4): the tax desk's repository name is no longer a personal-matter word. Repository names are public (Christopher's
+    # standing rule); the walled-off repository's two words stay, since they name the matter itself and not only a repository.
+    (PERSONAL, re.compile(r"\b(?:" + w("div", "orce") + "|" + CUST + ")", re.I)),
     ("an employer-number shape (NN-NNNNNNN)", re.compile(r"\b\d{2}" + DASH + r"\d{7}\b")),
     ("a social-security-number shape (NNN-NN-NNNN)", re.compile(r"\b\d{3}" + DASH + r"\d{2}" + DASH + r"\d{4}\b")),
     ("a tax-identifier label", re.compile(r"\b" + w("ta", "x") + r"[\s_-]*id\b|\b" + w("taxpayer", r"\s+identification"), re.I)),

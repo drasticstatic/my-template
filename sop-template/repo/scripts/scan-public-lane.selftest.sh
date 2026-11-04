@@ -188,6 +188,10 @@ write("own_anchor_long_md/README.md", "[" + ("the " + MATTER + " file, ") * 20 +
 write("own_anchor_long_html/page.html", '<a href="' + OWN + '">' + ("the " + MATTER + " file, ") * 20 + "read it</a>\n")
 write("own_anchor_street/page.html", '<a href="' + OWN + '">' + MATTER.title() + " office, " + "126 Indus" + "trial Dr" + "</a>\n")
 write("own_anchor_token/page.html", '<a href="' + OWN + '">' + TOKEN + "</a>\n")
+# v4: a repository's bare name in prose (the tax desk's "You are here" line, README.md:14, copied verbatim) is not a matter
+write("own_name_prose/README.md", '<img src="assets/icons/map-pin.svg" width="16" height="16" alt=""> **You are here:** drasticstatic lab › `tax-assistant` · private source · `main` is the working branch · public twin `tax-assistant-public-preview`\n')
+write("own_name_prose_matter/README.md", "The tax-assistant repository, and the " + GUARD + " hearing next week.\n")
+write("own_name_prose_token/README.md", "The tax-assistant repository, token " + TOKEN + "\n")
 write("own_anchor_nested/page.html", '<a href="' + OWN + '">one <a href="https://example.com/">two</a> ' + MATTER + " three</a>\n")
 write("street_plain/README.md", "Mail to " + "126 Indus" + "trial Dr" + ", suite 4.\n")
 write("compliance/README.md", "No " + GUARD + ". Non-" + GUARD[:-1] + "ial. No payments, no " + GUARD + ". No " + GUARD + ", no tokens.\n")
@@ -397,6 +401,11 @@ expect 1 "!personal-matter"         "and that anchor's matter word is all the ex
 expect 1 "GitHub token"             "v3: a credential inside the anchor text is refused"                   -- "$fx/own_anchor_token"
 expect 1 "No attestation opens"     "and no attestation opens it"                                         -- "$fx/own_anchor_token"
 expect 1 "personal-matter"          "v3: an anchor with another anchor inside it is not exempt"           -- "$fx/own_anchor_nested"
+# ── v4: repository names are public; a bare own-repo name in prose is not a personal matter ───────────────────────────
+expect 0 "clean"                    "v4: the tax desk's repository name in prose passes (its You-are-here line)" -- "$fx/own_name_prose"
+expect 1 "personal-matter"          "v4: a personal-matter word in the same prose still trips"              -- "$fx/own_name_prose_matter"
+expect 1 "GitHub token"             "v4: a credential in the same prose is still refused"                   -- "$fx/own_name_prose_token"
+expect 1 "No attestation opens"     "and no attestation opens it"                                         -- "$fx/own_name_prose_token"
 expect 0 "clean"                    "the guardianship word negated passes (no ..., non-...: a compliance note)" -- "$fx/compliance"
 expect 1 "personal-matter"          "a negation elsewhere on the line does not exempt the word"           -- "$fx/compliance_still"
 expect 1 "personal-matter"          "a word that merely ends in the negation does not exempt it"          -- "$fx/compliance_casino"
