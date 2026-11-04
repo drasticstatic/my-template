@@ -22,7 +22,7 @@ if [ -n "${PDFTOTEXT:-}" ]; then [ -x "$PDFTOTEXT" ] || have_pdf=0; else command
 
 # ── fixtures ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 python3 -I - "$work/fx" <<'PY'
-import base64, os, struct, sys, zipfile, zlib
+import base64, gzip, os, struct, sys, zipfile, zlib
 fx = sys.argv[1]
 os.makedirs(fx)
 EIN = "12" + "-" + "3456789"                     # a fake employer number
@@ -155,15 +155,55 @@ write("b64_secret/page.html", page("text/plain", ("A note: " + TOKEN).encode()))
 write("b64_png_secret/page.html", page("image/png", big_png() + TOKEN.encode()))
 write("b64_font/style.css", "@font-face { src: url(data:font/woff2;base" + "64," + b64(b"wOF2" + b"\x00" * 300) + "); }\n")
 write("b64_label_only/app.js", 'var a = "data:image/png;base' + '64," + x;\n')
+# Nov 4: three narrow exceptions, and proof the street rule is kept
+MATTER = "div" + "orce"
+GUARD = "cus" + "tody"
+PREVIEW = "https://github.com/drasticstatic/" + MATTER + "-" + GUARD + "-assistant-public-preview"
+PAGES = "https://drasticstatic.github.io/" + MATTER + "-" + GUARD + "-assistant-public-preview/"
+write("preview_link/README.md", "Preview: " + PREVIEW + " and " + PAGES + "index.html (public by definition).\n")
+write("preview_link_md/README.md", "[the preview](" + PREVIEW + ") and <" + PAGES + ">\n")
+write("preview_word_elsewhere/README.md", "Preview: " + PREVIEW + " and the " + MATTER + " itself is private.\n")
+write("preview_other_owner/README.md", "See https://github.com/someone-else/" + MATTER + "-public-preview\n")
+write("preview_not_preview/README.md", "See https://github.com/drasticstatic/" + MATTER + "-public-preview-notes\n")
+write("preview_street/README.md", "Map: https://drasticstatic.github.io/" + MATTER + "-public-preview/" + "126 Indus" + "trial Dr" + "\n")
+write("street_plain/README.md", "Mail to " + "126 Indus" + "trial Dr" + ", suite 4.\n")
+write("compliance/README.md", "No " + GUARD + ". Non-" + GUARD[:-1] + "ial. No payments, no " + GUARD + ". No " + GUARD + ", no tokens.\n")
+write("compliance_still/README.md", "No payments. The " + GUARD + " order stands.\n")
+write("compliance_casino/README.md", "The casino " + GUARD + " order stands.\n")
+GZ = gzip.compress(b'{"url":"/about/","content":"plain words a machine can read"}')
+PF = "pagefind_ok/pagefind/"
+write(PF + "fragment/en_abc12.pf_fragment", GZ)
+write(PF + "index/en_def34.pf_index", GZ)
+write(PF + "pagefind.en_9f8e7.pf_meta", GZ)
+write(PF + "wasm.en.pagefind", b"\x00asm\x01\x00\x00\x00" + b"\x00" * 16)
+write(PF + "pagefind-entry.json", '{"version":"1.3.0","languages":{"en":{"hash":"en_9f8e7","wasm":"en","page_count":3}}}\n')
+write(PF + "pagefind.js", "export async function init() {}\n")
+write(PF + "pagefind-ui.js", "class PagefindUI {}\n")
+write(PF + "pagefind-ui.css", ".pagefind-ui { color: inherit }\n")
+write(PF + "pagefind-highlight.js", "class PagefindHighlight {}\n")
+write("pagefind_fake/pagefind/fragment/en_abc12.pf_fragment", b"\x00\x01\x02 not gzip")
+write("pagefind_fake_text/pagefind/pagefind.en_9f8e7.pf_meta", "plain words where gzip should be\n")
+write("pagefind_fake_wasm/pagefind/wasm.en.pagefind", b"\x00\x01\x02 not wasm")
+write("pagefind_outside/search/en_abc12.pf_fragment", GZ)
+write("pagefind_secret/pagefind/fragment/en_abc12.pf_fragment", gzip.compress(('{"content":"' + TOKEN + '"}').encode()))
+write("pagefind_other_binary/pagefind/blob.bin", b"\x00\x01\x02\x03binary")
 PY
 
 # ── harness ───────────────────────────────────────────────────────────────────────────────────────────────────────────
 fails=0; total=0
-expect () { # expect <want-exit> <must-contain or ""> <label> -- scanner arguments...
+expect () { # expect <want-exit> <must-contain, or "!must-not-contain", or ""> <label> -- scanner arguments...
   want="$1"; grep_for="$2"; label="$3"; shift 4
   total=$((total + 1))
   set +e; out="$(sh "$scan" "$@" 2>&1)"; got=$?; set -e
-  if [ "$got" = "$want" ] && { [ -z "$grep_for" ] || printf '%s' "$out" | grep -Fq -- "$grep_for"; }; then
+  ok=0
+  if [ "$got" = "$want" ]; then
+    case "$grep_for" in
+      "") ok=1 ;;
+      "!"*) if printf '%s' "$out" | grep -Fq -- "${grep_for#!}"; then ok=0; else ok=1; fi ;;
+      *) if printf '%s' "$out" | grep -Fq -- "$grep_for"; then ok=1; fi ;;
+    esac
+  fi
+  if [ "$ok" = 1 ]; then
     echo "ok    $label"
   else
     echo "FAIL  $label (wanted exit $want${grep_for:+ and '$grep_for'}, got $got)"; printf '%s\n' "$out" | sed 's/^/      /'
@@ -306,6 +346,26 @@ expect 1 "GitHub token"             "a token inside a base64 picture is refused"
 expect 1 "a font embedded"          "a base64 font outside any font folder is refused"                    -- "$fx/b64_font"
 mkdir -p "$work/b64_font_listed/gallery/shots"; cp "$fx/b64_font/style.css" "$work/b64_font_listed/gallery/shots/style.css"
 expect 0 "clean"                    "a base64 font under a listed folder passes"                          -- --media "$med" "$work/b64_font_listed"
+# ── Nov 4: a public-preview link, the guardianship word negated, pagefind's index; and the street rule is kept ───────
+expect 0 "clean"                    "a link to a public preview is not a personal matter (public by definition)" -- "$fx/preview_link"
+expect 0 "clean"                    "the same links inside Markdown brackets and angle brackets pass"      -- "$fx/preview_link_md"
+expect 1 "personal-matter"          "the same word elsewhere on the line still trips"                     -- "$fx/preview_word_elsewhere"
+expect 1 "personal-matter"          "a preview under another owner is not exempt"                         -- "$fx/preview_other_owner"
+expect 1 "personal-matter"          "a name that goes on after -public-preview is not a preview"          -- "$fx/preview_not_preview"
+expect 1 "street-address"           "a street address still trips: the shape rule is kept on purpose"     -- "$fx/street_plain"
+expect 1 "street-address"           "a street address inside a public-preview link still trips"           -- "$fx/preview_street"
+expect 1 "!personal-matter"         "and that link's own matter word is all the exception covers"         -- "$fx/preview_street"
+expect 0 "clean"                    "the guardianship word negated passes (no ..., non-...: a compliance note)" -- "$fx/compliance"
+expect 1 "personal-matter"          "a negation elsewhere on the line does not exempt the word"           -- "$fx/compliance_still"
+expect 1 "personal-matter"          "a word that merely ends in the negation does not exempt it"          -- "$fx/compliance_casino"
+expect 0 "clean"                    "pagefind's index under pagefind/ passes when its bytes are what pagefind writes" -- "$fx/pagefind_ok"
+expect 1 "not the gzip"             "a .pf_fragment whose bytes are not gzip is refused"                  -- "$fx/pagefind_fake"
+expect 1 "not the gzip"             "a .pf_meta that is plain text is refused: pagefind never writes one" -- "$fx/pagefind_fake_text"
+expect 1 "not WebAssembly"          "a wasm.*.pagefind whose bytes are not WebAssembly is refused"        -- "$fx/pagefind_fake_wasm"
+expect 1 "binary file"              "the same gzip outside a pagefind/ folder is still refused"           -- "$fx/pagefind_outside"
+expect 1 "GitHub token"             "a token inside a compressed fragment is inflated, found and refused" -- "$fx/pagefind_secret"
+expect 1 "No attestation opens"     "and no attestation opens it"                                         -- "$fx/pagefind_secret"
+expect 1 "binary file"              "any other binary under pagefind/ is still refused"                   -- "$fx/pagefind_other_binary"
 # the scanner and this test are publishable through a lane: they trip nothing themselves
 mkdir -p "$work/self/scripts"; cp "$scan" "$0" "$work/self/scripts/"
 expect 0 "clean"                    "the scanner and its self-test pass their own tripwire"               -- "$work/self"

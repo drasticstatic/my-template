@@ -19,6 +19,13 @@
 #                  not read, but every picture's and font's bytes, and every office file's XML attributes (link targets,
 #                  alt text), are searched for credentials and agent-note pointers
 #   anything else  a binary no machine can read here, refused
+#   Three narrow exceptions (Nov 4). A link to github.com/drasticstatic/<name>-public-preview or
+#   drasticstatic.github.io/<name>-public-preview/ is not a personal matter: a public preview is public by definition.
+#   Only that link token is exempt, and only from the personal-matter words; a street address inside it, or the same word
+#   elsewhere on the line, still trips. The guardianship word negated (no ..., non-...) is a compliance note, not the
+#   matter. Pagefind's search index under a folder named pagefind/ passes when its bytes are what pagefind writes (gzip
+#   for *.pf_fragment *.pf_index *.pf_meta, WebAssembly for wasm.*.pagefind; its js, json and css are text and read as
+#   text); the compressed text is inflated and searched for credentials, and anything else there is refused as before.
 #
 # Attestation: PUBLIC-ALLOWLIST-ATTESTED.txt names files a person opened and read, one per line:
 #   path | officer | YYYY-MM-DD | opened and read
@@ -53,7 +60,7 @@
 set -eu
 command -v python3 >/dev/null 2>&1 || { echo "scan-public-lane: python3 is required" >&2; exit 2; }
 exec python3 -I - "$@" <<'PY'
-import base64, datetime, hashlib, html, os, re, shutil, stat, subprocess, sys, urllib.parse, zipfile
+import base64, datetime, gzip, hashlib, html, io, os, re, shutil, stat, subprocess, sys, urllib.parse, zipfile, zlib
 
 ME = "scan-public-lane"
 GHA = os.environ.get("GITHUB_ACTIONS") == "true"
@@ -123,13 +130,22 @@ STREET = (r"\b\d{1,6}[ \t]+(?:[NSEW]\.?[ \t]+)?(?:(?:[A-Z][A-Za-z'.-]*|\d{1,3}(?
           r"(?:Street|St|Avenue|Ave|Road|Rd|Boulevard|Blvd|Lane|Ln|Drive|Dr|Court|Ct|Way|Place|Pl|Terrace|Ter|"
           r"Circle|Cir|Highway|Hwy|Parkway|Pkwy|Trail|Trl|Square|Sq|Pike|Loop)\b")
 # The guardianship-matter word, except its asset senses (held by oneself, by an institution, of keys or funds), which are
-# treasury vocabulary rather than the personal matter.
-CUST = ("".join(f"(?<!{b})" for b in ("self-", "self ", "institutional ", "qualified ", "key ", "asset ", "crypto ", "mpc "))
+# treasury vocabulary rather than the personal matter, and except its negations ("no ...", "non-..."), which are a
+# compliance note (no payments, no ..., no tokens) rather than the matter. The negation must sit right before the word.
+CUST = ("".join(f"(?<!{b})" for b in ("self-", "self ", "institutional ", "qualified ", "key ", "asset ", "crypto ", "mpc ",
+                                      r"\bno ", r"\bnon-"))
         + w("cus", "tody") + r"(?!\s+of\s+(?:the\s+)?(?:keys|funds|assets|tokens)\b)")
 # A hyphen, or the dashes a word processor substitutes for one (non-breaking hyphen, en and em dash, minus sign).
 DASH = "[-\u2010-\u2015\u2212]"
+PERSONAL = "a personal-matter word"
+# A link to a public preview is public by definition: github.com/drasticstatic/<name>-public-preview, or
+# drasticstatic.github.io/<name>-public-preview/ and what follows. The link token is blanked (same length, so line
+# numbers hold) before the personal-matter words are searched, and for no other rule: a street address inside the
+# link, a credential, the same word elsewhere on the line, all still trip.
+PUBLIC_PREVIEW = re.compile(r"(?:https?://)?(?:www\.)?(?:github\.com/drasticstatic/[A-Za-z0-9._-]+-public-preview(?:[/#?][^\s<>\"')\]]*)?"
+                            r"(?=[^A-Za-z0-9._-]|$)|drasticstatic\.github\.io/[A-Za-z0-9._-]+-public-preview/[^\s<>\"')\]]*)", re.I)
 SENSITIVE = [
-    ("a personal-matter word", re.compile(r"\b(?:" + w("div", "orce") + "|" + CUST + "|" + w("tax", "-assistant") + ")", re.I)),
+    (PERSONAL, re.compile(r"\b(?:" + w("div", "orce") + "|" + CUST + "|" + w("tax", "-assistant") + ")", re.I)),
     ("an employer-number shape (NN-NNNNNNN)", re.compile(r"\b\d{2}" + DASH + r"\d{7}\b")),
     ("a social-security-number shape (NNN-NN-NNNN)", re.compile(r"\b\d{3}" + DASH + r"\d{2}" + DASH + r"\d{4}\b")),
     ("a tax-identifier label", re.compile(r"\b" + w("ta", "x") + r"[\s_-]*id\b|\b" + w("taxpayer", r"\s+identification"), re.I)),
@@ -164,6 +180,12 @@ IMAGES = {".png": [b"\x89PNG\r\n\x1a\n"], ".jpg": [b"\xff\xd8\xff"], ".jpeg": [b
           ".webp": None, ".avif": None, ".heic": None}
 FONTS = {".woff": [b"wOFF"], ".woff2": [b"wOF2"], ".ttf": [b"\x00\x01\x00\x00", b"true"], ".otf": [b"OTTO"], ".eot": None}
 OFFICE = {".docx", ".docm", ".dotx", ".xlsx", ".xlsm", ".xltx", ".pptx", ".pptm", ".potx", ".odt", ".ods", ".odp"}
+# Pagefind's search index, as a site build writes it under pagefind/: gzip'd fragments, index chunks and metadata, one
+# WebAssembly module per language. Its pagefind-entry.json, pagefind.js, pagefind-ui.js/.css and pagefind-highlight.js
+# are plain text and are read like any text. Names carry a content hash, so these files cannot be attested by path.
+PAGEFIND_GZIP = re.compile(r"\.pf_(?:fragment|index|meta)$", re.I)
+PAGEFIND_WASM = re.compile(r"^wasm\.[A-Za-z0-9_-]+\.pagefind$", re.I)
+MAX_INFLATE = 64 * 1024 * 1024
 
 
 def magic_ok(ext, data):
@@ -322,7 +344,8 @@ def scan_text(text, paged=False):
     if m:
         never.append(f"the agent-notes folder name ({where(stripped, m.start(), paged)})")
     for label, rx in SENSITIVE:
-        m = rx.search(text)
+        hay = PUBLIC_PREVIEW.sub(lambda m: " " * len(m.group(0)), text) if label == PERSONAL else text
+        m = rx.search(hay)
         if m:
             sens.append(f"{label} ({where(text, m.start(), paged)})")
     for m in ACCOUNT.finditer(text):
@@ -392,6 +415,34 @@ def read_office(path):
     if embedded:
         return text, f"an office file carrying {len(embedded)} embedded picture(s) or object(s) no machine read (e.g. {embedded[0]})", hidden
     return text, None, hidden
+
+
+def pagefind_kind(dirs, base):
+    """'gzip' or 'wasm' when this is a pagefind index file under a pagefind/ folder, else None."""
+    if "pagefind" not in {d.lower() for d in dirs}:
+        return None
+    if PAGEFIND_GZIP.search(base):
+        return "gzip"
+    if PAGEFIND_WASM.match(base):
+        return "wasm"
+    return None
+
+
+def read_pagefind(kind, data):
+    """-> (the bytes a machine can search, as text; or None and the reason it is not what pagefind writes)"""
+    if kind == "wasm":
+        if not data.startswith(b"\x00asm"):
+            return None, "named like pagefind's WebAssembly but its bytes are not WebAssembly; rebuild the search index or remove it"
+        return data.decode("latin-1"), None
+    if not data.startswith(b"\x1f\x8b"):
+        return None, "named like a pagefind index file but its bytes are not the gzip pagefind writes; rebuild the search index or remove it"
+    try:
+        inner = gzip.GzipFile(fileobj=io.BytesIO(data)).read(MAX_INFLATE + 1)
+    except (OSError, EOFError, zlib.error):
+        return None, "named like a pagefind index file but its gzip cannot be inflated; rebuild the search index or remove it"
+    if len(inner) > MAX_INFLATE:
+        return None, "a pagefind index file that inflates to more than 64 MB: too large to read safely"
+    return inner.decode("latin-1"), None
 
 
 def decode_text(data):
@@ -504,6 +555,8 @@ def check(full, rel):
     text, unread, paged = None, None, False
     embed_never, embed_sens = [], []
     hidden = ""   # bytes a reader never sees but that travel: office attributes, a picture's or font's own bytes
+    hidden_at = "in the file's own bytes or attributes"
+    pagefind = pagefind_kind(dirs, base)
 
     if ext == ".pdf" or data[:5] == b"%PDF-":
         counts["pdf"] += 1
@@ -523,6 +576,13 @@ def check(full, rel):
                       "PUBLIC-LANE-MEDIA.txt, under a line 'approved by <name> | YYYY-MM-DD'")
         # its pixels are not read, but its bytes are searched for credentials (metadata, or text appended after the image)
         hidden = data.decode("latin-1")
+    elif pagefind:
+        counts["other"] += 1
+        hidden, bad = read_pagefind(pagefind, data)
+        if bad:
+            return refuse(rel, bad)
+        # the index is what the site's pages say, compressed: inflated here and searched for credentials
+        hidden_at = "inside the search index's compressed bytes"
     else:
         text = decode_text(data)
         if text is None:
@@ -539,7 +599,7 @@ def check(full, rel):
     never, sens = scan_text(text, paged) if text else ([], [])
     never, sens = never + embed_never, sens + embed_sens
     if hidden:
-        never += [f"{x.rsplit(' (', 1)[0]} (in the file's own bytes or attributes)" for x in scan_text(hidden)[0]]
+        never += [f"{x.rsplit(' (', 1)[0]} ({hidden_at})" for x in scan_text(hidden)[0]]
     if never:
         return refuse(rel, "carries " + "; ".join(never) + ". No attestation opens this: remove it from the file")
     problems = sens + ([unread] if unread else [])
