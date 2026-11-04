@@ -2,7 +2,7 @@
 
 **TL;DR:** the public-lane tripwire ([`scripts/scan-public-lane.sh`](../scripts/scan-public-lane.sh), self-test beside
 it) reads every file a lane is about to publish, and stops the lane when something has not been read. This page says
-where each copy stands on 2026-11-04. 59 repositories are listed below; every copy was refreshed to the `8002408` master that day. Nine lanes were finished
+where each copy stands on 2026-11-04. 61 repositories are listed below; every copy was refreshed to the `8002408` master that day. Nine lanes were finished
 this round and **their fixes wait on branch `r5-lanes`, not yet pushed.** Six of the nine rehearse clean. Two others each
 need one decision from Christopher, and the lab `iamoneself` needs a master rule.
 
@@ -72,6 +72,7 @@ copy below was checked by md5 against the master after the push: all 60 rows mat
 | `drasticstatic/gratitude-token-project_astro` | main | `2ef7581` | 112/112, matches |
 | `drasticstatic/iamoneself` | preview | `7389cea` | 112/112, matches |
 | `drasticstatic/iamoneself` | r5-lanes | `bdb5ecd` | 112/112, matches, on the held branch, not pushed |
+| `drasticstatic/littlebird-ambassador` | main | `2451956` | 112/112, matches (first copy, 2026-11-04; the lane was found without one) |
 | `drasticstatic/O-R-G` | main | `3f8cd51` | 112/112, matches |
 | `drasticstatic/O-R-G-astro` | main | `e65d916` | 112/112, matches |
 | `drasticstatic/O-R-G-dapp` | main | `81fe465` | 112/112, matches |
@@ -98,6 +99,7 @@ copy below was checked by md5 against the master after the push: all 60 rows mat
 | `psanctuarychurch/legal` | main | `3b5955b` | 116/116, matches |
 | `psanctuarychurch/ops-standard-operating-procedures` | main | `3d3c625` | 116/116, matches |
 | `psanctuarychurch/reading-room` | main | `a94b027` | 116/116, matches |
+| `psychedelicsinrecovery/.github-private` | main | `2a7d555` | 112/112, matches (first copy, 2026-11-04; the lane was found without one) |
 | `psychedelicsinrecovery/alex-desk` | main | `4e4af64` | 112/112, matches |
 | `psychedelicsinrecovery/board-of-directors` | main | `e4fd5b7` | 112/112, matches |
 | `psychedelicsinrecovery/catalyst-desk` | main | `cdcabc8` | 112/112, matches |
@@ -186,6 +188,7 @@ lane workflow that day or earlier. This table replaces the older re-copy tables,
 | `drasticstatic/fortuna-vision` | `06382c5` |  | stops at the push: the mirror token is refused. The scanner passed |
 | `drasticstatic/gratitude-token-project_astro` | `f20085e` | yes | green |
 | `drasticstatic/iamoneself` | preview `48db96d` (older) |  | `lanes.yml` stopped on `preview`; fix held, more remains |
+| `drasticstatic/littlebird-ambassador` | `e4870b7` (2026-11-04) | yes | `sync-public.yml` stops at the tripwire: one personal-matter line in the scope table and the library page built from it, for Christopher to attest; agent-note pointers and two private repo names were reworded in the sources and in history, two old root paths stripped from history |
 | `drasticstatic/my-template` | `28188db` |  | the master |
 | `drasticstatic/my-template-clean` | `b76f5b4` |  | no public lane here |
 | `drasticstatic/O-R-G` | `fa76728` |  | no public lane here |
@@ -213,6 +216,7 @@ lane workflow that day or earlier. This table replaces the older re-copy tables,
 | `psanctuarychurch/legal` | `b4b4b87` |  | green |
 | `psanctuarychurch/ops-standard-operating-procedures` | `e701a6a` |  | green |
 | `psanctuarychurch/reading-room` | `5691889` |  | green |
+| `psychedelicsinrecovery/.github-private` | `177f610` (2026-11-04) |  | green: `publish-public-contacts.yml` runs the self-test (112/112) and reads the masked `CONTACTS.md` before the push (run 41836219891, clean) |
 | `psychedelicsinrecovery/alex-desk` | `bd863e5` |  | green |
 | `psychedelicsinrecovery/board-of-directors` | `ce1a5c3` |  | green |
 | `psychedelicsinrecovery/catalyst-desk` | `6c52008` |  | green |
@@ -245,8 +249,9 @@ page. One carries the current pair and its lane is stopped; the other was not re
 **Public lanes with no scanner:**
 
 - `Octagon-Religious-Research-Group-ORG/changelog-astro`, until its held branch lands.
-- `drasticstatic/littlebird-ambassador`: its `sync-public.yml` publishes to a public repository with no tripwire. Found
-  in this pass, and not yet assigned.
+- ~~`drasticstatic/littlebird-ambassador`~~ and ~~`psychedelicsinrecovery/.github-private`~~: both carried a public lane with no
+  tripwire until 2026-11-04 (`e4870b7`, `177f610`); each now copies the master, runs the self-test and reads the staged tree
+  before the push. See their rows above.
 
 **Other lanes that are stopped today,** outside this round's nine: `anthropas-argus-alfred`, `fortuna-vision` (the scan
 passes, and the push fails because `PUBLIC_REPO_TOKEN` is refused), `O-R-G-dapp` (`sync-public-allowlist.yml` and
