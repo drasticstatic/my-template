@@ -68,7 +68,79 @@ pushed to the working branch; held `r5-lanes` branches committed and not pushed;
 `nav-reading-room`) refreshed through a temporary worktree on the working branch. `drasticstatic/tax-assistant` joins the
 page this round. Every copy was checked by md5 against `fc54aa60…` / `639a7c43…` after the push.
 
-<!-- v3 re-copy table: filled after the fan-out -->
+| Repository | Branch | Commit | Self-test |
+|---|---|---|---|
+| `drasticstatic/alexandrina` | main | 8385842 | 127/127, matches |
+| `drasticstatic/anthropas-argus-alfred` | main | 91490f6 | 127/127, matches |
+| `drasticstatic/augment-intent-properties` | main | 769869f | 127/127, matches |
+| `drasticstatic/aunt-harriot` | main | 4d5ed8b | 127/127, matches |
+| `drasticstatic/david-amaringo` | preview | 6b901c0 | 127/127, matches |
+| `drasticstatic/david-amaringo` | r5-lanes | bd25f77 | 127/127, matches, on the held branch, not pushed |
+| `drasticstatic/dpnelson` | main | c3af37d | 127/127, matches |
+| `drasticstatic/findyourfeathers` | main | 822adf9 | 127/127, matches |
+| `drasticstatic/fortuna-vision` | main | d14acf0 | 127/127, matches |
+| `drasticstatic/gratitude-token-project_astro` | main | 3de68ee | 127/127, matches |
+| `drasticstatic/iamoneself` | preview | 48c0d1b | 127/127, matches |
+| `drasticstatic/iamoneself` | r5-lanes | 2fe0fab | 127/127, matches, on the held branch, not pushed |
+| `drasticstatic/littlebird-ambassador` | main | 0636549 | 127/127, matches |
+| `drasticstatic/O-R-G` | main | 74c2cb8 | 127/127, matches |
+| `drasticstatic/O-R-G-astro` | main | 381fd53 | 127/127, matches |
+| `drasticstatic/O-R-G-dapp` | main | 3f5fea6 | 127/127, matches |
+| `drasticstatic/ops-standard-operating-procedures-thef` | preview | ee6ee0d | 131/131, matches |
+| `drasticstatic/pir` | main | a85fed8 | 127/127, matches |
+| `drasticstatic/pir-devine-news` | main | ad39bb6 | 127/127, matches |
+| `drasticstatic/proposals-thef` | preview | 27c5976 | 131/131, matches |
+| `drasticstatic/Psanctuary` | main | a3c12ba | 131/131, matches |
+| `drasticstatic/psychedelic-policy-reform-astro` | main | 24c534d | 127/127, matches |
+| `drasticstatic/psychedelic-policy-reform-dapp` | main | ffb8c11 | 127/127, matches |
+| `drasticstatic/tax-assistant` | main | a3d6316 | 127/127, matches |
+| `drasticstatic/taylordwraps` | main | 0b23ba9 | 127/127, matches |
+| `drasticstatic/trading-assistant` | main | 035c4b7 | 127/127, matches |
+| `drasticstatic/trading-bot_arbitrage_DAPPUv3_hardhat_UNI-CAKE` | main | 51b8a9a | 127/127, matches |
+| `drasticstatic/wilson-lawn-ai-assist` | main | ab231da | 127/127, matches |
+| `Octagon-Religious-Research-Group-ORG/changelog-astro` | r5-lanes | 8915095 | 127/127, matches, on the held branch, not pushed |
+| `Octagon-Religious-Research-Group-ORG/legal` | main | 5af21be | 127/127, matches |
+| `Octagon-Religious-Research-Group-ORG/ops-standard-operating-procedures` | main | 3827d3d | 127/127, matches |
+| `Octagon-Religious-Research-Group-ORG/reading-room` | main | e0099e1 | 127/127, matches |
+| `psanctuary/changelog-astro` | main | 148af0d | 127/127, matches |
+| `psanctuary/legal` | main | 0a11f5a | 131/131, matches |
+| `psanctuary/ops-standard-operating-procedures` | main | 8aa8fcb | 131/131, matches |
+| `psanctuary/reading-room` | main | 887aee4 | 127/127, matches |
+| `psanctuarychurch/changelog-astro` | main | b261248 | 127/127, matches |
+| `psanctuarychurch/legal` | main | 01aa975 | 131/131, matches |
+| `psanctuarychurch/ops-standard-operating-procedures` | main | 538d9bd | 131/131, matches |
+| `psanctuarychurch/reading-room` | main | e4a7005 | 131/131, matches |
+| `psychedelicsinrecovery/.github-private` | main | f72fa07 | 127/127, matches |
+| `psychedelicsinrecovery/alex-desk` | main | 28eb6b1 | 127/127, matches |
+| `psychedelicsinrecovery/board-of-directors` | main | f5c5c06 | 127/127, matches |
+| `psychedelicsinrecovery/catalyst-desk` | main | 9d6f7ae | 127/127, matches |
+| `psychedelicsinrecovery/changelog-astro` | main | 1960622 | 127/127, matches |
+| `psychedelicsinrecovery/github-desk` | main | 2fd9a9b | 127/127, matches |
+| `psychedelicsinrecovery/legal` | main | a922b58 | 131/131, matches |
+| `psychedelicsinrecovery/litcom-desk` | main | ff1faa5 | 127/127, matches |
+| `psychedelicsinrecovery/literature-committee` | main | ee4143a | 127/127, matches |
+| `psychedelicsinrecovery/ops-standard-operating-procedures` | main | 70247ce | 131/131, matches |
+| `psychedelicsinrecovery/pr-desk` | main | adb415a | 127/127, matches |
+| `psychedelicsinrecovery/public-relations` | main | 5158342 | 127/127, matches |
+| `psychedelicsinrecovery/reading-room` | main | affb62f | 131/131, matches |
+| `psychedelicsinrecovery/tech-committee` | main | 440724d | 127/127, matches |
+| `psychedelicsinrecovery/techcom-desk` | main | c4cc389 | 127/127, matches |
+| `taylordwraps/ops-standard-operating-procedures` | main | 6318840 | 131/131, matches |
+| `taylordwraps/reading-room` | main | f4ae3f8 | 131/131, matches |
+| `theholyearthfoundation/changelog-astro` | main | 5ab6f11 | 127/127, matches |
+| `theholyearthfoundation/david-amaringo` | preview | 132d0e7 | 127/127, matches |
+| `theholyearthfoundation/iamoneself-retreats` | preview | b4e056c | 127/127, matches |
+| `theholyearthfoundation/legal` | main | ca65681 | 131/131, matches |
+| `theholyearthfoundation/ops-standard-operating-procedures` | main | 2efea8e | 131/131, matches |
+| `theholyearthfoundation/reading-room` | main | 4c3e0d7 | 131/131, matches |
+
+**Not refreshed, and why:**
+
+- `drasticstatic/divorce-custody-assistant`: its local clone is a detached old checkout (`45c2d96c…`), left alone for the main session.
+- `drasticstatic/my-template-clean`: follows `06ac002` on its own by `sync-clean-template.yml`; not a hand copy.
+- `Octagon-Religious-Research-Group-ORG/changelog-astro` on `main`: still no scanner on GitHub's `main`; the held `r5-lanes` branch is refreshed above.
+
+The two duplicate clones of `theholyearthfoundation/changelog-astro` and `psychedelicsinrecovery/changelog-astro` were pulled afterwards and match.
 
 ## <img src="repo/assets/icons/fingerprint.svg" width="24" height="24" alt=""> Re-copy of the 8002408 master (2026-11-04)
 
