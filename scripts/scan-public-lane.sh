@@ -19,10 +19,14 @@
 #                  not read, but every picture's and font's bytes, and every office file's XML attributes (link targets,
 #                  alt text), are searched for credentials and agent-note pointers
 #   anything else  a binary no machine can read here, refused
-#   Three narrow exceptions (Nov 4). A link to github.com/drasticstatic/<name>-public-preview or
-#   drasticstatic.github.io/<name>-public-preview/ is not a personal matter: a public preview is public by definition.
-#   Only that link token is exempt, and only from the personal-matter words; a street address inside it, or the same word
-#   elsewhere on the line, still trips. The guardianship word negated (no ..., non-...) is a compliance note, not the
+#   Three narrow exceptions (Nov 4; the first widened the same evening, v3). A link to one of Christopher's own
+#   repositories, github.com/drasticstatic/<name>, drasticstatic.github.io/<name> or git@github.com:drasticstatic/<name>,
+#   with or without -public-preview and with any path after it, is not a personal matter: repository names are public,
+#   their contents are what the lane protects. The link token is exempt, and so is its anchor text, HTML
+#   <a href="...">TEXT</a> or Markdown [TEXT](...), when TEXT shows at most 120 characters (Markdown on one line; an HTML
+#   anchor may wrap a short card, 600 characters of markup at most, no anchor inside it). Both are exempt from the
+#   personal-matter words only: a street address or a credential inside either, or the same word elsewhere on the line,
+#   still trips. The guardianship word negated (no ..., non-...) is a compliance note, not the
 #   matter. Pagefind's search index under a folder named pagefind/ passes when its bytes are what pagefind writes (gzip
 #   for *.pf_fragment *.pf_index *.pf_meta; for wasm.*.pagefind gzip that inflates to WebAssembly behind pagefind's
 #   marker, or a bare WebAssembly module; its js, json and css are text and read as text); the compressed bytes are
@@ -139,12 +143,43 @@ CUST = ("".join(f"(?<!{b})" for b in ("self-", "self ", "institutional ", "quali
 # A hyphen, or the dashes a word processor substitutes for one (non-breaking hyphen, en and em dash, minus sign).
 DASH = "[-\u2010-\u2015\u2212]"
 PERSONAL = "a personal-matter word"
-# A link to a public preview is public by definition: github.com/drasticstatic/<name>-public-preview, or
-# drasticstatic.github.io/<name>-public-preview/ and what follows. The link token is blanked (same length, so line
-# numbers hold) before the personal-matter words are searched, and for no other rule: a street address inside the
-# link, a credential, the same word elsewhere on the line, all still trip.
-PUBLIC_PREVIEW = re.compile(r"(?:https?://)?(?:www\.)?(?:github\.com/drasticstatic/[A-Za-z0-9._-]+-public-preview(?:[/#?][^\s<>\"')\]]*)?"
-                            r"(?=[^A-Za-z0-9._-]|$)|drasticstatic\.github\.io/[A-Za-z0-9._-]+-public-preview/[^\s<>\"')\]]*)", re.I)
+# A link to one of Christopher's own repositories is not a personal matter (Nov 3: repository names are public, their
+# contents are what the lane protects): github.com/drasticstatic/<name>, drasticstatic.github.io/<name> or
+# git@github.com:drasticstatic/<name>, with or without -public-preview, and whatever path follows. The link token is
+# blanked (same length, newlines kept, so line numbers hold) before the personal-matter words are searched, and for no
+# other rule: a street address inside the link, a credential, the same word elsewhere on the line, all still trip.
+# The anchor text of such a link is blanked too, HTML <a href="...">TEXT</a> or Markdown [TEXT](...), when TEXT shows at
+# most ANCHOR_MAX characters once its tags are stripped: a Markdown TEXT sits on one line; an HTML anchor may wrap a
+# short card over a few lines (ANCHOR_MARKUP characters of markup at most, and no anchor inside it).
+OWN_PATH = r"(?:[/#?][^\s<>\"')\]]*)?(?=[^A-Za-z0-9._-]|$)"
+OWN_REPO = (r"(?:(?:https?://)?(?:www\.)?(?:github\.com/drasticstatic/[A-Za-z0-9._-]+" + OWN_PATH
+            + r"|drasticstatic\.github\.io/[A-Za-z0-9._-]+" + OWN_PATH + r")|git@github\.com:drasticstatic/[A-Za-z0-9._-]+(?=[^A-Za-z0-9._-]|$))")
+OWN_LINK = re.compile(OWN_REPO, re.I)
+ANCHOR_MAX, ANCHOR_MARKUP = 120, 600
+OWN_HTML_ANCHOR = re.compile(r"<a\b[^>]*?\bhref\s*=\s*[\"']?" + OWN_REPO + r"[\"']?[^>]*>((?:(?!<a\b|</a\b).){0," + str(ANCHOR_MARKUP) + r"}?)</a\s*>",
+                             re.I | re.S)
+OWN_MD_LINK = re.compile(r"\[([^\[\]\n]{1," + str(ANCHOR_MAX) + r"})\]\(" + OWN_REPO + r"\)", re.I)
+
+
+def blank(s):
+    return re.sub(r"[^\n]", " ", s)
+
+
+def personal_hay(text):
+    """The text the personal-matter words are searched in: own-repo links and their anchor text blanked, lengths kept."""
+    def anchor(m):
+        body = m.group(1)
+        shown = " ".join(html.unescape(re.sub(r"<[^>]*>", "", body)).split())
+        if len(shown) > ANCHOR_MAX:
+            return m.group(0)
+        whole, s, e = m.group(0), m.start(1) - m.start(), m.end(1) - m.start()
+        return whole[:s] + blank(body) + whole[e:]
+    hay = OWN_HTML_ANCHOR.sub(anchor, text)
+    hay = OWN_MD_LINK.sub(lambda m: blank(m.group(0)), hay)
+    return OWN_LINK.sub(lambda m: blank(m.group(0)), hay)
+
+
+
 SENSITIVE = [
     (PERSONAL, re.compile(r"\b(?:" + w("div", "orce") + "|" + CUST + "|" + w("tax", "-assistant") + ")", re.I)),
     ("an employer-number shape (NN-NNNNNNN)", re.compile(r"\b\d{2}" + DASH + r"\d{7}\b")),
@@ -345,7 +380,7 @@ def scan_text(text, paged=False):
     if m:
         never.append(f"the agent-notes folder name ({where(stripped, m.start(), paged)})")
     for label, rx in SENSITIVE:
-        hay = PUBLIC_PREVIEW.sub(lambda m: " " * len(m.group(0)), text) if label == PERSONAL else text
+        hay = personal_hay(text) if label == PERSONAL else text
         m = rx.search(hay)
         if m:
             sens.append(f"{label} ({where(text, m.start(), paged)})")

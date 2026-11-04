@@ -166,6 +166,29 @@ write("preview_word_elsewhere/README.md", "Preview: " + PREVIEW + " and the " + 
 write("preview_other_owner/README.md", "See https://github.com/someone-else/" + MATTER + "-public-preview\n")
 write("preview_not_preview/README.md", "See https://github.com/drasticstatic/" + MATTER + "-public-preview-notes\n")
 write("preview_street/README.md", "Map: https://drasticstatic.github.io/" + MATTER + "-public-preview/" + "126 Indus" + "trial Dr" + "\n")
+# Nov 4 evening, v3: any link to one of Christopher's own repositories, and its anchor text. Four lines copied from the
+# repositories where the lane stopped (the tax desk's README.md:12 and index.html:99; anthropas-argus-alfred 404.html:509,
+# alfred-palette-sample.marp.html:210 and .marp.md:74). They stand here verbatim, which is itself the proof: this file
+# passes its own tripwire below.
+write("own_badge/README.md", '<p align="center"><a href="https://drasticstatic.github.io/tax-assistant-public-preview/"><img src="https://img.shields.io/badge/%F0%9F%8C%90%20Public%20Preview-Configured-brightgreen" alt="Public Preview"></a> <a href="https://github.com/open-condo-software/gitexporter"><img src="https://img.shields.io/badge/Synced%20via-GitExporter-blue" alt="Synced via GitExporter"></a> <a href="https://code.claude.com/docs/en/overview"><img src="https://img.shields.io/badge/Built%20with-Claude%20Code%20CLI-blueviolet" alt="Built with Claude Code CLI"></a> <a href="https://github.com/drasticstatic/tax-assistant/actions/workflows/sync-public.yml"><img src="https://github.com/drasticstatic/tax-assistant/actions/workflows/sync-public.yml/badge.svg" alt="Sync"></a></p>\n')
+write("own_anchor_html/index.html", '    Companion repos: <a href="https://drasticstatic.github.io/divorce-custody-assistant-public-preview/">Divorce &amp; Custody Assistant</a>\n')
+write("own_anchor_card/404.html", '''                <a href="https://drasticstatic.github.io/divorce-custody-assistant-public-preview/" class="card">
+                    <div class="card-icon">⚖️</div>
+                    <h3>Divorce/Custody Assistant ⎆</h3>
+                    <p>Documentation assistant and prose litigation help</p>
+                </a>
+''')
+write("own_anchor_li/deck.html", '<li><a href="https://drasticstatic.github.io/divorce-custody-assistant-public-preview/divorce-palette-sample.marp.html"><strong>Divorce &amp; Custody</strong></a> — professional legal deck identity (navy + white)</li>\n')
+write("own_anchor_md/deck.md", '- [**Divorce & Custody**](https://drasticstatic.github.io/divorce-custody-assistant-public-preview/divorce-palette-sample.marp.html) — professional legal deck identity (navy + white)\n')
+OWN = "https://github.com/drasticstatic/" + MATTER + "-" + GUARD + "-assistant"
+write("own_ssh/README.md", "Clone: git@github.com:drasticstatic/" + MATTER + "-" + GUARD + "-assistant-public-preview.git and git@github.com:drasticstatic/" + MATTER + "-notes.git\n")
+write("own_prose/README.md", "See [the assistant](" + OWN + ") before the " + GUARD + " hearing next week.\n")
+write("own_other_domain/README.md", "[" + MATTER.title() + " & " + GUARD.title() + "](https://example.com/x)\n")
+write("own_anchor_long_md/README.md", "[" + ("the " + MATTER + " file, ") * 20 + "read it](" + OWN + ")\n")
+write("own_anchor_long_html/page.html", '<a href="' + OWN + '">' + ("the " + MATTER + " file, ") * 20 + "read it</a>\n")
+write("own_anchor_street/page.html", '<a href="' + OWN + '">' + MATTER.title() + " office, " + "126 Indus" + "trial Dr" + "</a>\n")
+write("own_anchor_token/page.html", '<a href="' + OWN + '">' + TOKEN + "</a>\n")
+write("own_anchor_nested/page.html", '<a href="' + OWN + '">one <a href="https://example.com/">two</a> ' + MATTER + " three</a>\n")
 write("street_plain/README.md", "Mail to " + "126 Indus" + "trial Dr" + ", suite 4.\n")
 write("compliance/README.md", "No " + GUARD + ". Non-" + GUARD[:-1] + "ial. No payments, no " + GUARD + ". No " + GUARD + ", no tokens.\n")
 write("compliance_still/README.md", "No payments. The " + GUARD + " order stands.\n")
@@ -354,10 +377,26 @@ expect 0 "clean"                    "a link to a public preview is not a persona
 expect 0 "clean"                    "the same links inside Markdown brackets and angle brackets pass"      -- "$fx/preview_link_md"
 expect 1 "personal-matter"          "the same word elsewhere on the line still trips"                     -- "$fx/preview_word_elsewhere"
 expect 1 "personal-matter"          "a preview under another owner is not exempt"                         -- "$fx/preview_other_owner"
-expect 1 "personal-matter"          "a name that goes on after -public-preview is not a preview"          -- "$fx/preview_not_preview"
+expect 0 "clean"                    "v3: a name that goes on after -public-preview is still one of our own repositories" -- "$fx/preview_not_preview"
 expect 1 "street-address"           "a street address still trips: the shape rule is kept on purpose"     -- "$fx/street_plain"
 expect 1 "street-address"           "a street address inside a public-preview link still trips"           -- "$fx/preview_street"
 expect 1 "!personal-matter"         "and that link's own matter word is all the exception covers"         -- "$fx/preview_street"
+# ── Nov 4 evening, v3: a link to any of our own repositories, and its anchor text ────────────────────────────────────
+expect 0 "clean"                    "v3: a badge link to the repository itself (no -public-preview) passes"  -- "$fx/own_badge"
+expect 0 "clean"                    "v3: the anchor text of an HTML link to a public preview passes"       -- "$fx/own_anchor_html"
+expect 0 "clean"                    "v3: a card anchor wrapping a heading over several lines passes"       -- "$fx/own_anchor_card"
+expect 0 "clean"                    "v3: a list item's bold anchor text passes"                            -- "$fx/own_anchor_li"
+expect 0 "clean"                    "v3: a Markdown link's anchor text passes"                             -- "$fx/own_anchor_md"
+expect 0 "clean"                    "v3: the SSH clone form of an own repository passes"                   -- "$fx/own_ssh"
+expect 1 "personal-matter"          "v3: the same word in prose outside the link still trips"             -- "$fx/own_prose"
+expect 1 "personal-matter"          "v3: anchor text pointing at another domain is not exempt"            -- "$fx/own_other_domain"
+expect 1 "personal-matter"          "v3: a Markdown anchor text of 300 characters is not exempt"          -- "$fx/own_anchor_long_md"
+expect 1 "personal-matter"          "v3: an HTML anchor text of 300 characters is not exempt"             -- "$fx/own_anchor_long_html"
+expect 1 "street-address"           "v3: a street address inside the anchor text still trips"             -- "$fx/own_anchor_street"
+expect 1 "!personal-matter"         "and that anchor's matter word is all the exception covers"           -- "$fx/own_anchor_street"
+expect 1 "GitHub token"             "v3: a credential inside the anchor text is refused"                   -- "$fx/own_anchor_token"
+expect 1 "No attestation opens"     "and no attestation opens it"                                         -- "$fx/own_anchor_token"
+expect 1 "personal-matter"          "v3: an anchor with another anchor inside it is not exempt"           -- "$fx/own_anchor_nested"
 expect 0 "clean"                    "the guardianship word negated passes (no ..., non-...: a compliance note)" -- "$fx/compliance"
 expect 1 "personal-matter"          "a negation elsewhere on the line does not exempt the word"           -- "$fx/compliance_still"
 expect 1 "personal-matter"          "a word that merely ends in the negation does not exempt it"          -- "$fx/compliance_casino"
