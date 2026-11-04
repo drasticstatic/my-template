@@ -13,7 +13,7 @@ ok() { echo "ok    $1"; }
 # every family with every motif: it writes, and its own check passes
 n=0
 for fam in amber purple teal blue emerald magenta brass rainbow; do
-  for motif in arch candles constellation mycelium path polygon waves; do
+  for motif in arch candles constellation mycelium path polygon seed waves; do
     python3 "$MB" --title "repo-$fam-$motif" --subtitle "A test banner." --kicker "A house" --family "$fam" --motif "$motif" --out "$T/lane/$fam-$motif.svg" >/dev/null || no "$fam $motif did not build"
     n=$((n + 1))
   done
@@ -31,6 +31,14 @@ python3 "$MB" --title same --subtitle words --family teal --motif constellation 
 python3 "$MB" --title other --subtitle words --family teal --motif constellation > "$T/c"
 cmp -s "$T/a" "$T/b" && ok "same words, same picture" || no "not deterministic"
 [ "$(grep -c '<circle' "$T/a")" -gt 0 ] && ! cmp -s "$T/a" "$T/c" && ok "other words, another picture" || no "two titles drew the same picture"
+
+# the two house styles: a style sets the motif and wears brass unless a family is named
+python3 "$MB" --style seed --title "a beginning" --subtitle words --out "$T/s1" >/dev/null 2>&1 && python3 "$MB" --check "$T/s1" >/dev/null && grep -q 'find each other' "$T/s1" && grep -q '#d9a441' "$T/s1" && ok "--style seed builds in brass and passes --check" || no "--style seed did not build, failed --check, or is not the seed picture in brass"
+python3 "$MB" --style waves --title "a front door" --subtitle words --out "$T/s2" >/dev/null 2>&1 && python3 "$MB" --check "$T/s2" >/dev/null && grep -q 'waves drawing in' "$T/s2" && ok "--style waves builds and passes --check" || no "--style waves did not build or is not the waves picture"
+python3 "$MB" --style seed --family teal --title "a beginning" --subtitle words > "$T/s3" 2>/dev/null && ! grep -q '#d9a441' "$T/s3" && ok "--style seed takes a named family instead of brass" || no "--style seed ignored --family"
+python3 "$MB" --motif mycelium --family brass --title "a beginning" --subtitle words > "$T/s4" 2>/dev/null && ! cmp -s "$T/s1" "$T/s4" && ok "seed is its own picture, not mycelium" || no "seed drew the mycelium picture"
+python3 "$MB" --style seed --motif waves --title a --subtitle b >/dev/null 2>&1 && no "--style with --motif was accepted" || ok "--style with --motif is refused"
+python3 "$MB" --title "constellation of words" --subtitle s --family lab > "$T/s5" 2>/dev/null && ! grep -q 'find each other' "$T/s5" && ok "a title picks its motif from the seven, never seed" || no "the title's own pick reached seed"
 
 # motion only inside the gate
 sed -n '/no-preference/,/^    }$/d; p' "$T/a" | grep -q 'animation:' && no "motion outside the reduced-motion gate" || ok "motion lives only inside the gate"

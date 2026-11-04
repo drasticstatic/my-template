@@ -4,13 +4,20 @@
     python3 scripts/make-banner.py --title NAME --subtitle "WHAT IT IS" --family amber --motif waves \\
                                    [--kicker "WHOSE IT IS"] [--count N] [--seed TEXT] [--out assets/banner.svg]
     python3 scripts/make-banner.py --palette 134e4a,0f766e,0d9488,ccfbf1 ...   # your own four shades, instead of --family
-    python3 scripts/make-banner.py --list                                      # families and motifs
+    python3 scripts/make-banner.py --style seed --title NAME --subtitle ...     # a house style: waves or seed (brass unless told)
+    python3 scripts/make-banner.py --list                                      # families, styles and motifs
     python3 scripts/make-banner.py --check assets/banner.svg ...               # does a banner meet the standard?
     python3 scripts/make-banner.py --check-readme README.md ...                # does a README meet the standard?
     python3 scripts/make-banner.py --icons README.md [--family amber]          # copy the Lucide icons it names, toned
 
 The same words give the same picture, and different words give a different one: the geometry grows from --seed, which
 defaults to the title. Choose the motif for what the repository means; left out, it is picked from the title.
+
+Two house styles, for when the picture should say "the lab made this" before it says anything else (--style):
+  * waves, for a front door: a sun held by an open circle, waves drawing in beneath it.
+  * seed, for a beginning: thin threads leave one point and find each other. First drawn by hand for a repository
+    that was a seed and not a spec (Nov 2026), then kept here so the next beginning can wear it.
+A style sets the motif and, unless --family or --palette says otherwise, the lab's brass on slate.
 
 What the fleet's hand-drawn banners taught, kept here so nobody relearns it:
   * Motion lives only inside @media (prefers-reduced-motion: no-preference). Outside it every element is in its
@@ -217,6 +224,39 @@ def m_mycelium(t, rng, n):
     return out, f"threads grow from one node toward {n} others, the way mycelium finds its neighbours"
 
 
+def m_seed(t, rng, n):
+    """The seed style: thin threads leave one point, and on the way out each one finds its neighbour."""
+    n = n or 7
+    x0, y0, x1, y1 = ZONE
+    hx, hy = x1 - 54, (y0 + y1) / 2 + (rng.random() - .5) * 30
+    out, ends, mids = [], [], []
+    for i in range(n):
+        f = (i + .5) / n
+        ex = x0 + 16 + rng.random() * 140
+        ey = y0 + 12 + f * (y1 - y0 - 24) + (rng.random() - .5) * 10
+        c1 = (hx - 80 - rng.random() * 70, hy + (ey - hy) * .5 + (rng.random() - .5) * 26)
+        c2 = (ex + 70 + rng.random() * 80, ey + (rng.random() - .5) * 40)
+        out.append(line_path(f"M{hx:.1f} {hy:.1f}C{c1[0]:.1f} {c1[1]:.1f} {c2[0]:.1f} {c2[1]:.1f} {ex:.1f} {ey:.1f}", "url(#line)", 1.8, start=.2 + i * .25))
+        ends.append((ex, ey))
+        u = .5 + rng.random() * .15  # where on this thread the next one will be met
+        mids.append(((1 - u) ** 3 * hx + 3 * (1 - u) ** 2 * u * c1[0] + 3 * (1 - u) * u ** 2 * c2[0] + u ** 3 * ex,
+                     (1 - u) ** 3 * hy + 3 * (1 - u) ** 2 * u * c1[1] + 3 * (1 - u) * u ** 2 * c2[1] + u ** 3 * ey))
+    # the finding: each thread reaches from its middle to the next thread's middle, and neighbouring ends join hands
+    for i in range(n - 1):
+        (ax, ay), (bx, by) = mids[i], mids[i + 1]
+        out.append(line_path(f"M{ax:.1f} {ay:.1f}Q{(ax + bx) / 2 - 24:.1f} {(ay + by) / 2:.1f} {bx:.1f} {by:.1f}", t.dim, 1.1, start=1.8 + i * .25))
+        (px, py), (qx, qy) = ends[i], ends[i + 1]
+        out.append(line_path(f"M{px:.1f} {py:.1f}Q{(px + qx) / 2 - 30:.1f} {(py + qy) / 2:.1f} {qx:.1f} {qy:.1f}", t.dim, 1.0, start=2.4 + i * .25))
+    for i, (x, y) in enumerate(ends):
+        out.append(f'<circle class="arrive"{delay(1.4 + i * .25)} cx="{x:.1f}" cy="{y:.1f}" r="4.5" fill="{t.line}"/>')
+    for i, (x, y) in enumerate(mids):
+        out.append(f'<circle class="arrive"{delay(2.2 + i * .25)} cx="{x:.1f}" cy="{y:.1f}" r="2.5" fill="{t.dim}"/>')
+    out.append(halo(hx, hy, 18, t.hi))
+    out.append(f'<circle class="breathe" cx="{hx:.1f}" cy="{hy:.1f}" r="14" fill="{t.line}"/>')
+    out.append(f'<circle cx="{hx:.1f}" cy="{hy:.1f}" r="5.5" fill="{t.tint}"/>')
+    return out, f"thin threads leave one point and find each other: {n} reach out, and each one meets its neighbour on the way"
+
+
 def m_waves(t, rng, n):
     n = n or 4
     x0, y0, x1, y1 = ZONE
@@ -340,11 +380,16 @@ def m_constellation(t, rng, n):
 
 MOTIFS = {"path": (m_path, "a road: a sequence of stops, onboarding, a method"),
           "mycelium": (m_mycelium, "a network: people or repositories that feed each other"),
+          "seed": (m_seed, "a beginning: thin threads leave one point and find each other"),
           "waves": (m_waves, "a practice or a rhythm: sun, circle, sea"),
           "polygon": (m_polygon, "a form with named parts (--count is its sides)"),
           "arch": (m_arch, "a threshold: a front door, a law, something that holds up"),
           "candles": (m_candles, "markets: illustration only, never real data, never a real pair"),
           "constellation": (m_constellation, "a library or a map: many things, one sky")}
+
+# A house style is a whole look the lab has settled on: one motif, and brass on slate unless a family is named.
+STYLES = {"waves": ("waves", "a front door: a sun held by an open circle, waves drawing in beneath it"),
+          "seed": ("seed", "a beginning: thin threads leave one point and find each other")}
 
 
 # ---------------------------------------------------------------- the picture
@@ -552,6 +597,8 @@ def main():
     ap.add_argument("--family", help="a TONES.md family or its short name (see --list)")
     ap.add_argument("--palette", help="your own four shades instead of a family: deep,mid,primary,tint (hex, no #)")
     ap.add_argument("--motif", choices=sorted(MOTIFS))
+    ap.add_argument("--style", choices=sorted(STYLES),
+                    help="a house style: waves for a front door, seed for a beginning; sets the motif, and brass unless --family or --palette says otherwise")
     ap.add_argument("--count", type=int, help="how many stops, threads, waves, sides, stones, candles or stars")
     ap.add_argument("--seed", help="geometry seed; defaults to the title")
     ap.add_argument("--out", help="write here; default is standard output")
@@ -563,6 +610,10 @@ def main():
 
     if a.list:
         print("families:", ", ".join(FAMILIES), "(short names:", ", ".join(f"{k}={v}" for k, v in ALIASES.items()) + ")")
+        print("styles (the lab's house looks; --style sets the motif, and brass unless a family is named):")
+        for k, (_, why) in sorted(STYLES.items()):
+            print(f"  {k:<14} {why}")
+        print("motifs:")
         for k, (_, why) in sorted(MOTIFS.items()):
             print(f"  {k:<14} {why}")
         return 0
@@ -579,6 +630,10 @@ def main():
 
     if not (a.title and a.subtitle):
         ap.error("--title and --subtitle are required")
+    if a.style and a.motif:
+        ap.error("--style sets the motif; give one or the other")
+    if a.style and not (family or a.palette):
+        family = "brass"  # a house style wears the house's colours unless told otherwise
     if a.palette:
         shades = tuple(x.strip().lstrip("#").lower() for x in a.palette.split(","))
         if len(shades) != 4 or not all(re.fullmatch(r"[0-9a-f]{6}", x) for x in shades):
@@ -590,7 +645,11 @@ def main():
         ap.error("--family or --palette is required")
     if a.count is not None and not 3 <= a.count <= 30:
         ap.error("--count runs from 3 to 30")
-    motif = a.motif or sorted(MOTIFS)[int(hashlib.sha256((a.seed or a.title).encode()).hexdigest(), 16) % len(MOTIFS)]
+    # Left out, the motif comes from the title. The pick runs over the seven original motifs, so a banner first drawn
+    # before the styles existed still comes out the same; seed is reached through --style or --motif.
+    pick = sorted(k for k in MOTIFS if k != "seed")
+    motif = a.motif or (STYLES[a.style][0] if a.style else
+                        pick[int(hashlib.sha256((a.seed or a.title).encode()).hexdigest(), 16) % len(pick)])
 
     svg = build(a.title, a.subtitle, tone, motif, a.count, a.seed, a.kicker)
     bad, warn = lint_svg(svg)
