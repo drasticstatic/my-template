@@ -2,7 +2,7 @@
 
 **TL;DR:** the public-lane tripwire ([`scripts/scan-public-lane.sh`](../scripts/scan-public-lane.sh), self-test beside
 it) reads every file a lane is about to publish, and stops the lane when something has not been read. This page says
-where each copy stands on 2026-11-04. 61 repositories are listed below; every copy was refreshed to the `8002408` master that day. Nine lanes were finished
+where each copy stands on 2026-11-04. 61 repositories are listed below; every copy was refreshed to the `8002408` master that day, and again that evening to `06ac002` (v3: own-repo links and their anchor text). Nine lanes were finished
 this round and **their fixes wait on branch `r5-lanes`, not yet pushed.** Six of the nine rehearse clean. Two others each
 need one decision from Christopher, and the lab `iamoneself` needs a master rule.
 
@@ -13,11 +13,12 @@ need one decision from Christopher, and the lab `iamoneself` needs a master rule
 
 | File | Commit | md5 |
 |---|---|---|
-| `scripts/scan-public-lane.sh` | `8002408` | `a9d35d6d2162ec0d4df47a4d7f8d7fc8` |
-| `scripts/scan-public-lane.selftest.sh` | `8002408` | `c6bcd75658dafa6856da97aed9f7abf2` |
+| `scripts/scan-public-lane.sh` | `06ac002` | `fc54aa60a95f278eb366280f30049dae` |
+| `scripts/scan-public-lane.selftest.sh` | `06ac002` | `639a7c43b7314ff48cf8c9e6640dbdfd` |
 
 Copy, do not fork: when the master changes, copy it again into each repository on this page. The self-test reports
-112/112 in a copy, 116/116 where `scripts/sync-allowlist.sh` sits beside it, and 118/118 here. Lanes on the template's family
+127/127 in a copy, 131/131 where `scripts/sync-allowlist.sh` sits beside it, and 133/133 here (the `8002408` master
+reported 112, 116 and 118). Lanes on the template's family
 carry `sop-template/repo/scripts/sync-allowlist.sh` byte for byte (md5 `504181e2…`). Psanctuary's `--check` family keeps
 its own script with the call site edited.
 
@@ -37,9 +38,37 @@ outside `pagefind/` and any other binary there are refused. This is the master r
 (d) The street-address shape is kept on purpose: a self-test case proves a plain address still trips, and that an
 address inside a public-preview link still trips with no personal-matter refusal on that line.
 
+**2026-11-04 evening, v3: own-repo links and their anchor text (`06ac002`).** Christopher's rule of Nov 3: "I don't name
+my repos in ways that have anything to hide"; repository names are public, their contents are what the lane protects. Two
+real cases still tripped the `8002408` exception: a repository linking to itself or a sibling by a non-preview address
+(the tax desk's README badge, `github.com/drasticstatic/<name>/actions/workflows/…/badge.svg`), and the anchor text of such
+a link (the tax desk's `index.html`, and three files in `anthropas-argus-alfred`: a 404 page's card, a palette deck's
+list item and its Markdown source). Exception (a) widens: any link under `github.com/drasticstatic/<name>`,
+`drasticstatic.github.io/<name>` or the SSH form `git@github.com:drasticstatic/<name>` (the Nov 4 verifier found that one
+was not exempt), with or without `-public-preview` and with any path after it, is blanked for the personal-matter rule
+only. The anchor text of such a link is blanked too, HTML `<a href="…">TEXT</a>` or Markdown `[TEXT](…)`, when TEXT shows
+at most 120 characters: a Markdown TEXT sits on one line; an HTML anchor may wrap a short card over a few lines (the 404
+page's card is five lines: a div, a heading and a paragraph inside one `<a>`), 600 characters of markup at most, no anchor
+inside it. Everything else stays: the same word in prose outside a link still trips (the tax desk's *You are here* line,
+which names the repository in backticks, now surfaces as the next refusal), a street address or a credential inside the
+link or its text still trips, a link under another owner or domain is not exempt. Fifteen self-test cases were added, the
+five real lines among them, copied verbatim; the case "a name that goes on after `-public-preview`" flipped to pass, since
+that is one of our own repositories too. The self-test here reports 133/133.
+
 The 28188db master (2026-11-02) added the media list. `PUBLIC-LANE-MEDIA.txt` names folders whose pictures and fonts a
 lane publishes on purpose: a person chose them, and a machine still reads what it can. Base64 in text is decoded and
 read, and an SVG that can run something is refused.
+
+## <img src="repo/assets/icons/fingerprint.svg" width="24" height="24" alt=""> Re-copy of the 06ac002 master (2026-11-04, evening)
+
+The v3 master was copied into every repository of the previous section the same way, the same evening: clone pulled
+(`git pull --rebase --autostash`), the pair copied from the master, the self-test run there and green, the two files
+committed on their own (`:lock: security(tripwire): scanner copy refreshed (own-repo links and their anchor text)`) and
+pushed to the working branch; held `r5-lanes` branches committed and not pushed; parked clones (`genesis`,
+`nav-reading-room`) refreshed through a temporary worktree on the working branch. `drasticstatic/tax-assistant` joins the
+page this round. Every copy was checked by md5 against `fc54aa60…` / `639a7c43…` after the push.
+
+<!-- v3 re-copy table: filled after the fan-out -->
 
 ## <img src="repo/assets/icons/fingerprint.svg" width="24" height="24" alt=""> Re-copy of the 8002408 master (2026-11-04)
 
