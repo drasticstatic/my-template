@@ -2,10 +2,10 @@
 
 ![SOP](https://img.shields.io/badge/SOP-COM--002-d9a441?style=flat-square)
 ![Status](https://img.shields.io/badge/Status-draft-334155?style=flat-square)
-![Changed](https://img.shields.io/badge/Changed-2026--11--04-8a6a2a?style=flat-square)
+![Changed](https://img.shields.io/badge/Changed-2026--11--05-8a6a2a?style=flat-square)
 ![For](https://img.shields.io/badge/For-Account_holders_and_their_contacts-64748b?style=flat-square)
 
-**Department:** COM · **ID:** 002 · **Status:** draft (approved when tagged) · **Owner:** the organisation's stewards · **Last changed:** 2026-11-04
+**Department:** COM · **ID:** 002 · **Status:** draft (approved when tagged) · **Owner:** the organisation's stewards · **Last changed:** 2026-11-05
 
 > [!NOTE]
 > This page is for two readers at once: the **account holder** who turned on Apple's strongest protection, and the **people they chose** to hold a way back in. It names roles, never people. The holder keeps their own private list of who is who. Written from Apple's own support pages, read on 2026-11-04 and linked below; Apple changes these things, so check the links when it matters.
@@ -41,20 +41,20 @@ flowchart LR
 - Two-factor sign-in on the Apple account (Apple requires it for the protection to turn on).
 - Every device on the account updated (iOS 16.2, macOS 13.1 or later for the protection; recovery contacts need iOS 15 / macOS 12 or later and iMessage on).
 - At least one recovery contact **or** a recovery key before the protection turns on; both is the lean.
-- A password manager with its own emergency kit on paper, because the recovery key lives there.
+- A paper copy of the recovery key and of your password manager's emergency kit, away from your devices. Apple cannot replace a lost key.
 
 ## <img src="../assets/icons/footprints.svg" width="24" height="24" alt=""> Steps
 
 ### 1 · For the account holder: set it up (about 20 minutes)
-1. System Settings → your name → **Sign-In & Security** → **Recovery Contacts** → Add. Choose people who will answer the phone in a bad week. Each one must **accept in Messages**; until then they do not count. *You should see:* their names listed with "accepted".
-2. Same screen → **Recovery Key** → Turn On. Write the 28 characters down **by hand** and put them in the password manager. Apple's own warning: never in Apple Passwords, Notes, Photos or iCloud Drive, because those are what is locked when you need it. *You should see:* "Recovery Key: On".
+1. System Settings → your name → **Sign-In & Security** → **Recovery Contacts** → Add. Choose people who will answer the phone in a bad week. Each one must **accept in Messages**; until then they do not count. Apple tells you when one accepts ("you\'ll see a message that they\'ve been added") and notifies you if one declines or later removes themselves. Silence is not a yes: ask each person to confirm, and do it again at the yearly test. *You should see:* their names listed with "accepted".
+2. Same screen → **Recovery Key** → Turn On. Write the 28 characters down **by hand** and keep that paper as the real copy (see *The day every device is gone*); a password manager is a convenient second copy, not the only one. Apple's own warning: never in Apple Passwords, Notes, Photos or iCloud Drive, because those are what is locked when you need it. *You should see:* "Recovery Key: On".
 3. Same screen → **Legacy Contact** → Add. Apple makes an **access key**; send it by iMessage (it is stored on their device when they accept) or print it. *You should see:* each name listed.
 4. Your name → **iCloud** → **Advanced Data Protection** → Turn On. *You should see:* "On". From now on Apple does not hold the keys to your iCloud Drive, Photos, Notes, backups or Messages backups.
 5. Write a private page that lists who holds which role and where the key lives (the organisation's helpers keep theirs in a private spec). This public page never names anyone.
 
 ### 2 · For a recovery contact: what to do when the call comes
 1. The holder phones you or stands in front of you and says they are locked out. **Ask them something only they would know.** A stranger with their phone number is the risk this role exists to stop.
-2. Open Settings → your name → **Sign-In & Security** → **Account Recovery** → their name → **Get Recovery Code**. *You should see:* six digits.
+2. Open Settings → your name → **Sign-In & Security**, find the recovery section (Apple renames it between versions: *Recovery Contacts* or *Account Recovery*), tap their name → **Get Recovery Code**. *You should see:* six digits.
 3. Read the six digits to them, by voice. Never text them to a number you did not already have, never read them to anyone else, never to an email.
 4. That is all. You never see their data; the code only lets them set a new password.
 
@@ -65,10 +65,26 @@ flowchart LR
 
 ### 4 · The yearly test (15 minutes, put it on the calendar)
 1. Holder: the Sign-In & Security screen still lists the contacts as accepted, the key as On, the legacy contacts as set.
-2. One recovery contact: confirm the holder's name appears under Account Recovery on their own device.
-3. The key in the password manager still reads 28 characters.
+2. Each recovery contact: on their own device, under Sign-In & Security, your name is listed and they can find **Get Recovery Code**. This is the only way to know for sure that the person will be there. Ten minutes on a call, once a year.
+3. Both paper copies still exist and are readable, and the key on them still reads 28 characters. Check the seal on the one held elsewhere.
 4. Each legacy contact can still find their access key.
 5. Note the date on the holder's private page.
+
+## <img src="../assets/icons/shield-check.svg" width="24" height="24" alt=""> The day every device is gone
+
+The test for all of this is a house fire: every Mac and phone gone at once. Walk it through before it happens.
+
+| You will need | Where it must be, so a fire cannot take it |
+|---|---|
+| **A new Apple device** | a store. Apple's recovery runs on an Apple device |
+| **Your trusted phone number** | your carrier can reissue it to a new SIM. Know the account's PIN, and write it on the paper below |
+| **The recovery key, on paper** | Apple's own advice is "a printed or handwritten copy" in a safe place, because a lost key cannot be replaced |
+| **Your password manager's emergency kit, on paper**, with its master password kept in your head or sealed beside it | anywhere but a device or a cloud drive that needs this same account to open |
+| **A recovery contact who answers** | their phone, not yours, which is why a contact is the second way in |
+
+**A loop is the thing to look for.** A key inside a password manager, whose kit sits on a drive that needs the Apple account to open, is one chain: lose the devices and every link goes at once. An encrypted image on iCloud is a good backup and a bad last resort, for this reason.
+
+**Two paper copies, two places.** One in a fire-resistant safe at home. A home safe alone still fails a flood or a theft, so the second goes away from the house: a bank box, or a sealed envelope with someone you trust who is not one of your recovery contacts. A sealed copy held by someone else is only as private as the seal, so date it and check the seal at the yearly test.
 
 ## <img src="../assets/icons/shield-check.svg" width="24" height="24" alt=""> What never happens here
 - Nobody is ever asked for a password, a code or the key by text, email or a stranger on the phone. A real recovery is a voice you know.
