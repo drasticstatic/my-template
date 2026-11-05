@@ -1,22 +1,37 @@
-# 🌱 Dependabot: a gentle trickle of updates you can trust
+<div align="center">
 
-**TL;DR:** Dependabot keeps a site's dependencies current and patched. Kept gentle, it's a few PRs a
+<img src="../sop-template/repo/assets/icons/sprout.svg" width="56" height="56" alt="">
+
+# Dependabot: a gentle trickle of updates you can trust
+
+*A few PRs a month, never a flood, and nothing reaches the live site untested.*
+
+![Kind](https://img.shields.io/badge/Walkthrough-dependabot-d9a441?style=flat-square)
+![Changed](https://img.shields.io/badge/Changed-2026--11--04-8a6a2a?style=flat-square)
+![For](https://img.shields.io/badge/For-Whoever_keeps_a_site's_dependencies-64748b?style=flat-square)
+
+<img src="../sop-template/repo/assets/icons/map-pin.svg" width="16" height="16" alt=""> **You are here:** drasticstatic lab › [`my-template`](../README.md) › [walkthroughs](README.md) › `DEPENDABOT.md` · public · `main` is the working branch
+
+</div>
+
+## <img src="../sop-template/repo/assets/icons/compass.svg" width="24" height="24" alt=""> TL;DR
+
+Dependabot keeps a site's dependencies current and patched. Kept gentle, it's a few PRs a
 month, never a flood. Kept trustworthy, nothing reaches the live site untested.
-- **A monthly config:** minor and patch updates in one PR, majors in a second, Actions in a third.
-- **Security fixes don't wait for the schedule.** With alerts on (see
-  [Org security settings](ORG-SECURITY-SETTINGS.md)), they open as soon as a fix exists.
-- **Test every PR** in its own copy, against a baseline, before merging.
-- **Merge one at a time,** waiting for each deploy and checking a real stylesheet loads.
-- **Hold a risky major** with an `ignore` rule, and write the reason beside it.
+
+1. <img src="../sop-template/repo/assets/icons/workflow.svg" width="16" height="16" alt=""> **A monthly config:** minor and patch updates in one PR, majors in a second, Actions in a third.
+2. <img src="../sop-template/repo/assets/icons/shield-alert.svg" width="16" height="16" alt=""> **Security fixes don't wait for the schedule.** With alerts on (see
+   [Org security settings](ORG-SECURITY-SETTINGS.md)), they open as soon as a fix exists.
+3. <img src="../sop-template/repo/assets/icons/flask-conical.svg" width="16" height="16" alt=""> **Test every PR** in its own copy, against a baseline, before merging.
+4. <img src="../sop-template/repo/assets/icons/git-merge.svg" width="16" height="16" alt=""> **Merge one at a time,** waiting for each deploy and checking a real stylesheet loads.
+5. <img src="../sop-template/repo/assets/icons/octagon.svg" width="16" height="16" alt=""> **Hold a risky major** with an `ignore` rule, and write the reason beside it.
 
 *Learned on 2026-10-26, rolling Dependabot out across a foundation's two sites and several friendly
 communities' AstroLogs, portals, a Discord helper bot and a web3 dApp. The foundation's 11 updates
 were tested and rehearsed one by one. Elsewhere 32 PRs were tested: 21 green, 10 held for a reason,
 1 obsolete.*
 
----
-
-## 🗂️ The config
+## <img src="../sop-template/repo/assets/icons/file-text.svg" width="24" height="24" alt=""> The config
 
 `.github/dependabot.yml` in the source repository (never in a `-public` mirror that only holds built
 output):
@@ -45,7 +60,7 @@ updates:
 ```
 
 <details>
-<summary><b>🎭 Sites with a rehearsal lane: <code>target-branch: preview</code></b></summary>
+<summary><img src="../sop-template/repo/assets/icons/git-branch.svg" width="16" height="16" alt=""> <b>Sites with a rehearsal lane: <code>target-branch: preview</code></b></summary>
 
 Where `preview` publishes a rehearsal and `main` publishes live, add `target-branch: "preview"` to
 each entry. Version updates then rehearse before a Promote PR takes them live.
@@ -60,7 +75,7 @@ each entry. Version updates then rehearse before a Promote PR takes them live.
 </details>
 
 <details>
-<summary><b>🤫 Commit config-only changes with <code>[skip ci]</code></b></summary>
+<summary><img src="../sop-template/repo/assets/icons/circle-dashed.svg" width="16" height="16" alt=""> <b>Commit config-only changes with <code>[skip ci]</code></b></summary>
 
 Pushing `dependabot.yml` to `main` can trigger a deploy: a site rebuild, or a live bot redeploy.
 Adding `[skip ci]` anywhere in the commit message stops push-triggered workflows for that commit.
@@ -68,7 +83,7 @@ Dependabot's own first scan still runs.
 
 </details>
 
-## ✋ Holding a major on purpose
+## <img src="../sop-template/repo/assets/icons/octagon.svg" width="24" height="24" alt=""> Holding a major on purpose
 
 A major update can build and still break something nearby. **Example:** TypeScript 7 compiled and
 type-checked, but `typescript-eslint` didn't support it yet, so `eslint` stopped. Hold it in the
@@ -88,7 +103,7 @@ config, with the reason where the next person will see it:
   the next person, and Dependabot may not answer it on a PR it stopped tracking (for example after a
   config moved to `preview`). Prefer the config.
 
-## 🧪 Test every PR before merging
+## <img src="../sop-template/repo/assets/icons/flask-conical.svg" width="24" height="24" alt=""> Test every PR before merging
 
 Each PR gets its own throwaway copy, beside a baseline built from the branch it targets:
 
@@ -103,7 +118,7 @@ Compare against the baseline: the same checks green, the same page count, no new
 **look at what the site produces**:
 
 <details>
-<summary><b>🖼️ A build can pass while the output is wrong</b></summary>
+<summary><img src="../sop-template/repo/assets/icons/scan-search.svg" width="16" height="16" alt=""> <b>A build can pass while the output is wrong</b></summary>
 
 An AstroLog's minor-and-patch group took `satori` (it draws the share cards) from 0.18 to 0.63. In
 0.x versions a "minor" can break things. The site built cleanly, but the share cards came out with
@@ -124,7 +139,7 @@ outputs.**
 </details>
 
 <details>
-<summary><b>🧩 A broad <code>npm audit fix</code> can nest a second copy</b></summary>
+<summary><img src="../sop-template/repo/assets/icons/shapes.svg" width="16" height="16" alt=""> <b>A broad <code>npm audit fix</code> can nest a second copy</b></summary>
 
 On a wallet dApp, `npm audit fix` re-resolved the tree and nested a second `@wagmi/connectors` (8.x)
 under `@reown/appkit-adapter-wagmi`. The build then failed with *"Package path ./tempo is not
@@ -137,7 +152,7 @@ Check for a nested copy afterwards: `ls node_modules/<parent>/node_modules`.
 </details>
 
 <details>
-<summary><b>🧭 Test on the workflow's Node, not just yours</b></summary>
+<summary><img src="../sop-template/repo/assets/icons/compass.svg" width="16" height="16" alt=""> <b>Test on the workflow's Node, not just yours</b></summary>
 
 astro 7 needs Node 22.23.4 or newer, but the site's `deploy.yml` still pinned Node 20. It built
 locally on a newer Node, then would have failed in CI. Before merging a framework major, check the
@@ -152,7 +167,7 @@ resolves to.** The setup step's log shows it.
 
 </details>
 
-## 🚦 Merge one at a time, then check the live site
+## <img src="../sop-template/repo/assets/icons/git-merge.svg" width="24" height="24" alt=""> Merge one at a time, then check the live site
 
 A small script does the patient part. Two shapes have been used:
 - **Into `preview`**, for sites with a rehearsal lane.
@@ -171,7 +186,7 @@ Both follow the same rules:
 
 Order: **security fixes first, then Actions, then minor and patch.** Majors only with a tested reason.
 
-## 📝 Accepted advisories: write them down
+## <img src="../sop-template/repo/assets/icons/notebook-pen.svg" width="24" height="24" alt=""> Accepted advisories: write them down
 
 Sometimes the only fix breaks the product. Example: a `zod` and a `decode-uri-component` advisory,
 buried inside wallet libraries. Their fixes need zod 4 and an ESM-only package, and forcing either
@@ -179,14 +194,19 @@ breaks the wallet. Both are memory or slowness problems in the visitor's own bro
 the repository's `AGENTS.md`: which advisory, why it's tolerable, what would break, and when to look
 again. The next person, or AI helper, then won't "fix" it into an outage.
 
-## 🧭 For the AI helper
+## <img src="../sop-template/repo/assets/icons/bot.svg" width="24" height="24" alt=""> For the AI helper
 
-- **Testing is yours; merging to a live branch is your person's call** unless they've said otherwise.
+- <img src="../sop-template/repo/assets/icons/hand-helping.svg" width="16" height="16" alt=""> **Testing is yours; merging to a live branch is your person's call** unless they've said otherwise.
   Hand them a tested merge script and the one line that starts it, then watch its log.
-- **Never merge an untested PR to make a list shorter.** "Held, with a reason" is a finished state.
-- **Security PRs come in bursts** right after alerts are turned on. Re-list before each run.
+- <img src="../sop-template/repo/assets/icons/octagon.svg" width="16" height="16" alt=""> **Never merge an untested PR to make a list shorter.** "Held, with a reason" is a finished state.
+- <img src="../sop-template/repo/assets/icons/bell.svg" width="16" height="16" alt=""> **Security PRs come in bursts** right after alerts are turned on. Re-list before each run.
 
----
+## <img src="../sop-template/repo/assets/icons/git-pull-request.svg" width="24" height="24" alt=""> Suggest a change
+
+Noticed something wrong, or a step that could be kinder? Open an [issue](https://github.com/drasticstatic/my-template/issues)
+or a pull request against `main`, changing this page. A person with the role reads it and merges with a merge commit, so
+your name stays on it. An AI helper may do all of that up to the merge. Not on GitHub? Tell any steward you know, or your
+helper, in your own words.
 
 *Part of the [walkthroughs](README.md). Official docs:
 [Dependabot options reference](https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference).*

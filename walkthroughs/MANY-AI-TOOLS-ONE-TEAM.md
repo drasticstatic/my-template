@@ -1,17 +1,32 @@
-# 🤝 Many AI tools, one team
+<div align="center">
 
-**TL;DR:** you can use Claude, Codex, ChatGPT, Cursor, Littlebird and Cosmos side by side without
+<img src="../sop-template/repo/assets/icons/handshake.svg" width="56" height="56" alt="">
+
+# Many AI tools, one team
+
+*Several helpers, side by side, sharing one rulebook, one notebook, one credit line and one set of connections.*
+
+![Kind](https://img.shields.io/badge/Walkthrough-many_AI_tools_one_team-d9a441?style=flat-square)
+![Changed](https://img.shields.io/badge/Changed-2026--11--04-8a6a2a?style=flat-square)
+![For](https://img.shields.io/badge/For-Anyone_working_with_more_than_one_helper-64748b?style=flat-square)
+
+<img src="../sop-template/repo/assets/icons/map-pin.svg" width="16" height="16" alt=""> **You are here:** drasticstatic lab › [`my-template`](../README.md) › [walkthroughs](README.md) › `MANY-AI-TOOLS-ONE-TEAM.md` · public · `main` is the working branch
+
+</div>
+
+## <img src="../sop-template/repo/assets/icons/compass.svg" width="24" height="24" alt=""> TL;DR
+
+You can use Claude, Codex, ChatGPT, Cursor, Littlebird and Cosmos side by side without
 confusion, because they share four things:
-- **One rulebook:** `AGENTS.md`.
-- **One notebook:** `PENDING-TASKS.md`, `AGENT-SYNC/` and `logs/`.
-- **One credit line:** a single trailer that names which helper did what.
-- **One set of connections:** the same MCP servers and skills, wherever the tool supports them.
+
+1. <img src="../sop-template/repo/assets/icons/scroll-text.svg" width="16" height="16" alt=""> **One rulebook:** `AGENTS.md`.
+2. <img src="../sop-template/repo/assets/icons/notebook-pen.svg" width="16" height="16" alt=""> **One notebook:** `PENDING-TASKS.md`, `AGENT-SYNC/` and `logs/`.
+3. <img src="../sop-template/repo/assets/icons/pencil-line.svg" width="16" height="16" alt=""> **One credit line:** a single trailer that names which helper did what.
+4. <img src="../sop-template/repo/assets/icons/network.svg" width="16" height="16" alt=""> **One set of connections:** the same MCP servers and skills, wherever the tool supports them.
 
 The diversity of tools is a strength. Each has its gifts, and together they make one body of work.
 
----
-
-## 🧭 Where each helper works
+## <img src="../sop-template/repo/assets/icons/map.svg" width="24" height="24" alt=""> Where each helper works
 
 There are two kinds of helpers.
 
@@ -34,7 +49,7 @@ There are two kinds of helpers.
 > garden while you sleep. Someone keeps the family calendar. They all follow the same house rules, and they
 > leave each other notes.
 
-## 📜 One rulebook: `AGENTS.md`
+## <img src="../sop-template/repo/assets/icons/scroll-text.svg" width="24" height="24" alt=""> One rulebook: `AGENTS.md`
 
 Every repository has an `AGENTS.md` at its root:
 - **Codex** reads it on its own.
@@ -53,7 +68,7 @@ It holds:
 - Anything only one tool needs goes in that tool's own file (`CLAUDE.md`, `.cursor/`, a Cosmos expert's
   instructions).
 
-## 📓 One notebook
+## <img src="../sop-template/repo/assets/icons/notebook-pen.svg" width="24" height="24" alt=""> One notebook
 
 | File | What it's for |
 |---|---|
@@ -63,7 +78,7 @@ It holds:
 
 A helper starting fresh reads these first, so nobody begins from zero and nobody repeats work.
 
-## ✍️ One credit line
+## <img src="../sop-template/repo/assets/icons/pencil-line.svg" width="24" height="24" alt=""> One credit line
 
 ```
 Co-Authored-By: <Agent> · <Engine> · <Provider> [<Model>]
@@ -89,7 +104,7 @@ How one person names a whole fleet of helpers: see the worked example in
 and for the cloud side,
 [COSMOS_AGENT_ROLE_REFERENCE.md](https://github.com/drasticstatic/anthropas-argus-alfred-public-preview/blob/main/sandbox/COSMOS_AGENT_ROLE_REFERENCE.md).
 
-## 🔌 One set of connections
+## <img src="../sop-template/repo/assets/icons/network.svg" width="24" height="24" alt=""> One set of connections
 
 **MCP (Model Context Protocol)** is the open standard that lets any helper use the same outside tools.
 The same Firecrawl, Wix or WordPress server works in Claude, Codex, ChatGPT, Cursor and Cosmos, each
@@ -98,13 +113,23 @@ connected through that tool's own settings (see the "Connect" guides in this fol
 **Skills** are packaged instructions and scripts for a repeatable job. They follow an open format that
 Claude and Codex both read, so a skill written once can serve several helpers.
 
-## 🛡️ What keeps a many-helper team safe
+## <img src="../sop-template/repo/assets/icons/shield-check.svg" width="24" height="24" alt=""> What keeps a many-helper team safe
 
-- **Rehearsal first:** helpers change `preview`; a person promotes to live.
-- **Scoped access:** each helper's GitHub app is installed on the organization with only the repositories
+- <img src="../sop-template/repo/assets/icons/flask-conical.svg" width="16" height="16" alt=""> **Rehearsal first:** helpers change `preview`; a person promotes to live.
+- <img src="../sop-template/repo/assets/icons/key-round.svg" width="16" height="16" alt=""> **Scoped access:** each helper's GitHub app is installed on the organization with only the repositories
   it needs. Owners can widen that when the team is ready.
-- **The tripwire and the secret scan** catch what a helper might miss.
-- **Honest records:** the credit line and the notebook mean anyone, looking back years from now, can see
+- <img src="../sop-template/repo/assets/icons/shield-alert.svg" width="16" height="16" alt=""> **The tripwire and the secret scan** catch what a helper might miss.
+- <img src="../sop-template/repo/assets/icons/history.svg" width="16" height="16" alt=""> **Honest records:** the credit line and the notebook mean anyone, looking back years from now, can see
   who did what and why.
 
 Starting your own fleet? → [BUILD_YOUR_OWN_FLEET.md](../BUILD_YOUR_OWN_FLEET.md)
+
+## <img src="../sop-template/repo/assets/icons/git-pull-request.svg" width="24" height="24" alt=""> Suggest a change
+
+Noticed something wrong, or a step that could be kinder? Open an [issue](https://github.com/drasticstatic/my-template/issues)
+or a pull request against `main`, changing this page. A person with the role reads it and merges with a merge commit, so
+your name stays on it. An AI helper may do all of that up to the merge. Not on GitHub? Tell any steward you know, or your
+helper, in your own words.
+
+*Part of the [walkthroughs](README.md). See also: [Session messaging](SESSION-MESSAGING.md) ·
+[Working with the fleet](WORKING-WITH-THE-FLEET.md).*
