@@ -69,7 +69,7 @@ Body text stays black on white: the tone is a frame, not a wash.
 
 ## Icons
 
-**Phosphor duotone, for drasticstatic's own.** `python3 scripts/to-phosphor.py assets/icons` overwrites each mapped icon with the two-tone art in `800020`, same filename, leaving `status-*` alone. The master set is [`../assets/icons-phosphor/`](../assets/icons-phosphor/).
+**Phosphor duotone, for drasticstatic's own.** `python3 scripts/to-phosphor.py assets/icons` overwrites each mapped icon with the two-tone art in `800020`, same filename, leaving `status-*` alone. The master set is [`../assets/icons-phosphor/`](../assets/icons-phosphor/). Each icon also carries one small `<style>` that lifts it to `e07a8f` in a dark colour scheme, because `800020` on GitHub's dark ground is 1.75:1 and `e07a8f` is 6.62:1; the browser honours it inside `<img>`, following the page's own theme, so a README needs no second file. Shields badges draw their own background, so a maroon badge stays maroon.
 
 **Lucide, for everyone else.** The icon set ships amber. Once per repo: `sh proposals/scripts/retone-icons.sh PRIMARY MID` rewrites the strokes
 and the darker fill, leaving the semantic colours alone. (Taylor'd and Ethereal Offering were retoned 2026-10-29;
