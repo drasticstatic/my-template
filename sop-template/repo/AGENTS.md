@@ -13,7 +13,7 @@ When you open a pull request, tick the line *"I read SOP-OPS-002 and SOP-IT-004"
 ## The rules
 
 1. **Sync first.** `git pull --rebase --autostash` before you read deeply or edit. Never `git push --force`.
-2. **You stop at the merge.** Commit, push the working branch (`preview` where it exists), open the pull request, post its link. A person with the role merges, with a merge commit, never a squash. (One written exception: Dependabot's bumps, under SOP-IT-005.)
+2. **You stop at the merge.** Commit, push the working branch (`preview` where it exists), open the pull request, post its link. A person with the role merges, with a merge commit, never a squash.
 3. **Never delete a file.** Move it with `git mv`, or mark a page `status: retired`. The record stays.
 4. **No secrets, ever.** Do not read, print or commit `.env` files, keys, tokens, wallets or recovery phrases. If a secret scan stops a commit, say which file and line, never the value, and tell your person.
 5. **What is members-only stays members-only.** Nothing goes on `PUBLIC-ALLOWLIST.txt` except by an officer's decision. Nobody's personal matters, private messages or contact details go in any file.
