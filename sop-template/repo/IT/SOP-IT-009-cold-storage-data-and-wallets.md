@@ -13,7 +13,7 @@
 > [!NOTE]
 > **TL;DR.** *Hot* means connected and ready. *Cold* means it takes a person and a physical step to reach. Cold protects you from what happens over a network, and exposes you to what happens in a room. So think of **fire, flood, theft and "I lost it" as four separate failures**, and keep copies in **two places, not one safe**. A safe rated for paper isn't rated for a drive.
 >
-> **For wallets, one fact people miss:** the backup cards of a seedless card wallet such as Tangem are **copies** of one key, and **each can sign alone**. A stolen card is guarded only by its access code. That is useful, and it is **not multisig**.
+> **For wallets, one fact people miss:** the backup cards of a seedless card wallet such as Tangem are **copies** of one key, and **each can sign alone**. A stolen card is guarded only by its access code, so set one, and make it strong. That is useful, and it is **not multisig**.
 >
 > **Test your recovery.** A copy you have never restored from is a hope. And **never type a seed into a website.**
 
@@ -82,7 +82,7 @@ A wallet doesn't hold the coins; the coins are on a public ledger. It holds **th
 
 ### Seedless card wallets, such as Tangem
 
-**The plain fact.** Tangem's backup cards are copies, and each can sign alone. A stolen card is guarded only by its access code. This is not multisig.
+**The plain fact.** Tangem's backup cards are copies, and each can sign alone. A stolen card is guarded only by its access code. This is not multisig. (UNVERIFIED, Nov 5, 2026: no Tangem page we opened says whether the code can be skipped on a linked set. Check yours.)
 
 | What Tangem's own pages say | Page, as read Nov 5, 2026 |
 |---|---|

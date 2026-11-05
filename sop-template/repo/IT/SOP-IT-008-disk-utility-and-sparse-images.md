@@ -87,7 +87,7 @@ From [Apple's guide](https://support.apple.com/guide/disk-utility/create-a-disk-
 
 1. Open **Disk Utility** and choose **File > New Image > Blank Image**.
 2. **Save As:** the file's name, and where it goes. **Name:** what the disk will be called once it's open. **Size:** the most it may ever hold.
-3. **Format:** APFS, for a Mac on macOS 10.13 or later with an SSD. Use ExFAT only if Windows must read it.
+3. **Format:** APFS, for a Mac on macOS 10.13 or later with an SSD. If Windows must read it, Apple's guide says FAT at 32 GB or less, ExFAT above.
 4. **Encryption:** choose an option. Take **256-bit AES** if offered. Enter the password twice. Apple's warning is plain: forget it and the files can't be opened.
 5. **Partitions:** leave the default.
 6. **Image Format:** **sparse bundle disk image**.

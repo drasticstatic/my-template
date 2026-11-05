@@ -25,7 +25,7 @@
 Say in plain words what each of the three guards on a Mac protects, what it leaves open, and which settings have a real cost, so nobody leans on a guard for something it was never built to do.
 
 ## <img src="../assets/icons/map.svg" width="24" height="24" alt=""> Scope
-Macs that people and helpers in the fleet work on. The products named here, NordVPN and Intego, are what the lab has in front of it; the same questions apply to any VPN or antivirus, and a different product means re-reading its own pages. Backups are in proposal 019 and [SOP-IT-009](SOP-IT-009-cold-storage-data-and-wallets.md). Apple account recovery is in [SOP-COM-002](../COM/SOP-COM-002-apple-account-recovery.md).
+Macs that people and helpers in the fleet work on. NordVPN and Intego are named as worked examples because their pages were read for this one; the same questions apply to any VPN or antivirus, and a different product means re-reading its own pages. Backups are in proposal 019 and [SOP-IT-009](SOP-IT-009-cold-storage-data-and-wallets.md). Apple account recovery is in [SOP-COM-002](../COM/SOP-COM-002-apple-account-recovery.md).
 
 ## <img src="../assets/icons/users.svg" width="24" height="24" alt=""> Roles
 | Role | Does |
@@ -82,7 +82,7 @@ So a Mac with FileVault that restarts on its own stops at the login screen until
 | **Suits** | A **headless home server, a file hub, a media server**: a machine you want back without you, where you have decided what it holds and how it unlocks | A desk where a person has to come anyway, and where a flickering supply with no battery would otherwise switch the Mac on and off |
 | **Costs** | With no battery in between, a flickering supply can cycle a desktop on and off. A server that must truly come back alone may mean no FileVault, which is a real loss if it is stolen | A return from a cut needs a person at the Mac, every time |
 
-**A real choice, as an example.** Christopher looked at this on Nov 5, 2026 and chose not to use the option on his desk, for the reason above: FileVault would stop the Mac at the login screen anyway. Choosing the other way on a machine that does a different job would be just as sensible.
+**A real choice.** On a desk with a person at it, leaving this off is reasonable for the reason above: FileVault would stop the Mac at the login screen anyway. On a headless machine that serves files or media, choosing the other way is just as sensible.
 
 **Two things that are not a way round it:**
 - **`sudo fdesetup authrestart`** restarts once without asking at startup, and only because you started it by hand. It cannot help with a power cut you did not plan, and `man fdesetup` warns that FileVault's protections are reduced during such a restart, because a copy of the unlock key is held on purpose until the Mac comes back.
@@ -215,4 +215,4 @@ Related: [SOP-IT-001](SOP-IT-001-vpn-dns-resolver-stalls.md) (resolver stalls), 
 ## <img src="../assets/icons/history.svg" width="24" height="24" alt=""> Change log
 | Date | Change |
 |---|---|
-| 2026-11-05 | Drafted, with Christopher's Nov 5 decision on the power-failure switch as the worked example. No setting was changed to write it. |
+| 2026-11-05 | Drafted, with the power-failure switch as the worked example. No setting was changed to write it. |
