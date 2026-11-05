@@ -12,7 +12,8 @@ git tags (`v1.0.0`…); until the first tag, every procedure here is a draft and
 | [SOP-IT-001](IT/SOP-IT-001-vpn-dns-resolver-stalls.md) | VPN and DNS resolver stalls: how to tell, how to check, how to fix | IT | draft |
 | [SOP-IT-002](IT/SOP-IT-002-reading-room-and-helper-access.md) | Reading room and helper access: browser first, a token only if needed | IT | draft |
 | [SOP-IT-003](IT/SOP-IT-003-observer-dashboards-local-by-default.md) | Observer dashboards: local by default, remote access on purpose | IT | draft |
-| [SOP-IT-005](IT/SOP-IT-005-dependabot-by-the-fleet.md) | Dependabot, by the fleet: who takes the updates, and what a helper checks before merging one | IT | draft |
+| [SOP-IT-004](IT/SOP-IT-004-tripwires-firewalls-and-shields.md) | Tripwires, firewalls and shields: every layer between a keystroke and a public page | IT | draft |
+| [SOP-IT-005](IT/SOP-IT-005-dependabot-by-the-fleet.md) | Dependabot, by the fleet: who tests the updates, and the one line a helper hands over | IT | draft |
 | [SOP-IT-006](IT/SOP-IT-006-renaming-a-local-folder.md) | Renaming a local folder: what is filed under its old name, and how to move it all | IT | draft |
 | [SOP-IT-007](IT/SOP-IT-007-the-machines-three-guards.md) | The machine's three guards: FileVault, a VPN, an antivirus; what each leaves open, and the power-cut trade-off | IT | draft |
 | [SOP-IT-008](IT/SOP-IT-008-disk-utility-and-sparse-images.md) | Disk Utility and sparse images: volumes, containers, snapshots, an encrypted image step by step, the loop to avoid | IT | draft |
@@ -22,9 +23,9 @@ git tags (`v1.0.0`…); until the first tag, every procedure here is a draft and
 | [SOP-COM-001](COM/SOP-COM-001-new-to-github-your-first-hour.md) | New to GitHub: your first hour (your own account and password, the invitation, five words, the reading room, a helper, the welcome deck) | COM | draft |
 | [SOP-COM-002](COM/SOP-COM-002-apple-account-recovery.md) | Apple account recovery: for the people who hold your keys | COM | draft |
 
-**New here?** Start with **SOP-COM-001**, then SOP-OPS-001.
+**New here?** Start with **SOP-COM-001**, then SOP-OPS-001. **Brought an AI helper?** Give it [`START-HERE.md`](START-HERE.md).
 
-Departments: OPS (how work moves), IT (machines, networks, credentials, helpers), GOV (membership, roles, approvals), FIN (money), COM (communications). To add a procedure, copy `_template/SOP-DEPT-000-template.md` into the department folder with the next ID and add a row here. Related proposals are linked from each procedure's **Related** section.
+Departments: OPS (how work moves), IT (machines, networks, credentials, helpers), GOV (membership, roles, approvals), FIN (money), COM (communications). To add a procedure, copy `_template/SOP-DEPT-000-template.md` into the department folder with the next free ID **from 100 up** and add a row here; 001 to 099 come only from the template, and a number is never reused ([`my-template/NUMBERING.md`](https://github.com/drasticstatic/my-template/blob/main/NUMBERING.md)). Related proposals are linked from each procedure's **Related** section.
 
 **PDFs.** Every `<DEPT>/SOP-*.md` is rendered to `pdf/<DEPT>/SOP-*.pdf` (Letter, in this organisation's tone) by
 [`.github/workflows/pdf.yml`](.github/workflows/pdf.yml) on each push to `main`, committed back by the Actions bot; run
