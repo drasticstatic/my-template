@@ -1,0 +1,81 @@
+# phosphor-map.tsv: every icon in sop-template/repo/assets/icons/ (Lucide) and the Phosphor duotone icon that stands in for it.
+# Columns, tab separated: lucide-name, phosphor-name, note (empty when the two share a name). Read by scripts/to-phosphor.py.
+badge-check	seal-check	the seal with a check; Phosphor's badge word
+bell	bell	
+bird	bird	
+book-marked	book-bookmark	a book with a ribbon
+book-open	book-open	
+bot	robot	same idea, Phosphor's word
+brain-circuit	brain	closest: a brain, without the circuit
+building-2	buildings	same idea, Phosphor's word
+circle-check	check-circle	same idea, Phosphor's word
+circle-dashed	circle-dashed	
+cloud	cloud	
+compass	compass	
+door-open	door-open	
+eye	eye	
+file-check	certificate	closest: Phosphor has no file with a check; a certificate is a document that has been checked
+file-text	file-text	
+files	files	
+filter	funnel	same idea, Phosphor's word
+fingerprint	fingerprint	
+flame	fire	same idea, Phosphor's word
+flask-conical	flask	same idea, Phosphor's word
+folder-lock	folder-lock	
+footprints	footprints	
+gift	gift	
+git-branch	git-branch	
+git-merge	git-merge	
+git-pull-request	git-pull-request	
+globe	globe	
+hand-heart	hand-heart	
+hand-helping	hand-arrow-up	closest: a hand lifting something up; Phosphor has no offering hand
+handshake	handshake	
+heart	heart	
+history	clock-counter-clockwise	same idea, Phosphor's word
+infinity	infinity	
+key-round	key	same idea, Phosphor's word
+landmark	bank	same idea, Phosphor's word
+languages	translate	same idea, Phosphor's word
+layers	stack	same idea, Phosphor's word
+leaf	leaf	
+link	link	
+list-checks	list-checks	
+loader-circle	circle-notch	same idea, Phosphor's word
+lock	lock	
+log-in	sign-in	same idea, Phosphor's word
+mail	envelope	same idea, Phosphor's word
+map-pin	map-pin	
+map	map-trifold	same idea, Phosphor's word
+message-circle-question	question	closest: a question in a circle, without the speech tail
+message-square	chat	same idea, Phosphor's word
+monitor-smartphone	devices	same idea, Phosphor's word
+moon	moon	
+network	network	
+notebook-pen	notebook	closest: a notebook, without the pen
+octagon	octagon	
+pencil-line	pencil-line	
+presentation	presentation	
+quote	quotes	same idea, Phosphor's word
+route	path	closest: a winding path between two points
+scan-search	scan	closest: scan corners, without the magnifying glass
+scroll-text	scroll	same idea, Phosphor's word
+search	magnifying-glass	same idea, Phosphor's word
+shapes	shapes	
+shield-alert	shield-warning	same idea, Phosphor's word
+shield-check	shield-check	
+sparkles	sparkle	same idea, Phosphor's word
+sprout	plant	same idea, Phosphor's word
+square-kanban	kanban	same idea, Phosphor's word
+sun-medium	sun-dim	same idea, Phosphor's word
+sun	sun	
+tags	tag	closest: one tag, Phosphor has no pair
+trash-2	trash	same idea, Phosphor's word
+triangle-alert	warning	same idea, Phosphor's word
+type	text-t	same idea, Phosphor's word
+user-plus	user-plus	
+user-round	user	same idea, Phosphor's word
+users-round	users	same idea, Phosphor's word
+users	users-three	closest: three people, so it stays distinct from users-round
+workflow	flow-arrow	closest: an arrow through a flow
+wrench	wrench	
