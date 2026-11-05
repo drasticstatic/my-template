@@ -1,0 +1,49 @@
+name: Render walkthroughs to PDF
+
+# Every walkthroughs/*.md (the index README excepted) becomes walkthroughs/pdf/<NAME>.pdf (Letter), committed back by
+# the Actions bot, so a guide can be sent as a file with no manual export; the markdown stays the source
+# (walkthroughs/MARKDOWN-BESIDE-PDF.md). scripts/render-walkthrough-pdfs.sh does the work, here and locally; its tone
+# defaults are the lab's brass on slate (proposals-template/TONES.md), the same shades as the walkthroughs' badges.
+# Modelled on trading-bot_arbitrage_DAPPUv3_hardhat_UNI-CAKE/.github/workflows/ops-pdf.yml and
+# sop-template/repo/.github/workflows/pdf.yml.
+# The bot's own commit touches only walkthroughs/pdf/*.pdf, which no path below matches, so it does not start this again.
+# This file is on workflow-templates/.clean-template-denylist.yml's strip list: CLEAN_TEMPLATE_TOKEN has no `workflow`
+# scope, so a root workflow mirrored into my-template-clean would stop every sync (the tripwire self-test taught us that).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "walkthroughs/*.md"
+      - "sop-template/repo/assets/icons/**"
+      - ".github/workflows/walkthroughs-pdf.yml"
+      - "scripts/render-walkthrough-pdfs.sh"
+      - "sop-template/repo/scripts/mermaid-prerender.sh"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: walkthroughs-pdf
+  cancel-in-progress: true
+
+jobs:
+  pdf:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Render every guide under walkthroughs/ (accordions opened for print, Mermaid drawn as SVG)
+        run: sh scripts/render-walkthrough-pdfs.sh
+      - name: Commit PDFs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add walkthroughs/pdf
+          git diff --cached --quiet && exit 0
+          git commit -m ":memo: docs(pdf): render walkthrough PDFs"
+          git pull --rebase --autostash || true
+          git push

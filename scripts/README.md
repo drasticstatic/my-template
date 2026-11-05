@@ -298,6 +298,23 @@ outside `--out` and the page's own icon folder, and it never commits. The rules 
 
 ---
 
+## `render-walkthrough-pdfs.sh` — every guide as a PDF beside its markdown
+
+```sh
+sh scripts/render-walkthrough-pdfs.sh --list                 # the guides it would render; draws nothing, installs nothing
+sh scripts/render-walkthrough-pdfs.sh SECURE-TWO-FACTOR      # one guide → walkthroughs/pdf/SECURE-TWO-FACTOR.pdf
+sh scripts/render-walkthrough-pdfs.sh                        # every guide, then drop any PDF whose source is gone
+```
+
+Every `walkthroughs/*.md` (the index `README.md` excepted) becomes `walkthroughs/pdf/<NAME>.pdf`, Letter, brass on slate
+(`proposals-template/TONES.md`; the `TONE_*` variables override per run). `<details>` open for print, GitHub callouts
+become bold labels, and ```` ```mermaid ```` blocks are drawn as SVG first by `sop-template/repo/scripts/mermaid-prerender.sh`
+(`@mermaid-js/mermaid-cli`, pinned); `md-to-pdf@5` does the rest through your installed Chrome. It runs from the
+repository root, so the pages' `../sop-template/repo/assets/icons/` links resolve as they do on GitHub.
+`.github/workflows/walkthroughs-pdf.yml` runs the same script on a push to `main` that touches a walkthrough and commits
+the PDFs as the Actions bot, so nobody needs to render by hand; a Mac short of memory should let it. The markdown stays
+the source: edit the page, never the PDF ([why both](../walkthroughs/MARKDOWN-BESIDE-PDF.md)).
+
 ## `git-safety-backup.sh` — what GitHub lacks, as finished files in iCloud Drive
 
 ```sh

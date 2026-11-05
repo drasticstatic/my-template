@@ -28,6 +28,9 @@ strip:
   # ("refusing to allow a Personal Access Token to create or update workflow").
   # The scanner and its self-test still travel (scripts/, sop-template/repo/).
   - /.github/workflows/tripwire-selftest.yml
+  # the walkthrough PDF renderer's workflow (2026-11-04): same reason as the tripwire above. The renderer itself
+  # (scripts/render-walkthrough-pdfs.sh) and the PDFs it writes (walkthroughs/pdf/) still travel.
+  - /.github/workflows/walkthroughs-pdf.yml
   - workflow-templates/DETACHED_HEAD_GUIDE.md
   - workflow-templates/GITEXPORTER-TO-ACTIONS-SYNC.md
   - workflow-templates/GRAPHIFY_SETUP.md
