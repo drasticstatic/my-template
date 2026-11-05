@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="260" viewBox="0 0 1200 260" role="img" aria-labelledby="t d">
+  <title id="t">Numbering</title>
+  <desc id="d">A number is a name: it never changes and is never used twice The picture: 10 stars arrive and join into one constellation. With reduced motion, the finished picture shows at once.</desc>
+  <style>
+    /* Motion only for readers who have not asked for less. Outside this block everything is in its finished state. */
+    @media (prefers-reduced-motion: no-preference) {
+      .draw { stroke-dasharray: 100; animation: draw 2.6s cubic-bezier(.4,0,.2,1) both; }
+      .arrive { animation: arrive .5s ease-out both; }
+      .breathe { transform-box: fill-box; transform-origin: center; animation: breathe 8s steps(48) 3s infinite; }
+      .halo { transform-box: fill-box; transform-origin: center; animation: halo 5s steps(60) 3.6s infinite; }
+    }
+    @keyframes draw { from { stroke-dashoffset: 100 } to { stroke-dashoffset: 0 } }
+    @keyframes arrive { from { opacity: 0 } to { opacity: 1 } }
+    @keyframes breathe { 0%, 100% { transform: scale(1) } 50% { transform: scale(1.07) } }
+    @keyframes halo { 0% { opacity: .55; transform: scale(1) } 70%, 100% { opacity: 0; transform: scale(2.1) } }
+    .halo { opacity: 0 }
+  </style>
+  <defs>
+    <linearGradient id="ground" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1a1a2e"/><stop offset="1" stop-color="#0f3460"/></linearGradient>
+    <linearGradient id="line" gradientUnits="userSpaceOnUse" x1="668" y1="0" x2="1160" y2="0"><stop offset="0.00" stop-color="#804c5a"/><stop offset="0.50" stop-color="#b87082"/><stop offset="1.00" stop-color="#ddb5bf"/></linearGradient>
+    <linearGradient id="fade" gradientUnits="userSpaceOnUse" x1="620" y1="0" x2="1200" y2="0"><stop offset="0" stop-color="#b87082" stop-opacity="0"/><stop offset=".35" stop-color="#b87082"/><stop offset="1" stop-color="#ddb5bf"/></linearGradient>
+    <clipPath id="card"><rect width="1200" height="260" rx="18"/></clipPath>
+    <radialGradient id="ember" gradientUnits="userSpaceOnUse" cx="962" cy="124" r="390"><stop offset="0" stop-color="#800020" stop-opacity=".8"/><stop offset=".6" stop-color="#5c1a2b" stop-opacity=".45"/><stop offset="1" stop-color="#5c1a2b" stop-opacity="0"/></radialGradient>
+  </defs>
+  <g clip-path="url(#card)">
+    <!-- an opaque ground: the same picture on GitHub's light and dark themes -->
+    <rect width="1200" height="260" fill="url(#ground)"/>
+    <rect width="1200" height="260" fill="url(#ember)"/>
+    <circle class="halo" cx="1034.3" cy="54.0" r="13" fill="none" stroke="#ddb5bf" stroke-width="2"/>
+    <path class="draw" pathLength="100" d="M1034.3 54.0L1050.0 120.1" fill="none" stroke="#614154" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:0.30s"/>
+    <path class="draw" pathLength="100" d="M1034.3 54.0L966.0 84.4" fill="none" stroke="#614154" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:0.52s"/>
+    <path class="draw" pathLength="100" d="M966.0 84.4L936.5 141.5" fill="none" stroke="#614154" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:0.74s"/>
+    <path class="draw" pathLength="100" d="M936.5 141.5L864.5 125.9" fill="none" stroke="#614154" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:0.96s"/>
+    <path class="draw" pathLength="100" d="M864.5 125.9L849.8 59.9" fill="none" stroke="#614154" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:1.18s"/>
+    <path class="draw" pathLength="100" d="M849.8 59.9L788.7 93.9" fill="none" stroke="#614154" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:1.40s"/>
+    <path class="draw" pathLength="100" d="M864.5 125.9L880.9 202.9" fill="none" stroke="#614154" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:1.62s"/>
+    <path class="draw" pathLength="100" d="M880.9 202.9L798.2 199.4" fill="none" stroke="#614154" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:1.84s"/>
+    <path class="draw" pathLength="100" d="M798.2 199.4L697.7 172.5" fill="none" stroke="#614154" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:2.06s"/>
+    <circle class="arrive" style="animation-delay:0.15s" cx="1034.3" cy="54.0" r="8.0" fill="#b87082"/>
+    <circle class="arrive" style="animation-delay:0.39s" cx="798.2" cy="199.4" r="5.2" fill="#ddb5bf"/>
+    <circle class="arrive" style="animation-delay:0.63s" cx="936.5" cy="141.5" r="6.1" fill="#ddb5bf"/>
+    <circle class="arrive" style="animation-delay:0.87s" cx="788.7" cy="93.9" r="5.6" fill="#ddb5bf"/>
+    <circle class="arrive" style="animation-delay:1.11s" cx="1050.0" cy="120.1" r="5.6" fill="#ddb5bf"/>
+    <circle class="arrive" style="animation-delay:1.35s" cx="697.7" cy="172.5" r="5.7" fill="#ddb5bf"/>
+    <circle class="arrive" style="animation-delay:1.59s" cx="849.8" cy="59.9" r="3.4" fill="#ddb5bf"/>
+    <circle class="arrive" style="animation-delay:1.83s" cx="864.5" cy="125.9" r="6.4" fill="#ddb5bf"/>
+    <circle class="arrive" style="animation-delay:2.07s" cx="880.9" cy="202.9" r="4.0" fill="#ddb5bf"/>
+    <circle class="arrive" style="animation-delay:2.31s" cx="966.0" cy="84.4" r="3.8" fill="#ddb5bf"/>
+    <rect x="0.0" y="248" width="300.5" height="12" fill="#1a1a2e"/><rect x="300.0" y="248" width="300.5" height="12" fill="#5c1a2b"/><rect x="600.0" y="248" width="300.5" height="12" fill="#800020"/><rect x="900.0" y="248" width="300.5" height="12" fill="#fbeef1"/>
+    <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif"><text x="56" y="56.6" fill="#c78f9d" font-size="15" font-weight="700" letter-spacing=".6">THE FLEET'S STANDARD</text><text x="56" y="122.2" fill="#fbeef1" font-size="60" font-weight="700" letter-spacing="-.5">Numbering</text><text x="56" y="166.0" fill="#dcd0d6" font-size="23">A number is a name: it never changes and is never</text><text x="56" y="196.8" fill="#dcd0d6" font-size="23">used twice</text></g>
+  </g>
+</svg>

@@ -1,3 +1,13 @@
+---
+id: SERIES-NNN
+title: "The proposal's name, in plain words"
+status: asking
+owner: role, not a person
+supersedes: []
+supersededBy: ""
+tags: []
+---
+
 <div align="center">
 
 <img src="../assets/icons/sprout.svg" width="64" height="64" alt="">

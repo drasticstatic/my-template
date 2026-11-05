@@ -1,3 +1,14 @@
+---
+id: DEPT-000
+title: "Procedure name"
+status: draft
+department: DEPT
+owner: role, not a person
+supersedes: []
+supersededBy: ""
+tags: []
+---
+
 # SOP-DEPT-000 · Procedure name
 
 ![SOP](https://img.shields.io/badge/SOP-DEPT--000-d9a441?style=flat-square)
@@ -12,6 +23,8 @@
   and a space as _ . "For" names a role or a group (Stewards, Board, Every_member), so it stays true when people change.
   Lucid (my-template/LUCID.md): one Lucide icon beside each idea, from ../assets/icons/ (24px on a heading, 16px
   inline, alt=""), and one ```mermaid diagram where a picture explains the mechanism (the PDF draws it too).
+  The block at the very top is front matter: the permanent id (it must match the file name), for a library's address and
+  index. Your own number comes from 100 up; 001 to 099 come only from the template (my-template/NUMBERING.md).
   Delete this comment when you're done.
 -->
 

@@ -1,0 +1,4 @@
+# RETIRED-NUMBERS.txt: this organisation's own numbers (100 and up) that are finished; see my-template/NUMBERING.md.
+# One line each:  NUMBER | slug | YYYY-MM-DD | why
+# The page stays where it is, with status: retired. The number is never issued again.
+# Universal numbers (001 to 099) are retired only in my-template/sop-template/RETIRED-NUMBERS.txt.

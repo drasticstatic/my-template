@@ -1,0 +1,4 @@
+# RETIRED-NUMBERS.txt: universal numbers (001 to 099) that are finished. Binds every organisation; see ../NUMBERING.md.
+# One line each:  NUMBER | slug | YYYY-MM-DD | why
+# The page stays where it is, with status: retired. The number is never issued again.
+# catalog-docs.py --check flags any page that carries a number listed here under another name.
