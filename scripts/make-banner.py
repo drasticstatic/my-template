@@ -12,6 +12,7 @@
 
 The same words give the same picture, and different words give a different one: the geometry grows from --seed, which
 defaults to the title. Choose the motif for what the repository means; left out, it is picked from the title.
+A banner may say only its name: --subtitle "" (written out on purpose, so a forgotten subtitle is still refused).
 
 Two house styles, for when the picture should say "the lab made this" before it says anything else (--style):
   * waves, for a front door: a sun held by an open circle, waves drawing in beneath it.
@@ -430,6 +431,80 @@ def m_chain(t, rng, n):
     return out, f"{n} blocks arrive one by one, each linked to the one before; the shapes are illustration, not data"
 
 
+def m_unbound(t, rng, n):
+    """A chain whose middle link has opened: its two ends lift apart and light comes through the gap. For anything about getting free."""
+    n = n or 5  # links on each side of the one that broke
+    y1 = ZONE[3]
+    mid, foot, anchor = 936, y1 - 46, 236  # the middle of the picture, the level of the chain, how far each outer end sits from the middle
+    open_x = 46 + rng.random() * 8  # the middle of each broken half, this far from the middle of the picture
+    tilt = math.radians(15 + rng.random() * 3)
+    reach = (anchor - open_x) / math.cos(tilt)
+    close_in = anchor - reach  # how far each half slides inward while the chain is still whole
+    tip_y = foot - reach * math.sin(tilt)
+    light_x, light_y = mid, tip_y - 6
+    pitch = reach / n
+    long_, wide = pitch * 1.35, pitch * .74
+    weight = max(wide * .2, 2.2)
+
+    def half(s):
+        """One side, in its finished place. s is -1 for the left and +1 for the right."""
+        ax, tx = mid + s * anchor, mid + s * open_x
+        cx, cy = ax - s * reach * .5, foot - reach * math.sin(tilt) * .14  # lies low, then lifts toward the break
+        faces, edges = [], []
+        for i in range(n + 1):
+            u = i / n
+            x = (1 - u) ** 2 * ax + 2 * u * (1 - u) * cx + u * u * tx
+            y = (1 - u) ** 2 * foot + 2 * u * (1 - u) * cy + u * u * tip_y
+            rise = 2 * (1 - u) * (foot - cy) + 2 * u * (cy - tip_y)
+            run = 2 * (1 - u) * (ax - cx) + 2 * u * (cx - tx)
+            spin = f' transform="rotate({s * math.degrees(math.atan2(rise, abs(run))):.1f} {x:.1f} {y:.1f})"'
+            shade = f' opacity="{.34 + .66 * u:.2f}"' if i < n else ""
+            if i == n:  # half of the link that broke: a hook, open toward the light
+                r = wide / 2
+                far = x + s * (long_ * .6 - r)
+                faces.append(f'<path d="M{x:.1f} {y - r:.1f}H{far:.1f}A{r:.1f} {r:.1f} 0 0 {1 if s > 0 else 0} {far:.1f} {y + r:.1f}H{x:.1f}" fill="none" stroke="{t.tint}" '
+                             f'stroke-width="{weight:.1f}" stroke-linecap="round"{spin}/>')
+            elif (n - i) % 2:  # a link seen from its edge, threaded through its neighbours
+                d = f"M{x - long_ * .4:.1f} {y:.1f}h{long_ * .8:.1f}"
+                edges.append(f'<path d="{d}" stroke="{t.pit}" stroke-width="{weight * 2.1:.1f}" stroke-linecap="round"{spin}{shade}/>'
+                             f'<path d="{d}" stroke="{t.line}" stroke-width="{weight:.1f}" stroke-linecap="round"{spin}{shade}/>')
+            else:  # a link seen from its face
+                faces.append(f'<rect x="{x - long_ / 2:.1f}" y="{y - wide / 2:.1f}" width="{long_:.1f}" height="{wide:.1f}" rx="{wide / 2:.1f}" fill="none" stroke="{t.hi}" '
+                             f'stroke-width="{weight:.1f}"{spin}{shade}/>')
+        return "".join(faces + edges), ax
+
+    left, lx = half(-1)
+    right, rx = half(1)
+    bent = math.degrees(tilt)
+    # The chain starts whole and level, and the only thing that ever moves it is this: it opens once, and stays open.
+    out = [f"""<style>
+    @media (prefers-reduced-motion: no-preference) {{
+      .part-l {{ transform-box: view-box; transform-origin: {lx:.1f}px {foot:.1f}px; animation: part-l 2.8s cubic-bezier(.3,.7,.2,1) 1s both; }}
+      .part-r {{ transform-box: view-box; transform-origin: {rx:.1f}px {foot:.1f}px; animation: part-r 2.8s cubic-bezier(.3,.7,.2,1) 1s both; }}
+    }}
+    @keyframes part-l {{ from {{ transform: translate({close_in:.1f}px, 0) rotate({bent:.1f}deg) }} to {{ transform: none }} }}
+    @keyframes part-r {{ from {{ transform: translate({-close_in:.1f}px, 0) rotate({-bent:.1f}deg) }} to {{ transform: none }} }}
+  </style>""",
+           f'<defs><radialGradient id="light" gradientUnits="userSpaceOnUse" cx="{light_x:.1f}" cy="{light_y:.1f}" r="132">'
+           f'<stop offset="0" stop-color="#{t.tint}" stop-opacity=".95"/><stop offset=".2" stop-color="#{t.tint}" stop-opacity=".5"/>'
+           f'<stop offset=".55" stop-color="#{t.hi}" stop-opacity=".14"/><stop offset="1" stop-color="#{t.hi}" stop-opacity="0"/></radialGradient>'
+           f'<radialGradient id="ray" gradientUnits="userSpaceOnUse" cx="{light_x:.1f}" cy="{light_y:.1f}" r="172">'
+           f'<stop offset="0" stop-color="#{t.tint}" stop-opacity=".85"/><stop offset="1" stop-color="#{t.tint}" stop-opacity="0"/></radialGradient></defs>',
+           f'<g class="arrive"{delay(1.5)}><circle class="breathe" cx="{light_x:.1f}" cy="{light_y:.1f}" r="132" fill="url(#light)"/></g>']
+    up = [-90 + k * 14 for k in range(-4, 5)]
+    down = [90 + k * 20 for k in range(-2, 3)]
+    for i, a in enumerate(sorted(up + down, key=lambda v: abs(v + 90))):
+        lift = a < 0
+        length = (150 if lift else 92) + rng.random() * 22 - (abs(a + 90) if lift else abs(a - 90)) * .5
+        c, sn = math.cos(math.radians(a)), math.sin(math.radians(a))
+        d = f"M{light_x + c * 20:.1f} {light_y + sn * 20:.1f}L{light_x + c * length:.1f} {light_y + sn * length:.1f}"
+        out.append(line_path(d, "url(#ray)", 2.2 if lift else 1.6, start=1.7 + i * .07))
+    out.append(f'<g class="arrive"><g class="part-l">{left}</g></g>')
+    out.append(f'<g class="arrive"><g class="part-r">{right}</g></g>')
+    out.append(halo(light_x, light_y, 26, t.tint))
+    return out, "a chain whose middle link has opened; its two ends lift apart and light comes through the gap"
+
+
 MOTIFS = {"path": (m_path, "a road: a sequence of stops, onboarding, a method"),
           "mycelium": (m_mycelium, "a network: people or repositories that feed each other"),
           "seed": (m_seed, "a beginning: thin threads leave one point and find each other"),
@@ -438,6 +513,7 @@ MOTIFS = {"path": (m_path, "a road: a sequence of stops, onboarding, a method"),
           "arch": (m_arch, "a threshold: a front door, a law, something that holds up"),
           "candles": (m_candles, "markets: illustration only, never real data, never a real pair"),
           "chain": (m_chain, "a blockchain repository: linked blocks; illustration only, never a real chain's data"),
+          "unbound": (m_unbound, "getting free: a chain whose middle link has opened, its ends lifting apart, light through the gap"),
           "constellation": (m_constellation, "a library or a map: many things, one sky")}
 
 # A house style is a whole look the lab has settled on: one motif, and brass on slate unless a family is named.
@@ -450,10 +526,10 @@ def build(title, subtitle, tone, motif, count=None, seed=None, kicker=None):
     rng = random.Random(int(hashlib.sha256((seed or title).encode()).hexdigest(), 16))
     marks, sentence = MOTIFS[motif][0](tone, rng, count)
     tsize, tlines = fit_title(title)
-    ssize, slines = fit_subtitle(subtitle)
+    ssize, slines = fit_subtitle(subtitle) if subtitle else (0, [])  # --subtitle "" is a banner that says only its name
 
     # vertically centre the words over the card, above the rail
-    block = (22 if kicker else 0) + tsize * 1.12 * len(tlines) + 12 + ssize * 1.34 * len(slines)
+    block = (22 if kicker else 0) + tsize * 1.12 * len(tlines) + (12 + ssize * 1.34 * len(slines) if slines else 0)
     y = (H - RAIL - block) / 2
     words = [f'<g font-family="{FONT}">']
     if kicker:
@@ -474,7 +550,7 @@ def build(title, subtitle, tone, motif, count=None, seed=None, kicker=None):
     rail_shades = tone.hues or (tone.deep, tone.mid, tone.primary, tone.tint)
     seg = W / len(rail_shades)
     rail = "".join(f'<rect x="{i * seg:.1f}" y="{H - RAIL}" width="{seg + .5:.1f}" height="{RAIL}" fill="#{c}"/>' for i, c in enumerate(rail_shades))
-    desc = (f"{subtitle} The picture: {sentence}. With reduced motion, the finished picture shows at once.")
+    desc = (f"{subtitle + ' ' if subtitle else ''}The picture: {sentence}. With reduced motion, the finished picture shows at once.")
 
     body = "\n    ".join(re.sub(r'(fill|stroke)="([0-9a-f]{6})"', r'\1="#\2"', m) for m in marks)
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" role="img" aria-labelledby="t d">
@@ -682,8 +758,8 @@ def main():
     if a.icons:
         return 1 if copy_icons(a.icons, family or "brass") else 0
 
-    if not (a.title and a.subtitle):
-        ap.error("--title and --subtitle are required")
+    if not a.title or a.subtitle is None:
+        ap.error('--title and --subtitle are required (--subtitle "" if the banner should say only its name)')
     if a.style and a.motif:
         ap.error("--style sets the motif; give one or the other")
     if a.style and not (family or a.palette):
@@ -700,8 +776,8 @@ def main():
     if a.count is not None and not 3 <= a.count <= 30:
         ap.error("--count runs from 3 to 30")
     # Left out, the motif comes from the title. The pick runs over the seven original motifs, so a banner first drawn
-    # before the styles existed still comes out the same; seed and chain are reached only by asking for them.
-    pick = sorted(k for k in MOTIFS if k not in ("seed", "chain"))
+    # before the styles existed still comes out the same; seed, chain and unbound are reached only by asking for them.
+    pick = sorted(k for k in MOTIFS if k not in ("seed", "chain", "unbound"))
     motif = a.motif or (STYLES[a.style][0] if a.style else
                         pick[int(hashlib.sha256((a.seed or a.title).encode()).hexdigest(), 16) % len(pick)])
 

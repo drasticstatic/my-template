@@ -13,7 +13,7 @@ ok() { echo "ok    $1"; }
 # every family with every motif: it writes, and its own check passes
 n=0
 for fam in amber purple teal blue emerald magenta brass rainbow maroon; do
-  for motif in arch candles chain constellation mycelium path polygon seed waves; do
+  for motif in arch candles chain constellation mycelium path polygon seed unbound waves; do
     python3 "$MB" --title "repo-$fam-$motif" --subtitle "A test banner." --kicker "A house" --family "$fam" --motif "$motif" --out "$T/lane/$fam-$motif.svg" >/dev/null || no "$fam $motif did not build"
     n=$((n + 1))
   done
@@ -67,6 +67,16 @@ python3 "$MB" --title "a bootcamp" --subtitle s --family maroon --motif chain --
 python3 "$MB" --title "a bootcamp" --subtitle s --family maroon --motif chain --count 30 >/dev/null && python3 "$MB" --title "a bootcamp" --subtitle s --family maroon --motif chain --count 3 >/dev/null && ok "chain holds from 3 to 30 blocks" || no "chain failed at the ends of --count"
 python3 "$MB" --title "a bootcamp" --subtitle s --family maroon --motif candles | grep -q 'blocks arrive' && no "candles drew blocks" || ok "chain is its own picture, not candles"
 for t in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16; do python3 "$MB" --title "pick $t" --subtitle s --family lab; done | grep -q 'blocks arrive' && no "the title's own pick reached chain" || ok "a title never picks chain"
+
+# unbound: a chain that opens and stays open, only when asked for by name, and it says nothing but the title
+python3 "$MB" --title "a name" --subtitle "" --family maroon --motif unbound --out "$T/u1" >/dev/null && python3 "$MB" --check "$T/u1" >/dev/null && grep -q 'middle link has opened' "$T/u1" && ok "--motif unbound draws the opened chain and passes --check" || no "--motif unbound failed"
+[ "$(grep -c '<text' "$T/u1")" -eq 1 ] && ok "with an empty subtitle the title is the only words" || no "an empty subtitle still set words"
+grep -q '<desc id="d">The picture:' "$T/u1" && ok "an empty subtitle leaves the description clean" || no "an empty subtitle left a stray space in the description"
+sed -n '/no-preference/,/^    }$/d; p' "$T/u1" | grep -q 'animation:' && no "unbound moves outside the reduced-motion gate" || ok "unbound moves only inside the gate"
+sed -n '/no-preference/,/^    }$/d; p' "$T/u1" | grep -q 'class="part-l"' && ok "unbound's finished, open picture is what stands outside the gate" || no "unbound has no finished picture"
+python3 "$MB" --title "a name" --subtitle s --family maroon --motif unbound --count 30 >/dev/null && python3 "$MB" --title "a name" --subtitle s --family maroon --motif unbound --count 3 >/dev/null && ok "unbound holds from 3 to 30 links a side" || no "unbound failed at the ends of --count"
+for t in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16; do python3 "$MB" --title "pick $t" --subtitle s --family lab; done | grep -q 'middle link has opened' && no "the title's own pick reached unbound" || ok "a title never picks unbound"
+python3 "$MB" --title "a name" --family lab --motif path >/dev/null 2>&1 && no "a forgotten subtitle was accepted" || ok "a forgotten subtitle is still refused"
 
 # Phosphor: the map covers the Lucide set, the master set is sound, a folder turns over with its filenames
 TP="$HERE/to-phosphor.py"
