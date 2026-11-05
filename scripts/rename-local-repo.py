@@ -136,6 +136,7 @@ def main():
     ap.add_argument('new')
     ap.add_argument('--apply', action='store_true')
     ap.add_argument('--projects', default=os.path.join(HOME, '.claude/projects'))
+    ap.add_argument('--allow-idle-shells', action='store_true', help='do not count a shell sitting idle in the folder: macOS keeps it working through the move, and it still shows the old path')
     ap.add_argument('--adopt', action='append', default=[], help='a project folder name to move though its sessions name another path, because you checked it (an earlier move left it so)')
     ap.add_argument('--ref', action='append', default=[], help='another file or folder to look for the old path in')
     a = ap.parse_args()
@@ -146,6 +147,8 @@ def main():
         print(f'refused: {new} already exists'); return 1
     moves, unsure = project_moves(old, new, a.projects, a.adopt)
     who = busy(old)
+    if a.allow_idle_shells:
+        who = [w for w in who if w.split()[1].lstrip('-') not in ('zsh', 'bash', 'sh')]
     refs = references(old, a.ref)
     print(f"{'APPLY' if a.apply else 'DRY RUN'}: {old} -> {new}")
     print(f'  Claude project folders to move with it: {len(moves)}')
