@@ -1,17 +1,31 @@
-# 🎨 Connect Wix
+<div align="center">
 
-**TL;DR:** the **Wix MCP** is Wix's own official connection for AI helpers. Once connected, your helper
-can:
-- search Wix's documentation;
-- read your site's content and business data (blog, bookings, events, CMS collections, store);
-- help you make changes.
+<img src="../sop-template/repo/assets/icons/shapes.svg" width="56" height="56" alt="">
 
-**You stay in charge:** start by asking it to *read and suggest*, and approve any change yourself.
+# Connect Wix
+
+*Let your helper read and help with a Wix site. You stay in charge of every change.*
+
+![Kind](https://img.shields.io/badge/Kind-Walkthrough-d9a441?style=flat-square)
+![Changed](https://img.shields.io/badge/Changed-2026--11--04-d9a441?style=flat-square)
+![For](https://img.shields.io/badge/For-Anyone_who_manages_a_Wix_site-d9a441?style=flat-square)
+
+<img src="../sop-template/repo/assets/icons/map-pin.svg" width="16" height="16" alt=""> **You are here:** drasticstatic lab › [`my-template`](../README.md) › [`walkthroughs`](README.md) › `CONNECT-WIX.md` · public · `main` is the working branch
+
+</div>
+
+## <img src="../sop-template/repo/assets/icons/compass.svg" width="24" height="24" alt=""> TL;DR
+
+1. <img src="../sop-template/repo/assets/icons/shapes.svg" width="16" height="16" alt=""> **The Wix MCP is Wix's own official connection for AI helpers.** Once connected, your helper can:
+2. <img src="../sop-template/repo/assets/icons/search.svg" width="16" height="16" alt=""> search Wix's documentation;
+3. <img src="../sop-template/repo/assets/icons/eye.svg" width="16" height="16" alt=""> read your site's content and business data (blog, bookings, events, CMS collections, store);
+4. <img src="../sop-template/repo/assets/icons/pencil-line.svg" width="16" height="16" alt=""> help you make changes.
+5. <img src="../sop-template/repo/assets/icons/hand-helping.svg" width="16" height="16" alt=""> **You stay in charge:** start by asking it to *read and suggest*, and approve any change yourself.
 
 > **Handing this to your AI helper?** Say: *"Read CONNECT-WIX.md and help me connect my Wix site to you.
 > Begin read-only: show me what you can see before you change anything."*
 
-## Pick your helper
+## <img src="../sop-template/repo/assets/icons/bot.svg" width="24" height="24" alt=""> Pick your helper
 
 <details open>
 <summary><b>ChatGPT</b></summary>
@@ -56,21 +70,27 @@ The first time it's used, Wix asks you to sign in. Restart the tool, then check 
 
 </details>
 
-## Good first requests
+## <img src="../sop-template/repo/assets/icons/message-square.svg" width="24" height="24" alt=""> Good first requests
 
-- *"@wix list every page on my site with its address. Mark the ones that link to the retreat portal."*
-- *"@wix show me the FAQ page's text, and suggest clearer wording. Don't change it yet."*
-- *"@wix which pages haven't been updated this year?"*
-- *"Compare my Wix FAQ with the FAQ on our retreat portal and list the differences."*
+- <img src="../sop-template/repo/assets/icons/map.svg" width="16" height="16" alt=""> *"@wix list every page on my site with its address. Mark the ones that link to the retreat portal."*
+- <img src="../sop-template/repo/assets/icons/type.svg" width="16" height="16" alt=""> *"@wix show me the FAQ page's text, and suggest clearer wording. Don't change it yet."*
+- <img src="../sop-template/repo/assets/icons/history.svg" width="16" height="16" alt=""> *"@wix which pages haven't been updated this year?"*
+- <img src="../sop-template/repo/assets/icons/scan-search.svg" width="16" height="16" alt=""> *"Compare my Wix FAQ with the FAQ on our retreat portal and list the differences."*
 
-## Safety, in plain words
+## <img src="../sop-template/repo/assets/icons/shield-check.svg" width="24" height="24" alt=""> Safety, in plain words
 
-- **Read first, write second.** Ask your helper to show you a change before making it. Wix's own guidance:
+- <img src="../sop-template/repo/assets/icons/eye.svg" width="16" height="16" alt=""> **Read first, write second.** Ask your helper to show you a change before making it. Wix's own guidance:
   treat reviewing what the AI suggests as your responsibility.
-- **Use the account that should be making changes.** If several people manage the site, decide together
+- <img src="../sop-template/repo/assets/icons/user-round.svg" width="16" height="16" alt=""> **Use the account that should be making changes.** If several people manage the site, decide together
   who connects it.
-- **Nothing private goes on a public page.** The same never-publish rule as the GitHub sites applies here.
+- <img src="../sop-template/repo/assets/icons/folder-lock.svg" width="16" height="16" alt=""> **Nothing private goes on a public page.** The same never-publish rule as the GitHub sites applies here.
 
 Official guides:
 - [What is the Wix MCP?](https://www.wix.com/blog/what-is-the-wix-mcp)
 - [About the Wix MCP (developers)](https://dev.wix.com/docs/sdk/articles/use-the-wix-mcp/about-the-wix-mcp)
+
+## <img src="../sop-template/repo/assets/icons/git-pull-request.svg" width="24" height="24" alt=""> Suggest a change
+
+Noticed something wrong, or know a better way? Open an [issue](https://github.com/drasticstatic/my-template/issues) or a pull request against `main`; the lab steward reads them, and a person with the role merges with a merge commit so your name stays on it. Not on GitHub? Tell any steward you know, or your helper, in your own words.
+
+<sub>One of the [walkthroughs](README.md) in `my-template`. Icons: Lucide (ISC).</sub>
