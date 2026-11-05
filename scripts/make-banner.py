@@ -533,11 +533,11 @@ def m_proposal(t, rng, n):
     room = fx - (x0 + 14)
     back = n - 1
     pw = min(70, room * 1.45 / back) if back else 0
-    step = (room - pw * .45) / back if back else 0
+    step = min((room - pw * .45) / back, 84) if back else 0  # a few pages stay close to the front one, not stranded at the far end of the desk
     pages, stops, thread = [], [], []
     for i in range(back):
-        f = i / max(back - 1, 1)
-        x, top = x0 + 14 + i * step, desk - (72 + f * 62 + (rng.random() - .5) * 8)
+        f = (i + 1) / back if back < 4 else i / (back - 1)
+        x, top = fx - pw * .55 - (back - i) * step + (step - pw * .45 if back > 5 else 0), desk - (72 + f * 62 + (rng.random() - .5) * 8)
         h = desk - top
         fill = mix(t.faint, t.tint, .08 + f * .5)
         ink = legible(t.pit, fill, 4.5) if contrast(t.pit, fill) >= 4.5 else legible(t.tint, fill, 4.5)
@@ -580,10 +580,12 @@ def m_proposal(t, rng, n):
            f'<rect x="{x0 + 2}" y="{desk}" width="{x1 - x0 - 4}" height="{y1 - desk + 2}" rx="3" fill="{t.faint}" fill-opacity=".28"/>',
            line_path(f"M{x0 + 2} {desk} H{x1 - 2}", "url(#line)", 3.5, start=.1)]
     out += pages
-    out.append(line_path("M" + " L".join(f"{x:.1f} {y:.1f}" for x, y in thread), "url(#line)", 2.6, start=.4))
+    if back:
+        out.append(line_path("M" + " L".join(f"{x:.1f} {y:.1f}" for x, y in thread), "url(#line)", 2.6, start=.4))
     out += stops
     out.append(f'<g class="arrive"{delay(.45 + back * 2.2 / max(back, 1))}>{"".join(front)}</g>')
-    out.append(f'<circle class="arrive"{delay(.45 + back * 2.2 / max(back, 1))} cx="{fcx:.1f}" cy="{ftop - 8:.1f}" r="5.5" fill="{t.tint}"/>')
+    if back:
+        out.append(f'<circle class="arrive"{delay(.45 + back * 2.2 / max(back, 1))} cx="{fcx:.1f}" cy="{ftop - 8:.1f}" r="5.5" fill="{t.tint}"/>')
     out.append(halo(sx, sy, sr + 4, mix(seal, "ffffff", .55)))
     out.append(f'<g class="press"><path d="M{sx - 13:.1f} {sy + 24:.1f}L{sx - 21:.1f} {sy + 44:.1f}M{sx + 13:.1f} {sy + 24:.1f}L{sx + 21:.1f} {sy + 44:.1f}" fill="none" stroke="{wax}" stroke-width="8" stroke-linecap="round"/>'
                f'<g class="breathe"><path d="{wax_edge}" fill="{wax}" stroke="{t.pit}" stroke-width="1.5"/>'
@@ -876,8 +878,8 @@ def main():
         tone.glyph = a.glyph
     if a.labels:
         tone.labels = [x.strip() for x in a.labels.split(",") if x.strip()]
-        if not 2 <= len(tone.labels) <= 8 or not all(re.fullmatch(r"[\w.-]{1,5}", x) for x in tone.labels):
-            ap.error("--labels takes two to eight short numbers")
+        if not 1 <= len(tone.labels) <= 8 or not all(re.fullmatch(r"[\w.-]{1,5}", x) for x in tone.labels):
+            ap.error("--labels takes one to eight short numbers")
     # Left out, the motif comes from the title. The pick runs over the seven original motifs, so a banner first drawn
     # before the styles existed still comes out the same; seed, chain, unbound and proposal are reached only by asking for them.
     pick = sorted(k for k in MOTIFS if k not in ("seed", "chain", "unbound", "proposal"))
