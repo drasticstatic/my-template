@@ -12,9 +12,15 @@ git tags (`v1.0.0`…); until the first tag, every procedure here is a draft and
 | [SOP-IT-001](IT/SOP-IT-001-vpn-dns-resolver-stalls.md) | VPN and DNS resolver stalls: how to tell, how to check, how to fix | IT | draft |
 | [SOP-IT-002](IT/SOP-IT-002-reading-room-and-helper-access.md) | Reading room and helper access: browser first, a token only if needed | IT | draft |
 | [SOP-IT-003](IT/SOP-IT-003-observer-dashboards-local-by-default.md) | Observer dashboards: local by default, remote access on purpose | IT | draft |
+| [SOP-IT-005](IT/SOP-IT-005-dependabot-by-the-fleet.md) | Dependabot, by the fleet: who takes the updates, and what a helper checks before merging one | IT | draft |
+| [SOP-IT-006](IT/SOP-IT-006-renaming-a-local-folder.md) | Renaming a local folder: what is filed under its old name, and how to move it all | IT | draft |
+| [SOP-IT-007](IT/SOP-IT-007-the-machines-three-guards.md) | The machine's three guards: FileVault, a VPN, an antivirus; what each leaves open, and the power-cut trade-off | IT | draft |
+| [SOP-IT-008](IT/SOP-IT-008-disk-utility-and-sparse-images.md) | Disk Utility and sparse images: volumes, containers, snapshots, an encrypted image step by step, the loop to avoid | IT | draft |
+| [SOP-IT-009](IT/SOP-IT-009-cold-storage-data-and-wallets.md) | Cold storage, data and wallets: hot and cold, seed, hardware, multisig and copied cards; four failures, two places, test the recovery | IT | draft |
 | [SOP-GOV-001](GOV/SOP-GOV-001-board-reading-room-membership.md) | Board reading room membership: a closed team with Read on the committee repositories | GOV | draft |
 | [SOP-GOV-002](GOV/SOP-GOV-002-github-collaboration.md) | GitHub collaboration: organisations, owners and members, base permission none, teams, issues, discussions, pull requests, projects, Pages | GOV | draft |
 | [SOP-COM-001](COM/SOP-COM-001-new-to-github-your-first-hour.md) | New to GitHub: your first hour (your own account and password, the invitation, five words, the reading room, a helper, the welcome deck) | COM | draft |
+| [SOP-COM-002](COM/SOP-COM-002-apple-account-recovery.md) | Apple account recovery: for the people who hold your keys | COM | draft |
 
 **New here?** Start with **SOP-COM-001**, then SOP-OPS-001.
 
