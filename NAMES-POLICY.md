@@ -1,27 +1,27 @@
 <div align="center">
 
-<img src="sop-template/repo/assets/icons/tags.svg" width="56" height="56" alt="">
+<img src="assets/icons-phosphor/tags.svg" width="56" height="56" alt="">
 
 # Names policy: names may be public, contents stay private
 
 *What a visitor may see, what never leaves the house, and how the safety checks know the difference.*
 
-![Policy](https://img.shields.io/badge/Policy-names-d9a441?style=flat-square)
-![Decided](https://img.shields.io/badge/Decided-2026--11--01-334155?style=flat-square)
-![Steward](https://img.shields.io/badge/Steward-the_lab_steward-8a6a2a?style=flat-square)
+![Policy](https://img.shields.io/badge/Policy-names-800020?style=flat-square)
+![Decided](https://img.shields.io/badge/Decided-2026--11--01-1a1a2e?style=flat-square)
+![Steward](https://img.shields.io/badge/Steward-the_lab_steward-5c1a2b?style=flat-square)
 ![For](https://img.shields.io/badge/For-Every_writer_and_helper-64748b?style=flat-square)
 
 </div>
 
-## <img src="sop-template/repo/assets/icons/compass.svg" width="24" height="24" alt=""> TL;DR
+## <img src="assets/icons-phosphor/compass.svg" width="24" height="24" alt=""> TL;DR
 
-1. <img src="sop-template/repo/assets/icons/tags.svg" width="16" height="16" alt=""> **Every repository's name may appear publicly.** A private repository's name in a public page, a legend or a deck is fine. *"Nothing to hide"* (the lab steward, 2026-11-01).
-2. <img src="sop-template/repo/assets/icons/folder-lock.svg" width="16" height="16" alt=""> **Contents stay private.** What is inside a private repository reaches the public only through an allowlist, after a tripwire (SOP-OPS-003).
-3. <img src="sop-template/repo/assets/icons/shield-alert.svg" width="16" height="16" alt=""> **Some things never go public, on any list:** secrets, personal data, filings (below).
-4. <img src="sop-template/repo/assets/icons/scan-search.svg" width="16" height="16" alt=""> **The security monitor checks against this page:** a private repository's *name* in public is not a finding; its *contents* are.
-5. <img src="sop-template/repo/assets/icons/fingerprint.svg" width="16" height="16" alt=""> **Real hardware identifiers stay out of docs,** private docs included. Write a placeholder ([below](#-hardware-identifiers)).
+1. <img src="assets/icons-phosphor/tags.svg" width="16" height="16" alt=""> **Every repository's name may appear publicly.** A private repository's name in a public page, a legend or a deck is fine. *"Nothing to hide"* (the lab steward, 2026-11-01).
+2. <img src="assets/icons-phosphor/folder-lock.svg" width="16" height="16" alt=""> **Contents stay private.** What is inside a private repository reaches the public only through an allowlist, after a tripwire (SOP-OPS-003).
+3. <img src="assets/icons-phosphor/shield-alert.svg" width="16" height="16" alt=""> **Some things never go public, on any list:** secrets, personal data, filings (below).
+4. <img src="assets/icons-phosphor/scan-search.svg" width="16" height="16" alt=""> **The security monitor checks against this page:** a private repository's *name* in public is not a finding; its *contents* are.
+5. <img src="assets/icons-phosphor/fingerprint.svg" width="16" height="16" alt=""> **Real hardware identifiers stay out of docs,** private docs included. Write a placeholder ([below](#-hardware-identifiers)).
 
-## <img src="sop-template/repo/assets/icons/workflow.svg" width="24" height="24" alt=""> The line
+## <img src="assets/icons-phosphor/workflow.svg" width="24" height="24" alt=""> The line
 
 ```mermaid
 flowchart LR
@@ -43,7 +43,7 @@ flowchart LR
   F -. "never" .-x R
 ```
 
-## <img src="sop-template/repo/assets/icons/globe.svg" width="24" height="24" alt=""> May be public
+## <img src="assets/icons-phosphor/globe.svg" width="24" height="24" alt=""> May be public
 
 | What | Example | Why it is safe |
 |---|---|---|
@@ -57,7 +57,7 @@ flowchart LR
 > and in this template's examples). That habit is no longer required. `--public-only` stays available for a page that
 > should list only what a visitor can open.
 
-## <img src="sop-template/repo/assets/icons/folder-lock.svg" width="24" height="24" alt=""> Stays private
+## <img src="assets/icons-phosphor/folder-lock.svg" width="24" height="24" alt=""> Stays private
 
 **Contents** of private repositories, unless an allowlist carries a page out:
 - drafts, decisions not yet taken, meeting notes;
@@ -65,7 +65,7 @@ flowchart LR
 - `logs/` (session timelines; there is no public counterpart, ever);
 - `CLAUDE.md`, `AGENTS.md`, `PENDING-TASKS.md` (the tripwire refuses them by name).
 
-## <img src="sop-template/repo/assets/icons/shield-alert.svg" width="24" height="24" alt=""> Never public, on any list
+## <img src="assets/icons-phosphor/shield-alert.svg" width="24" height="24" alt=""> Never public, on any list
 
 | Kind | Examples | Enforced by |
 |---|---|---|
@@ -79,7 +79,7 @@ flowchart LR
 If one of these is found in public: **stop**, tell the steward, rotate any secret first (a deleted commit is still in
 someone's clone), then remove it. Never paste the secret into the report.
 
-## <img src="sop-template/repo/assets/icons/fingerprint.svg" width="24" height="24" alt=""> Hardware identifiers
+## <img src="assets/icons-phosphor/fingerprint.svg" width="24" height="24" alt=""> Hardware identifiers
 
 > **TL;DR.** A page about a machine needs its model, not its unit. Write `iMac, 2024`, or a placeholder such as `<SERIAL-NUMBER>`, and leave the real number out.
 
@@ -104,20 +104,20 @@ system_profiler SPHardwareDataType | grep -viE 'serial|hardware uuid|provisionin
 
 **If you find one.**
 
-1. <img src="sop-template/repo/assets/icons/file-check.svg" width="16" height="16" alt=""> Replace it with a placeholder in the current file, and in any PDF made from it.
-2. <img src="sop-template/repo/assets/icons/message-circle-question.svg" width="16" height="16" alt=""> Tell the steward the file and the line, never the number.
-3. <img src="sop-template/repo/assets/icons/history.svg" width="16" height="16" alt=""> Leave history alone unless the steward decides otherwise. On a public repository, treat the number as already copied. On a private one, ask whether its history could ever travel: an allowlist sync copies files, not history, while a history export or making the repository public would carry it.
+1. <img src="assets/icons-phosphor/file-check.svg" width="16" height="16" alt=""> Replace it with a placeholder in the current file, and in any PDF made from it.
+2. <img src="assets/icons-phosphor/message-circle-question.svg" width="16" height="16" alt=""> Tell the steward the file and the line, never the number.
+3. <img src="assets/icons-phosphor/history.svg" width="16" height="16" alt=""> Leave history alone unless the steward decides otherwise. On a public repository, treat the number as already copied. On a private one, ask whether its history could ever travel: an allowlist sync copies files, not history, while a history export or making the repository public would carry it.
 
 **Where the real number does belong:** your own records of the machine, such as a password manager note, for warranty or a stolen-device report.
 
-## <img src="sop-template/repo/assets/icons/scan-search.svg" width="24" height="24" alt=""> For the security monitor and for helpers
+## <img src="assets/icons-phosphor/scan-search.svg" width="24" height="24" alt=""> For the security monitor and for helpers
 
 - A **private repository's name** in a public file: **not a finding.** Do not open a pull request to hide it.
 - A private repository's **contents** in a public file without an allowlist line: **a finding.** Name the file and the line, not the content.
 - Anything in *Never public*: **a finding, urgent,** whatever the allowlist says. A hardware identifier is a finding too, but not an emergency: nothing needs rotating.
 - **Kenney's Home base deck** is the worked example of the boundary: its *name* may be mentioned anywhere; the deck itself stays members-only in the THEF reading room. Public `.github/decks/` folders carry only welcome decks.
 
-## <img src="sop-template/repo/assets/icons/history.svg" width="24" height="24" alt=""> Change log
+## <img src="assets/icons-phosphor/history.svg" width="24" height="24" alt=""> Change log
 
 | Date | Change | By |
 |---|---|---|
@@ -125,4 +125,4 @@ system_profiler SPHardwareDataType | grep -viE 'serial|hardware uuid|provisionin
 | 2026-11-01 | *Never public*: a person's account security, the weakness no scan can see; it lives only in that person's own note | Alfred |
 | 2026-11-03 | Hardware identifiers stay out of docs: a placeholder, the why, and the plain note that one unlocks nothing and rotates nothing | Alfred |
 
-<sub>Related: [LUCID.md](LUCID.md), [ENTITIES.md](ENTITIES.md), SOP-OPS-003 *Private houses everything, public lanes witness* ([`sop-template/repo/OPS/`](sop-template/repo/OPS/)), [`walkthroughs/SECRET-SCAN.md`](walkthroughs/SECRET-SCAN.md). Icons: Lucide (ISC).</sub>
+<sub>Related: [LUCID.md](LUCID.md), [ENTITIES.md](ENTITIES.md), SOP-OPS-003 *Private houses everything, public lanes witness* ([`sop-template/repo/OPS/`](sop-template/repo/OPS/)), [`walkthroughs/SECRET-SCAN.md`](walkthroughs/SECRET-SCAN.md). Icons: Phosphor duotone (MIT).</sub>

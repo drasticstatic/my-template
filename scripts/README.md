@@ -283,18 +283,32 @@ falls back to `sips` for everything.
 ## `make-banner.py` — a repository's front door
 
 ```sh
-python3 scripts/make-banner.py --list                     # the colour families and the seven pictures
+python3 scripts/make-banner.py --list                     # the colour families and the pictures
 python3 scripts/make-banner.py --title NAME --subtitle "WHAT IT IS" --kicker "WHOSE IT IS" \
         --family amber --motif waves --out assets/banner.svg
 python3 scripts/make-banner.py --check assets/banner.svg  # any banner, by hand or not
 python3 scripts/make-banner.py --check-readme README.md   # the page, as far as a machine can read it
-python3 scripts/make-banner.py --icons README.md --family amber   # copy the Lucide icons the page names, toned
+python3 scripts/make-banner.py --icons README.md --family amber   # copy the icons the page names, toned (Lucide; Phosphor for maroon)
 sh scripts/test-make-banner.sh                            # its own tests: no network, no browser
 ```
 
 Python 3 standard library only. The same words draw the same picture and other words another. It never writes
 outside `--out` and the page's own icon folder, and it never commits. The rules it keeps, and why, are in
 [`README-STANDARD.md`](../README-STANDARD.md).
+
+## `to-phosphor.py` — two-tone icons for what is drasticstatic's own
+
+```sh
+python3 scripts/to-phosphor.py assets/icons                  # each mapped .svg becomes Phosphor duotone, maroon; the FILENAME stays
+python3 scripts/to-phosphor.py assets/icons --primary 0f3460 # the same art in another colour
+python3 scripts/to-phosphor.py --check                       # the map covers the Lucide set; every master file is sound
+python3 scripts/to-phosphor.py --build                       # maintainers: fetch the art again with curl, reading each file first
+```
+
+The map is [`phosphor-map.tsv`](phosphor-map.tsv), one line per Lucide name; the art is [`assets/icons-phosphor/`](../assets/icons-phosphor/).
+Anything not in the map, and every `status-*` icon, is left alone. No README link changes, because the filenames do not. The
+MIT licence lands beside the art, as `LICENSE` or, where another licence already sits there, as `LICENSE-phosphor`. It never
+commits. Which family goes where is in [`LUCID.md`](../LUCID.md).
 
 ---
 
@@ -306,11 +320,11 @@ sh scripts/render-walkthrough-pdfs.sh SECURE-TWO-FACTOR      # one guide → wal
 sh scripts/render-walkthrough-pdfs.sh                        # every guide, then drop any PDF whose source is gone
 ```
 
-Every `walkthroughs/*.md` (the index `README.md` excepted) becomes `walkthroughs/pdf/<NAME>.pdf`, Letter, brass on slate
+Every `walkthroughs/*.md` (the index `README.md` excepted) becomes `walkthroughs/pdf/<NAME>.pdf`, Letter, maroon with navy links
 (`proposals-template/TONES.md`; the `TONE_*` variables override per run). `<details>` open for print, GitHub callouts
 become bold labels, and ```` ```mermaid ```` blocks are drawn as SVG first by `sop-template/repo/scripts/mermaid-prerender.sh`
 (`@mermaid-js/mermaid-cli`, pinned); `md-to-pdf@5` does the rest through your installed Chrome. It runs from the
-repository root, so the pages' `../sop-template/repo/assets/icons/` links resolve as they do on GitHub.
+repository root, so the pages' `../assets/icons-phosphor/` links resolve as they do on GitHub.
 `.github/workflows/walkthroughs-pdf.yml` runs the same script on a push to `main` that touches a walkthrough and commits
 the PDFs as the Actions bot, so nobody needs to render by hand; a Mac short of memory should let it. The markdown stays
 the source: edit the page, never the PDF ([why both](../walkthroughs/MARKDOWN-BESIDE-PDF.md)).

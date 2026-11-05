@@ -3,12 +3,12 @@
 A working pattern for grouping several independent git repos under one shared local directory,
 without any of them tracking each other's content.
 
-## <img src="sop-template/repo/assets/icons/compass.svg" width="24" height="24" alt=""> TL;DR
+## <img src="assets/icons-phosphor/compass.svg" width="24" height="24" alt=""> TL;DR
 
-1. <img src="sop-template/repo/assets/icons/layers.svg" width="16" height="16" alt=""> **A parent folder can be a lightweight repository** that holds several full repositories side by side, each git-ignored by the parent. No submodules.
-2. <img src="sop-template/repo/assets/icons/building-2.svg" width="16" height="16" alt=""> **An organisation's clone lives at `~/<org>/<repository>` and that clone is canonical.** Labs explore under `~/code/<lab>/`.
-3. <img src="sop-template/repo/assets/icons/files.svg" width="16" height="16" alt=""> **A second clone under a lab is a spare.** It stays where it is, with a `WHERE-EVERYTHING-WENT.md` beside it. Nothing is deleted by a helper.
-4. <img src="sop-template/repo/assets/icons/map.svg" width="16" height="16" alt=""> **See the whole map:** `sh scripts/clone-map.sh` lists every repository on the machine and marks the duplicates and spares, without changing anything.
+1. <img src="assets/icons-phosphor/layers.svg" width="16" height="16" alt=""> **A parent folder can be a lightweight repository** that holds several full repositories side by side, each git-ignored by the parent. No submodules.
+2. <img src="assets/icons-phosphor/building-2.svg" width="16" height="16" alt=""> **An organisation's clone lives at `~/<org>/<repository>` and that clone is canonical.** Labs explore under `~/code/<lab>/`.
+3. <img src="assets/icons-phosphor/files.svg" width="16" height="16" alt=""> **A second clone under a lab is a spare.** It stays where it is, with a `WHERE-EVERYTHING-WENT.md` beside it. Nothing is deleted by a helper.
+4. <img src="assets/icons-phosphor/map.svg" width="16" height="16" alt=""> **See the whole map:** `sh scripts/clone-map.sh` lists every repository on the machine and marks the duplicates and spares, without changing anything.
 
 ## The pattern
 
@@ -94,16 +94,16 @@ stashed; skip it if the destination exists. Plain `mv` is enough, since `.git/` 
 `.gitignore` with a comment saying where the clone went, so a stray clone there can never be tracked. The session-continuity
 note above applies if anyone ran Claude Code from inside the old path.
 
-## <img src="sop-template/repo/assets/icons/building-2.svg" width="24" height="24" alt=""> The organisation clone is canonical
+## <img src="assets/icons-phosphor/building-2.svg" width="24" height="24" alt=""> The organisation clone is canonical
 
 When the same repository is cloned twice on one machine, one of the two is the one to work in, and it is always the
 organisation's. The rule in one table:
 
 | | Where | What it is for |
 |---|---|---|
-| <img src="sop-template/repo/assets/icons/landmark.svg" width="16" height="16" alt=""> **Organisation clone** | `~/<org>/<repository>` | The canonical copy. Edit here, commit here, push from here. |
-| <img src="sop-template/repo/assets/icons/flask-conical.svg" width="16" height="16" alt=""> **Lab** | `~/code/<lab>/` | A person's own exploring: drafts, experiments, a lightweight parent with its own children. |
-| <img src="sop-template/repo/assets/icons/files.svg" width="16" height="16" alt=""> **Spare** | A second clone of an organisation repository found under a lab | Left in place, accounted for, not worked in. |
+| <img src="assets/icons-phosphor/landmark.svg" width="16" height="16" alt=""> **Organisation clone** | `~/<org>/<repository>` | The canonical copy. Edit here, commit here, push from here. |
+| <img src="assets/icons-phosphor/flask-conical.svg" width="16" height="16" alt=""> **Lab** | `~/code/<lab>/` | A person's own exploring: drafts, experiments, a lightweight parent with its own children. |
+| <img src="assets/icons-phosphor/files.svg" width="16" height="16" alt=""> **Spare** | A second clone of an organisation repository found under a lab | Left in place, accounted for, not worked in. |
 
 The organisation folders on this machine, each named exactly as the GitHub organisation: `~/theholyearthfoundation`,
 `~/psychedelicsinrecovery`, `~/Octagon-Religious-Research-Group-ORG`, `~/psanctuary`, `~/psanctuarychurch`, `~/taylordwraps-org`

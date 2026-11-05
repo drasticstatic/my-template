@@ -1,27 +1,27 @@
 <div align="center">
 
-<img src="../sop-template/repo/assets/icons/door-open.svg" width="56" height="56" alt="">
+<img src="../assets/icons-phosphor/door-open.svg" width="56" height="56" alt="">
 
 # Join an organization and build with your AI helpers
 
 *Accept the invitation, turn on two-factor login, connect a helper, and ask in your own words.*
 
-![Kind](https://img.shields.io/badge/Walkthrough-join_an_organization-d9a441?style=flat-square)
-![Changed](https://img.shields.io/badge/Changed-2026--11--04-8a6a2a?style=flat-square)
+![Kind](https://img.shields.io/badge/Walkthrough-join_an_organization-800020?style=flat-square)
+![Changed](https://img.shields.io/badge/Changed-2026--11--04-5c1a2b?style=flat-square)
 ![For](https://img.shields.io/badge/For-Someone_invited_to_an_organization-64748b?style=flat-square)
 
-<img src="../sop-template/repo/assets/icons/map-pin.svg" width="16" height="16" alt=""> **You are here:** drasticstatic lab › [`my-template`](../README.md) › [walkthroughs](README.md) › `JOIN-AN-ORGANIZATION.md` · public · `main` is the working branch
+<img src="../assets/icons-phosphor/map-pin.svg" width="16" height="16" alt=""> **You are here:** drasticstatic lab › [`my-template`](../README.md) › [walkthroughs](README.md) › `JOIN-AN-ORGANIZATION.md` · public · `main` is the working branch
 
 </div>
 
-## <img src="../sop-template/repo/assets/icons/compass.svg" width="24" height="24" alt=""> TL;DR
+## <img src="../assets/icons-phosphor/compass.svg" width="24" height="24" alt=""> TL;DR
 
 You don't need to learn how GitHub works to build here.
 
-1. <img src="../sop-template/repo/assets/icons/mail.svg" width="16" height="16" alt=""> **Accept the invitation.**
-2. <img src="../sop-template/repo/assets/icons/fingerprint.svg" width="16" height="16" alt=""> **Turn on two-factor login.**
-3. <img src="../sop-template/repo/assets/icons/link.svg" width="16" height="16" alt=""> **Connect the AI helper you like.**
-4. <img src="../sop-template/repo/assets/icons/message-square.svg" width="16" height="16" alt=""> **Ask for what you want, in your own words.**
+1. <img src="../assets/icons-phosphor/mail.svg" width="16" height="16" alt=""> **Accept the invitation.**
+2. <img src="../assets/icons-phosphor/fingerprint.svg" width="16" height="16" alt=""> **Turn on two-factor login.**
+3. <img src="../assets/icons-phosphor/link.svg" width="16" height="16" alt=""> **Connect the AI helper you like.**
+4. <img src="../assets/icons-phosphor/message-square.svg" width="16" height="16" alt=""> **Ask for what you want, in your own words.**
 
 The organization's rulebook (`AGENTS.md`) teaches your helper the rest. Every change rehearses before it
 goes live, so nothing you try can break anything.
@@ -29,13 +29,13 @@ goes live, so nothing you try can break anything.
 > **Handing this to your AI helper?** Paste the link and say: *"Read this walkthrough and guide me through
 > it one step at a time. Wait for me after each step."*
 
-## <img src="../sop-template/repo/assets/icons/door-open.svg" width="24" height="24" alt=""> 1 · Accept the invitation
+## <img src="../assets/icons-phosphor/door-open.svg" width="24" height="24" alt=""> 1 · Accept the invitation
 
 You'll get an email from GitHub (and a notification on github.com) inviting you to the organization.
 Press **Join**. If you don't have a GitHub account yet, the invitation walks you through creating one.
 Use the email the organization knows you by.
 
-## <img src="../sop-template/repo/assets/icons/fingerprint.svg" width="24" height="24" alt=""> 2 · Turn on two-factor login
+## <img src="../assets/icons-phosphor/fingerprint.svg" width="24" height="24" alt=""> 2 · Turn on two-factor login
 
 This protects you, and everyone you build with. Some organizations require it before you can see anything.
 
@@ -44,7 +44,7 @@ On github.com:
 2. Choose **Password and authentication**, then **Enable two-factor authentication**.
 3. Pick an authenticator app or a passkey, and **save the recovery codes** somewhere safe and offline.
 
-## <img src="../sop-template/repo/assets/icons/wrench.svg" width="24" height="24" alt=""> 3 · Choose your helpers
+## <img src="../assets/icons-phosphor/wrench.svg" width="24" height="24" alt=""> 3 · Choose your helpers
 
 You can use one or several. They all read the same rulebook.
 
@@ -61,10 +61,10 @@ You can use one or several. They all read the same rulebook.
 > stay together. Paste this into the Project's instructions:
 > *"Before helping with anything for this organization, read its AGENTS.md and follow it."*
 
-## <img src="../sop-template/repo/assets/icons/link.svg" width="24" height="24" alt=""> 4 · Connect your helper to the organization
+## <img src="../assets/icons-phosphor/link.svg" width="24" height="24" alt=""> 4 · Connect your helper to the organization
 
 <details>
-<summary><img src="../sop-template/repo/assets/icons/bot.svg" width="16" height="16" alt=""> <b>Codex</b></summary>
+<summary><img src="../assets/icons-phosphor/bot.svg" width="16" height="16" alt=""> <b>Codex</b></summary>
 
 1. Open Codex (in ChatGPT, or the Codex app) and choose **connect GitHub**.
 2. GitHub asks where to install the **ChatGPT Codex Connector**. Choose **the organization** (not just
@@ -82,7 +82,7 @@ Official guides:
 </details>
 
 <details>
-<summary><img src="../sop-template/repo/assets/icons/bot.svg" width="16" height="16" alt=""> <b>Claude Code</b></summary>
+<summary><img src="../assets/icons-phosphor/bot.svg" width="16" height="16" alt=""> <b>Claude Code</b></summary>
 
 1. Install Claude Code (desktop app or terminal) and sign in.
 2. Open the repository (`git clone` it, or open the folder). Claude Code reads `CLAUDE.md`, which points
@@ -94,7 +94,7 @@ Official guides:
 </details>
 
 <details>
-<summary><img src="../sop-template/repo/assets/icons/book-open.svg" width="16" height="16" alt=""> <b>ChatGPT (reading your repositories)</b></summary>
+<summary><img src="../assets/icons-phosphor/book-open.svg" width="16" height="16" alt=""> <b>ChatGPT (reading your repositories)</b></summary>
 
 In ChatGPT, connect **GitHub** from the plugins (apps) list, and choose the organization's repositories.
 ChatGPT can then read and explain them. For changes, switch to Codex.
@@ -102,7 +102,7 @@ ChatGPT can then read and explain them. For changes, switch to Codex.
 </details>
 
 <details>
-<summary><img src="../sop-template/repo/assets/icons/users-round.svg" width="16" height="16" alt=""> <b>Augment Cosmos</b></summary>
+<summary><img src="../assets/icons-phosphor/users-round.svg" width="16" height="16" alt=""> <b>Augment Cosmos</b></summary>
 
 An organization owner connects the **Augment Code GitHub app** once, at the organization level, and
 chooses which repositories Cosmos may touch. You then work in your own **Space**: a safe place to play
@@ -113,7 +113,7 @@ and [how Spaces work for us](https://github.com/drasticstatic/augment-intent-pro
 </details>
 
 <details>
-<summary><img src="../sop-template/repo/assets/icons/bird.svg" width="16" height="16" alt=""> <b>Littlebird</b></summary>
+<summary><img src="../assets/icons-phosphor/bird.svg" width="16" height="16" alt=""> <b>Littlebird</b></summary>
 
 Install Littlebird on your computer and choose what it may remember. Pause it for anything private.
 **What it remembers stays with you.** It isn't part of the organization's repositories, and nothing from it
@@ -121,7 +121,7 @@ is published unless you choose to share it.
 
 </details>
 
-## <img src="../sop-template/repo/assets/icons/message-square.svg" width="24" height="24" alt=""> 5 · Ask in your own words
+## <img src="../assets/icons-phosphor/message-square.svg" width="24" height="24" alt=""> 5 · Ask in your own words
 
 You don't need special commands. Describe what you want as you'd tell a friend who's good with
 computers:
@@ -134,15 +134,15 @@ computers:
 > *"Show me the rehearsal site, and tell me what's different from the live one."*
 
 Your helper follows the organization's **house rules** in `AGENTS.md`:
-- <img src="../sop-template/repo/assets/icons/git-branch.svg" width="16" height="16" alt=""> **Sync first.**
-- <img src="../sop-template/repo/assets/icons/flask-conical.svg" width="16" height="16" alt=""> **Work on `preview`**, the rehearsal. Live changes only by a Promote pull request.
-- <img src="../sop-template/repo/assets/icons/folder-lock.svg" width="16" height="16" alt=""> **Never publish what isn't ours to share:** recovery or fellowship details, private messages, personal,
+- <img src="../assets/icons-phosphor/git-branch.svg" width="16" height="16" alt=""> **Sync first.**
+- <img src="../assets/icons-phosphor/flask-conical.svg" width="16" height="16" alt=""> **Work on `preview`**, the rehearsal. Live changes only by a Promote pull request.
+- <img src="../assets/icons-phosphor/folder-lock.svg" width="16" height="16" alt=""> **Never publish what isn't ours to share:** recovery or fellowship details, private messages, personal,
   medical or legal history.
-- <img src="../sop-template/repo/assets/icons/key-round.svg" width="16" height="16" alt=""> **No secrets, ever.**
-- <img src="../sop-template/repo/assets/icons/languages.svg" width="16" height="16" alt=""> **Both languages**, where the site has two.
-- <img src="../sop-template/repo/assets/icons/pencil-line.svg" width="16" height="16" alt=""> **Credit the work** with one line at the end of each commit.
+- <img src="../assets/icons-phosphor/key-round.svg" width="16" height="16" alt=""> **No secrets, ever.**
+- <img src="../assets/icons-phosphor/languages.svg" width="16" height="16" alt=""> **Both languages**, where the site has two.
+- <img src="../assets/icons-phosphor/pencil-line.svg" width="16" height="16" alt=""> **Credit the work** with one line at the end of each commit.
 
-## <img src="../sop-template/repo/assets/icons/pencil-line.svg" width="24" height="24" alt=""> The credit line (it advises, it never blocks)
+## <img src="../assets/icons-phosphor/pencil-line.svg" width="24" height="24" alt=""> The credit line (it advises, it never blocks)
 
 When an AI helped write a change, the commit ends with one line naming it:
 
@@ -155,7 +155,7 @@ Co-Authored-By: Alfred · ClaudeCodeCLI · Anthropic [Opus-5.5]
 - The local check only offers a gentle note, and **nobody should ever need `--no-verify`**.
 - The one check that does stop a commit is the **secret scan**, and it stops only real secrets.
 
-## <img src="../sop-template/repo/assets/icons/shield-check.svg" width="24" height="24" alt=""> The secret scan (GitGuardian)
+## <img src="../assets/icons-phosphor/shield-check.svg" width="24" height="24" alt=""> The secret scan (GitGuardian)
 
 - **You don't need your own key to contribute.** Each organization's workshop repository carries one CI
   key, and it checks every change, including those made on GitHub's website or by Codex.
@@ -165,14 +165,14 @@ Co-Authored-By: Alfred · ClaudeCodeCLI · Anthropic [Opus-5.5]
 - **Full guide:** [The secret scan](SECRET-SCAN.md). It's written so your AI helper can walk you through
   any message it shows.
 
-## <img src="../sop-template/repo/assets/icons/hand-helping.svg" width="24" height="24" alt=""> When you're unsure
+## <img src="../assets/icons-phosphor/hand-helping.svg" width="24" height="24" alt=""> When you're unsure
 
 - Ask your helper: *"What would this change do? Don't make it yet."*
 - Rehearsal can't hurt the live site. Look there first.
 - Message the organization's technical steward. Every organization names one in its `ONBOARDING.md`.
 
 <details>
-<summary><img src="../sop-template/repo/assets/icons/bot.svg" width="16" height="16" alt=""> <b>For the AI helper reading this</b></summary>
+<summary><img src="../assets/icons-phosphor/bot.svg" width="16" height="16" alt=""> <b>For the AI helper reading this</b></summary>
 
 Before your first change in a repository of this organization:
 1. Read `AGENTS.md` (and `CLAUDE.md` or tool-specific notes if present).
@@ -189,7 +189,7 @@ Before your first change in a repository of this organization:
 
 </details>
 
-## <img src="../sop-template/repo/assets/icons/git-pull-request.svg" width="24" height="24" alt=""> Suggest a change
+## <img src="../assets/icons-phosphor/git-pull-request.svg" width="24" height="24" alt=""> Suggest a change
 
 Noticed something wrong, or a step that could be kinder? Open an [issue](https://github.com/drasticstatic/my-template/issues)
 or a pull request against `main`, changing this page. A person with the role reads it and merges with a merge commit, so

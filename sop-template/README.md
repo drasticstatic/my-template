@@ -1,3 +1,5 @@
+<img src="assets/banner.svg" width="100%" alt="SOP template: an eight-sided figure draws itself and its corners arrive one by one, maroon on dark navy.">
+
 # 📋 SOP template — procedures beside proposals, the ISO/IEEE way
 
 **TL;DR:** a ready-to-copy `ops-standard-operating-procedures` repository. A **proposal** asks for a decision; a

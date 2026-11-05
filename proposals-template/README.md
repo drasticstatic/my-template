@@ -1,3 +1,5 @@
+<img src="assets/banner.svg" width="100%" alt="Proposals template: thin threads leave one point and find each other, maroon on dark navy.">
+
 # 📜 Proposals template
 
 **TL;DR:** a ready-to-copy `proposals` repository. Each idea becomes one folder with a plain-language

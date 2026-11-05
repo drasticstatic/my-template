@@ -1,13 +1,13 @@
 <div align="center">
 
-<img src="sop-template/repo/assets/icons/network.svg" width="56" height="56" alt="">
+<img src="assets/icons-phosphor/network.svg" width="56" height="56" alt="">
 
 # Entities: how we speak of the divine, of people, of houses and of helpers
 
 *One map, so every page names each one the same honourable way.*
 
-![Status](https://img.shields.io/badge/Status-draft%2C_we_massage_this_as_we_go-d9a441?style=flat-square)
-![Changed](https://img.shields.io/badge/Changed-2026--11--03-8a6a2a?style=flat-square)
+![Status](https://img.shields.io/badge/Status-draft%2C_we_massage_this_as_we_go-800020?style=flat-square)
+![Changed](https://img.shields.io/badge/Changed-2026--11--03-5c1a2b?style=flat-square)
 ![For](https://img.shields.io/badge/For-Every_writer_and_helper-64748b?style=flat-square)
 
 </div>
@@ -17,15 +17,15 @@
 > document. Each organisation's officers have the last word on how their own house speaks. Change it by pull request,
 > with the reason in the description.
 
-## <img src="sop-template/repo/assets/icons/compass.svg" width="24" height="24" alt=""> TL;DR
+## <img src="assets/icons-phosphor/compass.svg" width="24" height="24" alt=""> TL;DR
 
-1. <img src="sop-template/repo/assets/icons/sun.svg" width="16" height="16" alt=""> **The divine is named by each house in its own words.** The Holy Earth Foundation and Bushido may name their spiritual founder as Jesus / the Holy Spirit. Psychedelics in Recovery, O-R-G and Psanctuary speak of a Higher Power, Loving Kindness, Great Spirit.
-2. <img src="sop-template/repo/assets/icons/users.svg" width="16" height="16" alt=""> **Decisions name a human steward, per item**, by role: the lab steward, the project lead, the officers. A DAO is the eventual owner, later.
-3. <img src="sop-template/repo/assets/icons/building-2.svg" width="16" height="16" alt=""> **Each organisation is a house** with its own colour, its own repositories and its own officers.
-4. <img src="sop-template/repo/assets/icons/bot.svg" width="16" height="16" alt=""> **Helpers serve; they do not decide.** Every agent prepares, and a person with the role says yes.
-5. <img src="sop-template/repo/assets/icons/infinity.svg" width="16" height="16" alt=""> **"We are all Alfred."** Many helpers, many seats, one intelligence in service.
+1. <img src="assets/icons-phosphor/sun.svg" width="16" height="16" alt=""> **The divine is named by each house in its own words.** The Holy Earth Foundation and Bushido may name their spiritual founder as Jesus / the Holy Spirit. Psychedelics in Recovery, O-R-G and Psanctuary speak of a Higher Power, Loving Kindness, Great Spirit.
+2. <img src="assets/icons-phosphor/users.svg" width="16" height="16" alt=""> **Decisions name a human steward, per item**, by role: the lab steward, the project lead, the officers. A DAO is the eventual owner, later.
+3. <img src="assets/icons-phosphor/building-2.svg" width="16" height="16" alt=""> **Each organisation is a house** with its own colour, its own repositories and its own officers.
+4. <img src="assets/icons-phosphor/bot.svg" width="16" height="16" alt=""> **Helpers serve; they do not decide.** Every agent prepares, and a person with the role says yes.
+5. <img src="assets/icons-phosphor/infinity.svg" width="16" height="16" alt=""> **"We are all Alfred."** Many helpers, many seats, one intelligence in service.
 
-## <img src="sop-template/repo/assets/icons/workflow.svg" width="24" height="24" alt=""> The map
+## <img src="assets/icons-phosphor/workflow.svg" width="24" height="24" alt=""> The map
 
 ```mermaid
 flowchart TB
@@ -73,7 +73,7 @@ flowchart TB
 The arrows are the whole idea: **inspiration** comes from the source; **decisions** are made by people; the houses are
 **stewarded**, not owned outright; helpers **prepare** and people **merge**.
 
-## <img src="sop-template/repo/assets/icons/sun.svg" width="24" height="24" alt=""> The divine
+## <img src="assets/icons-phosphor/sun.svg" width="24" height="24" alt=""> The divine
 
 | House | How it speaks of the divine | Notes |
 |---|---|---|
@@ -92,7 +92,7 @@ The arrows are the whole idea: **inspiration** comes from the source; **decision
 - **Never put words in a person's mouth.** "The foundation names…", not "we all believe…".
 - **Capitalise** the names of the divine as each tradition does.
 
-## <img src="sop-template/repo/assets/icons/users.svg" width="24" height="24" alt=""> People: stewards, not owners
+## <img src="assets/icons-phosphor/users.svg" width="24" height="24" alt=""> People: stewards, not owners
 
 | Role | Who, today | Decides |
 |---|---|---|
@@ -105,7 +105,7 @@ The arrows are the whole idea: **inspiration** comes from the source; **decision
 - **Decisions name the steward per item.** A decisions log or `decisions-open.md` says *which* role decides *this* item, not "the team".
 - **Name people by role first**, first name where it helps ("the project lead, Kenney"), never a private address or handle that was given privately.
 
-## <img src="sop-template/repo/assets/icons/building-2.svg" width="24" height="24" alt=""> Houses
+## <img src="assets/icons-phosphor/building-2.svg" width="24" height="24" alt=""> Houses
 
 | House | Colour family | Also known as |
 |---|---|---|
@@ -116,11 +116,12 @@ The arrows are the whole idea: **inspiration** comes from the source; **decision
 | O-R-G | emerald | ORG |
 | Taylor'd Wraps | magenta | Taylor's house |
 | Bushido Code | its own banner | the Escape Trainer is its first build |
-| the drasticstatic lab | brass on slate | the lab, where templates and drafts are made |
+| drasticstatic's own repositories | maroon on navy | what belongs only to him, not serving an organisation |
+| the drasticstatic lab desks | brass on slate, with the organisation's accent | where templates and drafts are made for an organisation |
 
 The colours are in [`proposals-template/TONES.md`](proposals-template/TONES.md).
 
-## <img src="sop-template/repo/assets/icons/bot.svg" width="24" height="24" alt=""> Helpers: "we are all Alfred"
+## <img src="assets/icons-phosphor/bot.svg" width="24" height="24" alt=""> Helpers: "we are all Alfred"
 
 | Helper | Seat | Serves |
 |---|---|---|
@@ -142,11 +143,11 @@ How helpers are spoken of:
 - **Serving, never deciding.** "Alfred prepared; the steward merged."
 - **No will of their own.** A bot that watches is a wakeful servant; the guardrails are the feedback loop and the people who read it.
 
-## <img src="sop-template/repo/assets/icons/history.svg" width="24" height="24" alt=""> Change log
+## <img src="assets/icons-phosphor/history.svg" width="24" height="24" alt=""> Change log
 
 | Date | Change | By |
 |---|---|---|
 | 2026-11-03 | Kavanah sunset; Mystarch lives on as chief of staff, on Christopher's word | Alfred |
 | 2026-11-01 | Drafted from Christopher's Nov 1 brief: the divine per house, stewards per item, the future DAO, the helpers and "we are all Alfred" | Alfred |
 
-<sub>Related: [LUCID.md](LUCID.md) (the clarity standard), [NAMES-POLICY.md](NAMES-POLICY.md) (what may be public). Icons: Lucide (ISC).</sub>
+<sub>Related: [LUCID.md](LUCID.md) (the clarity standard), [NAMES-POLICY.md](NAMES-POLICY.md) (what may be public). Icons: Phosphor duotone (MIT).</sub>

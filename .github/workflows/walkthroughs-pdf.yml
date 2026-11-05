@@ -3,7 +3,7 @@ name: Render walkthroughs to PDF
 # Every walkthroughs/*.md (the index README excepted) becomes walkthroughs/pdf/<NAME>.pdf (Letter), committed back by
 # the Actions bot, so a guide can be sent as a file with no manual export; the markdown stays the source
 # (walkthroughs/MARKDOWN-BESIDE-PDF.md). scripts/render-walkthrough-pdfs.sh does the work, here and locally; its tone
-# defaults are the lab's brass on slate (proposals-template/TONES.md), the same shades as the walkthroughs' badges.
+# defaults are drasticstatic's maroon with navy links (proposals-template/TONES.md), the same shades as the walkthroughs' badges.
 # Modelled on trading-bot_arbitrage_DAPPUv3_hardhat_UNI-CAKE/.github/workflows/ops-pdf.yml and
 # sop-template/repo/.github/workflows/pdf.yml.
 # The bot's own commit touches only walkthroughs/pdf/*.pdf, which no path below matches, so it does not start this again.
@@ -15,7 +15,7 @@ on:
     branches: [main]
     paths:
       - "walkthroughs/*.md"
-      - "sop-template/repo/assets/icons/**"
+      - "assets/icons-phosphor/**"
       - ".github/workflows/walkthroughs-pdf.yml"
       - "scripts/render-walkthrough-pdfs.sh"
       - "sop-template/repo/scripts/mermaid-prerender.sh"

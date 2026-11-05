@@ -9,15 +9,15 @@
 # sop-template/repo/scripts/render-pdfs.sh. GitHub callouts become bold labels; <details> open; ```mermaid blocks become
 # SVG pictures (sop-template/repo/scripts/mermaid-prerender.sh, @mermaid-js/mermaid-cli, pinned); md-to-pdf@5 renders Letter.
 # walkthroughs/README.md is the index of the guides, not a guide, so it is not rendered.
-# Tone: brass on slate, the lab's shades (proposals-template/TONES.md), the same as the walkthroughs' badges. Override per run:
+# Tone: maroon with navy links, drasticstatic's own shades (proposals-template/TONES.md), the same as the walkthroughs' badges. Override per run:
 #   TONE_ACCENT=d97706 sh scripts/render-walkthrough-pdfs.sh         # links and quote bar in THEF amber, for a copy meant for Kenney
-# The renderer runs from the repository root and md-to-pdf serves that folder, so the pages' ../sop-template/repo/assets/icons/
+# The renderer runs from the repository root and md-to-pdf serves that folder, so the pages' ../assets/icons-phosphor/
 # links resolve exactly as they do on GitHub. If npx stalls on the npm registry, point MD2PDF and MMDC at installed copies
 # (~/.npm/_npx/<hash>/node_modules/.bin/...). A Mac short of memory should prefer the workflow, or one guide at a time.
 set -eu
 MD2PDF="${MD2PDF:-npx -y md-to-pdf@5}"
-TONE_PRIMARY="${TONE_PRIMARY:-d9a441}"; TONE_DEEP="${TONE_DEEP:-334155}"; TONE_MID="${TONE_MID:-8a6a2a}"; TONE_TINT="${TONE_TINT:-f1f5f9}"
-TONE_ACCENT="${TONE_ACCENT:-$TONE_PRIMARY}"
+TONE_PRIMARY="${TONE_PRIMARY:-800020}"; TONE_DEEP="${TONE_DEEP:-1a1a2e}"; TONE_MID="${TONE_MID:-5c1a2b}"; TONE_TINT="${TONE_TINT:-fbeef1}"
+TONE_ACCENT="${TONE_ACCENT:-0f3460}"
 export TONE_PRIMARY TONE_DEEP TONE_MID TONE_TINT
 CSS="body{font-family:Helvetica,Arial,sans-serif} img{display:inline-block !important;vertical-align:-3px;margin:0 3px} h1{color:#$TONE_DEEP} h2{color:#$TONE_DEEP;border-bottom:2px solid #$TONE_PRIMARY;padding-bottom:4px} h3,h4{color:#$TONE_MID} a{color:#$TONE_ACCENT} blockquote{border-left:4px solid #$TONE_ACCENT;background:#$TONE_TINT;padding:6px 14px;margin-left:0} th{background:#$TONE_TINT;color:#$TONE_DEEP} details>summary{font-weight:600;color:#$TONE_MID} hr{border:0;border-top:1px solid #$TONE_PRIMARY;opacity:.45} pre{background:#f8fafc;border:1px solid #e2e8f0;padding:8px 10px;white-space:pre-wrap} code{font-size:.92em} img[src*=_print-]{display:block !important;max-width:100% !important;max-height:190mm !important;width:auto !important;height:auto !important;margin:10px auto !important;page-break-inside:avoid}"
 PDF_OPTIONS='{"format":"Letter","margin":{"top":"18mm","bottom":"18mm","left":"16mm","right":"16mm"},"printBackground":true,"displayHeaderFooter":true,"headerTemplate":"<span></span>","footerTemplate":"<div style=\"width:100%;font-size:8px;color:#64748b;text-align:center\"><span class=\"pageNumber\"></span> / <span class=\"totalPages\"></span></div>"}'

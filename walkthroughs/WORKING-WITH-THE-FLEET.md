@@ -1,31 +1,31 @@
 <div align="center">
 
-<img src="../sop-template/repo/assets/icons/users.svg" width="56" height="56" alt="">
+<img src="../assets/icons-phosphor/users.svg" width="56" height="56" alt="">
 
 # Working with the fleet: an outside helper at our level
 
 *An AI helper from outside the fleet (ChatGPT, Codex, a Harness Cosmos agent, any other) works here the same way the fleet's own helpers do.*
 
-![Kind](https://img.shields.io/badge/Kind-Walkthrough-d9a441?style=flat-square)
-![Changed](https://img.shields.io/badge/Changed-2026--11--04-d9a441?style=flat-square)
-![For](https://img.shields.io/badge/For-An_outside_AI_helper_and_its_person-d9a441?style=flat-square)
+![Kind](https://img.shields.io/badge/Kind-Walkthrough-800020?style=flat-square)
+![Changed](https://img.shields.io/badge/Changed-2026--11--04-800020?style=flat-square)
+![For](https://img.shields.io/badge/For-An_outside_AI_helper_and_its_person-800020?style=flat-square)
 
-<img src="../sop-template/repo/assets/icons/map-pin.svg" width="16" height="16" alt=""> **You are here:** drasticstatic lab › [`my-template`](../README.md) › [`walkthroughs`](README.md) › `WORKING-WITH-THE-FLEET.md` · public · `main` is the working branch
+<img src="../assets/icons-phosphor/map-pin.svg" width="16" height="16" alt=""> **You are here:** drasticstatic lab › [`my-template`](../README.md) › [`walkthroughs`](README.md) › `WORKING-WITH-THE-FLEET.md` · public · `main` is the working branch
 
 </div>
 
-## <img src="../sop-template/repo/assets/icons/compass.svg" width="24" height="24" alt=""> TL;DR
+## <img src="../assets/icons-phosphor/compass.svg" width="24" height="24" alt=""> TL;DR
 
-1. <img src="../sop-template/repo/assets/icons/book-open.svg" width="16" height="16" alt=""> **Read the welcome path end to end** before changing anything.
-2. <img src="../sop-template/repo/assets/icons/git-branch.svg" width="16" height="16" alt=""> **Pull before every edit.** Someone else may have pushed a minute ago.
-3. <img src="../sop-template/repo/assets/icons/git-pull-request.svg" width="16" height="16" alt=""> **Open a pull request into `preview`**, never into `main`.
-4. <img src="../sop-template/repo/assets/icons/octagon.svg" width="16" height="16" alt=""> **Never merge.** A person with the role merges.
-5. <img src="../sop-template/repo/assets/icons/pencil-line.svg" width="16" height="16" alt=""> **Sign every commit** with the two trailer lines, and start the subject with a Gitmoji.
+1. <img src="../assets/icons-phosphor/book-open.svg" width="16" height="16" alt=""> **Read the welcome path end to end** before changing anything.
+2. <img src="../assets/icons-phosphor/git-branch.svg" width="16" height="16" alt=""> **Pull before every edit.** Someone else may have pushed a minute ago.
+3. <img src="../assets/icons-phosphor/git-pull-request.svg" width="16" height="16" alt=""> **Open a pull request into `preview`**, never into `main`.
+4. <img src="../assets/icons-phosphor/octagon.svg" width="16" height="16" alt=""> **Never merge.** A person with the role merges.
+5. <img src="../assets/icons-phosphor/pencil-line.svg" width="16" height="16" alt=""> **Sign every commit** with the two trailer lines, and start the subject with a Gitmoji.
 
 > **Handing this to your helper?** Paste the link and say: *"Read WORKING-WITH-THE-FLEET.md and the pages it lists,
 > in order, then tell me in five lines how you will work in this repository. Don't change anything yet."*
 
-## <img src="../sop-template/repo/assets/icons/route.svg" width="24" height="24" alt=""> The road, and where an outside helper stands on it
+## <img src="../assets/icons-phosphor/route.svg" width="24" height="24" alt=""> The road, and where an outside helper stands on it
 
 ```mermaid
 flowchart LR
@@ -38,7 +38,7 @@ flowchart LR
 
 Everything up to the pull request is the helper's. Everything after it is a person's.
 
-## <img src="../sop-template/repo/assets/icons/book-open.svg" width="24" height="24" alt=""> 1 · Read the welcome path, end to end
+## <img src="../assets/icons-phosphor/book-open.svg" width="24" height="24" alt=""> 1 · Read the welcome path, end to end
 
 In this order, before the first change:
 
@@ -51,7 +51,7 @@ In this order, before the first change:
 | 5 | [`../AGENT-SYNC/README.md`](../AGENT-SYNC/README.md) (attribution) and [`../GITMOJI.md`](../GITMOJI.md) | how every commit is signed and titled |
 | 6 | [`../LUCID.md`](../LUCID.md) and [`../ENTITIES.md`](../ENTITIES.md) | how pages are written, and how we speak of the divine, people and helpers |
 
-## <img src="../sop-template/repo/assets/icons/git-branch.svg" width="24" height="24" alt=""> 2 · Pull before every edit
+## <img src="../assets/icons-phosphor/git-branch.svg" width="24" height="24" alt=""> 2 · Pull before every edit
 
 ```sh
 git pull --rebase --autostash
@@ -63,21 +63,21 @@ conflicts, stop and ask: a conflict means someone changed the same lines.
 A helper that works through the GitHub website instead of a clone does the same thing another way: reopen the file
 on the `preview` branch just before editing it, so it edits the latest version.
 
-## <img src="../sop-template/repo/assets/icons/git-pull-request.svg" width="24" height="24" alt=""> 3 · A pull request into `preview`
+## <img src="../assets/icons-phosphor/git-pull-request.svg" width="24" height="24" alt=""> 3 · A pull request into `preview`
 
-- <img src="../sop-template/repo/assets/icons/git-branch.svg" width="16" height="16" alt=""> Make a short branch from `preview` (`helper/short-name`), commit there, and open the pull request **with `preview` as
+- <img src="../assets/icons-phosphor/git-branch.svg" width="16" height="16" alt=""> Make a short branch from `preview` (`helper/short-name`), commit there, and open the pull request **with `preview` as
   the base**. On the website: **Pull requests → New pull request → base: `preview`**.
-- <img src="../sop-template/repo/assets/icons/type.svg" width="16" height="16" alt=""> Title it in plain words; in the description say what changed, why, and how a person can check it.
-- <img src="../sop-template/repo/assets/icons/file-text.svg" width="16" height="16" alt=""> One subject per pull request. A person should be able to read it in a few minutes.
-- <img src="../sop-template/repo/assets/icons/circle-dashed.svg" width="16" height="16" alt=""> Where a repository has no `preview` branch, the base is `main`, through a short branch; the rest is the same.
+- <img src="../assets/icons-phosphor/type.svg" width="16" height="16" alt=""> Title it in plain words; in the description say what changed, why, and how a person can check it.
+- <img src="../assets/icons-phosphor/file-text.svg" width="16" height="16" alt=""> One subject per pull request. A person should be able to read it in a few minutes.
+- <img src="../assets/icons-phosphor/circle-dashed.svg" width="16" height="16" alt=""> Where a repository has no `preview` branch, the base is `main`, through a short branch; the rest is the same.
 
-## <img src="../sop-template/repo/assets/icons/octagon.svg" width="24" height="24" alt=""> 4 · Never merge
+## <img src="../assets/icons-phosphor/octagon.svg" width="24" height="24" alt=""> 4 · Never merge
 
 A helper prepares everything up to the merge: edits, commits, the pull request, its link. **The merge waits for a
 person with the role**, who merges with a **merge commit**, never a squash, so every commit keeps its author and
 signature (SOP-OPS-002). A helper never approves its own pull request and never changes repository settings.
 
-## <img src="../sop-template/repo/assets/icons/pencil-line.svg" width="24" height="24" alt=""> 5 · Sign every commit, and title it with a Gitmoji
+## <img src="../assets/icons-phosphor/pencil-line.svg" width="24" height="24" alt=""> 5 · Sign every commit, and title it with a Gitmoji
 
 ```
 :sparkles: feat(scope): what the change does
@@ -101,7 +101,7 @@ including gateways, is [`../AGENT-SYNC/README.md`](../AGENT-SYNC/README.md). The
 A helper that cannot commit (a chat with no write access) drafts the change and the footer; its person, or a fleet
 helper, commits it with that footer.
 
-## <img src="../sop-template/repo/assets/icons/message-circle-question.svg" width="24" height="24" alt=""> Worked FAQ: three questions an outside helper asked
+## <img src="../assets/icons-phosphor/message-circle-question.svg" width="24" height="24" alt=""> Worked FAQ: three questions an outside helper asked
 
 These are the three questions a member's own ChatGPT helper asked before its first change. They are good questions for
 any helper to ask; the answers are the general ones.
@@ -137,7 +137,7 @@ reviews and merges it; a later Promote carries it to `main`. That way every chan
 visitors see it.
 </details>
 
-## <img src="../sop-template/repo/assets/icons/triangle-alert.svg" width="24" height="24" alt=""> When something goes wrong
+## <img src="../assets/icons-phosphor/triangle-alert.svg" width="24" height="24" alt=""> When something goes wrong
 
 | It happens | Do this |
 |---|---|
@@ -146,11 +146,11 @@ visitors see it.
 | you are asked for a password, a token or a recovery code | refuse; access is your person's to give, through their own settings (SOP-IT-002) |
 | a page would put something private in public | stop and say so in the pull request; [`../NAMES-POLICY.md`](../NAMES-POLICY.md) says what never goes public |
 
-## <img src="../sop-template/repo/assets/icons/git-pull-request.svg" width="24" height="24" alt=""> Suggest a change
+## <img src="../assets/icons-phosphor/git-pull-request.svg" width="24" height="24" alt=""> Suggest a change
 
 Noticed something? Open an [issue](https://github.com/drasticstatic/my-template/issues) or a pull request against `main`,
 changing this page; a steward reads it and a person with the role merges, with a merge commit, so your name stays on it.
 An AI helper may do all of that up to the merge, signed as [the attribution spec](../AGENT-SYNC/README.md) says.
 Not on GitHub? Tell any steward you know, or your helper, in your own words.
 
-<sub>Related: [`JOIN-AN-ORGANIZATION.md`](JOIN-AN-ORGANIZATION.md) (for the person), [`MANY-AI-TOOLS-ONE-TEAM.md`](MANY-AI-TOOLS-ONE-TEAM.md), [`ULTRA-RUNS.md`](ULTRA-RUNS.md). Added 2026-11-01. Part of the [walkthroughs](README.md). Icons: Lucide (ISC).</sub>
+<sub>Related: [`JOIN-AN-ORGANIZATION.md`](JOIN-AN-ORGANIZATION.md) (for the person), [`MANY-AI-TOOLS-ONE-TEAM.md`](MANY-AI-TOOLS-ONE-TEAM.md), [`ULTRA-RUNS.md`](ULTRA-RUNS.md). Added 2026-11-01. Part of the [walkthroughs](README.md). Icons: Phosphor duotone (MIT).</sub>

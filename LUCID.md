@@ -1,28 +1,28 @@
 <div align="center">
 
-<img src="sop-template/repo/assets/icons/sun.svg" width="56" height="56" alt="">
+<img src="assets/icons-phosphor/sun.svg" width="56" height="56" alt="">
 
 # Lucid: the fleet's clarity standard
 
 *Plain words, an icon beside every idea, a picture where a picture explains the mechanism.*
 
-![Standard](https://img.shields.io/badge/Standard-Lucid-d9a441?style=flat-square)
-![Status](https://img.shields.io/badge/Status-adopted_2026--11--01-334155?style=flat-square)
+![Standard](https://img.shields.io/badge/Standard-Lucid-800020?style=flat-square)
+![Status](https://img.shields.io/badge/Status-adopted_2026--11--01-1a1a2e?style=flat-square)
 ![For](https://img.shields.io/badge/For-Every_writer_and_helper-64748b?style=flat-square)
 
 </div>
 
-## <img src="sop-template/repo/assets/icons/compass.svg" width="24" height="24" alt=""> TL;DR
+## <img src="assets/icons-phosphor/compass.svg" width="24" height="24" alt=""> TL;DR
 
-1. <img src="sop-template/repo/assets/icons/type.svg" width="16" height="16" alt=""> **Plain words.** Write so a person new to GitHub, and their helper, can act on the page without the author in the room.
-2. <img src="sop-template/repo/assets/icons/sparkles.svg" width="16" height="16" alt=""> **One Lucide icon beside each idea**, from the repository's own `assets/icons/`, never a hot-linked image.
-3. <img src="sop-template/repo/assets/icons/workflow.svg" width="16" height="16" alt=""> **One Mermaid diagram where a picture explains the mechanism**: a road, a hand-off, a who-reads-what. Not decoration.
-4. <img src="sop-template/repo/assets/icons/file-check.svg" width="16" height="16" alt=""> **Accurate to what exists.** Every link, path and command was opened or run before it was written down.
-5. <img src="sop-template/repo/assets/icons/presentation.svg" width="16" height="16" alt=""> **The PDF shows the same picture.** The PDF pipelines draw Mermaid as SVG before printing ([below](#-mermaid-in-pdfs)).
+1. <img src="assets/icons-phosphor/type.svg" width="16" height="16" alt=""> **Plain words.** Write so a person new to GitHub, and their helper, can act on the page without the author in the room.
+2. <img src="assets/icons-phosphor/sparkles.svg" width="16" height="16" alt=""> **One icon beside each idea**, from the repository's own `assets/icons/`, never a hot-linked image.
+3. <img src="assets/icons-phosphor/workflow.svg" width="16" height="16" alt=""> **One Mermaid diagram where a picture explains the mechanism**: a road, a hand-off, a who-reads-what. Not decoration.
+4. <img src="assets/icons-phosphor/file-check.svg" width="16" height="16" alt=""> **Accurate to what exists.** Every link, path and command was opened or run before it was written down.
+5. <img src="assets/icons-phosphor/presentation.svg" width="16" height="16" alt=""> **The PDF shows the same picture.** The PDF pipelines draw Mermaid as SVG before printing ([below](#-mermaid-in-pdfs)).
 
 This page is the standard. The proposals template, the SOP template, the decks template and every walkthrough follow it.
 
-## <img src="sop-template/repo/assets/icons/sun-medium.svg" width="24" height="24" alt=""> What "lucid" means here
+## <img src="assets/icons-phosphor/sun-medium.svg" width="24" height="24" alt=""> What "lucid" means here
 
 Christopher's word for the standard is *lucid*. These are the qualities a page is checked against, in his words:
 
@@ -36,7 +36,7 @@ Christopher's word for the standard is *lucid*. These are the qualities a page i
 
 The last row is not decoration either. A page that is correct but dark (a wall of terms, no picture, no first step) fails the standard as surely as a wrong one.
 
-## <img src="sop-template/repo/assets/icons/type.svg" width="24" height="24" alt=""> Plain words
+## <img src="assets/icons-phosphor/type.svg" width="24" height="24" alt=""> Plain words
 
 - **Lead with the answer.** TL;DR first, then the steps, then the detail folded away in `<details>`.
 - **One action per step**, and after it, *You should see:* what confirms it worked.
@@ -44,15 +44,18 @@ The last row is not decoration either. A page that is correct but dark (a wall o
 - **Name the unknown.** "Not confirmed", "untested", "draft until tagged". A gap said plainly is clearer than a guess.
 - **Short words over long ones.** *use* not *utilise*, *start* not *initiate*. A technical term is fine when it is the term the reader will meet on GitHub; explain it once.
 
-## <img src="sop-template/repo/assets/icons/sparkles.svg" width="24" height="24" alt=""> Lucide icons, one per idea
+## <img src="assets/icons-phosphor/sparkles.svg" width="24" height="24" alt=""> Icons, one per idea: Lucide, and Phosphor for drasticstatic
 
-The fleet uses [Lucide](https://lucide.dev) (ISC licence), `lucide-static` v0.460.0, recoloured with a violet stroke
+**Which family goes where.** An organisation's repository, and anything that ships to one (`sop-template/repo/`, `proposals-template/repo/`), wears Lucide in the organisation's tone. A repository that belongs only to drasticstatic, and this template's own pages, wear two-tone [Phosphor](https://phosphoricons.com) in maroon. The register is [`TONES.md`](proposals-template/TONES.md).
+
+The fleet's organisations use [Lucide](https://lucide.dev) (ISC licence), `lucide-static` v0.460.0, recoloured with a violet stroke
 (`#7c4dff`) so they read on GitHub's light and dark themes. Each template carries its own copy:
 
 | Where | Set |
 |---|---|
 | [`proposals-template/repo/assets/icons/`](proposals-template/repo/assets/icons/) | the proposals set (34), with `retone-icons.sh` to recolour for an organisation |
 | [`sop-template/repo/assets/icons/`](sop-template/repo/assets/icons/) | the same set plus 45 for procedures (`git-pull-request`, `git-merge`, `list-checks`, `square-kanban`, `workflow`, …) |
+| [`assets/icons-phosphor/`](assets/icons-phosphor/) | the same 79 filenames in Phosphor duotone (MIT), maroon `#800020`; [`scripts/phosphor-map.tsv`](scripts/phosphor-map.tsv) says which Phosphor icon stands in for each Lucide name, and `python3 scripts/to-phosphor.py <folder>` turns a folder over without changing a link |
 
 ```html
 ## <img src="../assets/icons/route.svg" width="24" height="24" alt=""> The road          <!-- a heading: 24 -->
@@ -64,7 +67,7 @@ The fleet uses [Lucide](https://lucide.dev) (ISC licence), `lucide-static` v0.46
 - **A public twin carries its icons by the allowlist** (an officer adds `assets/icons` as one line in `PUBLIC-ALLOWLIST.txt`; the template's list ships empty), so they are refreshed on every sync and never go stale. SOP-OPS-003 has the mechanics.
 - Need one that is not there? Copy it from the same `lucide-static` release (`https://unpkg.com/lucide-static@0.460.0/icons/<name>.svg`), change `stroke="currentColor"` to `stroke="#7c4dff"`, and commit it beside the others.
 
-## <img src="sop-template/repo/assets/icons/workflow.svg" width="24" height="24" alt=""> Mermaid diagrams
+## <img src="assets/icons-phosphor/workflow.svg" width="24" height="24" alt=""> Mermaid diagrams
 
 A diagram earns its place when it shows a **mechanism**: what moves where, who hands to whom, what can read what. One per page is usually right; a page with five is usually two pages.
 
@@ -91,15 +94,15 @@ for Microsoft-bound enterprises. The fleet chose **Mermaid** over all three, bec
 
 | | Mermaid | A drawing tool |
 |---|---|---|
-| <img src="sop-template/repo/assets/icons/type.svg" width="16" height="16" alt=""> **text** | the diagram is a few lines in the page itself; a helper can read and change it | a separate file in a separate app |
-| <img src="sop-template/repo/assets/icons/history.svg" width="16" height="16" alt=""> **version-controlled** | every change is a commit with an author, reviewed in the same pull request as the words | exported pictures drift from the source ("doc-rot") |
-| <img src="sop-template/repo/assets/icons/gift.svg" width="16" height="16" alt=""> **free** | open source (MIT), no seat, no account | per-seat plans |
-| <img src="sop-template/repo/assets/icons/globe.svg" width="16" height="16" alt=""> **renders on GitHub** | natively, in every README, issue and pull request | only as a pasted image |
-| <img src="sop-template/repo/assets/icons/file-text.svg" width="16" height="16" alt=""> **renders in PDFs** | through the pre-render step below | through a manual export |
+| <img src="assets/icons-phosphor/type.svg" width="16" height="16" alt=""> **text** | the diagram is a few lines in the page itself; a helper can read and change it | a separate file in a separate app |
+| <img src="assets/icons-phosphor/history.svg" width="16" height="16" alt=""> **version-controlled** | every change is a commit with an author, reviewed in the same pull request as the words | exported pictures drift from the source ("doc-rot") |
+| <img src="assets/icons-phosphor/gift.svg" width="16" height="16" alt=""> **free** | open source (MIT), no seat, no account | per-seat plans |
+| <img src="assets/icons-phosphor/globe.svg" width="16" height="16" alt=""> **renders on GitHub** | natively, in every README, issue and pull request | only as a pasted image |
+| <img src="assets/icons-phosphor/file-text.svg" width="16" height="16" alt=""> **renders in PDFs** | through the pre-render step below | through a manual export |
 
 A drawing tool is still the right choice for a one-off workshop board. It is never the source of truth for a procedure.
 
-## <img src="sop-template/repo/assets/icons/presentation.svg" width="24" height="24" alt=""> Mermaid in PDFs
+## <img src="assets/icons-phosphor/presentation.svg" width="24" height="24" alt=""> Mermaid in PDFs
 
 `md-to-pdf` (the fleet's PDF engine) does **not** draw Mermaid: left alone it prints the diagram's source text. (The
 research's claim that Chromium-based PDF engines compile Mermaid by themselves was checked and does not hold for
@@ -144,7 +147,7 @@ first push** to a repository that adopts it.
 
 </details>
 
-## <img src="sop-template/repo/assets/icons/list-checks.svg" width="24" height="24" alt=""> Before you call a page lucid
+## <img src="assets/icons-phosphor/list-checks.svg" width="24" height="24" alt=""> Before you call a page lucid
 
 - [ ] TL;DR first; one action per step; *You should see* after each.
 - [ ] An icon beside each idea, from `assets/icons/`, `alt=""`.
@@ -153,4 +156,4 @@ first push** to a repository that adopts it.
 - [ ] People named by role; nothing private in a public page ([NAMES-POLICY.md](NAMES-POLICY.md)).
 - [ ] How we speak of the divine, of people and of helpers follows [ENTITIES.md](ENTITIES.md).
 
-<sub>Adopted 2026-11-01. Icons: Lucide (ISC). Diagrams: Mermaid (MIT). Related: [ENTITIES.md](ENTITIES.md), [NAMES-POLICY.md](NAMES-POLICY.md), [`proposals-template/`](proposals-template/), [`sop-template/`](sop-template/), [`decks-template/`](decks-template/).</sub>
+<sub>Adopted 2026-11-01. Icons: Phosphor duotone (MIT). Diagrams: Mermaid (MIT). Related: [ENTITIES.md](ENTITIES.md), [NAMES-POLICY.md](NAMES-POLICY.md), [`proposals-template/`](proposals-template/), [`sop-template/`](sop-template/), [`decks-template/`](decks-template/).</sub>

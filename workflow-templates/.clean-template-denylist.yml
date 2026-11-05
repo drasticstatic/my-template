@@ -31,6 +31,9 @@ strip:
   # the walkthrough PDF renderer's workflow (2026-11-04): same reason as the tripwire above. The renderer itself
   # (scripts/render-walkthrough-pdfs.sh) and the PDFs it writes (walkthroughs/pdf/) still travel.
   - /.github/workflows/walkthroughs-pdf.yml
+  # the animated hero under the banner of my-template's own README (2026-11-05). The clean fork keeps its own README
+  # (see preserve: below), so nothing there would show it.
+  - /assets/demo.svg
   - workflow-templates/DETACHED_HEAD_GUIDE.md
   - workflow-templates/GITEXPORTER-TO-ACTIONS-SYNC.md
   - workflow-templates/GRAPHIFY_SETUP.md

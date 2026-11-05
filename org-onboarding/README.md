@@ -1,3 +1,5 @@
+<img src="assets/banner.svg" width="100%" alt="Organization onboarding kit: a sun held by an open circle, waves drawing in beneath it, maroon on dark navy.">
+
 # 🌱 Organization onboarding kit
 
 **TL;DR:** the same welcome for every GitHub organization we look after, so every newcomer (and every

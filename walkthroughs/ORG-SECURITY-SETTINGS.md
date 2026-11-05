@@ -1,29 +1,29 @@
 <div align="center">
 
-<img src="../sop-template/repo/assets/icons/shield-check.svg" width="56" height="56" alt="">
+<img src="../assets/icons-phosphor/shield-check.svg" width="56" height="56" alt="">
 
 # Org security settings: keeping an organization safe on the free plan
 
 *Five owner clicks keep every repository watched and patched, at no cost. A helper explains and checks; a person clicks.*
 
-![Kind](https://img.shields.io/badge/Walkthrough-org_security_settings-d9a441?style=flat-square)
-![Changed](https://img.shields.io/badge/Changed-2026--11--04-8a6a2a?style=flat-square)
+![Kind](https://img.shields.io/badge/Walkthrough-org_security_settings-800020?style=flat-square)
+![Changed](https://img.shields.io/badge/Changed-2026--11--04-5c1a2b?style=flat-square)
 ![For](https://img.shields.io/badge/For-Organization_owners_on_the_free_plan-64748b?style=flat-square)
 
-<img src="../sop-template/repo/assets/icons/map-pin.svg" width="16" height="16" alt=""> **You are here:** drasticstatic lab › [`my-template`](../README.md) › [walkthroughs](README.md) › `ORG-SECURITY-SETTINGS.md` · public · `main` is the working branch
+<img src="../assets/icons-phosphor/map-pin.svg" width="16" height="16" alt=""> **You are here:** drasticstatic lab › [`my-template`](../README.md) › [walkthroughs](README.md) › `ORG-SECURITY-SETTINGS.md` · public · `main` is the working branch
 
 </div>
 
-## <img src="../sop-template/repo/assets/icons/compass.svg" width="24" height="24" alt=""> TL;DR
+## <img src="../assets/icons-phosphor/compass.svg" width="24" height="24" alt=""> TL;DR
 
 Five owner clicks keep every repository in an organization watched and patched, at no cost:
 
-1. <img src="../sop-template/repo/assets/icons/bell.svg" width="16" height="16" alt=""> Turn on **Dependabot alerts and security fixes** on every repository.
-2. <img src="../sop-template/repo/assets/icons/globe.svg" width="16" height="16" alt=""> Apply **"GitHub recommended"** to the **public** repositories, and **enforce** it.
-3. <img src="../sop-template/repo/assets/icons/folder-lock.svg" width="16" height="16" alt=""> Add a **"Free features (private repos)"** configuration for the **private** ones, and enforce that
+1. <img src="../assets/icons-phosphor/bell.svg" width="16" height="16" alt=""> Turn on **Dependabot alerts and security fixes** on every repository.
+2. <img src="../assets/icons-phosphor/globe.svg" width="16" height="16" alt=""> Apply **"GitHub recommended"** to the **public** repositories, and **enforce** it.
+3. <img src="../assets/icons-phosphor/folder-lock.svg" width="16" height="16" alt=""> Add a **"Free features (private repos)"** configuration for the **private** ones, and enforce that
    too.
-4. <img src="../sop-template/repo/assets/icons/sprout.svg" width="16" height="16" alt=""> Make each configuration the **default for new repositories** of its kind.
-5. <img src="../sop-template/repo/assets/icons/layers.svg" width="16" height="16" alt=""> In **Global settings**, turn **Grouped security updates** on.
+4. <img src="../assets/icons-phosphor/sprout.svg" width="16" height="16" alt=""> Make each configuration the **default for new repositories** of its kind.
+5. <img src="../assets/icons-phosphor/layers.svg" width="16" height="16" alt=""> In **Global settings**, turn **Grouped security updates** on.
 
 These are an **owner's** clicks. An AI helper explains them and checks the results afterwards; a
 person clicks.
@@ -31,7 +31,7 @@ person clicks.
 *Learned across several friendly communities' organizations on 2026-10-26: every private repository had
 Dependabot alerts **off**, including the private sources behind live sites.*
 
-## <img src="../sop-template/repo/assets/icons/map.svg" width="24" height="24" alt=""> Where things live now
+## <img src="../assets/icons-phosphor/map.svg" width="24" height="24" alt=""> Where things live now
 
 GitHub moved these pages. In an organization's **Settings**, under **Security and quality**:
 
@@ -41,7 +41,7 @@ GitHub moved these pages. In an organization's **Settings**, under **Security an
 | **Advanced Security → Global settings** | Organization-wide options: grouped security updates, Dependabot rules, CodeQL extras |
 | **New configuration** | `github.com/organizations/<org>/settings/security_products/configurations/new`. The **Apply** pop-up can't name a new configuration, so start here |
 
-## <img src="../sop-template/repo/assets/icons/bell.svg" width="24" height="24" alt=""> 1 · Alerts and security fixes on every repository
+## <img src="../assets/icons-phosphor/bell.svg" width="24" height="24" alt=""> 1 · Alerts and security fixes on every repository
 
 New repositories, especially **private** ones, start with Dependabot alerts **off**. An owner turns
 them on once, with one line. Alerts only list problems, privately; security fixes open a pull
@@ -63,7 +63,7 @@ done
 organization) get **alerts only**. Automatic fix PRs land in *their* queue, so ask them first: a short
 proposal does that kindly. Turning alerts on is harmless; it changes no code and opens nothing.
 
-## <img src="../sop-template/repo/assets/icons/globe.svg" width="24" height="24" alt=""> 2 · "GitHub recommended" for the public repositories
+## <img src="../assets/icons-phosphor/globe.svg" width="24" height="24" alt=""> 2 · "GitHub recommended" for the public repositories
 
 On **Configurations**, apply **GitHub recommended**. For public repositories that includes secret
 scanning with push protection, CodeQL code scanning, the dependency graph, Dependabot alerts and
@@ -77,7 +77,7 @@ security updates, and private vulnerability reporting. All of it is free on publ
   alerts from step 1.
 
 <details>
-<summary><img src="../sop-template/repo/assets/icons/message-circle-question.svg" width="16" height="16" alt=""> <b>"Allow repository owners to modify features", or enforce?</b></summary>
+<summary><img src="../assets/icons-phosphor/message-circle-question.svg" width="16" height="16" alt=""> <b>"Allow repository owners to modify features", or enforce?</b></summary>
 
 - **Enforce** where every repository is the organization's own. It's simpler, and nothing drifts.
 - **Allow** only where repository owners genuinely need to tune features, such as a member's app with
@@ -86,7 +86,7 @@ security updates, and private vulnerability reporting. All of it is free on publ
 
 </details>
 
-## <img src="../sop-template/repo/assets/icons/folder-lock.svg" width="24" height="24" alt=""> 3 · "Free features (private repos)": why private repositories show "failed"
+## <img src="../assets/icons-phosphor/folder-lock.svg" width="24" height="24" alt=""> 3 · "Free features (private repos)": why private repositories show "failed"
 
 On the free plan, **private** repositories can't have secret scanning or code scanning; those need
 paid Advanced Security. So when "GitHub recommended" is applied with enforcement, every **public**
@@ -114,7 +114,7 @@ configuration on the **New configuration** page:
 **Save configuration**, then on the list choose **Apply to** → the private repositories that showed
 **failed**.
 
-## <img src="../sop-template/repo/assets/icons/sprout.svg" width="24" height="24" alt=""> 4 · Defaults for new repositories
+## <img src="../assets/icons-phosphor/sprout.svg" width="24" height="24" alt=""> 4 · Defaults for new repositories
 
 Each configuration's **Policy** sets it as the default for new repositories of its kind:
 - "GitHub recommended" (or its organization copy) for **public** ones.
@@ -122,7 +122,7 @@ Each configuration's **Policy** sets it as the default for new repositories of i
 
 A new workshop repository is then protected from its first commit, so nobody has to remember.
 
-## <img src="../sop-template/repo/assets/icons/layers.svg" width="24" height="24" alt=""> 5 · Global settings: grouped security updates
+## <img src="../assets/icons-phosphor/layers.svg" width="24" height="24" alt=""> 5 · Global settings: grouped security updates
 
 **Advanced Security → Global settings → Dependabot → Grouped security updates: On.** Dependabot then
 opens one fix PR per package manager and folder, rather than one per alert. Fewer PRs, each tested
@@ -133,7 +133,7 @@ Leave the rest as it is unless there's a reason:
 - **AI Scan** needs a payment method.
 - **Dependabot's access to private repositories** only matters for private package registries.
 
-## <img src="../sop-template/repo/assets/icons/circle-check.svg" width="24" height="24" alt=""> Check it worked (an AI helper can do this part)
+## <img src="../assets/icons-phosphor/circle-check.svg" width="24" height="24" alt=""> Check it worked (an AI helper can do this part)
 
 ```sh
 # alerts on? (204 = on, 404 = off)
@@ -148,17 +148,17 @@ done
 You're looking for every public repository **enforced** under one configuration, every private one
 **enforced** under the free one, and no **failed** left.
 
-## <img src="../sop-template/repo/assets/icons/bot.svg" width="24" height="24" alt=""> For the AI helper
+## <img src="../assets/icons-phosphor/bot.svg" width="24" height="24" alt=""> For the AI helper
 
-- <img src="../sop-template/repo/assets/icons/hand-helping.svg" width="16" height="16" alt=""> **Explain, don't click.** These are organization security settings. Even if your person invites you
+- <img src="../assets/icons-phosphor/hand-helping.svg" width="16" height="16" alt=""> **Explain, don't click.** These are organization security settings. Even if your person invites you
   to drive their browser, give them the exact clicks (the table above) and let them make them. You
   can read the pages to describe them precisely, and verify afterwards with the commands above.
-- <img src="../sop-template/repo/assets/icons/scan-search.svg" width="16" height="16" alt=""> **Count before and after.** The open-alert count per repository on day one is the best argument for
+- <img src="../assets/icons-phosphor/scan-search.svg" width="16" height="16" alt=""> **Count before and after.** The open-alert count per repository on day one is the best argument for
   the upkeep that follows.
-- <img src="../sop-template/repo/assets/icons/sprout.svg" width="16" height="16" alt=""> **Next:** once alerts are on, PRs start arriving. [Dependabot](DEPENDABOT.md) covers how to keep them
+- <img src="../assets/icons-phosphor/sprout.svg" width="16" height="16" alt=""> **Next:** once alerts are on, PRs start arriving. [Dependabot](DEPENDABOT.md) covers how to keep them
   a gentle trickle you can trust.
 
-## <img src="../sop-template/repo/assets/icons/git-pull-request.svg" width="24" height="24" alt=""> Suggest a change
+## <img src="../assets/icons-phosphor/git-pull-request.svg" width="24" height="24" alt=""> Suggest a change
 
 Noticed something wrong, or a step that could be kinder? Open an [issue](https://github.com/drasticstatic/my-template/issues)
 or a pull request against `main`, changing this page. A person with the role reads it and merges with a merge commit, so
