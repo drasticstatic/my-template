@@ -11,6 +11,7 @@ beside its `proposals`; the lab keeps a drafting desk per organisation (`-<org>`
 | | What's in [`repo/`](repo/) | |
 |---|---|---|
 | 🏠 | [`README.md`](repo/README.md) | The index: the SOP table by department, how an SOP is shaped, how versions are approved |
+| 🚪 | [`AGENTS.md`](repo/AGENTS.md) · [`CLAUDE.md`](repo/CLAUDE.md) · [`START-HERE.md`](repo/START-HERE.md) · [`.github/PULL_REQUEST_TEMPLATE.md`](repo/.github/PULL_REQUEST_TEMPLATE.md) · [`helper-ack-check.yml`](repo/.github/workflows/helper-ack-check.yml) | The read-first list for any helper, and the check that fails a pull request without the acknowledgement line. Why, and what it cannot do: [`AGENT-ONBOARDING.md`](../AGENT-ONBOARDING.md) |
 | 🌱 | [`_template/SOP-DEPT-000-template.md`](repo/_template/SOP-DEPT-000-template.md) | The skeleton to copy for each new procedure |
 | 🧭 | [`OPS/`](repo/OPS/) · [`IT/`](repo/IT/) · [`GOV/`](repo/GOV/) · [`COM/`](repo/COM/) | Departments, one folder each; the universal procedures ship with the template (OPS-001…003, IT-001…003, GOV-001…002, COM-001) |
 | 🎨 | [`assets/icons/`](repo/assets/icons/) | 79 Lucide icons (ISC), violet so they read in both GitHub themes; one beside each idea ([`LUCID.md`](../LUCID.md)) |
@@ -25,6 +26,8 @@ beside its `proposals`; the lab keeps a drafting desk per organisation (`-<org>`
 Department codes: **OPS** (how work moves: branches, pull requests, publishing), **IT** (machines, networks, credentials, helpers),
 **GOV** (membership, roles, approvals), **FIN** (money, treasury, reconciliation), **COM** (communications, sites). Three-digit IDs
 per department, never reused. The file lives in its department's folder.
+
+**Who may issue which number: [`NUMBERING.md`](../NUMBERING.md).** 001 to 099 are universal and come only from this template; 100 to 899 are the organisation's own; 900 and up are experiments and parked pages. The slug may change, the ID may not. Finished numbers go in [`RETIRED-NUMBERS.txt`](RETIRED-NUMBERS.txt) (universal) or the organisation's own [`repo/RETIRED-NUMBERS.txt`](repo/RETIRED-NUMBERS.txt).
 
 ## Versioning: tags are approvals
 
@@ -55,7 +58,7 @@ Verification · Troubleshooting (a table that grows) · Related (proposals and o
 1. **Copy** `repo/` (including the hidden `.github/`) into a folder named `ops-standard-operating-procedures`, `git init`, keep the universal SOPs.
 2. **Rename** the index for your organisation; delete departments you do not need yet; set your tone's four shades at the top of `.github/workflows/pdf.yml` and `scripts/render-pdfs.sh`; fill in the placeholders in SOP-GOV-001 and the reading-room table in SOP-IT-002.
 3. **Create the private repository and push** (an owner's action): `gh repo create <org>/ops-standard-operating-procedures --private --source . --push`. If the Actions tab says workflows are not being run, click **Enable Actions on this repository**; the first push to `main` then renders `pdf/`.
-4. **Write your first own procedure** by copying `_template/` into its department folder with the next ID; add it to the index.
+4. **Write your first own procedure** by copying `_template/` into its department folder with the next free ID **from 100 up** (`NUMBERING.md`); add it to the index.
 5. **Tag `v1.0.0`** when the officers approve the set; from then on, a changed procedure is a new minor tag.
 
 Or ask your AI helper: *"Read my-template/sop-template/README.md and set up an SOP repository for our organisation."*

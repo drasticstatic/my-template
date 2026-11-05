@@ -113,6 +113,8 @@ Copy [`proposals-template/repo/`](./proposals-template/repo/) into a private `pr
 | `scripts/sync-local.sh` | Pulls (`--rebase --autostash`) every local clone under `~/code`, `~/dappu`, `~/theholyearthfoundation` that is behind GitHub, and reports ahead/behind/dirty; never pushes |
 | `scripts/to-phosphor.py` · `scripts/phosphor-map.tsv` · `assets/icons-phosphor/` | Two-tone Phosphor icons for a repository that is drasticstatic's own: the master set in maroon, the map from each Lucide name, and the script that turns a folder over without changing a filename |
 | `README-STANDARD.md` | The living standard for a repository's front door: banner, *You are here*, badges, TL;DR, icons, *Suggest a change*, and a boilerplate to copy. Take it, improve it, tell us |
+| `NUMBERING.md` | One scheme for every procedure and proposal: permanent IDs, reserved ranges so a template number can never collide, per-desk proposal numbers, front matter for a library; `catalog-docs.py --check` enforces it |
+| `AGENT-ONBOARDING.md` | How other people's AI helpers meet our procedures: what files can only advise, what gates enforce, what each GitHub plan allows; the kit is in `sop-template/repo/` |
 | `LUCID.md` | The fleet's clarity standard: plain words, an icon beside each idea, Mermaid where a picture explains the mechanism, and Mermaid drawn in every PDF |
 | `ENTITIES.md` | How we speak of the divine (per house), of people (stewards), of organisations and of helpers ("we are all Alfred"); a draft we refine as we go |
 | `NAMES-POLICY.md` | Names may be public, contents stay private; what never goes public on any list |
@@ -146,6 +148,8 @@ Copy [`proposals-template/repo/`](./proposals-template/repo/) into a private `pr
 | **welcoming someone to an organisation** | [`decks-template/`](./decks-template/): the welcome deck, filled in that organisation's colour |
 | **an AI helper reading this fleet** | [`AGENTS.md`](./AGENTS.md), then [`AGENT-SYNC/README.md`](./AGENT-SYNC/README.md) for the commit footer; from outside the fleet, [`walkthroughs/WORKING-WITH-THE-FLEET.md`](./walkthroughs/WORKING-WITH-THE-FLEET.md) |
 | **writing a README** | [`README-STANDARD.md`](./README-STANDARD.md): the boilerplate, `scripts/make-banner.py`, and how to suggest a better way |
+| **numbering a procedure or proposal** | [`NUMBERING.md`](./NUMBERING.md): who may issue which numbers, how to cite them, and what never changes |
+| **letting someone else's AI helper in** | [`AGENT-ONBOARDING.md`](./AGENT-ONBOARDING.md): the honest answer, the layers, and the kit to copy |
 | **writing any page** | [`LUCID.md`](./LUCID.md) (how), [`ENTITIES.md`](./ENTITIES.md) (whom we name, and how), [`NAMES-POLICY.md`](./NAMES-POLICY.md) (what may be public) |
 
 ---

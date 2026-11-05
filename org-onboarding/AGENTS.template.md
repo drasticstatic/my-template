@@ -5,6 +5,10 @@ other. Humans welcome too. Read it before changing anything.
 
 {{ONE_PARAGRAPH: what this repository is, who it serves, and whose content it is to approve.}}
 
+## Read first
+
+Before you change anything, read `START-HERE.md` in your organisation's `ops-standard-operating-procedures`, then its SOP-OPS-002 and SOP-IT-004. When you open a pull request, tick the line *"I read SOP-OPS-002 and SOP-IT-004"* in the description, if it is true. Why: [AGENT-ONBOARDING.md](https://github.com/drasticstatic/my-template/blob/main/AGENT-ONBOARDING.md).
+
 ## The house rules
 
 1. **Sync first.** Run `git pull --rebase --autostash` before you read deeply or edit. Never

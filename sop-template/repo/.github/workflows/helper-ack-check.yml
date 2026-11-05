@@ -1,0 +1,57 @@
+name: Helper acknowledgement check
+
+# Fails a pull request whose description lacks the ticked line "I read SOP-OPS-002 and SOP-IT-004", the line
+# .github/PULL_REQUEST_TEMPLATE.md carries. Editing the description re-runs it, so ticking the box is the whole fix.
+# Dependabot and the Actions bot are excused: SOP-IT-005 has its own rule for Dependabot, and neither can read.
+# Plain bash on the event's own data: no checkout, no third-party action, no secret, nothing written. The description is
+# passed through the environment and never pasted into the script, so nothing in it can run. A fork's pull request is fine.
+#
+# What this proves: that the box was ticked. It cannot prove anything was read, and nothing could; the record and the pause
+# are the point (my-template/AGENT-ONBOARDING.md). It blocks a merge only where the check named helper-ack is required by a
+# ruleset, which GitHub offers on public repositories and on private ones with Team; on a private repository on the free plan it is
+# a red X and the merge button still works.
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: helper-ack-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  helper-ack:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Is the acknowledgement line ticked?
+        shell: bash
+        env:
+          BODY: ${{ github.event.pull_request.body }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+          READ_FIRST: "SOP-OPS-002 and SOP-IT-004"
+        run: |
+          set -u
+          case "$AUTHOR" in
+            'dependabot[bot]'|'github-actions[bot]')
+              echo "$AUTHOR is excused: it cannot read."
+              printf 'Excused: %s.\n' "$AUTHOR" >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+              ;;
+          esac
+          if printf '%s\n' "$BODY" | tr -d '\r' | grep -Eiq "^[[:space:]]*[-*][[:space:]]*\[[x]\][[:space:]]*I read $READ_FIRST[[:space:]]*\.?[[:space:]]*$"; then
+            echo "Acknowledged: I read $READ_FIRST."
+            printf 'Acknowledged: *I read %s*.\n' "$READ_FIRST" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          echo "::error::The description needs this line, ticked: - [x] I read $READ_FIRST. Read START-HERE.md, then edit the description; this check re-runs by itself."
+          {
+            echo "### The acknowledgement line is missing"
+            echo
+            echo "Read \`START-HERE.md\`, then add this to the description of this pull request, if it is true:"
+            echo
+            echo "\`- [x] I read $READ_FIRST\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1

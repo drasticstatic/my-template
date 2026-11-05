@@ -15,6 +15,8 @@
 #
 # Examples (uncomment only on an officer's yes; publish the PDF beside its markdown):
 # assets/icons
+# START-HERE.md
+# IT/SOP-IT-004-tripwires-firewalls-and-shields.md
 # OPS/SOP-OPS-001-how-a-change-travels.md
 # pdf/OPS/SOP-OPS-001-how-a-change-travels.pdf
 #
