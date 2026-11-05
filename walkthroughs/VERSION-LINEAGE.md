@@ -1,21 +1,33 @@
-# 🌳 Version lineage: keep every copy up, and say which one this is
+<div align="center">
 
-**TL;DR:** when a site moves or rehearses, **don't hide the other copies from search (`noindex`) and don't
-take them down.**
-- **Every copy that isn't live** greets visitors once with a short note: *"You're on a rehearsal stage"* or
-  *"You're looking at an earlier version"*. It links to **every newer version** and, below that, to
-  **every earlier version** (the time machine).
-- **The live site shows nothing** and never links back.
-- **A canonical link** tells search engines which copy is the real one.
+<img src="../sop-template/repo/assets/icons/history.svg" width="56" height="56" alt="">
 
-Anyone can compare versions side by side, and nobody is ever confused about where they are.
+# Version lineage: keep every copy up, and say which one this is
+
+*Anyone can compare versions side by side, and nobody is ever confused about where they are.*
+
+![Kind](https://img.shields.io/badge/Kind-Pattern-d9a441?style=flat-square)
+![Changed](https://img.shields.io/badge/Changed-2026--11--04-d9a441?style=flat-square)
+![For](https://img.shields.io/badge/For-Anyone_who_moves_or_rehearses_a_site-d9a441?style=flat-square)
+
+<img src="../sop-template/repo/assets/icons/map-pin.svg" width="16" height="16" alt=""> **You are here:** drasticstatic lab › [`my-template`](../README.md) › [`walkthroughs`](README.md) › `VERSION-LINEAGE.md` · public · `main` is the working branch
+
+</div>
+
+## <img src="../sop-template/repo/assets/icons/compass.svg" width="24" height="24" alt=""> TL;DR
+
+1. <img src="../sop-template/repo/assets/icons/eye.svg" width="16" height="16" alt=""> When a site moves or rehearses, **don't hide the other copies from search (`noindex`) and don't
+   take them down.**
+2. <img src="../sop-template/repo/assets/icons/door-open.svg" width="16" height="16" alt=""> **Every copy that isn't live** greets visitors once with a short note: *"You're on a rehearsal stage"* or
+   *"You're looking at an earlier version"*. It links to **every newer version** and, below that, to
+   **every earlier version** (the time machine).
+3. <img src="../sop-template/repo/assets/icons/circle-dashed.svg" width="16" height="16" alt=""> **The live site shows nothing** and never links back.
+4. <img src="../sop-template/repo/assets/icons/link.svg" width="16" height="16" alt=""> **A canonical link** tells search engines which copy is the real one.
 
 *First built for I Am One Self (The Holy Earth Foundation), 2026-10-25. It's the same idea as keeping old
 test publishes up beside the live site, made visitor-friendly.*
 
----
-
-## 🧭 The rules
+## <img src="../sop-template/repo/assets/icons/list-checks.svg" width="24" height="24" alt=""> The rules
 
 | Rule | Why |
 |---|---|
@@ -27,7 +39,7 @@ test publishes up beside the live site, made visitor-friendly.*
 | **No `noindex`** | Old versions are part of the story. They teach, and they prove where the work came from |
 | **Stops that don't exist yet are listed but closed** (`open: false`) | The list is ready in advance; a move only flips switches |
 
-## 🗂️ The list (one file, oldest first)
+## <img src="../sop-template/repo/assets/icons/files.svg" width="24" height="24" alt=""> The list (one file, oldest first)
 
 ```ts
 // src/data/lineage.ts
@@ -72,29 +84,29 @@ At the move, `lab-original` opens too: once it's history, the rehearsals' time m
 **Local builds and the live site set no `LINEAGE_SELF`, so they render nothing.** Only a lane that names
 itself shows the note.
 
-## 🪟 The note (the parts that matter)
+## <img src="../sop-template/repo/assets/icons/message-square.svg" width="24" height="24" alt=""> The note (the parts that matter)
 
-- **A native `<dialog>` opened with `showModal()`.** You get focus trapping, a backdrop and screen-reader
+- <img src="../sop-template/repo/assets/icons/door-open.svg" width="16" height="16" alt=""> **A native `<dialog>` opened with `showModal()`.** You get focus trapping, a backdrop and screen-reader
   semantics for free.
-- **Remember the confirmation in `localStorage`,** keyed to *this copy's* id, inside `try/catch`. In
+- <img src="../sop-template/repo/assets/icons/book-marked.svg" width="16" height="16" alt=""> **Remember the confirmation in `localStorage`,** keyed to *this copy's* id, inside `try/catch`. In
   private mode it simply greets them again next time. That's fine.
-- **Decide after hydration** (`setTimeout(…, 0)`). `localStorage` isn't readable during static rendering.
-- **The Escape gotcha:** Chrome lets Escape close a dialog that opened without a click, even if you
+- <img src="../sop-template/repo/assets/icons/loader-circle.svg" width="16" height="16" alt=""> **Decide after hydration** (`setTimeout(…, 0)`). `localStorage` isn't readable during static rendering.
+- <img src="../sop-template/repo/assets/icons/triangle-alert.svg" width="16" height="16" alt=""> **The Escape gotcha:** Chrome lets Escape close a dialog that opened without a click, even if you
   `preventDefault()` the `cancel` event. So in `onClose`, if the visitor hasn't confirmed, call
   `showModal()` again on the next tick. The note can be dismissed only by choosing.
-- **Two choices, both honest:** *"Take me to the live site"* and *"I understand, let me look around"*.
-- **The time machine:**
+- <img src="../sop-template/repo/assets/icons/handshake.svg" width="16" height="16" alt=""> **Two choices, both honest:** *"Take me to the live site"* and *"I understand, let me look around"*.
+- <img src="../sop-template/repo/assets/icons/history.svg" width="16" height="16" alt=""> **The time machine:**
   - It sits under *"Newer versions"*, headed *"Earlier versions"* with the line *"Step back in time to
     see how it grew."*
   - Each earlier stop has a rewind (History) icon and a **dashed** edge, so the past reads as memories.
   - The ribbon says so too: *"Rehearsal · not live · all versions"*, and the foot of the note reads *"The
     ribbon in the corner brings this note back, with every version."*
-- **Keep it out of search results** (`data-pagefind-ignore`).
-- **Let other welcomes wait for it.** On I Am One Self, the arrival splash listens for a `lineage:ack`
+- <img src="../sop-template/repo/assets/icons/search.svg" width="16" height="16" alt=""> **Keep it out of search results** (`data-pagefind-ignore`).
+- <img src="../sop-template/repo/assets/icons/bell.svg" width="16" height="16" alt=""> **Let other welcomes wait for it.** On I Am One Self, the arrival splash listens for a `lineage:ack`
   event, so two dialogs never stack.
-- **Both languages:** every label and note goes through the site's translation table.
+- <img src="../sop-template/repo/assets/icons/languages.svg" width="16" height="16" alt=""> **Both languages:** every label and note goes through the site's translation table.
 
-## 🚦 Wiring it into the deploy lanes
+## <img src="../sop-template/repo/assets/icons/workflow.svg" width="24" height="24" alt=""> Wiring it into the deploy lanes
 
 Each lane names its stop and its canonical target at build time:
 
@@ -111,7 +123,7 @@ NEXT_PUBLIC_CANONICAL_URL: ${{ github.ref_name != 'main' && format('{0}{1}', var
 
 The page's metadata adds `<link rel="canonical" href={NEXT_PUBLIC_CANONICAL_URL}>` whenever it's set.
 
-## 🔁 At a move (how the list changes)
+## <img src="../sop-template/repo/assets/icons/route.svg" width="24" height="24" alt=""> At a move (how the list changes)
 
 | Moment | Flip |
 |---|---|
@@ -145,7 +157,7 @@ The page's metadata adds `<link rel="canonical" href={NEXT_PUBLIC_CANONICAL_URL}
 > fallback is empty anyway.) **Verify a live build by fetching a real asset:** take a CSS path from the
 > page's HTML and request it, rather than checking only that the page itself returns 200.
 
-## 👯 Twins: keeping the copies in step after a move
+## <img src="../sop-template/repo/assets/icons/users.svg" width="24" height="24" alt=""> Twins: keeping the copies in step after a move
 
 Once a site has copies in two places (a new home and the lab it came from), a fix in one may belong in
 the other. Write down what each copy receives, in the workshop's `AGENTS.md`:
@@ -157,25 +169,32 @@ the other. Write down what each copy receives, in the workshop's `AGENTS.md`:
 | **The earlier version** | Security or dependency fixes and forward lineage links only. Its words stay as they were |
 
 **The chore:**
-- Add a **Twin check** box to the pull request template.
-- Run a read-only script that lists, per site, the files that differ between the workshop and the
+- <img src="../sop-template/repo/assets/icons/list-checks.svg" width="16" height="16" alt=""> Add a **Twin check** box to the pull request template.
+- <img src="../sop-template/repo/assets/icons/scan-search.svg" width="16" height="16" alt=""> Run a read-only script that lists, per site, the files that differ between the workshop and the
   Genesis lane, plus the `npm audit` count of every copy and each repo's open Dependabot alerts.
   The Holy Earth Foundation's is `twin-check.sh`.
-- Mirror **file for file**, only after confirming the twin's file still matches the last mirrored
+- <img src="../sop-template/repo/assets/icons/files.svg" width="16" height="16" alt=""> Mirror **file for file**, only after confirming the twin's file still matches the last mirrored
   version.
-- Bring the earlier versions' Dependabot pull requests together into one tested pull request
+- <img src="../sop-template/repo/assets/icons/git-merge.svg" width="16" height="16" alt=""> Bring the earlier versions' Dependabot pull requests together into one tested pull request
   (build with the publisher's own settings, then check canonicals and styles), and close major tooling
   jumps on a frozen copy.
-- Point weekly version updates at `preview` (`target-branch`) so they rehearse first. Security fixes
+- <img src="../sop-template/repo/assets/icons/git-branch.svg" width="16" height="16" alt=""> Point weekly version updates at `preview` (`target-branch`) so they rehearse first. Security fixes
   always open against `main`: retarget them to `preview` before merging.
 
-## 🧩 Using it elsewhere
+## <img src="../sop-template/repo/assets/icons/shapes.svg" width="24" height="24" alt=""> Using it elsewhere
 
-- **Next.js sites:** copy `lineage.ts`, `LineageModal.tsx` and `lineage.css` from I Am One Self, mount the
+- <img src="../sop-template/repo/assets/icons/layers.svg" width="16" height="16" alt=""> **Next.js sites:** copy `lineage.ts`, `LineageModal.tsx` and `lineage.css` from I Am One Self, mount the
   modal in the root layout, and add the two env lines to your lanes.
-- **Kit sites (AstroLog, portals):** the same rules suit a small plain-JavaScript version that reads its
+- <img src="../sop-template/repo/assets/icons/sprout.svg" width="16" height="16" alt=""> **Kit sites (AstroLog, portals):** the same rules suit a small plain-JavaScript version that reads its
   id from a `<meta>` tag. It's on the kit 1.5 wish list.
-- **dApps with demo deployments:** the same note replaces "this is a demo" banners. List the production
+- <img src="../sop-template/repo/assets/icons/flask-conical.svg" width="16" height="16" alt=""> **dApps with demo deployments:** the same note replaces "this is a demo" banners. List the production
   app as `live`.
 
-*Part of the [walkthroughs](README.md).*
+## <img src="../sop-template/repo/assets/icons/git-pull-request.svg" width="24" height="24" alt=""> Suggest a change
+
+Noticed something? Open an [issue](https://github.com/drasticstatic/my-template/issues) or a pull request against `main`,
+changing this page; a steward reads it and a person with the role merges, with a merge commit, so your name stays on it.
+An AI helper may do all of that up to the merge, signed as [the attribution spec](../AGENT-SYNC/README.md) says.
+Not on GitHub? Tell any steward you know, or your helper, in your own words.
+
+<sub>Part of the [walkthroughs](README.md). Icons: Lucide (ISC).</sub>
