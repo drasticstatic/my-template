@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="260" viewBox="0 0 1200 260" role="img" aria-labelledby="t d">
+  <title id="t">SOP template</title>
+  <desc id="d">Procedures beside proposals: how an approved thing is done, step by step. The picture: a 8-sided figure draws itself and its corners arrive one by one. With reduced motion, the finished picture shows at once.</desc>
+  <style>
+    /* Motion only for readers who have not asked for less. Outside this block everything is in its finished state. */
+    @media (prefers-reduced-motion: no-preference) {
+      .draw { stroke-dasharray: 100; animation: draw 2.6s cubic-bezier(.4,0,.2,1) both; }
+      .arrive { animation: arrive .5s ease-out both; }
+      .breathe { transform-box: fill-box; transform-origin: center; animation: breathe 8s steps(48) 3s infinite; }
+      .halo { transform-box: fill-box; transform-origin: center; animation: halo 5s steps(60) 3.6s infinite; }
+    }
+    @keyframes draw { from { stroke-dashoffset: 100 } to { stroke-dashoffset: 0 } }
+    @keyframes arrive { from { opacity: 0 } to { opacity: 1 } }
+    @keyframes breathe { 0%, 100% { transform: scale(1) } 50% { transform: scale(1.07) } }
+    @keyframes halo { 0% { opacity: .55; transform: scale(1) } 70%, 100% { opacity: 0; transform: scale(2.1) } }
+    .halo { opacity: 0 }
+  </style>
+  <defs>
+    <linearGradient id="ground" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1a1a2e"/><stop offset="1" stop-color="#0f3460"/></linearGradient>
+    <linearGradient id="line" gradientUnits="userSpaceOnUse" x1="668" y1="0" x2="1160" y2="0"><stop offset="0.00" stop-color="#804c5a"/><stop offset="0.50" stop-color="#b87082"/><stop offset="1.00" stop-color="#ddb5bf"/></linearGradient>
+    <linearGradient id="fade" gradientUnits="userSpaceOnUse" x1="620" y1="0" x2="1200" y2="0"><stop offset="0" stop-color="#b87082" stop-opacity="0"/><stop offset=".35" stop-color="#b87082"/><stop offset="1" stop-color="#ddb5bf"/></linearGradient>
+    <clipPath id="card"><rect width="1200" height="260" rx="18"/></clipPath>
+    <radialGradient id="ember" gradientUnits="userSpaceOnUse" cx="962" cy="124" r="390"><stop offset="0" stop-color="#800020" stop-opacity=".8"/><stop offset=".6" stop-color="#5c1a2b" stop-opacity=".45"/><stop offset="1" stop-color="#5c1a2b" stop-opacity="0"/></radialGradient>
+  </defs>
+  <g clip-path="url(#card)">
+    <!-- an opaque ground: the same picture on GitHub's light and dark themes -->
+    <rect width="1200" height="260" fill="url(#ground)"/>
+    <rect width="1200" height="260" fill="url(#ember)"/>
+    <path d="M1003.9 164.5 L965.2 179.0 L927.6 161.8 L913.2 123.0 L930.4 85.5 L969.1 71.0 L1006.7 88.2 L1021.1 127.0Z" fill="#3a2b3f" fill-opacity=".35" stroke="#614154" stroke-width="1.5"/>
+    <path d="M967.2 125.0L1049.0 162.4" stroke="#3a2b3f" stroke-width="1"/>
+    <path d="M967.2 125.0L998.6 209.3" stroke="#3a2b3f" stroke-width="1"/>
+    <path d="M967.2 125.0L929.7 206.8" stroke="#3a2b3f" stroke-width="1"/>
+    <path d="M967.2 125.0L882.8 156.4" stroke="#3a2b3f" stroke-width="1"/>
+    <path d="M967.2 125.0L885.3 87.6" stroke="#3a2b3f" stroke-width="1"/>
+    <path d="M967.2 125.0L935.8 40.7" stroke="#3a2b3f" stroke-width="1"/>
+    <path d="M967.2 125.0L1004.6 43.2" stroke="#3a2b3f" stroke-width="1"/>
+    <path d="M967.2 125.0L1051.5 93.6" stroke="#3a2b3f" stroke-width="1"/>
+    <path class="draw" pathLength="100" d="M1049.0 162.4 L998.6 209.3 L929.7 206.8 L882.8 156.4 L885.3 87.6 L935.8 40.7 L1004.6 43.2 L1051.5 93.6Z" fill="none" stroke="url(#line)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:0.30s"/>
+    <circle class="arrive" style="animation-delay:0.35s" cx="1049.0" cy="162.4" r="7" fill="#121424" stroke="#ddb5bf" stroke-width="2.5"/>
+    <circle class="arrive" style="animation-delay:0.71s" cx="998.6" cy="209.3" r="7" fill="#121424" stroke="#ddb5bf" stroke-width="2.5"/>
+    <circle class="arrive" style="animation-delay:1.07s" cx="929.7" cy="206.8" r="7" fill="#121424" stroke="#ddb5bf" stroke-width="2.5"/>
+    <circle class="arrive" style="animation-delay:1.44s" cx="882.8" cy="156.4" r="7" fill="#121424" stroke="#ddb5bf" stroke-width="2.5"/>
+    <circle class="arrive" style="animation-delay:1.80s" cx="885.3" cy="87.6" r="7" fill="#121424" stroke="#ddb5bf" stroke-width="2.5"/>
+    <circle class="arrive" style="animation-delay:2.16s" cx="935.8" cy="40.7" r="7" fill="#121424" stroke="#ddb5bf" stroke-width="2.5"/>
+    <circle class="arrive" style="animation-delay:2.52s" cx="1004.6" cy="43.2" r="7" fill="#121424" stroke="#ddb5bf" stroke-width="2.5"/>
+    <circle class="arrive" style="animation-delay:2.89s" cx="1051.5" cy="93.6" r="7" fill="#121424" stroke="#ddb5bf" stroke-width="2.5"/>
+    <circle class="halo" cx="967.2" cy="125.0" r="12" fill="none" stroke="#ddb5bf" stroke-width="2"/>
+    <circle class="breathe" cx="967.2" cy="125.0" r="10" fill="#b87082"/>
+    <rect x="0.0" y="248" width="300.5" height="12" fill="#1a1a2e"/><rect x="300.0" y="248" width="300.5" height="12" fill="#5c1a2b"/><rect x="600.0" y="248" width="300.5" height="12" fill="#800020"/><rect x="900.0" y="248" width="300.5" height="12" fill="#fbeef1"/>
+    <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif"><text x="56" y="56.6" fill="#c78f9d" font-size="15" font-weight="700" letter-spacing=".6">my-template</text><text x="56" y="122.2" fill="#fbeef1" font-size="60" font-weight="700" letter-spacing="-.5">SOP template</text><text x="56" y="166.0" fill="#dcd0d6" font-size="23">Procedures beside proposals: how an approved thing</text><text x="56" y="196.8" fill="#dcd0d6" font-size="23">is done, step by step.</text></g>
+  </g>
+</svg>

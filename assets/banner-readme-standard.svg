@@ -16,34 +16,36 @@
     .halo { opacity: 0 }
   </style>
   <defs>
-    <linearGradient id="ground" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1a2230"/><stop offset="1" stop-color="#101622"/></linearGradient>
-    <linearGradient id="line" gradientUnits="userSpaceOnUse" x1="668" y1="0" x2="1160" y2="0"><stop offset="0.00" stop-color="#8a6a2a"/><stop offset="0.50" stop-color="#d9a441"/><stop offset="1.00" stop-color="#e6d1a6"/></linearGradient>
-    <linearGradient id="fade" gradientUnits="userSpaceOnUse" x1="620" y1="0" x2="1200" y2="0"><stop offset="0" stop-color="#d9a441" stop-opacity="0"/><stop offset=".35" stop-color="#d9a441"/><stop offset="1" stop-color="#e6d1a6"/></linearGradient>
+    <linearGradient id="ground" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1a1a2e"/><stop offset="1" stop-color="#0f3460"/></linearGradient>
+    <linearGradient id="line" gradientUnits="userSpaceOnUse" x1="668" y1="0" x2="1160" y2="0"><stop offset="0.00" stop-color="#804c5a"/><stop offset="0.50" stop-color="#b87082"/><stop offset="1.00" stop-color="#ddb5bf"/></linearGradient>
+    <linearGradient id="fade" gradientUnits="userSpaceOnUse" x1="620" y1="0" x2="1200" y2="0"><stop offset="0" stop-color="#b87082" stop-opacity="0"/><stop offset=".35" stop-color="#b87082"/><stop offset="1" stop-color="#ddb5bf"/></linearGradient>
     <clipPath id="card"><rect width="1200" height="260" rx="18"/></clipPath>
+    <radialGradient id="ember" gradientUnits="userSpaceOnUse" cx="962" cy="124" r="390"><stop offset="0" stop-color="#800020" stop-opacity=".8"/><stop offset=".6" stop-color="#5c1a2b" stop-opacity=".45"/><stop offset="1" stop-color="#5c1a2b" stop-opacity="0"/></radialGradient>
   </defs>
   <g clip-path="url(#card)">
     <!-- an opaque ground: the same picture on GitHub's light and dark themes -->
     <rect width="1200" height="260" fill="url(#ground)"/>
-    <path d="M839.0 220A120 120 0 0 1 1079.0 220Z" fill="#403c33" fill-opacity=".28"/>
-    <path class="arrive" style="animation-delay:0.30s" d="M817.1 217.4A142 142 0 0 1 820.6 188.5" fill="none" stroke="#705c38" stroke-width="28"/>
-    <path class="arrive" style="animation-delay:0.58s" d="M821.8 183.5A142 142 0 0 1 832.1 156.3" fill="none" stroke="#82683a" stroke-width="28"/>
-    <path class="arrive" style="animation-delay:0.86s" d="M834.5 151.8A142 142 0 0 1 851.1 127.8" fill="none" stroke="#93743b" stroke-width="28"/>
-    <path class="arrive" style="animation-delay:1.14s" d="M854.5 123.9A142 142 0 0 1 876.3 104.6" fill="none" stroke="#a4803c" stroke-width="28"/>
-    <path class="arrive" style="animation-delay:1.42s" d="M880.5 101.7A142 142 0 0 1 906.3 88.2" fill="none" stroke="#b68c3e" stroke-width="28"/>
-    <path class="arrive" style="animation-delay:1.70s" d="M911.1 86.3A142 142 0 0 1 939.4 79.4" fill="none" stroke="#c89840" stroke-width="28"/>
-    <path class="arrive" style="animation-delay:1.98s" d="M944.5 78.8A142 142 0 0 1 973.6 78.8" fill="none" stroke="#e6d1a6" stroke-width="34"/>
-    <path class="arrive" style="animation-delay:1.70s" d="M978.7 79.4A142 142 0 0 1 1007.0 86.3" fill="none" stroke="#c89840" stroke-width="28"/>
-    <path class="arrive" style="animation-delay:1.42s" d="M1011.8 88.2A142 142 0 0 1 1037.6 101.7" fill="none" stroke="#b68c3e" stroke-width="28"/>
-    <path class="arrive" style="animation-delay:1.14s" d="M1041.8 104.6A142 142 0 0 1 1063.6 123.9" fill="none" stroke="#a4803c" stroke-width="28"/>
-    <path class="arrive" style="animation-delay:0.86s" d="M1067.0 127.8A142 142 0 0 1 1083.6 151.8" fill="none" stroke="#93743b" stroke-width="28"/>
-    <path class="arrive" style="animation-delay:0.58s" d="M1085.9 156.3A142 142 0 0 1 1096.3 183.5" fill="none" stroke="#82683a" stroke-width="28"/>
-    <path class="arrive" style="animation-delay:0.30s" d="M1097.5 188.5A142 142 0 0 1 1101.0 217.4" fill="none" stroke="#705c38" stroke-width="28"/>
-    <circle class="halo" cx="959.0" cy="78.0" r="22" fill="none" stroke="#e6d1a6" stroke-width="2"/>
-    <circle cx="1025.3" cy="154.9" r="2.5" fill="#e6d1a6" opacity=".7"/>
-    <circle cx="956.1" cy="141.5" r="2.4" fill="#e6d1a6" opacity=".7"/>
-    <circle cx="956.6" cy="169.7" r="2.5" fill="#e6d1a6" opacity=".7"/>
-    <circle cx="1011.2" cy="200.6" r="2.2" fill="#e6d1a6" opacity=".7"/>
-    <rect x="0.0" y="248" width="300.5" height="12" fill="#334155"/><rect x="300.0" y="248" width="300.5" height="12" fill="#8a6a2a"/><rect x="600.0" y="248" width="300.5" height="12" fill="#d9a441"/><rect x="900.0" y="248" width="300.5" height="12" fill="#f1f5f9"/>
-    <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif"><text x="56" y="56.6" fill="#d9a441" font-size="15" font-weight="700" letter-spacing=".6">my-template · a living standard</text><text x="56" y="122.2" fill="#f1f5f9" font-size="60" font-weight="700" letter-spacing="-.5">README standard</text><text x="56" y="166.0" fill="#d3d7dd" font-size="23">A front door for every repository: where you are,</text><text x="56" y="196.8" fill="#d3d7dd" font-size="23">what this is, how to help.</text></g>
+    <rect width="1200" height="260" fill="url(#ember)"/>
+    <path d="M839.0 220A120 120 0 0 1 1079.0 220Z" fill="#3a2b3f" fill-opacity=".28"/>
+    <path class="arrive" style="animation-delay:0.30s" d="M817.1 217.4A142 142 0 0 1 820.6 188.5" fill="none" stroke="#614154" stroke-width="28"/>
+    <path class="arrive" style="animation-delay:0.58s" d="M821.8 183.5A142 142 0 0 1 832.1 156.3" fill="none" stroke="#70495c" stroke-width="28"/>
+    <path class="arrive" style="animation-delay:0.86s" d="M834.5 151.8A142 142 0 0 1 851.1 127.8" fill="none" stroke="#7e5163" stroke-width="28"/>
+    <path class="arrive" style="animation-delay:1.14s" d="M854.5 123.9A142 142 0 0 1 876.3 104.6" fill="none" stroke="#8c586b" stroke-width="28"/>
+    <path class="arrive" style="animation-delay:1.42s" d="M880.5 101.7A142 142 0 0 1 906.3 88.2" fill="none" stroke="#9b6073" stroke-width="28"/>
+    <path class="arrive" style="animation-delay:1.70s" d="M911.1 86.3A142 142 0 0 1 939.4 79.4" fill="none" stroke="#aa687a" stroke-width="28"/>
+    <path class="arrive" style="animation-delay:1.98s" d="M944.5 78.8A142 142 0 0 1 973.6 78.8" fill="none" stroke="#ddb5bf" stroke-width="34"/>
+    <path class="arrive" style="animation-delay:1.70s" d="M978.7 79.4A142 142 0 0 1 1007.0 86.3" fill="none" stroke="#aa687a" stroke-width="28"/>
+    <path class="arrive" style="animation-delay:1.42s" d="M1011.8 88.2A142 142 0 0 1 1037.6 101.7" fill="none" stroke="#9b6073" stroke-width="28"/>
+    <path class="arrive" style="animation-delay:1.14s" d="M1041.8 104.6A142 142 0 0 1 1063.6 123.9" fill="none" stroke="#8c586b" stroke-width="28"/>
+    <path class="arrive" style="animation-delay:0.86s" d="M1067.0 127.8A142 142 0 0 1 1083.6 151.8" fill="none" stroke="#7e5163" stroke-width="28"/>
+    <path class="arrive" style="animation-delay:0.58s" d="M1085.9 156.3A142 142 0 0 1 1096.3 183.5" fill="none" stroke="#70495c" stroke-width="28"/>
+    <path class="arrive" style="animation-delay:0.30s" d="M1097.5 188.5A142 142 0 0 1 1101.0 217.4" fill="none" stroke="#614154" stroke-width="28"/>
+    <circle class="halo" cx="959.0" cy="78.0" r="22" fill="none" stroke="#ddb5bf" stroke-width="2"/>
+    <circle cx="1025.3" cy="154.9" r="2.5" fill="#ddb5bf" opacity=".7"/>
+    <circle cx="956.1" cy="141.5" r="2.4" fill="#ddb5bf" opacity=".7"/>
+    <circle cx="956.6" cy="169.7" r="2.5" fill="#ddb5bf" opacity=".7"/>
+    <circle cx="1011.2" cy="200.6" r="2.2" fill="#ddb5bf" opacity=".7"/>
+    <rect x="0.0" y="248" width="300.5" height="12" fill="#1a1a2e"/><rect x="300.0" y="248" width="300.5" height="12" fill="#5c1a2b"/><rect x="600.0" y="248" width="300.5" height="12" fill="#800020"/><rect x="900.0" y="248" width="300.5" height="12" fill="#fbeef1"/>
+    <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif"><text x="56" y="56.6" fill="#c78f9d" font-size="15" font-weight="700" letter-spacing=".6">my-template · a living standard</text><text x="56" y="122.2" fill="#fbeef1" font-size="60" font-weight="700" letter-spacing="-.5">README standard</text><text x="56" y="166.0" fill="#dcd0d6" font-size="23">A front door for every repository: where you are,</text><text x="56" y="196.8" fill="#dcd0d6" font-size="23">what this is, how to help.</text></g>
   </g>
 </svg>

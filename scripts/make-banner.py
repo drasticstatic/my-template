@@ -8,7 +8,7 @@
     python3 scripts/make-banner.py --list                                      # families, styles and motifs
     python3 scripts/make-banner.py --check assets/banner.svg ...               # does a banner meet the standard?
     python3 scripts/make-banner.py --check-readme README.md ...                # does a README meet the standard?
-    python3 scripts/make-banner.py --icons README.md [--family amber]          # copy the Lucide icons it names, toned
+    python3 scripts/make-banner.py --icons README.md [--family amber]          # copy the icons it names, toned (Lucide; Phosphor for maroon)
 
 The same words give the same picture, and different words give a different one: the geometry grows from --seed, which
 defaults to the title. Choose the motif for what the repository means; left out, it is picked from the title.
@@ -18,6 +18,10 @@ Two house styles, for when the picture should say "the lab made this" before it 
   * seed, for a beginning: thin threads leave one point and find each other. First drawn by hand for a repository
     that was a seed and not a spec (Nov 2026), then kept here so the next beginning can wear it.
 A style sets the motif and, unless --family or --palette says otherwise, the lab's brass on slate.
+
+The maroon family (drasticstatic's own repositories, Nov 5, 2026; short names drasticstatic and ds) is the one family that
+names its ground: dark navy, 1a1a2e into 0f3460, with a maroon ember behind the picture. Every other family keeps the ground
+it has always mixed from its deep shade, so regenerating any banner made before maroon comes out byte for byte the same.
 
 What the fleet's hand-drawn banners taught, kept here so nobody relearns it:
   * Motion lives only inside @media (prefers-reduced-motion: no-preference). Outside it every element is in its
@@ -55,13 +59,17 @@ FAMILIES = {
     "magenta": ("9d174d", "be185d", "ec4899", "fce7f3"),
     "brass": ("334155", "8a6a2a", "d9a441", "f1f5f9"),
     "rainbow": ("312e81", "7c3aed", "2563eb", "f5f3ff"),
+    "maroon": ("1a1a2e", "5c1a2b", "800020", "fbeef1"),
 }
 RAINBOW = ("dc2626", "ea580c", "ca8a04", "16a34a", "2563eb", "7c3aed")
 ALIASES = {"thef": "amber", "pir": "purple", "psanctuary": "teal", "ethereal-offering": "teal", "church": "blue",
-           "org": "emerald", "taylor": "magenta", "lab": "brass", "david": "rainbow"}
+           "org": "emerald", "taylor": "magenta", "lab": "brass", "david": "rainbow", "drasticstatic": "maroon", "ds": "maroon"}
 # The icon stroke for GitHub's light and dark pages. Purple's primary is too dark on the dark page, so it uses its mid.
 ICON_STROKE = {"amber": "d97706", "purple": "7c3aed", "teal": "0d9488", "blue": "2563eb", "emerald": "059669",
-               "magenta": "ec4899", "brass": "d9a441", "rainbow": "7c4dff"}
+               "magenta": "ec4899", "brass": "d9a441", "rainbow": "7c4dff", "maroon": "800020"}
+# A family that names its own ground instead of mixing one from its deep shade: (ground_a, ground_b, ember colours).
+# The ember is one radial gradient under the picture, so the hue is the family's while the ground stays dark navy.
+GROUNDS = {"maroon": ("1a1a2e", "0f3460", ("800020", "5c1a2b"))}
 
 
 # ---------------------------------------------------------------- colour
@@ -97,11 +105,11 @@ def legible(colour, on, least):
 
 
 class Tone:
-    def __init__(self, shades, hues=None):
+    def __init__(self, shades, hues=None, ground=None):
         self.deep, self.mid, self.primary, self.tint = shades
         self.hues = hues
-        self.ground_a = mix(self.deep, "0a0f1a", .62)
-        self.ground_b = mix(self.deep, "0a0f1a", .86)
+        self.ground_a = ground[0] if ground else mix(self.deep, "0a0f1a", .62)
+        self.ground_b = ground[1] if ground else mix(self.deep, "0a0f1a", .86)
         worst = self.ground_a if luminance(self.ground_a) > luminance(self.ground_b) else self.ground_b
         self.title = legible(self.tint, worst, 7)
         self.sub = legible(mix(self.tint, self.ground_a, .14), worst, 4.5)
@@ -110,7 +118,14 @@ class Tone:
         self.hi = mix(self.line, self.tint, .55)
         self.dim = mix(self.line, self.ground_a, .55)
         self.faint = mix(self.line, self.ground_a, .8)
-        self.pit = self.ground_b
+        self.pit = mix(self.ground_a, "0a0f1a", .5) if ground else self.ground_b
+        # Empty for every family without a named ground, which is what keeps their banners byte-identical.
+        self.ember_defs = self.ember_rect = ""
+        if ground:
+            hot, warm = ground[2]
+            self.ember_defs = (f'\n    <radialGradient id="ember" gradientUnits="userSpaceOnUse" cx="962" cy="124" r="390"><stop offset="0" stop-color="#{hot}" stop-opacity=".8"/>'
+                               f'<stop offset=".6" stop-color="#{warm}" stop-opacity=".45"/><stop offset="1" stop-color="#{warm}" stop-opacity="0"/></radialGradient>')
+            self.ember_rect = f'\n    <rect width="{W}" height="{H}" fill="url(#ember)"/>'
 
 
 # ---------------------------------------------------------------- words
@@ -378,6 +393,43 @@ def m_constellation(t, rng, n):
     return out, f"{len(pts)} stars arrive and join into one constellation"
 
 
+def m_chain(t, rng, n):
+    """Linked blocks: each one arrives, then a link closes it onto the one before. Illustration, never a real chain's data."""
+    n = n or 5
+    x0, y0, x1, y1 = ZONE
+    span = x1 - x0 - 24
+    size = min(span / (n + .42 * (n - 1)), 74)
+    step = (span - size) / (n - 1)
+    drift = rng.random() * math.tau
+    mid = (y0 + y1) / 2
+    room = (y1 - y0 - size) / 2 - 8
+    pts = [(x0 + 12 + size / 2 + i * step, mid + math.sin(drift + i * 1.25) * room * .72) for i in range(n)]
+    links, blocks = [], []
+    for i in range(n - 1):
+        (ax, ay), (bx, by) = pts[i], pts[i + 1]
+        turn = math.degrees(math.atan2(by - ay, bx - ax))
+        cx, cy = (ax + bx) / 2, (ay + by) / 2
+        lw, lh = max(step - size, 14) * .5 + 12, max(size * .2, 8)
+        # two rings, overlapping at the middle of the gap: the picture of one link closing on the next
+        links.append(f'<g class="arrive"{delay(.75 + i * 2.5 / n)} transform="rotate({turn:.1f} {cx:.1f} {cy:.1f})" fill="none" stroke-width="2.5">'
+                     f'<rect x="{cx - lw + 2:.1f}" y="{cy - lh / 2:.1f}" width="{lw:.1f}" height="{lh:.1f}" rx="{lh / 2:.1f}" stroke="{t.line}"/>'
+                     f'<rect x="{cx - 2:.1f}" y="{cy - lh / 2:.1f}" width="{lw:.1f}" height="{lh:.1f}" rx="{lh / 2:.1f}" stroke="{t.hi}"/></g>')
+    for i, (x, y) in enumerate(pts):
+        top = y - size / 2
+        marks = [f'<rect x="{x - size / 2:.1f}" y="{top:.1f}" width="{size:.1f}" height="{size:.1f}" rx="{max(size * .14, 2):.1f}" fill="{t.pit}" stroke="{t.line}" stroke-width="2.5"/>']
+        if size >= 26:  # a block big enough to show a header and the lines it holds
+            head = size * .26
+            marks.append(f'<rect x="{x - size / 2 + 1.25:.1f}" y="{top + 1.25:.1f}" width="{size - 2.5:.1f}" height="{head:.1f}" rx="{max(size * .11, 2):.1f}" fill="{t.primary}"/>')
+            for row in range(3):
+                wide = (size - 18) * (.55 + rng.random() * .45)
+                ly = top + head + (size - head) * (row + 1) / 4
+                marks.append(f'<path d="M{x - size / 2 + 9:.1f} {ly:.1f}h{wide:.1f}" stroke="{t.hi if row == 0 else t.dim}" stroke-width="2" stroke-linecap="round"/>')
+        blocks.append(f'<g class="arrive"{delay(.3 + i * 2.5 / n)}>{"".join(marks)}</g>')
+    out = links + blocks
+    out.append(halo(pts[-1][0], pts[-1][1], int(size / 2) + 8, t.hi))
+    return out, f"{n} blocks arrive one by one, each linked to the one before; the shapes are illustration, not data"
+
+
 MOTIFS = {"path": (m_path, "a road: a sequence of stops, onboarding, a method"),
           "mycelium": (m_mycelium, "a network: people or repositories that feed each other"),
           "seed": (m_seed, "a beginning: thin threads leave one point and find each other"),
@@ -385,6 +437,7 @@ MOTIFS = {"path": (m_path, "a road: a sequence of stops, onboarding, a method"),
           "polygon": (m_polygon, "a form with named parts (--count is its sides)"),
           "arch": (m_arch, "a threshold: a front door, a law, something that holds up"),
           "candles": (m_candles, "markets: illustration only, never real data, never a real pair"),
+          "chain": (m_chain, "a blockchain repository: linked blocks; illustration only, never a real chain's data"),
           "constellation": (m_constellation, "a library or a map: many things, one sky")}
 
 # A house style is a whole look the lab has settled on: one motif, and brass on slate unless a family is named.
@@ -445,11 +498,11 @@ def build(title, subtitle, tone, motif, count=None, seed=None, kicker=None):
     <linearGradient id="ground" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#{tone.ground_a}"/><stop offset="1" stop-color="#{tone.ground_b}"/></linearGradient>
     <linearGradient id="line" gradientUnits="userSpaceOnUse" x1="{ZONE[0]}" y1="0" x2="{ZONE[2]}" y2="0">{stop_marks}</linearGradient>
     <linearGradient id="fade" gradientUnits="userSpaceOnUse" x1="620" y1="0" x2="{W}" y2="0"><stop offset="0" stop-color="#{tone.line}" stop-opacity="0"/><stop offset=".35" stop-color="#{tone.line}"/><stop offset="1" stop-color="#{tone.hi}"/></linearGradient>
-    <clipPath id="card"><rect width="{W}" height="{H}" rx="18"/></clipPath>
+    <clipPath id="card"><rect width="{W}" height="{H}" rx="18"/></clipPath>{tone.ember_defs}
   </defs>
   <g clip-path="url(#card)">
     <!-- an opaque ground: the same picture on GitHub's light and dark themes -->
-    <rect width="{W}" height="{H}" fill="url(#ground)"/>
+    <rect width="{W}" height="{H}" fill="url(#ground)"/>{tone.ember_rect}
     {body}
     {rail}
     {"".join(words)}
@@ -543,13 +596,13 @@ def check_readme(path):
     need(re.search(r"you are here", head, re.I), 'a "You are here" line in the header')
     need(len(re.findall(r"img\.shields\.io/badge", text)) >= 2, "at least two badges")
     need(re.search(r"^#+ .*TL;DR", text, re.M | re.I), "a TL;DR heading")
-    icons = [s for s in srcs if "icons/" in s]
+    icons = [s for s in srcs if re.search(r"icons(?:-phosphor)?/", s)]
     local = [s for s in icons if not s.startswith("http")]
-    need(len(local) >= 3, f"at least three Lucide icons from the repository ({len(local)} found)")
+    need(len(local) >= 3, f"at least three icons from the repository ({len(local)} found)")
     need(len(local) == len(icons), "no hot-linked icons")
     missing = sorted({s for s in local if not (readme.parent / s).is_file()})
     need(not missing, "every icon file exists" + (f" (missing: {', '.join(missing)})" if missing else ""))
-    need(not re.findall(r"""<img(?=[^>]*icons/)(?![^>]*alt="")[^>]*>""", text), 'every icon has alt="" (the words beside it say the idea)')
+    need(not re.findall(r"""<img(?=[^>]*icons(?:-phosphor)?/)(?![^>]*alt="")[^>]*>""", text), 'every icon has alt="" (the words beside it say the idea)')
     need(re.search(r"^#+ .*suggest", text, re.M | re.I), 'a "Suggest a change" section')
     need(re.search(r"readme-standard:", text), "the readme-standard marker, so a sweep can find what is done")
     print(f"--- {path}")
@@ -559,11 +612,12 @@ def check_readme(path):
 
 
 def copy_icons(path, family):
-    """Copies each assets/icons/<name>.svg the README names from this template's set, toned, plus the licence."""
+    """Copies each icon the README names from this template's set, toned, plus the licence. Maroon takes the Phosphor set."""
     readme = Path(path)
-    source = Path(__file__).resolve().parent.parent / "sop-template/repo/assets/icons"
+    root = Path(__file__).resolve().parent.parent
+    source = root / ("assets/icons-phosphor" if family == "maroon" else "sop-template/repo/assets/icons")
     stroke = ICON_STROKE[family]
-    src_list = sorted(set(re.findall(r"""src=["']([^"'\s]*icons/[\w.-]+\.svg)["']""", prose(readme.read_text(encoding="utf-8")))))
+    src_list = sorted(set(re.findall(r"""src=["']([^"'\s]*icons(?:-phosphor)?/[\w.-]+\.svg)["']""", prose(readme.read_text(encoding="utf-8")))))
     problems = copied = 0
     folder = None
     for s in src_list:
@@ -599,7 +653,7 @@ def main():
     ap.add_argument("--motif", choices=sorted(MOTIFS))
     ap.add_argument("--style", choices=sorted(STYLES),
                     help="a house style: waves for a front door, seed for a beginning; sets the motif, and brass unless --family or --palette says otherwise")
-    ap.add_argument("--count", type=int, help="how many stops, threads, waves, sides, stones, candles or stars")
+    ap.add_argument("--count", type=int, help="how many stops, threads, waves, sides, stones, candles, blocks or stars")
     ap.add_argument("--seed", help="geometry seed; defaults to the title")
     ap.add_argument("--out", help="write here; default is standard output")
     ap.add_argument("--list", action="store_true")
@@ -640,14 +694,14 @@ def main():
             ap.error("--palette takes four hex colours: deep,mid,primary,tint")
         tone = Tone(shades)
     elif family:
-        tone = Tone(FAMILIES[family], RAINBOW if family == "rainbow" else None)
+        tone = Tone(FAMILIES[family], RAINBOW if family == "rainbow" else None, GROUNDS.get(family))
     else:
         ap.error("--family or --palette is required")
     if a.count is not None and not 3 <= a.count <= 30:
         ap.error("--count runs from 3 to 30")
     # Left out, the motif comes from the title. The pick runs over the seven original motifs, so a banner first drawn
-    # before the styles existed still comes out the same; seed is reached through --style or --motif.
-    pick = sorted(k for k in MOTIFS if k != "seed")
+    # before the styles existed still comes out the same; seed and chain are reached only by asking for them.
+    pick = sorted(k for k in MOTIFS if k not in ("seed", "chain"))
     motif = a.motif or (STYLES[a.style][0] if a.style else
                         pick[int(hashlib.sha256((a.seed or a.title).encode()).hexdigest(), 16) % len(pick)])
 

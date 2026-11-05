@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="330" viewBox="0 0 1200 330" role="img" aria-labelledby="t d">
+  <title id="t">How a change travels</title>
+  <desc id="d">One change walks five stops: a draft on a working branch, a rendered preview, a Promote that a person merges, main, and the public twin. Between main and the twin a tripwire reads every file, lights up, lets the change through and holds back one file it refuses. With reduced motion, the finished picture shows at once.</desc>
+  <style>
+    /* Motion only for readers who have not asked for less; outside this block everything is in its finished state.
+       Five passes, about ninety seconds, then it rests on the finished picture, so it does not warm anyone's laptop. */
+    @media (prefers-reduced-motion: no-preference) {
+      .travel { animation: travel 18s linear 5 both; }
+      .tokenfade { animation: fadein 18s linear 5 both; }
+      .road { stroke-dasharray: 948; animation: road 18s linear 5 both; }
+      .lit0 { animation: lit0 18s linear 5 both; }
+      .lit1 { animation: lit1 18s linear 5 both; }
+      .lit2 { animation: lit2 18s linear 5 both; }
+      .lit3 { animation: lit3 18s linear 5 both; }
+      .lit4 { animation: lit4 18s linear 5 both; }
+      .press { transform-box: fill-box; transform-origin: center; animation: press 18s linear 5 both; }
+      .wire { animation: wire 18s linear 5 both; }
+      .scan { animation: scan 18s linear 5 both; }
+      .heldgo { animation: heldgo 18s linear 5 both; }
+      .heldfade { animation: heldfade 18s linear 5 both; }
+      .late { animation: late 18s linear 5 both; }
+      .done { animation: done 18s linear 5 both; }
+    }
+    @keyframes travel { 0% { transform: translateX(-948px) } 10% { transform: translateX(-948px) } 16% { transform: translateX(-746px) } 26% { transform: translateX(-746px) } 32% { transform: translateX(-544px) } 42% { transform: translateX(-544px) } 48% { transform: translateX(-342px) } 54% { transform: translateX(-342px) } 60% { transform: translateX(-171px) } 68% { transform: translateX(-171px) } 74% { transform: translateX(0px) } 100% { transform: translateX(0px) } }
+    @keyframes fadein { 0% { opacity: 0 } 3% { opacity: 1 } 100% { opacity: 1 } }
+    @keyframes road { 0% { stroke-dashoffset: 948 } 10% { stroke-dashoffset: 948 } 16% { stroke-dashoffset: 746 } 26% { stroke-dashoffset: 746 } 32% { stroke-dashoffset: 544 } 42% { stroke-dashoffset: 544 } 48% { stroke-dashoffset: 342 } 54% { stroke-dashoffset: 342 } 60% { stroke-dashoffset: 171 } 68% { stroke-dashoffset: 171 } 74% { stroke-dashoffset: 0 } 100% { stroke-dashoffset: 0 } }
+    @keyframes lit0 { 0% { opacity: 0 } 2.99% { opacity: 0 } 4.5% { opacity: 1 } 100% { opacity: 1 } }
+    @keyframes lit1 { 0% { opacity: 0 } 15.99% { opacity: 0 } 17.5% { opacity: 1 } 100% { opacity: 1 } }
+    @keyframes lit2 { 0% { opacity: 0 } 31.99% { opacity: 0 } 33.5% { opacity: 1 } 100% { opacity: 1 } }
+    @keyframes lit3 { 0% { opacity: 0 } 47.99% { opacity: 0 } 49.5% { opacity: 1 } 100% { opacity: 1 } }
+    @keyframes lit4 { 0% { opacity: 0 } 73.99% { opacity: 0 } 75.5% { opacity: 1 } 100% { opacity: 1 } }
+    @keyframes press { 0%,33% { opacity: 0; transform: scale(.7) } 36% { opacity: 1; transform: scale(1) } 41% { opacity: 0; transform: scale(1.5) } 100% { opacity: 0; transform: scale(1.5) } }
+    @keyframes wire { 0%,57% { opacity: 0 } 59% { opacity: 1 } 62% { opacity: .55 } 64% { opacity: 1 } 100% { opacity: 1 } }
+    @keyframes scan { 0%,57% { opacity: 0; transform: translateY(0) } 58% { opacity: 1; transform: translateY(0) } 61.5% { opacity: 1; transform: translateY(136px) } 65% { opacity: 1; transform: translateY(0) } 68% { opacity: 1; transform: translateY(136px) } 68.5%,100% { opacity: 0; transform: translateY(136px) } }
+    @keyframes heldgo { 0%,54% { transform: translateX(-157px) } 59% { transform: translateX(0) } 100% { transform: translateX(0) } }
+    @keyframes heldfade { 0%,53.5% { opacity: 0 } 55% { opacity: 1 } 100% { opacity: 1 } }
+    @keyframes late { 0%,62% { opacity: 0 } 64% { opacity: 1 } 100% { opacity: 1 } }
+    @keyframes done { 0%,75% { opacity: 0 } 78% { opacity: 1 } 100% { opacity: 1 } }
+    .scan, .press { opacity: 0 }
+  </style>
+  <defs>
+    <linearGradient id="ground" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1a1a2e"/><stop offset="1" stop-color="#0f3460"/></linearGradient>
+    <radialGradient id="ember" gradientUnits="userSpaceOnUse" cx="903" cy="130" r="520"><stop offset="0" stop-color="#800020" stop-opacity=".62"/><stop offset=".6" stop-color="#5c1a2b" stop-opacity=".32"/><stop offset="1" stop-color="#5c1a2b" stop-opacity="0"/></radialGradient>
+    <clipPath id="card"><rect width="1200" height="330" rx="18"/></clipPath>
+  </defs>
+  <g clip-path="url(#card)">
+    <!-- an opaque ground: the same picture on GitHub's light and dark themes -->
+    <rect width="1200" height="330" fill="url(#ground)"/><rect width="1200" height="330" fill="url(#ember)"/>
+    <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+    <text x="48" y="40" fill="#e3b4c0" font-size="15" font-weight="700" letter-spacing="2.4">HOW A CHANGE TRAVELS</text>
+    <text x="318" y="40" fill="#d9d3dc" font-size="15">helpers do everything up to the merge; a person merges</text>
+    </g>
+    <rect x="48.0" y="62" width="156" height="136" rx="14" fill="#12141f" fill-opacity=".72" stroke="#6d5e78" stroke-width="1.5"/>
+    <rect class="lit0" x="48.0" y="62" width="156" height="136" rx="14" fill="#800020" stroke="#e3b4c0" stroke-width="2"/>
+    <rect x="250.0" y="62" width="156" height="136" rx="14" fill="#12141f" fill-opacity=".72" stroke="#6d5e78" stroke-width="1.5"/>
+    <rect class="lit1" x="250.0" y="62" width="156" height="136" rx="14" fill="#800020" stroke="#e3b4c0" stroke-width="2"/>
+    <rect x="452.0" y="62" width="156" height="136" rx="14" fill="#12141f" fill-opacity=".72" stroke="#6d5e78" stroke-width="1.5"/>
+    <rect class="lit2" x="452.0" y="62" width="156" height="136" rx="14" fill="#800020" stroke="#e3b4c0" stroke-width="2"/>
+    <rect x="654.0" y="62" width="156" height="136" rx="14" fill="#12141f" fill-opacity=".72" stroke="#6d5e78" stroke-width="1.5"/>
+    <rect class="lit3" x="654.0" y="62" width="156" height="136" rx="14" fill="#800020" stroke="#e3b4c0" stroke-width="2"/>
+    <rect x="996.0" y="62" width="156" height="136" rx="14" fill="#12141f" fill-opacity=".72" stroke="#6d5e78" stroke-width="1.5"/>
+    <rect class="lit4" x="996.0" y="62" width="156" height="136" rx="14" fill="#800020" stroke="#e3b4c0" stroke-width="2"/>
+    <path d="M126 172H1074" stroke="#6d5e78" stroke-width="2" stroke-dasharray="2 7" stroke-linecap="round" fill="none"/>
+    <path class="road" d="M126 172H1074" stroke="#ffd9e2" stroke-width="2.5" fill="none"/>
+    <g transform="translate(105.0 75.0) scale(0.1641)" fill="#fbeef1"><path d="M221.66,90.34,192,120,136,64l29.66-29.66a8,8,0,0,1,11.31,0L221.66,79A8,8,0,0,1,221.66,90.34Z" opacity="0.2"/><path d="M227.32,73.37,182.63,28.69a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H216a8,8,0,0,0,0-16H115.32l112-112A16,16,0,0,0,227.32,73.37ZM79.32,188,164,103.31,180.69,120,96,204.69ZM68,176.69,51.31,160,136,75.31,152.69,92Zm-20,2.62L76.69,208H48Zm144-70.62L147.32,64l24-24L216,84.69Z"/></g>
+    <text x="126" y="146" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="700" fill="#fbeef1">Draft</text>
+    <text x="126" y="232" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15.5" fill="#d9d3dc">a helper writes,</text><text x="126" y="252" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15.5" fill="#d9d3dc">on a working branch</text>
+    <g transform="translate(307.0 75.0) scale(0.1641)" fill="#fbeef1"><path d="M128,56C48,56,16,128,16,128s32,72,112,72,112-72,112-72S208,56,128,56Zm0,112a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z" opacity="0.2"/><path d="M247.31,124.76c-.35-.79-8.82-19.58-27.65-38.41C194.57,61.26,162.88,48,128,48S61.43,61.26,36.34,86.35C17.51,105.18,9,124,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208s66.57-13.26,91.66-38.34c18.83-18.83,27.3-37.61,27.65-38.4A8,8,0,0,0,247.31,124.76ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.47,133.47,0,0,1,25,128,133.33,133.33,0,0,1,48.07,97.25C70.33,75.19,97.22,64,128,64s57.67,11.19,79.93,33.25A133.46,133.46,0,0,1,231.05,128C223.84,141.46,192.43,192,128,192Zm0-112a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Z"/></g>
+    <text x="328" y="146" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="700" fill="#fbeef1">preview</text>
+    <text x="328" y="232" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15.5" fill="#d9d3dc">rendered and read,</text><text x="328" y="252" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15.5" fill="#d9d3dc">before anyone merges</text>
+    <g transform="translate(509.0 75.0) scale(0.1641)" fill="#fbeef1"><path d="M96,64A24,24,0,1,1,72,40,24,24,0,0,1,96,64ZM200,168a24,24,0,1,0,24,24A24,24,0,0,0,200,168Z" opacity="0.2"/><path d="M104,64A32,32,0,1,0,64,95v66a32,32,0,1,0,16,0V95A32.06,32.06,0,0,0,104,64ZM56,64A16,16,0,1,1,72,80,16,16,0,0,1,56,64ZM88,192a16,16,0,1,1-16-16A16,16,0,0,1,88,192Zm120-31V110.63a23.85,23.85,0,0,0-7-17L163.31,56H192a8,8,0,0,0,0-16H144a8,8,0,0,0-8,8V96a8,8,0,0,0,16,0V67.31L189.66,105a8,8,0,0,1,2.34,5.66V161a32,32,0,1,0,16,0Zm-8,47a16,16,0,1,1,16-16A16,16,0,0,1,200,208Z"/></g>
+    <rect class="press" x="480" y="124" width="100" height="32" rx="16" fill="none" stroke="#ffd9e2" stroke-width="3"/>
+    <rect x="486" y="128" width="88" height="24" rx="12" fill="#fbeef1"/>
+    <text x="530" y="145.5" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="17" font-weight="700" fill="#800020">Promote</text>
+    <text x="530" y="232" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15.5" fill="#d9d3dc">a pull request; a</text><text x="530" y="252" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15.5" fill="#d9d3dc">person presses merge</text>
+    <g transform="translate(711.0 75.0) scale(0.1641)" fill="#fbeef1"><path d="M104,56A24,24,0,1,1,80,32,24,24,0,0,1,104,56Z" opacity="0.2"/><path d="M208,112a32.05,32.05,0,0,0-30.69,23l-42.21-6a8,8,0,0,1-4.95-2.71L94.43,84.55A32,32,0,1,0,72,87v82a32,32,0,1,0,16,0V101.63l30,35a24,24,0,0,0,14.83,8.14l44,6.28A32,32,0,1,0,208,112ZM64,56A16,16,0,1,1,80,72,16,16,0,0,1,64,56ZM96,200a16,16,0,1,1-16-16A16,16,0,0,1,96,200Zm112-40a16,16,0,1,1,16-16A16,16,0,0,1,208,160Z"/></g>
+    <text x="732" y="146" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="700" fill="#fbeef1">main</text>
+    <text x="732" y="232" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15.5" fill="#d9d3dc">a merge commit, so</text><text x="732" y="252" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15.5" fill="#d9d3dc">every name survives</text>
+    <g transform="translate(1053.0 75.0) scale(0.1641)" fill="#fbeef1"><path d="M224,128a96,96,0,1,1-96-96A96,96,0,0,1,224,128Z" opacity="0.2"/><path d="M128,24h0A104,104,0,1,0,232,128,104.12,104.12,0,0,0,128,24Zm88,104a87.61,87.61,0,0,1-3.33,24H174.16a157.44,157.44,0,0,0,0-48h38.51A87.61,87.61,0,0,1,216,128ZM102,168H154a115.11,115.11,0,0,1-26,45A115.27,115.27,0,0,1,102,168Zm-3.9-16a140.84,140.84,0,0,1,0-48h59.88a140.84,140.84,0,0,1,0,48ZM40,128a87.61,87.61,0,0,1,3.33-24H81.84a157.44,157.44,0,0,0,0,48H43.33A87.61,87.61,0,0,1,40,128ZM154,88H102a115.11,115.11,0,0,1,26-45A115.27,115.27,0,0,1,154,88Zm52.33,0H170.71a135.28,135.28,0,0,0-22.3-45.6A88.29,88.29,0,0,1,206.37,88ZM107.59,42.4A135.28,135.28,0,0,0,85.29,88H49.63A88.29,88.29,0,0,1,107.59,42.4ZM49.63,168H85.29a135.28,135.28,0,0,0,22.3,45.6A88.29,88.29,0,0,1,49.63,168Zm98.78,45.6a135.28,135.28,0,0,0,22.3-45.6h35.66A88.29,88.29,0,0,1,148.41,213.6Z"/></g>
+    <text x="1074" y="146" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="700" fill="#fbeef1">public twin</text>
+    <text x="1074" y="232" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15.5" fill="#d9d3dc">only what passed,</text><text x="1074" y="252" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15.5" fill="#d9d3dc">in the open</text>
+    <g>
+    <path d="M903 62V198" stroke="#6d5e78" stroke-width="2" stroke-dasharray="5 5"/>
+    <g class="wire"><path d="M903 62V198" stroke="#c97a8f" stroke-opacity=".45" stroke-width="13" stroke-linecap="round"/><path d="M903 62V198" stroke="#ffd9e2" stroke-width="3" stroke-linecap="round"/></g>
+    <rect class="scan" x="887" y="60" width="32" height="4" rx="2" fill="#fbeef1"/>
+    <circle cx="903" cy="62" r="4.5" fill="#ffd9e2"/><circle cx="903" cy="198" r="4.5" fill="#ffd9e2"/>
+    <g transform="translate(888.0 23.0) scale(0.1172)" fill="#ffd9e2"><path d="M216,56v56c0,96-88,120-88,120S40,208,40,112V56a8,8,0,0,1,8-8H208A8,8,0,0,1,216,56Z" opacity="0.2"/><path d="M208,40H48A16,16,0,0,0,32,56v56c0,52.72,25.52,84.67,46.93,102.19,23.06,18.86,46,25.26,47,25.53a8,8,0,0,0,4.2,0c1-.27,23.91-6.67,47-25.53C198.48,196.67,224,164.72,224,112V56A16,16,0,0,0,208,40Zm0,72c0,37.07-13.66,67.16-40.6,89.42A129.3,129.3,0,0,1,128,223.62a128.25,128.25,0,0,1-38.92-21.81C61.82,179.51,48,149.3,48,112l0-56,160,0ZM82.34,141.66a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35a8,8,0,0,1,11.32,11.32l-56,56a8,8,0,0,1-11.32,0Z"/></g>
+    <text x="903" y="232" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15.5" font-weight="700" fill="#ffd9e2">the tripwire</text><text x="903" y="252" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15.5" fill="#d9d3dc">reads every file</text>
+    </g>
+    <g class="heldfade"><g class="heldgo"><g><g><rect x="882.5" y="180.5" width="13" height="17" rx="2.5" fill="#fbeef1"/><path d="M885.5 185.6h7M885.5 191.1h5" stroke="#800020" stroke-width="1.6" stroke-linecap="round"/></g><g class="late"><rect x="882.5" y="180.5" width="13" height="17" rx="2.5" fill="#ff8a8a"/><path d="M886 185.5l6 7m0 -7l-6 7" stroke="#12141f" stroke-width="2" stroke-linecap="round"/></g></g></g></g>
+    <text class="late" x="887" y="212" text-anchor="end" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" fill="#ff8a8a">held back, by name</text>
+    <g transform="translate(1074 172)"><g class="tokenfade"><g class="travel"><circle r="17" fill="#c97a8f" fill-opacity=".28"/><g><rect x="-8.5" y="-11.0" width="17" height="22" rx="2.5" fill="#fbeef1"/><path d="M-5.5 -4.4h11M-5.5 2.8h9" stroke="#800020" stroke-width="1.6" stroke-linecap="round"/></g></g></g></g>
+    <g class="done"><g transform="translate(1117.0 71.0) scale(0.1016)" fill="#7ee2a8"><path d="M224,128a96,96,0,1,1-96-96A96,96,0,0,1,224,128Z" opacity="0.2"/><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/></g></g>
+    <text x="48" y="288" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="16" fill="#d9d3dc">Nothing reaches the public twin unread: a file the tripwire cannot read, or should not publish, stays home, and it says which.</text>
+    <rect x="0.0" y="318" width="300.5" height="12" fill="#1a1a2e"/><rect x="300.0" y="318" width="300.5" height="12" fill="#5c1a2b"/><rect x="600.0" y="318" width="300.5" height="12" fill="#800020"/><rect x="900.0" y="318" width="300.5" height="12" fill="#fbeef1"/>
+  </g>
+</svg>

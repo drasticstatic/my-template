@@ -1,81 +1,58 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="260" viewBox="0 0 1200 260" role="img" aria-labelledby="t d">
   <title id="t">my-template</title>
-  <desc id="d">The path a new repository walks, laid out once: eight stops on a brass line, over a rail of the organisation families' colours. The line draws itself and the stops arrive one by one; with reduced motion, the finished picture shows at once.</desc>
+  <desc id="d">The path a new repository walks, laid out once. The picture: 8 numbered stops on a line that climbs, each arriving in turn. With reduced motion, the finished picture shows at once.</desc>
   <style>
-    /* Motion, only for readers who have not asked for less. Without it (prefers-reduced-motion: reduce, or a viewer that
-       ignores CSS) every element shows in its finished state, because nothing is hidden outside this block. */
+    /* Motion only for readers who have not asked for less. Outside this block everything is in its finished state. */
     @media (prefers-reduced-motion: no-preference) {
-      .road { stroke-dasharray: 100; animation: draw 3.2s cubic-bezier(.4,0,.2,1) .3s both; }
-      .stop { animation: arrive .45s ease-out both; }
-      .s1 { animation-delay: .35s } .s2 { animation-delay: .8s } .s3 { animation-delay: 1.2s } .s4 { animation-delay: 1.6s }
-      .s5 { animation-delay: 2.0s } .s6 { animation-delay: 2.4s } .s7 { animation-delay: 2.8s } .s8 { animation-delay: 3.3s }
-      .halo { transform-box: fill-box; transform-origin: center; animation: halo 3.2s ease-out 3.8s infinite; }
+      .draw { stroke-dasharray: 100; animation: draw 2.6s cubic-bezier(.4,0,.2,1) both; }
+      .arrive { animation: arrive .5s ease-out both; }
+      .breathe { transform-box: fill-box; transform-origin: center; animation: breathe 8s steps(48) 3s infinite; }
+      .halo { transform-box: fill-box; transform-origin: center; animation: halo 5s steps(60) 3.6s infinite; }
     }
     @keyframes draw { from { stroke-dashoffset: 100 } to { stroke-dashoffset: 0 } }
     @keyframes arrive { from { opacity: 0 } to { opacity: 1 } }
+    @keyframes breathe { 0%, 100% { transform: scale(1) } 50% { transform: scale(1.07) } }
     @keyframes halo { 0% { opacity: .55; transform: scale(1) } 70%, 100% { opacity: 0; transform: scale(2.1) } }
     .halo { opacity: 0 }
   </style>
   <defs>
-    <linearGradient id="ground" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#1e293b"/>
-      <stop offset="1" stop-color="#0f172a"/>
-    </linearGradient>
-    <linearGradient id="brass" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#8a6a2a"/>
-      <stop offset=".55" stop-color="#d9a441"/>
-      <stop offset="1" stop-color="#f1d28a"/>
-    </linearGradient>
+    <linearGradient id="ground" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1a1a2e"/><stop offset="1" stop-color="#0f3460"/></linearGradient>
+    <linearGradient id="line" gradientUnits="userSpaceOnUse" x1="668" y1="0" x2="1160" y2="0"><stop offset="0.00" stop-color="#804c5a"/><stop offset="0.50" stop-color="#b87082"/><stop offset="1.00" stop-color="#ddb5bf"/></linearGradient>
+    <linearGradient id="fade" gradientUnits="userSpaceOnUse" x1="620" y1="0" x2="1200" y2="0"><stop offset="0" stop-color="#b87082" stop-opacity="0"/><stop offset=".35" stop-color="#b87082"/><stop offset="1" stop-color="#ddb5bf"/></linearGradient>
     <clipPath id="card"><rect width="1200" height="260" rx="18"/></clipPath>
+    <radialGradient id="ember" gradientUnits="userSpaceOnUse" cx="962" cy="124" r="390"><stop offset="0" stop-color="#800020" stop-opacity=".8"/><stop offset=".6" stop-color="#5c1a2b" stop-opacity=".45"/><stop offset="1" stop-color="#5c1a2b" stop-opacity="0"/></radialGradient>
   </defs>
-
   <g clip-path="url(#card)">
-    <!-- opaque slate ground: the banner carries its own background, so it reads the same in light and dark GitHub themes -->
+    <!-- an opaque ground: the same picture on GitHub's light and dark themes -->
     <rect width="1200" height="260" fill="url(#ground)"/>
-    <!-- faint grid behind the path, the lab's drafting paper -->
-    <g stroke="#334155" stroke-width="1" opacity=".5">
-      <path d="M680 24V236M746 24V236M812 24V236M878 24V236M944 24V236M1010 24V236M1076 24V236M1142 24V236"/>
-      <path d="M650 50H1176M650 100H1176M650 150H1176M650 200H1176"/>
+    <rect width="1200" height="260" fill="url(#ember)"/>
+    <g stroke="#3a2b3f" stroke-width="1" opacity=".5">
+    <path d="M668 28V222"/>
+    <path d="M738 28V222"/>
+    <path d="M809 28V222"/>
+    <path d="M879 28V222"/>
+    <path d="M949 28V222"/>
+    <path d="M1019 28V222"/>
+    <path d="M1090 28V222"/>
+    <path d="M1160 28V222"/>
+    <path d="M668 28H1160"/>
+    <path d="M668 93H1160"/>
+    <path d="M668 157H1160"/>
+    <path d="M668 222H1160"/>
     </g>
-
-    <!-- the colour rail: one family per organisation, each in its four shades (deep, mid, primary, tint):
-         THEF amber, PIR purple, Psanctuary teal, Psanctuary Church blue, O-R-G emerald, Taylor'd magenta, the lab brass on slate -->
-    <g transform="translate(0 238)">
-      <g><rect width="43" height="22" fill="#6b4f1d"/><rect x="43" width="43" height="22" fill="#b45309"/><rect x="86" width="43" height="22" fill="#d97706"/><rect x="129" width="43" height="22" fill="#fef3c7"/></g>
-      <g transform="translate(172 0)"><rect width="43" height="22" fill="#3b1f6e"/><rect x="43" width="43" height="22" fill="#7c3aed"/><rect x="86" width="43" height="22" fill="#5b2bb5"/><rect x="129" width="43" height="22" fill="#ede9fe"/></g>
-      <g transform="translate(344 0)"><rect width="43" height="22" fill="#134e4a"/><rect x="43" width="43" height="22" fill="#0f766e"/><rect x="86" width="43" height="22" fill="#0d9488"/><rect x="129" width="43" height="22" fill="#ccfbf1"/></g>
-      <g transform="translate(516 0)"><rect width="43" height="22" fill="#1e3a8a"/><rect x="43" width="43" height="22" fill="#1d4ed8"/><rect x="86" width="43" height="22" fill="#2563eb"/><rect x="129" width="43" height="22" fill="#dbeafe"/></g>
-      <g transform="translate(688 0)"><rect width="43" height="22" fill="#064e3b"/><rect x="43" width="43" height="22" fill="#047857"/><rect x="86" width="43" height="22" fill="#059669"/><rect x="129" width="43" height="22" fill="#d1fae5"/></g>
-      <g transform="translate(860 0)"><rect width="43" height="22" fill="#9d174d"/><rect x="43" width="43" height="22" fill="#be185d"/><rect x="86" width="43" height="22" fill="#ec4899"/><rect x="129" width="43" height="22" fill="#fce7f3"/></g>
-      <g transform="translate(1032 0)"><rect width="42" height="22" fill="#334155"/><rect x="42" width="42" height="22" fill="#8a6a2a"/><rect x="84" width="42" height="22" fill="#d9a441"/><rect x="126" width="42" height="22" fill="#f1f5f9"/></g>
-      <!-- a slate veil keeps the rail quiet, and a hairline seam sits it under the card -->
-      <rect width="1200" height="22" fill="#0f172a" opacity=".3"/>
-      <rect width="1200" height="2" fill="#0f172a"/>
-      <g fill="#0f172a"><rect x="171" width="2" height="22"/><rect x="343" width="2" height="22"/><rect x="515" width="2" height="22"/><rect x="687" width="2" height="22"/><rect x="859" width="2" height="22"/><rect x="1031" width="2" height="22"/></g>
-    </g>
-
-    <!-- the path: eight stops on a brass line, the last one reached -->
-    <polyline class="road" pathLength="100" points="680,184 746,160 812,170 878,132 944,142 1010,104 1076,112 1142,70" fill="none" stroke="url(#brass)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <path class="draw" pathLength="100" d="M692.0 198.0 L755.4 187.3 L818.9 148.3 L882.3 148.0 L945.7 137.3 L1009.1 101.7 L1072.6 85.2 L1136.0 56.0" fill="none" stroke="url(#line)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:0.30s"/>
+    <circle class="halo" cx="1136.0" cy="56.0" r="13" fill="none" stroke="#ddb5bf" stroke-width="2"/>
     <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" text-anchor="middle">
-      <g class="stop s1"><circle cx="680" cy="184" r="13" fill="#0f172a" stroke="#d9a441" stroke-width="2.5"/><text x="680" y="188.5" fill="#f1d28a">1</text></g>
-      <g class="stop s2"><circle cx="746" cy="160" r="13" fill="#0f172a" stroke="#d9a441" stroke-width="2.5"/><text x="746" y="164.5" fill="#f1d28a">2</text></g>
-      <g class="stop s3"><circle cx="812" cy="170" r="13" fill="#0f172a" stroke="#d9a441" stroke-width="2.5"/><text x="812" y="174.5" fill="#f1d28a">3</text></g>
-      <g class="stop s4"><circle cx="878" cy="132" r="13" fill="#0f172a" stroke="#d9a441" stroke-width="2.5"/><text x="878" y="136.5" fill="#f1d28a">4</text></g>
-      <g class="stop s5"><circle cx="944" cy="142" r="13" fill="#0f172a" stroke="#d9a441" stroke-width="2.5"/><text x="944" y="146.5" fill="#f1d28a">5</text></g>
-      <g class="stop s6"><circle cx="1010" cy="104" r="13" fill="#0f172a" stroke="#d9a441" stroke-width="2.5"/><text x="1010" y="108.5" fill="#f1d28a">6</text></g>
-      <g class="stop s7"><circle cx="1076" cy="112" r="13" fill="#0f172a" stroke="#d9a441" stroke-width="2.5"/><text x="1076" y="116.5" fill="#f1d28a">7</text></g>
-      <circle class="halo" cx="1142" cy="70" r="16" fill="none" stroke="#f1d28a" stroke-width="2"/>
-      <g class="stop s8"><circle cx="1142" cy="70" r="16" fill="#d9a441"/><text x="1142" y="75" font-size="15" fill="#0f172a">8</text></g>
+    <g class="arrive" style="animation-delay:0.40s"><circle cx="692.0" cy="198.0" r="13" fill="#121424" stroke="#b87082" stroke-width="2.5"/><text x="692.0" y="202.5" fill="#ddb5bf">1</text></g>
+    <g class="arrive" style="animation-delay:0.80s"><circle cx="755.4" cy="187.3" r="13" fill="#121424" stroke="#b87082" stroke-width="2.5"/><text x="755.4" y="191.8" fill="#ddb5bf">2</text></g>
+    <g class="arrive" style="animation-delay:1.20s"><circle cx="818.9" cy="148.3" r="13" fill="#121424" stroke="#b87082" stroke-width="2.5"/><text x="818.9" y="152.8" fill="#ddb5bf">3</text></g>
+    <g class="arrive" style="animation-delay:1.60s"><circle cx="882.3" cy="148.0" r="13" fill="#121424" stroke="#b87082" stroke-width="2.5"/><text x="882.3" y="152.5" fill="#ddb5bf">4</text></g>
+    <g class="arrive" style="animation-delay:2.00s"><circle cx="945.7" cy="137.3" r="13" fill="#121424" stroke="#b87082" stroke-width="2.5"/><text x="945.7" y="141.8" fill="#ddb5bf">5</text></g>
+    <g class="arrive" style="animation-delay:2.40s"><circle cx="1009.1" cy="101.7" r="13" fill="#121424" stroke="#b87082" stroke-width="2.5"/><text x="1009.1" y="106.2" fill="#ddb5bf">6</text></g>
+    <g class="arrive" style="animation-delay:2.80s"><circle cx="1072.6" cy="85.2" r="13" fill="#121424" stroke="#b87082" stroke-width="2.5"/><text x="1072.6" y="89.7" fill="#ddb5bf">7</text></g>
+    <g class="arrive" style="animation-delay:3.20s"><circle cx="1136.0" cy="56.0" r="13" fill="#121424" stroke="#b87082" stroke-width="2.5"/><text x="1136.0" y="60.5" fill="#ddb5bf">8</text></g>
     </g>
-
-    <!-- the words -->
-    <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
-      <text x="64" y="68" font-size="14" font-weight="700" letter-spacing="3.5" fill="#d9a441">DRASTICSTATIC LAB · TEMPLATE</text>
-      <text x="61" y="134" font-size="68" font-weight="700" fill="#f8fafc" letter-spacing="-1">my-template</text>
-      <rect x="64" y="152" width="96" height="4" rx="2" fill="#d9a441"/>
-      <text x="64" y="188" font-size="22" fill="#f1d28a">The path a new repository walks, laid out once.</text>
-      <text x="64" y="216" font-size="15" fill="#94a3b8" letter-spacing=".4">hooks · lanes · private → public · proposals · procedures · decks</text>
-    </g>
+    <rect x="0.0" y="248" width="300.5" height="12" fill="#1a1a2e"/><rect x="300.0" y="248" width="300.5" height="12" fill="#5c1a2b"/><rect x="600.0" y="248" width="300.5" height="12" fill="#800020"/><rect x="900.0" y="248" width="300.5" height="12" fill="#fbeef1"/>
+    <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif"><text x="56" y="72.0" fill="#c78f9d" font-size="15" font-weight="700" letter-spacing=".6">drasticstatic</text><text x="56" y="137.6" fill="#fbeef1" font-size="60" font-weight="700" letter-spacing="-.5">my-template</text><text x="56" y="181.4" fill="#dcd0d6" font-size="23">The path a new repository walks, laid out once.</text></g>
   </g>
-  <rect x=".75" y=".75" width="1198.5" height="258.5" rx="17.25" fill="none" stroke="#475569" stroke-width="1.5"/>
 </svg>

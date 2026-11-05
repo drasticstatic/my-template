@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="260" viewBox="0 0 1200 260" role="img" aria-labelledby="t d">
+  <title id="t">Proposals template</title>
+  <desc id="d">A ready-to-copy proposals repository: one idea, one folder, one PDF. The picture: thin threads leave one point and find each other: 7 reach out, and each one meets its neighbour on the way. With reduced motion, the finished picture shows at once.</desc>
+  <style>
+    /* Motion only for readers who have not asked for less. Outside this block everything is in its finished state. */
+    @media (prefers-reduced-motion: no-preference) {
+      .draw { stroke-dasharray: 100; animation: draw 2.6s cubic-bezier(.4,0,.2,1) both; }
+      .arrive { animation: arrive .5s ease-out both; }
+      .breathe { transform-box: fill-box; transform-origin: center; animation: breathe 8s steps(48) 3s infinite; }
+      .halo { transform-box: fill-box; transform-origin: center; animation: halo 5s steps(60) 3.6s infinite; }
+    }
+    @keyframes draw { from { stroke-dashoffset: 100 } to { stroke-dashoffset: 0 } }
+    @keyframes arrive { from { opacity: 0 } to { opacity: 1 } }
+    @keyframes breathe { 0%, 100% { transform: scale(1) } 50% { transform: scale(1.07) } }
+    @keyframes halo { 0% { opacity: .55; transform: scale(1) } 70%, 100% { opacity: 0; transform: scale(2.1) } }
+    .halo { opacity: 0 }
+  </style>
+  <defs>
+    <linearGradient id="ground" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1a1a2e"/><stop offset="1" stop-color="#0f3460"/></linearGradient>
+    <linearGradient id="line" gradientUnits="userSpaceOnUse" x1="668" y1="0" x2="1160" y2="0"><stop offset="0.00" stop-color="#804c5a"/><stop offset="0.50" stop-color="#b87082"/><stop offset="1.00" stop-color="#ddb5bf"/></linearGradient>
+    <linearGradient id="fade" gradientUnits="userSpaceOnUse" x1="620" y1="0" x2="1200" y2="0"><stop offset="0" stop-color="#b87082" stop-opacity="0"/><stop offset=".35" stop-color="#b87082"/><stop offset="1" stop-color="#ddb5bf"/></linearGradient>
+    <clipPath id="card"><rect width="1200" height="260" rx="18"/></clipPath>
+    <radialGradient id="ember" gradientUnits="userSpaceOnUse" cx="962" cy="124" r="390"><stop offset="0" stop-color="#800020" stop-opacity=".8"/><stop offset=".6" stop-color="#5c1a2b" stop-opacity=".45"/><stop offset="1" stop-color="#5c1a2b" stop-opacity="0"/></radialGradient>
+  </defs>
+  <g clip-path="url(#card)">
+    <!-- an opaque ground: the same picture on GitHub's light and dark themes -->
+    <rect width="1200" height="260" fill="url(#ground)"/>
+    <rect width="1200" height="260" fill="url(#ember)"/>
+    <path class="draw" pathLength="100" d="M1106.0 126.4C1010.2 75.5 921.8 65.9 810.1 50.4" fill="none" stroke="url(#line)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:0.20s"/>
+    <path class="draw" pathLength="100" d="M1106.0 126.4C962.7 111.8 813.3 96.3 724.3 79.6" fill="none" stroke="url(#line)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:0.45s"/>
+    <path class="draw" pathLength="100" d="M1106.0 126.4C972.0 113.4 892.2 87.5 797.8 99.5" fill="none" stroke="url(#line)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:0.70s"/>
+    <path class="draw" pathLength="100" d="M1106.0 126.4C997.2 140.1 761.6 124.3 690.4 128.5" fill="none" stroke="url(#line)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:0.95s"/>
+    <path class="draw" pathLength="100" d="M1106.0 126.4C1008.4 132.0 916.7 156.0 812.4 145.5" fill="none" stroke="url(#line)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:1.20s"/>
+    <path class="draw" pathLength="100" d="M1106.0 126.4C976.3 151.6 944.4 186.3 820.0 172.3" fill="none" stroke="url(#line)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:1.45s"/>
+    <path class="draw" pathLength="100" d="M1106.0 126.4C1004.9 169.7 861.3 200.8 786.8 199.0" fill="none" stroke="url(#line)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:1.70s"/>
+    <path class="draw" pathLength="100" d="M939.8 70.1Q880.1 85.4 868.4 100.6" fill="none" stroke="#614154" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:1.80s"/>
+    <path class="draw" pathLength="100" d="M810.1 50.4Q737.2 65.0 724.3 79.6" fill="none" stroke="#614154" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:2.40s"/>
+    <path class="draw" pathLength="100" d="M868.4 100.6Q870.1 101.0 919.9 101.4" fill="none" stroke="#614154" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:2.05s"/>
+    <path class="draw" pathLength="100" d="M724.3 79.6Q731.0 89.5 797.8 99.5" fill="none" stroke="#614154" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:2.65s"/>
+    <path class="draw" pathLength="100" d="M919.9 101.4Q847.7 115.5 823.6 129.6" fill="none" stroke="#614154" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:2.30s"/>
+    <path class="draw" pathLength="100" d="M797.8 99.5Q714.1 114.0 690.4 128.5" fill="none" stroke="#614154" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:2.90s"/>
+    <path class="draw" pathLength="100" d="M823.6 129.6Q858.1 136.9 940.6 144.2" fill="none" stroke="#614154" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:2.55s"/>
+    <path class="draw" pathLength="100" d="M690.4 128.5Q721.4 137.0 812.4 145.5" fill="none" stroke="#614154" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:3.15s"/>
+    <path class="draw" pathLength="100" d="M940.6 144.2Q913.1 157.2 933.6 170.1" fill="none" stroke="#614154" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:2.80s"/>
+    <path class="draw" pathLength="100" d="M812.4 145.5Q786.2 158.9 820.0 172.3" fill="none" stroke="#614154" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:3.40s"/>
+    <path class="draw" pathLength="100" d="M933.6 170.1Q901.6 176.9 917.6 183.6" fill="none" stroke="#614154" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:3.05s"/>
+    <path class="draw" pathLength="100" d="M820.0 172.3Q773.4 185.6 786.8 199.0" fill="none" stroke="#614154" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:3.65s"/>
+    <circle class="arrive" style="animation-delay:1.40s" cx="810.1" cy="50.4" r="4.5" fill="#b87082"/>
+    <circle class="arrive" style="animation-delay:1.65s" cx="724.3" cy="79.6" r="4.5" fill="#b87082"/>
+    <circle class="arrive" style="animation-delay:1.90s" cx="797.8" cy="99.5" r="4.5" fill="#b87082"/>
+    <circle class="arrive" style="animation-delay:2.15s" cx="690.4" cy="128.5" r="4.5" fill="#b87082"/>
+    <circle class="arrive" style="animation-delay:2.40s" cx="812.4" cy="145.5" r="4.5" fill="#b87082"/>
+    <circle class="arrive" style="animation-delay:2.65s" cx="820.0" cy="172.3" r="4.5" fill="#b87082"/>
+    <circle class="arrive" style="animation-delay:2.90s" cx="786.8" cy="199.0" r="4.5" fill="#b87082"/>
+    <circle class="arrive" style="animation-delay:2.20s" cx="939.8" cy="70.1" r="2.5" fill="#614154"/>
+    <circle class="arrive" style="animation-delay:2.45s" cx="868.4" cy="100.6" r="2.5" fill="#614154"/>
+    <circle class="arrive" style="animation-delay:2.70s" cx="919.9" cy="101.4" r="2.5" fill="#614154"/>
+    <circle class="arrive" style="animation-delay:2.95s" cx="823.6" cy="129.6" r="2.5" fill="#614154"/>
+    <circle class="arrive" style="animation-delay:3.20s" cx="940.6" cy="144.2" r="2.5" fill="#614154"/>
+    <circle class="arrive" style="animation-delay:3.45s" cx="933.6" cy="170.1" r="2.5" fill="#614154"/>
+    <circle class="arrive" style="animation-delay:3.70s" cx="917.6" cy="183.6" r="2.5" fill="#614154"/>
+    <circle class="halo" cx="1106.0" cy="126.4" r="18" fill="none" stroke="#ddb5bf" stroke-width="2"/>
+    <circle class="breathe" cx="1106.0" cy="126.4" r="14" fill="#b87082"/>
+    <circle cx="1106.0" cy="126.4" r="5.5" fill="#fbeef1"/>
+    <rect x="0.0" y="248" width="300.5" height="12" fill="#1a1a2e"/><rect x="300.0" y="248" width="300.5" height="12" fill="#5c1a2b"/><rect x="600.0" y="248" width="300.5" height="12" fill="#800020"/><rect x="900.0" y="248" width="300.5" height="12" fill="#fbeef1"/>
+    <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif"><text x="56" y="56.6" fill="#c78f9d" font-size="15" font-weight="700" letter-spacing=".6">my-template</text><text x="56" y="122.2" fill="#fbeef1" font-size="60" font-weight="700" letter-spacing="-.5">Proposals template</text><text x="56" y="166.0" fill="#dcd0d6" font-size="23">A ready-to-copy proposals repository: one idea, one</text><text x="56" y="196.8" fill="#dcd0d6" font-size="23">folder, one PDF.</text></g>
+  </g>
+</svg>

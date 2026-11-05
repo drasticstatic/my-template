@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="260" viewBox="0 0 1200 260" role="img" aria-labelledby="t d">
+  <title id="t">Onboarding kit</title>
+  <desc id="d">The same welcome for every organization we look after. The picture: a sun held by an open circle, and 4 waves drawing in beneath it. With reduced motion, the finished picture shows at once.</desc>
+  <style>
+    /* Motion only for readers who have not asked for less. Outside this block everything is in its finished state. */
+    @media (prefers-reduced-motion: no-preference) {
+      .draw { stroke-dasharray: 100; animation: draw 2.6s cubic-bezier(.4,0,.2,1) both; }
+      .arrive { animation: arrive .5s ease-out both; }
+      .breathe { transform-box: fill-box; transform-origin: center; animation: breathe 8s steps(48) 3s infinite; }
+      .halo { transform-box: fill-box; transform-origin: center; animation: halo 5s steps(60) 3.6s infinite; }
+    }
+    @keyframes draw { from { stroke-dashoffset: 100 } to { stroke-dashoffset: 0 } }
+    @keyframes arrive { from { opacity: 0 } to { opacity: 1 } }
+    @keyframes breathe { 0%, 100% { transform: scale(1) } 50% { transform: scale(1.07) } }
+    @keyframes halo { 0% { opacity: .55; transform: scale(1) } 70%, 100% { opacity: 0; transform: scale(2.1) } }
+    .halo { opacity: 0 }
+  </style>
+  <defs>
+    <linearGradient id="ground" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1a1a2e"/><stop offset="1" stop-color="#0f3460"/></linearGradient>
+    <linearGradient id="line" gradientUnits="userSpaceOnUse" x1="668" y1="0" x2="1160" y2="0"><stop offset="0.00" stop-color="#804c5a"/><stop offset="0.50" stop-color="#b87082"/><stop offset="1.00" stop-color="#ddb5bf"/></linearGradient>
+    <linearGradient id="fade" gradientUnits="userSpaceOnUse" x1="620" y1="0" x2="1200" y2="0"><stop offset="0" stop-color="#b87082" stop-opacity="0"/><stop offset=".35" stop-color="#b87082"/><stop offset="1" stop-color="#ddb5bf"/></linearGradient>
+    <clipPath id="card"><rect width="1200" height="260" rx="18"/></clipPath>
+    <radialGradient id="ember" gradientUnits="userSpaceOnUse" cx="962" cy="124" r="390"><stop offset="0" stop-color="#800020" stop-opacity=".8"/><stop offset=".6" stop-color="#5c1a2b" stop-opacity=".45"/><stop offset="1" stop-color="#5c1a2b" stop-opacity="0"/></radialGradient>
+  </defs>
+  <g clip-path="url(#card)">
+    <!-- an opaque ground: the same picture on GitHub's light and dark themes -->
+    <rect width="1200" height="260" fill="url(#ground)"/>
+    <rect width="1200" height="260" fill="url(#ember)"/>
+    <circle class="breathe" cx="941.3" cy="95.3" r="46" fill="url(#line)"/>
+    <path class="draw" pathLength="100" d="M992.6 53.7A66 66 0 1 1 931.0 30.1" fill="none" stroke="#b87082" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:0.20s"/>
+    <path class="draw" pathLength="100" d="M620 164.0Q687.3 143.0 754.6 164.0Q822.0 185.0 889.3 164.0Q956.6 143.0 1023.9 164.0Q1091.3 185.0 1158.6 164.0Q1225.9 143.0 1293.2 164.0" fill="none" stroke="url(#fade)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:0.40s"/>
+    <path class="draw" pathLength="100" d="M620 183.3Q686.6 206.7 753.2 183.3Q819.8 160.0 886.4 183.3Q953.1 206.7 1019.7 183.3Q1086.3 160.0 1152.9 183.3Q1219.5 206.7 1286.1 183.3" fill="none" stroke="url(#fade)" stroke-width="2.8000000000000003" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:0.90s"/>
+    <path class="draw" pathLength="100" d="M620 202.7Q684.1 184.8 748.3 202.7Q812.4 220.5 876.6 202.7Q940.7 184.8 1004.8 202.7Q1069.0 220.5 1133.1 202.7Q1197.3 184.8 1261.4 202.7" fill="none" stroke="url(#fade)" stroke-width="2.4000000000000004" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:1.40s"/>
+    <path class="draw" pathLength="100" d="M620 222.0Q699.0 206.4 778.1 222.0Q857.1 237.6 936.1 222.0Q1015.2 206.4 1094.2 222.0Q1173.3 237.6 1252.3 222.0" fill="none" stroke="url(#fade)" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:1.90s"/>
+    <rect x="0.0" y="248" width="300.5" height="12" fill="#1a1a2e"/><rect x="300.0" y="248" width="300.5" height="12" fill="#5c1a2b"/><rect x="600.0" y="248" width="300.5" height="12" fill="#800020"/><rect x="900.0" y="248" width="300.5" height="12" fill="#fbeef1"/>
+    <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif"><text x="56" y="56.6" fill="#c78f9d" font-size="15" font-weight="700" letter-spacing=".6">my-template</text><text x="56" y="122.2" fill="#fbeef1" font-size="60" font-weight="700" letter-spacing="-.5">Onboarding kit</text><text x="56" y="166.0" fill="#dcd0d6" font-size="23">The same welcome for every organization we look</text><text x="56" y="196.8" fill="#dcd0d6" font-size="23">after.</text></g>
+  </g>
+</svg>
