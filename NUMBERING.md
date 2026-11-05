@@ -168,7 +168,7 @@ We did not invent the core of this. Python's enhancement proposals number their 
 
 A different slug under one universal number is printed as a note and not a problem when the names share their words, because rule 2 allows it. Names with nothing in common are flagged. `scripts/catalog-docs.selftest.sh` proves each of these on a small made-up fleet.
 
-**What it cannot do.** It runs when someone runs it, on the clones that machine holds, so it is a smoke alarm rather than a lock. It knows a number is retired only because someone wrote that down. It cannot tell that two pages with similar names have drifted into different procedures; a person reads those. First run under these rules, Nov 5, 2026: 391 rows, 11 problems (one universal-number breach; seven duplicates, six of them the same OPS-002 pages seen in each organisation's repositories; three title drifts) and 3 notes.
+**What it cannot do.** It runs when someone runs it, on the clones that machine holds, so it is a smoke alarm rather than a lock. It knows a number is retired only because someone wrote that down. It cannot tell that two pages with similar names have drifted into different procedures; a person reads those. First run under these rules, Nov 5, 2026: 431 rows, 11 problems (one universal-number breach; seven duplicates, six of them the same OPS-002 pages seen in each organisation's repositories; three title drifts) and 3 notes.
 
 ## <img src="assets/icons-phosphor/history.svg" width="24" height="24" alt=""> The migration, only on Christopher's word
 
