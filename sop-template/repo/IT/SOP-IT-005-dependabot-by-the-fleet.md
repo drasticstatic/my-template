@@ -44,7 +44,7 @@ A clean scratch worktree, never the working clone. A desk with something running
 3. **Check the checks.** `gh pr checks <n> -R <repo>`. Red or pending means not today.
 4. **Look for what is new.** In the lockfile diff, look for a package name that was not there before, and for `"hasInstallScript": true` on anything added or changed. Either one means reading that package's repository first (the external-package checklist in every `CLAUDE.md`: scripts, credential paths, provenance, typosquatting, network calls). An unexplained new package is a stop.
 5. **Run it in a scratch copy.** `git worktree add <scratch> <pr-branch>`, then `npm ci --ignore-scripts`, then the repository's build and tests, or the offline tests a desk names. *You should see:* the same pass counts as `main`. If `main` itself fails, say so and stop: that failure is not the update's.
-6. **Hand over the merge.** Give Christopher one line per pull request, `! gh pr merge <n> -R <repo> --merge`, never squash. One at a time on a repository, waiting for its checks in between, because each merge can conflict the next. Dependabot rebases the rest; `@dependabot rebase` asks it to. *Today a session's own `gh pr merge` is refused by the permission system (seen Nov 5, 2026): report it and hand over the line; do not look for another route.*
+6. **Hand over the merge.** Give the steward one line per pull request, `! gh pr merge <n> -R <repo> --merge`, never squash. One at a time on a repository, waiting for its checks in between, because each merge can conflict the next. Dependabot rebases the rest; `@dependabot rebase` asks it to. *Today a session's own `gh pr merge` is refused by the permission system (seen Nov 5, 2026): report it and hand over the line; do not look for another route.*
 7. **Write the line.** In the repository's `logs/` or pending tasks: the date, what is ready, what merged, what was set aside and why.
 8. **Leave running desks alone.** A merge changes the lockfile, not the installed folder. Whoever next restarts that desk runs the install on purpose, during a quiet hour, and checks its heartbeat afterwards.
 
@@ -56,10 +56,10 @@ A clean scratch worktree, never the working clone. A desk with something running
 - A security alert marked critical with no patched version: that goes to the steward the same day.
 
 ## <img src="../assets/icons/circle-check.svg" width="24" height="24" alt=""> Verification
-After Christopher's merges, the repository's Pull requests tab shows only what was set aside. `main`'s checks are green after the last merge. The log line exists. The desk's own monitor is still ticking.
+After the steward's merges, the repository's Pull requests tab shows only what was set aside. `main`'s checks are green after the last merge. The log line exists. The desk's own monitor is still ticking.
 
 ## <img src="../assets/icons/history.svg" width="24" height="24" alt=""> Change log
 | Date | Change |
 |---|---|
-| 2026-11-05 | The first sweep: the permission system refused a session's `gh pr merge`, so a helper tests and prepares and hands over `! gh pr merge N --merge`; the page changes if Christopher adds a rule. Read `package.json` in the diff: a group title can hide a major (#6 did). |
-| 2026-11-04 | Drafted on Christopher's word: Dependabot's pull requests are the fleet's to take, on these checks; first sweep queued in Mystarch's pending tasks. |
+| 2026-11-05 | The first sweep: the permission system refused a session's `gh pr merge`, so a helper tests and prepares and hands over `! gh pr merge N --merge`; the page changes if the steward adds a rule. Read `package.json` in the diff: a group title can hide a major (#6 did). |
+| 2026-11-04 | Drafted on the lab steward's word: Dependabot's pull requests are the fleet's to take, on these checks; first sweep queued in Mystarch's pending tasks. |
