@@ -235,18 +235,45 @@ out="$(run --root "$work/manyroot" --max-bundle-mb 1 2>&1)"
 case "$out" in *"so they were not read"*) ok "changed files far over the cap are refused unread" ;; *) bad "changed files over the cap" "$out" ;; esac
 check "and nothing is written" "$(count_bundles "$(slug "$work/manyroot/many")")" 0
 
+# A repository with linked worktrees is one repository: backed up once, from its main worktree, with the uncommitted
+# work of every linked worktree, found under the roots or not, under refs/safety/worktrees/<folder name>/.
 git init -q --bare "$work/wt-origin.git"; git clone -q "$work/wt-origin.git" "$work/wtroot/main-copy" 2>/dev/null
 cd "$work/wtroot/main-copy" || exit 1; echo x > x; git add .; git commit -q -m x; git push -q origin main
+echo m > main-work.txt
 git worktree add -q -b side "$work/wtroot/linked" 2>/dev/null
-cd "$work/wtroot/linked" || exit 1; echo w > worktree-work.txt
+cd "$work/wtroot/linked" || exit 1; echo c > committed.txt; git add committed.txt; git commit -q -m "on side"
+echo w > worktree-work.txt; echo s > side-staged.txt; git add side-staged.txt
+echo "$SENTINEL-wt" > .env
+git -C "$work/wtroot/main-copy" worktree add -q -b far "$work/wt-outside/far" 2>/dev/null
+echo f > "$work/wt-outside/far/far.txt"
+git -C "$work/wtroot/main-copy" worktree add -q -b busy "$work/wtroot/busy" 2>/dev/null
+echo b > "$work/wtroot/busy/busy.txt"; : > "$work/wtroot/main-copy/.git/worktrees/busy/MERGE_HEAD"
 before="$(digest "$work/wtroot/main-copy/.git")"
-run --root "$work/wtroot" >/dev/null 2>&1
+out="$(run --root "$work/wtroot" 2>&1)"
 check "a linked worktree leaves the shared .git untouched" "$(digest "$work/wtroot/main-copy/.git")" "$before"
-wb="$(one_bundle "$(slug "$work/wtroot/linked")")"
-cd "$work/wtroot/main-copy" || exit 1
+check "the repository is counted once, not once per worktree" "$(printf '%s\n' "$out" | grep -c 'SUMMARY 1 repositories')" 1
+check "no bundle is written under the linked worktree's own name" "$(count_bundles "$(slug "$work/wtroot/linked")")" 0
+check "one bundle, under the main worktree's name" "$(count_bundles "$(slug "$work/wtroot/main-copy")")" 1
+case "$out" in *"linked worktree(s): "*linked*) ok "the log names the worktrees that came along" ;; *) bad "worktree note" "$out" ;; esac
+case "$out" in *"worktree busy left for next run (MERGE_HEAD in progress)"*) ok "a worktree mid-merge is left for next run, the rest still goes" ;; *) bad "busy worktree note" "$out" ;; esac
+wb="$(one_bundle "$(slug "$work/wtroot/main-copy")")"
 git clone -q "$work/wt-origin.git" "$work/wt-restored" 2>/dev/null; cd "$work/wt-restored" || exit 1
 git fetch -q "$wb" 'refs/*:refs/restored/*'
-check "and its uncommitted work comes back" "$(git show refs/restored/safety/wip:worktree-work.txt)" w
+check "the main worktree's uncommitted work comes back" "$(git show refs/restored/safety/wip:main-work.txt)" m
+check "and the linked worktree's, under its folder name" "$(git show refs/restored/safety/worktrees/linked/wip:worktree-work.txt)" w
+check "with its staged half kept apart" "$(git show refs/restored/safety/worktrees/linked/wip-staged:side-staged.txt)" s
+check "a linked worktree outside the roots is captured too" "$(git show refs/restored/safety/worktrees/far/wip:far.txt)" f
+git rev-parse -q --verify refs/restored/safety/worktrees/busy/wip >/dev/null 2>&1 && bad "the busy worktree stayed out" || ok "the busy worktree stayed out"
+git rev-parse -q --verify refs/restored/heads/side >/dev/null && ok "the worktree's unpushed branch came through" || bad "side branch"
+check "a secret-named file in a linked worktree stays behind" "$(git ls-tree -r --name-only refs/restored/safety/worktrees/linked/wip | grep -c '\.env')" 0
+check "the restore trailer names the worktree" "$(git log -1 --format='%(trailers:key=Worktree,valueonly)' refs/restored/safety/worktrees/linked/wip)" linked
+# Only the linked worktree is under this root: the repository is still backed up once, from its main worktree outside it.
+mkdir -p "$work/wt-linked-only"; git -C "$work/wtroot/main-copy" worktree add -q -b lonely-wt "$work/wt-linked-only/wt" 2>/dev/null
+echo l > "$work/wt-linked-only/wt/lonely.txt"
+out="$(run --root "$work/wt-linked-only" 2>&1)"
+check "a root holding only a linked worktree still backs up the repository, once" "$(printf '%s\n' "$out" | grep -c 'SUMMARY 1 repositories')" 1
+check "under the main worktree's name" "$(count_bundles "$(slug "$work/wtroot/main-copy")")" 2
+check "and nothing under the worktree's" "$(count_bundles "$(slug "$work/wt-linked-only/wt")")" 0
 
 # ── 9. nothing staged: the same restore steps, and no secret-named path ever reaches the tree ───────────────────────────
 git init -q --bare "$work/ns-origin.git"; git clone -q "$work/ns-origin.git" "$work/nsroot/ns" 2>/dev/null
@@ -347,6 +374,144 @@ check "a left-out staged file: the real index is the same, byte for byte and in 
 check "and no file under .git was added, removed or changed" "$(contents .git)" "$before"
 check "and it is still staged" "$(git diff --cached --name-only)" wallet.dat
 check "nothing planted in that bundle either" "$(hunt "$(slug "$roots/backtohead")" "$work/backtohead.git")" 0
+cd "$work" || exit 1
+
+# ── 13. noise inside a stash: node_modules and .DS_Store stay out of the copy that travels; the real stash is untouched ─
+newrepo stashnoise
+git stash list >/dev/null
+echo keep > keep.txt; mkdir -p node_modules/.cache/webpack; echo "$SENTINEL-pack" > node_modules/.cache/webpack/0.pack
+echo "$SENTINEL-ds" > .DS_Store; mkdir -p src/__pycache__; echo "$SENTINEL-pyc" > src/__pycache__/m.pyc
+git stash push -q -u -m noisy
+echo edit >> a.txt; git stash push -q -m plain
+# a stash whose base is a commit no branch holds any more, and that base carries tracked node_modules (a deploy commit)
+mkdir -p node_modules/big; echo "$SENTINEL-tracked-nm" > node_modules/big/index.js; echo site > index.html
+git add -f node_modules/big/index.js index.html; git commit -q -m "deploy"
+echo wip >> a.txt; git stash push -q -m on-deploy
+git reset -q --hard origin/main
+stash_before="$(git stash list --format=%H)"; before="$(contents .git)"
+out="$(run --root "$roots/stashnoise" 2>&1)"; rc=$?
+check "stash noise: the run succeeds" "$rc" 0
+check "stash noise: nothing planted in the bundle, not in the stash, not in its orphaned base" \
+  "$(hunt "$(slug "$roots/stashnoise")" "$work/stashnoise.git")" 0
+check "the real stash list is untouched" "$(git stash list --format=%H)" "$stash_before"
+check "and no file under .git was added, removed or changed" "$(contents .git)" "$before"
+case "$out" in *"in stash copies"*) ok "the log counts what the stash copies left out" ;; *) bad "stash copy count" "$out" ;; esac
+hx="$work/sn-restored"; git clone -q "$work/stashnoise.git" "$hx" 2>/dev/null
+git -C "$hx" fetch -q "$(one_bundle "$(slug "$roots/stashnoise")")" 'refs/*:refs/got/*'
+check "three stash entries travel" "$(git -C "$hx" for-each-ref 'refs/got/safety/stash' | wc -l | tr -d ' ')" 3
+check "a stash with nothing to drop travels as itself, same object" "$(git -C "$hx" rev-parse refs/got/safety/stash/1)" "$(git rev-parse 'stash@{1}')"
+noisy="$(git -C "$hx" rev-parse refs/got/safety/stash/2)"
+[ "$noisy" != "$(git rev-parse 'stash@{2}')" ] && ok "a noisy stash travels as a rebuilt copy" || bad "noisy stash was not rebuilt"
+check "the copy's untracked half keeps the real file" "$(git -C "$hx" show "$noisy^3:keep.txt")" keep
+check "and has no noise path" "$(git -C "$hx" ls-tree -r --name-only "$noisy^3" | grep -c -E 'node_modules|\.DS_Store|__pycache__')" 0
+check "the copy says what it is" "$(git -C "$hx" log -1 --format=%B "$noisy" | grep -c 'rebuilt without 3 noise')" 1
+check "the copy keeps the stash's author" "$(git -C "$hx" log -1 --format=%an "$noisy")" selftest
+git -C "$hx" stash store -m restored "$noisy" 2>/dev/null && git -C "$hx" stash show --include-untracked --name-only 'stash@{0}' 2>/dev/null | grep -q keep.txt \
+  && ok "the rebuilt stash restores with git stash store" || bad "rebuilt stash store"
+ondeploy="$(git -C "$hx" rev-parse refs/got/safety/stash/0)"
+check "a stash on an orphaned deploy commit: the base travels without its node_modules" "$(git -C "$hx" ls-tree -r --name-only "$ondeploy^1" | grep -c node_modules)" 0
+check "but with the rest of that commit" "$(git -C "$hx" show "$ondeploy^1:index.html")" site
+check "and the base still sits on the pushed history" "$(git -C "$hx" rev-parse "$ondeploy^1^1")" "$(git rev-parse origin/main)"
+check "the stash's own change is in the copy" "$(git -C "$hx" show "$ondeploy:a.txt")" "base
+wip"
+cd "$work" || exit 1
+
+# ── 14. the exclude list: globs matched inside every repository, in the captured work and in stash copies ──────────────
+printf '# test\nlogs/edge/*.jsonl\nserver.*.log\n*.tmp\n' > "$cfg/exclude.txt"
+newrepo excluded
+mkdir -p logs/edge sub; echo base > logs/edge/a.jsonl; echo base > server.3000.log; git add .; git commit -q -m logs; git push -q origin main
+echo "$SENTINEL-grow" >> logs/edge/a.jsonl; git add logs/edge/a.jsonl       # tracked, modified and staged
+echo "$SENTINEL-new" > logs/edge/b.jsonl                                      # untracked
+echo "$SENTINEL-srv" >> server.3000.log                                       # tracked, modified
+echo "$SENTINEL-tmp" > sub/x.tmp                                              # a name-only glob, in a folder
+echo fine > ok.txt
+echo "$SENTINEL-stashed-srv" > server.3001.log; echo keep2 > keep2.txt; git stash push -q -u -m with-log -- server.3001.log keep2.txt
+index_before="$(stat -f '%m %z' .git/index; cksum < .git/index)"
+out="$(run --root "$roots/excluded" 2>&1)"; rc=$?
+check "exclude list: the run succeeds" "$rc" 0
+check "exclude list: nothing excluded reaches the bundle, by content" "$(hunt "$(slug "$roots/excluded")" "$work/excluded.git")" 0
+check "the real index is the same, byte for byte" "$(stat -f '%m %z' .git/index; cksum < .git/index)" "$index_before"
+check "and the excluded file is still staged" "$(git diff --cached --name-only)" logs/edge/a.jsonl
+# The stash: one untracked log dropped, and the staged a.jsonl set back to the base in both the index and the work tree.
+case "$out" in *"exclude list or as noise: 4 path(s), 3 in stash copies"*) ok "the log counts four excluded paths and three changes in the stash copy" ;; *) bad "exclude count" "$out" ;; esac
+case "$out" in *jsonl*|*server.*) bad "the log names no excluded path" "$out" ;; *) ok "the log names no excluded path" ;; esac
+hx="$work/hunt"
+check "the kept file travels" "$(git -C "$hx" show refs/got/safety/wip:ok.txt)" fine
+check "a tracked excluded file travels at its pushed version" "$(git -C "$hx" show refs/got/safety/wip:logs/edge/a.jsonl)" base
+check "an untracked excluded file does not travel" "$(git -C "$hx" ls-tree -r --name-only refs/got/safety/wip | grep -c -E 'b\.jsonl|x\.tmp')" 0
+check "the stash copy keeps the other file" "$(git -C "$hx" show 'refs/got/safety/stash/0^3:keep2.txt')" keep2
+check "and not the excluded one" "$(git -C "$hx" ls-tree -r --name-only 'refs/got/safety/stash/0^3' | grep -c server)" 0
+check "a tracked excluded file in a stash copy goes back to the base's version, not to a deletion" \
+  "$(git -C "$hx" show 'refs/got/safety/stash/0:logs/edge/a.jsonl'; git -C "$hx" show 'refs/got/safety/stash/0^2:logs/edge/a.jsonl')" "base
+base"
+check "the untouched tracked log is still in the copy" "$(git -C "$hx" show 'refs/got/safety/stash/0:server.3000.log')" base
+: > "$cfg/exclude.txt"
+cd "$work" || exit 1
+
+# ── 15. --encrypt and --decrypt: sealed bundles, a passphrase shown once, a round trip ─────────────────────────────────
+count_sealed() { ls "$dest"/"$1"*/*.bundle.enc 2>/dev/null | wc -l | tr -d ' '; }
+ecfg="$work/enc-config"
+out="$(sh "$tool" --config-dir "$ecfg" --init)"; rc=$?
+check "--init succeeds" "$rc" 0
+pass="$(printf '%s\n' "$out" | grep -E '^    [A-Za-z0-9+/]{43}=$' | tr -d ' ')"
+check "--init prints a 32-byte base64 passphrase, once" "$(printf '%s' "$pass" | wc -c | tr -d ' ')" 44
+check "the passphrase file holds that line" "$(cat "$ecfg/passphrase")" "$pass"
+check "and is mode 600" "$(stat -f '%Lp' "$ecfg/passphrase")" 600
+[ -f "$ecfg/exclude.txt" ] && ok "--init writes the exclude list" || bad "exclude.txt from --init"
+check "the exclude template is all comments" "$(grep -c -v '^#' "$ecfg/exclude.txt")" 0
+out="$(sh "$tool" --config-dir "$ecfg" --init)"
+case "$out" in *"$pass"*) bad "a second --init shows the passphrase again" ;; *) ok "a second --init never shows the passphrase" ;; esac
+check "and leaves the file as it was" "$(cat "$ecfg/passphrase")" "$pass"
+erun() { sh "$tool" --config-dir "$ecfg" --dest "$dest" "$@"; }
+newrepo sealed
+echo e > e.txt; echo "$SENTINEL-enc" > .env
+es="$(slug "$roots/sealed")"
+out="$(erun --root "$roots/sealed" --encrypt 2>&1)"; rc=$?
+check "--encrypt: the run succeeds" "$rc" 0
+check "a sealed bundle is in place" "$(count_sealed "$es")" 1
+check "and no plain one" "$(count_bundles "$es")" 0
+case "$out" in *"$pass"*) bad "the passphrase is in the log" ;; *) ok "the passphrase is not in the log" ;; esac
+case "$out" in *WROTE*) ok "the log says WROTE" ;; *) bad "WROTE" "$out" ;; esac
+sealed="$(ls "$dest"/"$es"*/*.bundle.enc | tail -1)"
+check "the sealed file does not start like a bundle" "$(head -c 15 "$sealed" | LC_ALL=C grep -a -c 'git bundle')" 0
+check "nor holds the plain text of the work" "$(LC_ALL=C grep -a -c 'e.txt' "$sealed")" 0
+erun --root "$roots/sealed" --encrypt >/dev/null 2>&1
+check "an unchanged repository writes no second sealed bundle" "$(count_sealed "$es")" 1
+mkdir -p "$work/opened"; cd "$work/opened" || exit 1
+out="$(sh "$tool" --config-dir "$ecfg" --decrypt "$sealed" 2>&1)"; rc=$?
+check "--decrypt succeeds" "$rc" 0
+opened="$work/opened/$(basename "$sealed" .enc)"
+[ -f "$opened" ] && ok "the opened bundle is in the current folder, named without .enc" || bad "opened bundle" "$out"
+check "and is mode 600" "$(stat -f '%Lp' "$opened")" 600
+git clone -q "$work/sealed.git" "$work/sealed-restored" 2>/dev/null; cd "$work/sealed-restored" || exit 1
+git bundle verify -q "$opened" >/dev/null 2>&1 && ok "the opened bundle verifies in a fresh clone" || bad "verify opened"
+git fetch -q "$opened" 'refs/*:refs/restored/*'
+check "and the work is in it" "$(git show refs/restored/safety/wip:e.txt)" e
+check "and nothing planted" "$(git ls-tree -r --name-only refs/restored/safety/wip | grep -c '\.env')" 0
+cd "$work/opened" || exit 1
+out="$(sh "$tool" --config-dir "$ecfg" --decrypt "$sealed" 2>&1)"; check "--decrypt will not overwrite" "$?" 2
+icloud_out="$HOME/Library/Mobile Documents/com~apple~CloudDocs/opened.bundle"; mkdir -p "$(dirname "$icloud_out")"
+out="$(sh "$tool" --config-dir "$ecfg" --decrypt "$sealed" --out "$icloud_out" 2>&1)"; rc=$?
+check "--decrypt refuses to open a bundle into iCloud Drive" "$rc" 2
+[ ! -e "$icloud_out" ] && ok "and writes nothing there" || bad "plain bundle in iCloud"
+cp "$ecfg/passphrase" "$work/pass.away"; printf 'not-the-passphrase\n' > "$ecfg/passphrase"
+out="$(sh "$tool" --config-dir "$ecfg" --decrypt "$sealed" --out "$work/wrong.bundle" 2>&1)"; rc=$?
+check "a wrong passphrase fails" "$rc" 1
+[ ! -e "$work/wrong.bundle" ] && ok "and leaves no file" || bad "wrong-passphrase file left"
+cp "$work/pass.away" "$ecfg/passphrase"
+chmod 644 "$ecfg/passphrase"
+echo more > "$roots/sealed/e2.txt"
+out="$(erun --root "$roots/sealed" --encrypt 2>&1)"; rc=$?
+check "a passphrase file readable by others: --encrypt refuses" "$rc" 2
+check "and writes nothing" "$(count_sealed "$es")" 1
+chmod 600 "$ecfg/passphrase"
+mv "$ecfg/passphrase" "$work/pass.away2"
+out="$(erun --root "$roots/sealed" --encrypt 2>&1)"; check "no passphrase file: --encrypt refuses" "$?" 2
+mv "$work/pass.away2" "$ecfg/passphrase"
+for i in 1 2; do echo "$i" >> "$roots/sealed/e2.txt"; erun --root "$roots/sealed" --encrypt --keep 2 >/dev/null 2>&1; done
+check "sealed bundles are pruned like plain ones" "$(count_sealed "$es")" 2
+erun --root "$roots/sealed" >/dev/null 2>&1
+check "switching --encrypt off writes a plain bundle beside them" "$(count_bundles "$es")" 1
 cd "$work" || exit 1
 
 # ── 12. the launchd template: valid, and on the key that catches up after sleep ──────────────────────────────────────
