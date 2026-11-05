@@ -1,0 +1,120 @@
+name: Lifecycle scripts check
+
+# Fails when anything in this tree would run code on a stranger's machine at clone or install time: a package.json
+# (anywhere outside node_modules) with a preinstall, postinstall, prepare or install script, or a tracked executable
+# named like a git hook (pre-commit, commit-msg, pre-push, ...) outside .githooks/. Those two are how code slips in
+# unseen: `npm install` runs lifecycle scripts without asking, and a hook committed where a tool such as husky would
+# wire it in runs on the next commit. Our hooks live in .githooks/ and do nothing until a person runs
+# `sh scripts/install-hooks.sh`, which is a local config write no repository can make for you. A folder named
+# githooks/ anywhere (a kit to copy by hand, as org-onboarding/githooks in my-template) passes for the same reason.
+# Plain bash on the committed tree; jq if present, else python3 (both are on ubuntu-latest). No third-party action.
+# This is guard #10 of SOP-IT-004 (tripwires, firewalls and shields); SECURITY.md in this repository says it in one paragraph.
+#
+# Not caught here: a dependency's own lifecycle scripts (run `npm install --ignore-scripts`, or read the lockfile),
+# and a script key under any other name that a build later calls on purpose. Dependency Review and a person's read cover those.
+
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lifecycle-scripts-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lifecycle-scripts-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Read every package.json and every tracked executable
+        shell: bash
+        run: |
+          # ---- lifecycle-check begin (sh scripts/lifecycle-check.sh is this same block, if a repository copies it out) ----
+          set -u
+          KEYS='preinstall postinstall prepare install'
+          HOOKS='applypatch-msg pre-applypatch post-applypatch pre-commit pre-merge-commit prepare-commit-msg commit-msg post-commit pre-rebase post-checkout post-merge pre-push pre-receive update proc-receive post-receive post-update reference-transaction push-to-checkout pre-auto-gc post-rewrite sendemail-validate fsmonitor-watchman p4-changelist p4-prepare-changelist p4-post-changelist p4-pre-submit post-index-change'
+          fail=0
+          summary="### Lifecycle scripts check\n\n| verdict | file | why |\n|---|---|---|\n"
+
+          # The tree is read as git holds it (modes included), so a clone on a filesystem that forgets the executable bit
+          # still answers truthfully. Outside a repository (a scratch folder), fall back to find.
+          if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+            # ls-files -s prints "mode sha stage<TAB>path"; the path is field 2 on a tab.
+            tracked=$(git -c core.quotePath=false ls-files -s | awk -F'\t' '$2 !~ /(^|\/)node_modules\//' || true)
+            manifests=$(printf '%s\n' "$tracked" | awk -F'\t' '{print $2}' | grep -E '(^|/)package\.json$' || true)
+            executables=$(printf '%s\n' "$tracked" | awk -F'\t' '$1 ~ /^100755 / {print $2}' || true)
+          else
+            manifests=$(find . -name package.json -not -path '*/node_modules/*' -not -path './.git/*' | sed 's#^\./##' || true)
+            executables=$(find . -type f -perm -u+x -not -path '*/node_modules/*' -not -path './.git/*' | sed 's#^\./##' || true)
+          fi
+
+          # One reader, two implementations. Prints the offending keys (space-separated) or nothing; prints "UNREADABLE" when
+          # the file is not JSON, which fails too: a manifest nobody can parse cannot be declared safe.
+          read_scripts() {
+            if command -v jq >/dev/null 2>&1; then
+              jq -r --arg keys "$KEYS" '
+                if (.scripts|type) == "object" then
+                  [ ($keys|split(" "))[] as $k | select(.scripts[$k] != null) | $k ] | join(" ")
+                else "" end' "$1" 2>/dev/null || echo UNREADABLE
+            else
+              python3 -I - "$1" "$KEYS" <<'PY' 2>/dev/null || echo UNREADABLE
+          import json, sys
+          with open(sys.argv[1], encoding="utf-8") as f:
+              data = json.load(f)
+          scripts = data.get("scripts") if isinstance(data, dict) else None
+          hits = [k for k in sys.argv[2].split() if isinstance(scripts, dict) and scripts.get(k) is not None]
+          print(" ".join(hits))
+          PY
+            fi
+          }
+
+          count=0
+          while IFS= read -r f; do
+            [ -n "$f" ] || continue
+            count=$((count + 1))
+            hits=$(read_scripts "$f")
+            if [ "$hits" = UNREADABLE ]; then
+              fail=1
+              echo "::error file=$f::$f is not valid JSON, so its scripts cannot be read; fix the file or remove it"
+              summary="$summary| **REFUSED** | \`$f\` | not valid JSON |\n"
+            elif [ -n "$hits" ]; then
+              fail=1
+              echo "::error file=$f::$f has a lifecycle script ($hits) that would run on anyone's machine at install time. Remove it; a build step belongs under a name npm does not run by itself (see SECURITY.md)"
+              summary="$summary| **REFUSED** | \`$f\` | lifecycle script: $hits |\n"
+            else
+              echo "ok  no lifecycle script  $f"
+              summary="$summary| ok | \`$f\` | no preinstall, postinstall, prepare or install |\n"
+            fi
+          done <<< "$manifests"
+          [ "$count" -gt 0 ] || echo "No package.json in the tree (outside node_modules)."
+
+          while IFS= read -r f; do
+            [ -n "$f" ] || continue
+            # .githooks/ is where live hooks sit; a folder named githooks/ anywhere (org-onboarding/githooks in my-template)
+            # is a kit a person copies into .githooks/ by hand. Both are inert where they are, so both pass.
+            case "/$f" in */.githooks/*|*/githooks/*) continue ;; esac
+            base=${f##*/}
+            case " $HOOKS " in
+              *" $base "*)
+                fail=1
+                echo "::error file=$f::$f is an executable named like a git hook outside .githooks/. Hooks live in .githooks/ and are activated only by hand (sh scripts/install-hooks.sh); move it there or drop the executable bit"
+                summary="$summary| **REFUSED** | \`$f\` | hook-named executable outside .githooks/ |\n" ;;
+            esac
+          done <<< "$executables"
+
+          if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+            printf '%b' "$summary" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if [ "$fail" != 0 ]; then
+            echo "::error::something in this tree would run at clone or install time; a drasticstatic-managed repository promises nothing does (SECURITY.md)"
+            exit 1
+          fi
+          echo "Nothing in this tree runs at clone or install time."
+          # ---- lifecycle-check end ----
