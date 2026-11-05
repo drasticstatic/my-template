@@ -201,11 +201,12 @@ def m_path(t, rng, n):
     out += [f'<path d="M{x0} {y0 + i * (y1 - y0) / 3:.0f}H{x1}"/>' for i in range(4)]
     out.append("</g>")
     out.append(line_path("M" + " L".join(f"{x:.1f} {y:.1f}" for x, y in pts), "url(#line)", 3))
-    out.append(halo(*pts[-1], 13, t.hi))
+    accent = getattr(t, "accent", None)
+    out.append(halo(*pts[-1], 13, accent or t.hi))
     out.append(f'<g font-family="{FONT}" font-size="13" font-weight="700" text-anchor="middle">')
     for i, (x, y) in enumerate(pts):
         out.append(f'<g class="arrive"{delay(.4 + i * 2.8 / (n - 1))}><circle cx="{x:.1f}" cy="{y:.1f}" r="13" fill="{t.pit}" '
-                   f'stroke="{t.line}" stroke-width="2.5"/><text x="{x:.1f}" y="{y + 4.5:.1f}" fill="{t.hi}">{i + 1}</text></g>')
+                   f'stroke="{accent if accent and i == n - 1 else t.line}" stroke-width="2.5"/><text x="{x:.1f}" y="{y + 4.5:.1f}" fill="{t.hi}">{i + 1}</text></g>')
     out.append("</g>")
     return out, f"{n} numbered stops on a line that climbs, each arriving in turn"
 
@@ -505,6 +506,92 @@ def m_unbound(t, rng, n):
     return out, "a chain whose middle link has opened; its two ends lift apart and light comes through the gap"
 
 
+# What a seal may say: drawn around (0, 0) in about 30 by 30. A proposals repository chooses the one that is its own.
+GLYPHS = {"check": "M-9 1L-3 8L10 -8",
+          "leaf": "M0 13V-7M0 -2C-2 -10 -9 -12 -11 -10C-10 -3 -5 -1 0 -2M0 -6C2 -14 9 -16 11 -14C10 -7 5 -5 0 -6",
+          "heart": "M0 12C-15 2 -13 -9 -6.5 -9.5C-3.5 -9.5 -1 -7.5 0 -5C1 -7.5 3.5 -9.5 6.5 -9.5C13 -9 15 2 0 12Z",
+          "octagon": "M-5.4 -13H5.4L13 -5.4V5.4L5.4 13H-5.4L-13 5.4V-5.4Z",
+          "sprout": "M0 13V-1M0 -1C0 -7 -5 -11 -12 -11C-12 -5 -7 -1 0 -1M0 4C0 -2 5 -6 12 -6C12 -1 7 4 0 4",
+          "steeple": "M-12 12H12M-8 12V0M8 12V0M-10.5 0L0 -10L10.5 0ZM0 -10V-15.5M-2.6 -13H2.6M-2.6 12V5H2.6V12",
+          "grass": "M-11 12C-10.5 4 -8.5 -2 -5 -6M-3.5 12C-3.5 2 -1.5 -6 2.5 -11.5M4 12C4 6 6 0 10.5 -3.5",
+          "wrap": "M-11 7C-13 -7 8 -13 11 -3C14 7 -1 12 -3 4C-4 -2 5 -4 5 1",
+          "feather": "M11 -13C-2 -13 -8 -4 -8 5L-11 13M-8 5C1 5 9 -2 11 -13M-6 0H2.5M-3.5 -5H6.5"}
+
+
+def m_proposal(t, rng, n):
+    """Numbered pages settle on a desk, each taller than the last, a thread climbing over their tops; a seal is pressed on the front page.
+    For a proposals repository: the shape says "ideas on their way to a decision", --labels the real numbers, --glyph whose seal it is."""
+    labels = getattr(t, "labels", None)
+    n = len(labels) if labels else (n or 6)
+    labels = labels or [f"{i:03d}" for i in range(n)]
+    seal = getattr(t, "accent", None) or t.line
+    wax = legible(seal, t.pit, 2.2)
+    mark = mix(seal, "ffffff", .88)
+    x0, y0, x1, y1 = ZONE
+    desk = y1 - 18
+    fx, fw, ftop = x1 - 158, 118, y0 + 18  # the front page
+    room = fx - (x0 + 14)
+    back = n - 1
+    pw = min(70, room * 1.45 / back) if back else 0
+    step = (room - pw * .45) / back if back else 0
+    pages, stops, thread = [], [], []
+    for i in range(back):
+        f = i / max(back - 1, 1)
+        x, top = x0 + 14 + i * step, desk - (72 + f * 62 + (rng.random() - .5) * 8)
+        h = desk - top
+        fill = mix(t.faint, t.tint, .08 + f * .5)
+        ink = legible(t.pit, fill, 4.5) if contrast(t.pit, fill) >= 4.5 else legible(t.tint, fill, 4.5)
+        tilt = (rng.random() - .5) * 5
+        fold = max(pw * .22, 6)
+        body = [f'<path d="M{x:.1f} {top:.1f}H{x + pw - fold:.1f}L{x + pw:.1f} {top + fold:.1f}V{desk:.1f}H{x:.1f}Z" fill="{fill}" stroke="{t.pit}" stroke-width="1.6"/>',
+                f'<path d="M{x + pw - fold:.1f} {top:.1f}V{top + fold:.1f}H{x + pw:.1f}" fill="none" stroke="{t.pit}" stroke-width="1.2" opacity=".6"/>']
+        if pw >= 34:
+            body.append(f'<text x="{x + 8:.1f}" y="{top + 20:.1f}" fill="{ink}" font-family="{FONT}" font-size="14" font-weight="700">{escape(labels[i])}</text>')
+            for row in range(int((h - 40) // 13)):
+                wide = (pw - 16) * (.55 + rng.random() * .45)
+                body.append(f'<path d="M{x + 8:.1f} {top + 34 + row * 13:.1f}h{wide:.1f}" stroke="{ink}" stroke-width="2.4" stroke-linecap="round" opacity=".5"/>')
+        cx = x + pw / 2
+        pages.append(f'<g class="arrive"{delay(.45 + i * 2.2 / max(back, 1))} transform="rotate({tilt:.1f} {cx:.1f} {desk:.1f})">{"".join(body)}</g>')
+        thread.append((cx, top - 12))
+        stops.append(f'<circle class="arrive"{delay(.45 + i * 2.2 / max(back, 1))} cx="{cx:.1f}" cy="{top - 12:.1f}" r="4.5" fill="{t.hi}"/>')
+    # the front page: light paper, its number, its lines
+    front_ink = t.pit if contrast(t.pit, t.tint) >= 4.5 else t.deep
+    fold = 18
+    fcx = fx + fw / 2
+    front = [f'<path d="M{fx:.1f} {ftop:.1f}H{fx + fw - fold:.1f}L{fx + fw:.1f} {ftop + fold:.1f}V{desk:.1f}H{fx:.1f}Z" fill="{t.tint}" stroke="{t.pit}" stroke-width="2"/>',
+             f'<path d="M{fx + fw - fold:.1f} {ftop:.1f}V{ftop + fold:.1f}H{fx + fw:.1f}" fill="none" stroke="{t.mid}" stroke-width="1.6"/>',
+             f'<text x="{fx + 13:.1f}" y="{ftop + 27:.1f}" fill="{front_ink}" font-family="{FONT}" font-size="19" font-weight="700">{escape(labels[-1])}</text>']
+    for row in range(6):
+        wide = (fw - 30) * (.5 + rng.random() * .5) if row < 3 else (fw - 74) * (.6 + rng.random() * .4)
+        front.append(f'<path d="M{fx + 13:.1f} {ftop + 46 + row * 15:.1f}h{wide:.1f}" stroke="{t.mid}" stroke-width="3" stroke-linecap="round" opacity=".55"/>')
+    thread.append((fcx, ftop - 8))
+    stamp_at = 2.9
+    sx, sy, sr = fx + fw - 6, desk - 32, 31
+    bumps = 18 + int(rng.random() * 5)
+    rim = [(sx + (sr + (2.2 if k % 2 else -.6) + rng.random() * .7) * math.cos(k * math.tau / (2 * bumps)),
+            sy + (sr + (2.2 if k % 2 else -.6) + rng.random() * .7) * math.sin(k * math.tau / (2 * bumps))) for k in range(2 * bumps)]
+    wax_edge = "M" + " L".join(f"{x:.1f} {y:.1f}" for x, y in rim) + "Z"
+    out = [f"""<style>
+    @media (prefers-reduced-motion: no-preference) {{
+      .press {{ transform-box: fill-box; transform-origin: center; animation: press .6s cubic-bezier(.2,1.2,.4,1) {stamp_at:.2f}s both; }}
+    }}
+    @keyframes press {{ from {{ opacity: 0; transform: scale(1.9) rotate(-14deg) }} to {{ opacity: 1; transform: none }} }}
+  </style>""",
+           f'<rect x="{x0 + 2}" y="{desk}" width="{x1 - x0 - 4}" height="{y1 - desk + 2}" rx="3" fill="{t.faint}" fill-opacity=".28"/>',
+           line_path(f"M{x0 + 2} {desk} H{x1 - 2}", "url(#line)", 3.5, start=.1)]
+    out += pages
+    out.append(line_path("M" + " L".join(f"{x:.1f} {y:.1f}" for x, y in thread), "url(#line)", 2.6, start=.4))
+    out += stops
+    out.append(f'<g class="arrive"{delay(.45 + back * 2.2 / max(back, 1))}>{"".join(front)}</g>')
+    out.append(f'<circle class="arrive"{delay(.45 + back * 2.2 / max(back, 1))} cx="{fcx:.1f}" cy="{ftop - 8:.1f}" r="5.5" fill="{t.tint}"/>')
+    out.append(halo(sx, sy, sr + 4, mix(seal, "ffffff", .55)))
+    out.append(f'<g class="press"><path d="M{sx - 13:.1f} {sy + 24:.1f}L{sx - 21:.1f} {sy + 44:.1f}M{sx + 13:.1f} {sy + 24:.1f}L{sx + 21:.1f} {sy + 44:.1f}" fill="none" stroke="{wax}" stroke-width="8" stroke-linecap="round"/>'
+               f'<g class="breathe"><path d="{wax_edge}" fill="{wax}" stroke="{t.pit}" stroke-width="1.5"/>'
+               f'<circle cx="{sx:.1f}" cy="{sy:.1f}" r="{sr - 7}" fill="none" stroke="{mark}" stroke-width="1.8" opacity=".8"/>'
+               f'<path transform="translate({sx:.1f} {sy:.1f})" d="{GLYPHS[getattr(t, "glyph", None) or "check"]}" fill="none" stroke="{mark}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></g></g>')
+    return out, f"{n} numbered pages settle on a desk, each taller than the last, a thread climbing over them, and a seal is pressed on the front page"
+
+
 MOTIFS = {"path": (m_path, "a road: a sequence of stops, onboarding, a method"),
           "mycelium": (m_mycelium, "a network: people or repositories that feed each other"),
           "seed": (m_seed, "a beginning: thin threads leave one point and find each other"),
@@ -514,6 +601,7 @@ MOTIFS = {"path": (m_path, "a road: a sequence of stops, onboarding, a method"),
           "candles": (m_candles, "markets: illustration only, never real data, never a real pair"),
           "chain": (m_chain, "a blockchain repository: linked blocks; illustration only, never a real chain's data"),
           "unbound": (m_unbound, "getting free: a chain whose middle link has opened, its ends lifting apart, light through the gap"),
+          "proposal": (m_proposal, "a proposals repository: numbered pages on a desk, a thread over them, a seal on the front page (--labels, --glyph, --accent)"),
           "constellation": (m_constellation, "a library or a map: many things, one sky")}
 
 # A house style is a whole look the lab has settled on: one motif, and brass on slate unless a family is named.
@@ -731,6 +819,9 @@ def main():
                     help="a house style: waves for a front door, seed for a beginning; sets the motif, and brass unless --family or --palette says otherwise")
     ap.add_argument("--count", type=int, help="how many stops, threads, waves, sides, stones, candles, blocks or stars")
     ap.add_argument("--seed", help="geometry seed; defaults to the title")
+    ap.add_argument("--accent", help="a lab desk's served organisation, as one hex colour: the kicker and the picture's last mark wear it (path, proposal)")
+    ap.add_argument("--labels", help="proposal only: the numbers on the pages, comma-separated (000,001,003); sets how many pages")
+    ap.add_argument("--glyph", choices=sorted(GLYPHS), help="proposal only: what the seal says")
     ap.add_argument("--out", help="write here; default is standard output")
     ap.add_argument("--list", action="store_true")
     ap.add_argument("--check", nargs="+", metavar="SVG")
@@ -775,9 +866,21 @@ def main():
         ap.error("--family or --palette is required")
     if a.count is not None and not 3 <= a.count <= 30:
         ap.error("--count runs from 3 to 30")
+    if a.accent:
+        accent = a.accent.strip().lstrip("#").lower()
+        if not re.fullmatch(r"[0-9a-f]{6}", accent):
+            ap.error("--accent takes one hex colour")
+        tone.accent = accent
+        tone.kicker = legible(accent, tone.ground_a if luminance(tone.ground_a) > luminance(tone.ground_b) else tone.ground_b, 4.5)
+    if a.glyph:
+        tone.glyph = a.glyph
+    if a.labels:
+        tone.labels = [x.strip() for x in a.labels.split(",") if x.strip()]
+        if not 2 <= len(tone.labels) <= 8 or not all(re.fullmatch(r"[\w.-]{1,5}", x) for x in tone.labels):
+            ap.error("--labels takes two to eight short numbers")
     # Left out, the motif comes from the title. The pick runs over the seven original motifs, so a banner first drawn
-    # before the styles existed still comes out the same; seed, chain and unbound are reached only by asking for them.
-    pick = sorted(k for k in MOTIFS if k not in ("seed", "chain", "unbound"))
+    # before the styles existed still comes out the same; seed, chain, unbound and proposal are reached only by asking for them.
+    pick = sorted(k for k in MOTIFS if k not in ("seed", "chain", "unbound", "proposal"))
     motif = a.motif or (STYLES[a.style][0] if a.style else
                         pick[int(hashlib.sha256((a.seed or a.title).encode()).hexdigest(), 16) % len(pick)])
 

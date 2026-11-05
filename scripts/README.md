@@ -289,12 +289,32 @@ python3 scripts/make-banner.py --title NAME --subtitle "WHAT IT IS" --kicker "WH
 python3 scripts/make-banner.py --check assets/banner.svg  # any banner, by hand or not
 python3 scripts/make-banner.py --check-readme README.md   # the page, as far as a machine can read it
 python3 scripts/make-banner.py --icons README.md --family amber   # copy the icons the page names, toned (Lucide; Phosphor for maroon)
+python3 scripts/make-banner.py --title Proposals --subtitle "WHAT IT IS" --kicker "WHOSE IT IS" --family purple --motif proposal \
+        --labels 000,001,002,004 --glyph heart --out assets/banner.svg    # a proposals repository: real numbers on the pages, its own seal
+python3 scripts/make-banner.py ... --family brass --motif proposal --accent 5b2bb5   # a lab desk: brass, with the served organisation's hue on the seal
 sh scripts/test-make-banner.sh                            # its own tests: no network, no browser
 ```
 
 Python 3 standard library only. The same words draw the same picture and other words another. It never writes
 outside `--out` and the page's own icon folder, and it never commits. The rules it keeps, and why, are in
 [`README-STANDARD.md`](../README-STANDARD.md).
+
+## `.gitignore`: the macOS `Icon` line, and why it changed (Nov 5, 2026)
+
+The template used to ignore `Icon?`. On a case-insensitive disk that pattern also matches a folder named `icons`, so
+`assets/icons/` quietly stayed out of git: a page looked right on the Mac and showed broken pictures on GitHub (`pir` had
+one of its 51 proposal icons tracked). The file macOS actually hides is `Icon` plus one carriage return, so the line is now
+`Icon` and **two** carriage returns, because git removes one before the newline; tested Nov 5, 2026 with `git check-ignore`:
+one carriage return does not match the file, two do, and `assets/icons/*.svg` stays tracked.
+
+```sh
+printf 'Icon\r\r\n' >> .gitignore   # how to write it; an editor may strip the carriage returns, so check with: grep -c "$(printf 'Icon\r')" .gitignore
+```
+
+Only this template changed. Copies of the old line in other repositories stay until someone is in the room: `git add -f`
+new icons there, or replace the line the same way.
+
+---
 
 ## `to-phosphor.py` — two-tone icons for what is drasticstatic's own
 

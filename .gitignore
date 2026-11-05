@@ -27,10 +27,10 @@
 ._*
 .Spotlight-V100
 .Trashes
-Icon?
-# ("Icon?" is for macOS's hidden Icon\r files, but on a case-insensitive Mac it also matches a
-#  folder named "icons", so keep icon folders.)
-!**/icons/
+# macOS's hidden folder-icon file is named Icon plus one carriage return. The next line is Icon and TWO carriage returns,
+# because git drops one before the newline; made with: printf 'Icon\r\r\n' >> .gitignore  (an editor may strip them).
+# Never "Icon?": on a case-insensitive disk that also matches a folder named icons, and assets/icons goes missing from git.
+Icon
 .fseventsd
 
 

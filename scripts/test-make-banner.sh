@@ -13,7 +13,7 @@ ok() { echo "ok    $1"; }
 # every family with every motif: it writes, and its own check passes
 n=0
 for fam in amber purple teal blue emerald magenta brass rainbow maroon; do
-  for motif in arch candles chain constellation mycelium path polygon seed unbound waves; do
+  for motif in arch candles chain constellation mycelium path polygon proposal seed unbound waves; do
     python3 "$MB" --title "repo-$fam-$motif" --subtitle "A test banner." --kicker "A house" --family "$fam" --motif "$motif" --out "$T/lane/$fam-$motif.svg" >/dev/null || no "$fam $motif did not build"
     n=$((n + 1))
   done
@@ -96,6 +96,13 @@ python3 "$TP" "$T/ph" --primary nope >/dev/null 2>&1 && no "--primary took somet
 python3 "$TP" "$HERE/../assets/icons-phosphor" >/dev/null 2>&1 && no "to-phosphor.py recoloured its own master set" || ok "the master set refuses to be recoloured"
 printf '# p\n<img src="assets/icons/compass.svg" width="16" height="16" alt="">\n' > "$T/page/README.md"
 python3 "$MB" --icons "$T/page/README.md" --family maroon >/dev/null && grep -q 'fill="#800020"' "$T/page/assets/icons/compass.svg" && grep -q 'Phosphor' "$T/page/assets/icons/LICENSE" && ok "--icons --family maroon copies Phosphor and its licence" || no "--icons maroon did not copy Phosphor"
+
+# proposal: pages, a thread and a seal, only when asked for by name; the accent reaches the seal and nothing else's bytes
+python3 "$MB" --title "a desk" --subtitle s --family brass --motif proposal --accent 5b2bb5 --glyph heart --labels 000,001,003 --out "$T/p1" >/dev/null && python3 "$MB" --check "$T/p1" >/dev/null && grep -q '3 numbered pages' "$T/p1" && grep -q '>003<' "$T/p1" && ok "--motif proposal takes --labels, --glyph, --accent and passes --check" || no "--motif proposal failed"
+python3 "$MB" --title "a desk" --subtitle s --family brass --motif proposal | grep -q 'pressed on the front page' && ok "the proposal picture presses its seal" || no "the proposal picture has no seal"
+python3 "$MB" --title "a desk" --subtitle s --family brass --motif proposal --count 30 >/dev/null && python3 "$MB" --title "a desk" --subtitle s --family maroon --motif proposal --count 3 >/dev/null && ok "proposal holds from 3 to 30 pages" || no "proposal failed at the ends of --count"
+sed -n '/no-preference/,/^    }$/d; p' "$T/p1" | grep -q 'animation:' && no "proposal moves outside the reduced-motion gate" || ok "proposal moves only inside the gate"
+for t in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16; do python3 "$MB" --title "pick $t" --subtitle s --family lab; done | grep -q 'pressed on the front page' && no "the title's own pick reached proposal" || ok "a title never picks proposal"
 
 # the hero stays small and within the rules
 HERO="$HERE/../assets/demo.svg"
