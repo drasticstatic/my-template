@@ -228,11 +228,30 @@ sh scripts/sync-local.sh --quiet ~/code  # one root; print only what is behind, 
 ```
 
 It looks up to three folders deep under `~/code`, `~/dappu` and each organisation's folder, `~/theholyearthfoundation`,
-`~/psychedelicsinrecovery`, `~/Octagon-Religious-Research-Group-ORG`, `~/psanctuary`, `~/psanctuarychurch` and `~/taylordwraps-org` (or the roots you give),
+`~/psychedelicsinrecovery`, `~/Octagon-Religious-Research-Group-ORG`, `~/psanctuary`, `~/psanctuarychurch`, `~/taylordwraps-org`
+and `~/WILSONSLAWNMAINTENANCE` (or the roots you give),
 skips `node_modules`, and reports each clone's branch, ahead/behind and local changes. A clone that would conflict is
 aborted at once and left exactly as it was. It **never** pushes, clones, switches branches or forces anything; it
 skips detached clones, clones without an upstream, and clones already mid-rebase. Public lanes are never cloned by
 it; one already cloned is pulled like any other (it only reads), or left out with `--skip-lanes`.
+
+### `clone-map.sh` — where every clone is, and which ones are spares
+
+```sh
+sh scripts/clone-map.sh                  # one line per repository: path, origin, branch, dirty, ahead, marks
+sh scripts/clone-map.sh --duplicates     # only the rows that share an origin URL with another
+sh scripts/clone-map.sh --json           # the same rows as a JSON array
+sh scripts/clone-map.sh ~/code ~/pir     # your own roots
+```
+
+The map behind [`NESTED-REPOS-GUIDE.md`](../NESTED-REPOS-GUIDE.md) § *The organisation clone is canonical*. It walks
+`~/code`, `~/dappu`, `~/code-forked`, `~/intent`, `~/littlebirds-git-home` and every `~/<org>/` folder above, up to four
+folders deep (Intent keeps a repository at `workspaces/<slug>/<repository>`), and prints each repository's path, origin
+URL, current branch, dirty count and commits ahead of its upstream (0 when it has none). Two rows with the same origin
+(`.git`, a trailing slash, case and the ssh/https spelling ignored) are both marked `DUPLICATE`; the one outside every
+`~/<org>/` folder, when a copy inside one exists, is also `SPARE`, and `NOTED` when a `WHERE-EVERYTHING-WENT.md` sits
+beside it. It is read-only by construction: `GIT_OPTIONAL_LOCKS=0`, so even `git status` writes nothing, and it never
+fetches, pulls, pushes, switches or removes. A spare is information for a person; no helper removes one.
 
 ---
 
