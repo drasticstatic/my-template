@@ -109,7 +109,7 @@ find ~/code ~/dappu ~/drasticstaticLabs -maxdepth 3 -path '*/.claude/settings*.j
 
 **Set it up.** The person at the keyboard runs steps 2 to 5; a helper may run step 1 and hand over the rest.
 
-1. **Prove the script on this Mac:** `sh ~/code/my-template/scripts/claude-projects-archive.selftest.sh`. It works in a temporary folder with a fake home. *You should see:* every check pass (104 of 104 on Nov 6, 2026).
+1. **Prove the script on this Mac:** `sh ~/code/my-template/scripts/claude-projects-archive.selftest.sh`. It works in a temporary folder with a fake home. *You should see:* every check pass (127 of 127 on Nov 6, 2026).
 2. **Make the passphrase:** `sh ~/code/my-template/scripts/claude-projects-archive.sh --init`. It writes a random passphrase only if there is none, and never shows it. *You should see:* the folder made and a `pbcopy` line to run next.
 3. **Put it in the password manager,** then clear the clipboard. Make a password item (for example *claude-projects archive passphrase*) and paste between these two lines:
    ```sh
@@ -127,7 +127,7 @@ sh ~/code/my-template/scripts/claude-projects-archive.sh --run --dest /Volumes/B
 sh ~/code/my-template/scripts/claude-projects-archive.sh --install --dest /Volumes/Backup/claude-projects
 ```
 
-The folder must already exist, so an unplugged drive cannot quietly become a folder on the startup disk: the run is refused and the next night tries again. Each destination keeps its own chain, starting with a full. A destination inside `~/.claude` is refused.
+The folder must already exist, so an unplugged drive cannot quietly become a folder on the startup disk: the run is refused and the next night tries again. Each destination keeps its own chain, starting with a full, and its own nightly schedule: `--install --dest DIR` adds a LaunchAgent beside iCloud's rather than replacing it (`--uninstall --dest DIR` removes only that one). A destination inside `~/.claude` is refused.
 
 **Get it back.** Always into a new, empty folder in your home, never over the live `~/.claude` (the script refuses that):
 
@@ -138,7 +138,7 @@ diff -rq ~/claude-restore/.claude/projects ~/.claude/projects
 
 *You should see:* the newest full and every incremental after it unpacked in order, then only the differences since last night. To copy anything back, quit every Claude Code session first and copy only what you need. For an earlier day, `--restore FULL INCR ... DIR` with the files oldest first. On a new Mac, put the passphrase file back from the password manager first; the walkthrough has the three lines.
 
-**Keeping it smaller,** when you decide to: `--prune-plan 3` prints what keeping only the newest three full archives would move aside. It moves nothing; moving them is a person's choice.
+**Keeping it smaller.** `--prune-plan 3` prints what keeping only the newest three full archives would move aside; it changes nothing. `--move-old 3 DIR` then moves those older chains (never deletes them) to a folder such as the backup drive, each checked against its `.sha256`. Suggested rhythm: three months in iCloud, the rest moved monthly. Check the iCloud plan (System Settings → your name → iCloud) **before** scheduling: a full iCloud also stops iPhone backups and photo uploads.
 
 ## <img src="../assets/icons/shield-check.svg" width="24" height="24" alt=""> 3. Time Machine
 
@@ -155,7 +155,21 @@ diff -rq ~/claude-restore/.claude/projects ~/.claude/projects
    tmutil isexcluded path/to/the-rebuildable.sqlite
    ```
    *You should see:* `[Excluded]`. **Do not exclude** `~/.claude`, raw logs, or repositories. Virtual machines are the one larger exception: their makers advise copying a shut-down VM's folder to the drive yourself, outside Time Machine.
+   The mark can be set **now, before any drive exists**: it is a flag on the item itself, needs no administrator password and shows no prompt. To take it off: `tmutil removeexclusion path/to/it`. Example, a desk database rebuilt nightly from its logs: `tmutil addexclusion ~/path/to/the-repo/logs/db`.
 4. **Check it ran:** `tmutil latestbackup`. *You should see:* a date from the last hour or so.
+
+**Out of sight is not out of the backup.** Hiding a folder from Finder is a different tool, for folders that confuse
+more than they help (one an app keeps re-creating, for example) but must stay where they are:
+
+```sh
+chflags hidden ~/SomeFolder      # gone from Finder; still on disk, still in Time Machine and in Terminal's ls
+ls -lO ~ | grep SomeFolder       # the word "hidden" in the flags column
+chflags nohidden ~/SomeFolder    # back in Finder
+```
+
+In Finder, **Command-Shift-Period** shows or hides every hidden item for a moment. Hiding is not privacy (anyone with
+the account can still open it) and not an exclusion: Time Machine still copies a hidden folder, and `tmutil addexclusion`
+is what leaves a folder out. Use neither to "delete" something: move it into an archive folder instead.
 
 ## <img src="../assets/icons/git-branch.svg" width="24" height="24" alt=""> 4. Git and the safety bundles
 
@@ -204,7 +218,7 @@ A drill restores into a new folder, never over live data. The person at the keyb
 | **Quarterly** | a git bundle | open one, then `git bundle verify` and `git fetch` into a fresh clone, as in [part 4](#4-git-and-the-safety-bundles) | `is okay`; the work under `refs/restored/` |
 | **Quarterly** | one file from Time Machine | Finder › Browse Time Machine Backups (it mounts the backup: say so first), restore one file to a new place | the file opens, from a dated backup |
 | **Twice a year** | the second key works | `--verify` an archive with `CLAUDE_ARCHIVE_PASSFILE` pointing at a file pasted from the password manager, not the Mac's own | `verify` passes: the password manager's copy opens the archives |
-| **Yearly** | the space | `--list` total against the iCloud plan or the drive | room for another year, or a `--prune-plan` decided by a person |
+| **Monthly** | the space | `--list` total against the iCloud plan | under the plan with room to spare; otherwise `--move-old 3 DIR` to the drive |
 
 **Drill log.** One row per drill, newest last. A missed month is written down too.
 
@@ -243,4 +257,5 @@ The procedure is in place when all of these are true:
 ## <img src="../assets/icons/history.svg" width="24" height="24" alt=""> Change log
 | Date | Change |
 |---|---|
+| 2026-11-06 | Later the same day: an exclusion can be set before a drive exists, and how to take it off; hiding a folder from Finder (`chflags hidden`), and why it is neither privacy nor an exclusion; each destination gets its own schedule; `--move-old` and the three-months-in-iCloud rhythm; check the iCloud plan before scheduling; a renamed project folder is caught. |
 | 2026-11-06 | Drafted, on the ask to bake transcript retention into how we protect, back up and store our data: retention at 3650 days, the nightly sealed archive and its measured sizes, Time Machine's exclusions, the safety bundles, readings and records, what never goes to GitHub, and a restore drill schedule with its log. |

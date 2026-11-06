@@ -22,7 +22,7 @@
 
 ```sh
 cd ~/code-forked/free-claude-code
-uv run uvicorn server:app --host 0.0.0.0 --port 8082
+uv run uvicorn server:app --host 127.0.0.1 --port 8082
 ```
 
 **Tab 2, Claude (in the repository you are working on, not a parent folder):**
@@ -49,7 +49,7 @@ Then `/model` in Claude lists the proxy's models (`anthropic/nvidia_nim/z-ai/glm
 
 | The line you kept | What it is now |
 |---|---|
-| `uv run uvicorn server:app --host 0.0.0.0 --port 8082` | **Still right.** Starts the proxy. Tab 1 |
+| `uv run uvicorn server:app --host 0.0.0.0 --port 8082` | **Right, with one change.** Starts the proxy (tab 1); use `--host 127.0.0.1` so only this Mac can reach it (see *Who can reach the proxy*) |
 | `ANTHROPIC_BASE_URL=http://localhost:8082 claude` | **Stopped working, for a reason.** The proxy now asks for a token this line does not send. See *Why the bare line stopped working* |
 | `CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1 ANTHROPIC_AUTH_TOKEN="freecc" ANTHROPIC_BASE_URL="http://localhost:8082" claude` | **The one to use.** Tab 2 |
 | `source ~/code-forked/free-claude-code/.venv/bin/activate` | **Not needed with `uv run`.** It puts the project's own Python and `uvicorn` first on your `PATH`. See *The virtual environment* |
@@ -69,7 +69,7 @@ curl -s -o /dev/null -w '%{http_code}\n' http://localhost:8082/v1/models        
 curl -s -o /dev/null -w '%{http_code}\n' -H 'x-api-key: freecc' http://localhost:8082/v1/models  # 200: and it is freecc
 ```
 
-**Where the token is set.** The proxy reads, in order, each later one winning: `~/.config/free-claude-code/.env`, then `.env` in the folder you start it from, then the file named by `FCC_ENV_FILE` if you set one (`config/settings.py`). A value exported in the proxy's own shell also counts; then the proxy prints a startup warning that the token came from the environment rather than `.env`. Change it in `.env` yourself, then use the same value in tab 2.
+**Where the token is set.** The proxy reads, in order, each later one winning: `~/.config/free-claude-code/.env`, then `.env` in the folder you start it from, then the file named by `FCC_ENV_FILE` if you set one (`config/settings.py`). A value exported in the proxy's own shell counts only when no `.env` sets one: any `.env` value wins over the shell (`prefer_dotenv_anthropic_auth_token` in `config/settings.py`), and a shell-only token makes the proxy print a startup warning. Change it in `.env` yourself, then use the same value in tab 2.
 
 The proxy does no more with the token than compare it. It is a lock on the door to your NIM key, not the key itself.
 
@@ -121,7 +121,7 @@ Two more reasons to move them: the fork's `.gitignore` lists `server.log` but no
 ```sh
 mkdir -p ~/Archive/free-claude-code-logs && mv -n ~/code-forked/free-claude-code/server.2026-*.log ~/Archive/free-claude-code-logs/
 mkdir -p ~/Library/Logs/free-claude-code      # then start tab 1 with LOG_FILE set (below), or put LOG_FILE= in .env
-LOG_FILE="$HOME/Library/Logs/free-claude-code/server.log" uv run uvicorn server:app --host 0.0.0.0 --port 8082
+LOG_FILE="$HOME/Library/Logs/free-claude-code/server.log" uv run uvicorn server:app --host 127.0.0.1 --port 8082
 printf '%s\n' 'server.*.log' >> ~/code-forked/free-claude-code/.gitignore   # then commit it in that repository
 ```
 
@@ -129,14 +129,14 @@ printf '%s\n' 'server.*.log' >> ~/code-forked/free-claude-code/.gitignore   # th
 
 ## <img src="../assets/icons-phosphor/shield-check.svg" width="24" height="24" alt=""> Safer, if only this Mac uses it
 
-`--host 0.0.0.0` listens on every network this Mac joins, and `freecc` is a published default, so anyone on the same Wi-Fi could spend your NIM quota. If only this Mac uses the proxy, start tab 1 with `--host 127.0.0.1` and use `ANTHROPIC_BASE_URL="http://127.0.0.1:8082"` in tab 2. Or set your own token in `.env`.
+**Who can reach the proxy.** Every command on this page uses `--host 127.0.0.1`: only this Mac can reach the proxy, and `localhost:8082` in tab 2 works unchanged. The old note's `--host 0.0.0.0` listens on every network this Mac joins, and `freecc` is a published default, so anyone on the same Wi-Fi could spend your NIM quota. Use `0.0.0.0` only when another machine of yours must reach the proxy, and then set your own token in `.env` first.
 
 ## <img src="../assets/icons-phosphor/wrench.svg" width="24" height="24" alt=""> Two optional aliases
 
 To type `fcc-server` in tab 1 and `claude-nim` in tab 2, append these to `~/.zshrc` yourself (a helper never edits it), then open new tabs:
 
 ```sh
-printf '%s\n' '# >>> alfred-nim aliases' "alias fcc-server='cd ~/code-forked/free-claude-code && uv run uvicorn server:app --host 0.0.0.0 --port 8082'" "alias claude-nim='CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1 ANTHROPIC_AUTH_TOKEN=\"freecc\" ANTHROPIC_BASE_URL=\"http://localhost:8082\" claude'" '# <<< alfred-nim aliases' >> ~/.zshrc
+printf '%s\n' '# >>> alfred-nim aliases' "alias fcc-server='cd ~/code-forked/free-claude-code && uv run uvicorn server:app --host 127.0.0.1 --port 8082'" "alias claude-nim='CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1 ANTHROPIC_AUTH_TOKEN=\"freecc\" ANTHROPIC_BASE_URL=\"http://localhost:8082\" claude'" '# <<< alfred-nim aliases' >> ~/.zshrc
 ```
 
 `claude-nim` ends in `claude`, so the parent-folder guard still applies: run it inside a repository, or add `--here` ([Start a Claude session](CLAUDE-SESSION-START.md)).

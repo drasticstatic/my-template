@@ -166,8 +166,10 @@ Any folder works: an external drive, a NAS share, another cloud's folder.
 ```sh
 sh ~/code/my-template/scripts/claude-projects-archive.sh --run --dest /Volumes/Backup/claude-projects
 CLAUDE_ARCHIVE_DEST=/Volumes/Backup/claude-projects sh ~/code/my-template/scripts/claude-projects-archive.sh --list
-sh ~/code/my-template/scripts/claude-projects-archive.sh --install --dest /Volumes/Backup/claude-projects   # the nightly job uses it
+sh ~/code/my-template/scripts/claude-projects-archive.sh --install --dest /Volumes/Backup/claude-projects   # its own nightly job
 ```
+
+- **Each destination gets its own schedule.** `--install` alone schedules iCloud (`com.drasticstatic.claude-projects-archive`); `--install --dest DIR` adds a second LaunchAgent for that folder (`…archive.dest-<number>`, its own log in `~/Library/Logs/claude-projects-archive/`) beside it, so iCloud and a drive both run nightly. `--uninstall --dest DIR` removes only that one.
 
 - **The folder must already exist.** The script makes only the year folder inside it. That way an unplugged drive does not
   quietly become a folder on your startup disk; the run is refused instead, and the next night tries again.
@@ -210,8 +212,15 @@ before a year has passed, and use the plan below.
 external drive, is a person's choice:
 
 ```sh
-sh ~/code/my-template/scripts/claude-projects-archive.sh --prune-plan 3
+sh ~/code/my-template/scripts/claude-projects-archive.sh --prune-plan 3            # what would move; changes nothing
+sh ~/code/my-template/scripts/claude-projects-archive.sh --move-old 3 /Volumes/Backup/claude-projects-older   # move them
 ```
+
+`--move-old` moves the older chains (never deletes them) into the folder you name, each with its `.sha256`, and checks
+every one after the move. The newest chains stay in iCloud and still restore on their own. **The rhythm we suggest:**
+keep three months in iCloud (roughly 15 to 25 GB at today's pace), and once a month move the rest to the backup drive.
+**Before `--install`, check the plan:** System Settings → your name → iCloud shows the plan and what is used. If iCloud
+fills, iPhone backups and photo uploads stop too, so leave room.
 
 ## <img src="../assets/icons-phosphor/triangle-alert.svg" width="24" height="24" alt=""> Limits, honestly
 
@@ -219,6 +228,7 @@ sh ~/code/my-template/scripts/claude-projects-archive.sh --prune-plan 3
   that moment. The next night's archive has the rest. If a session is running when you restore, read its last line with care.
 - **A file deleted from `~/.claude/projects` comes back in a restore** that starts from an older full, because an incremental
   records what changed, not what was removed. Transcripts are kept for ten years (`cleanupPeriodDays: 3650`), so this rarely matters.
+- **A renamed project folder is caught.** `rename-local-repo.py` keeps the files' old modification times, so the time test alone would miss them; each run also keeps the list of every path it saw and adds any path that is new since the last run. The old folder name still comes back in a restore from an older full: archives remember, they do not forget.
 - **A run that fails writes nothing and is retried the next night,** or the next time `--if-due` is called. A file that
   vanishes between the listing and the archive (a project folder moved mid-run) fails that night's run; the next run catches up.
 - **Whether a LaunchAgent may write into iCloud Drive without asking is UNVERIFIED** on this Mac. If the morning log says

@@ -12,6 +12,7 @@
 #     sh scripts/claude-projects-archive.sh --restore FULL [INCR ...] DIR   into a new, empty DIR, in that order
 #     sh scripts/claude-projects-archive.sh --restore-latest DIR            the newest full and every incremental after it
 #     sh scripts/claude-projects-archive.sh --prune-plan KEEP   what keeping the last KEEP fulls WOULD move aside; changes nothing
+#     sh scripts/claude-projects-archive.sh --move-old KEEP DIR the older chains moved (never deleted) to DIR, e.g. a drive
 #     sh scripts/claude-projects-archive.sh --install           a LaunchAgent at 00:40 nightly (runs --if-due); you run this
 #     sh scripts/claude-projects-archive.sh --uninstall         unload it; the plist is moved aside, not deleted
 #     sh scripts/claude-projects-archive.selftest.sh            prove all of it against a fake home in a temporary folder
@@ -24,7 +25,9 @@
 # How a run works:
 #   - Full on the first run for a destination, on the first run of each calendar month (the 1st, or the first night the
 #     Mac is on after it), and with --full. Otherwise incremental: every file under ~/.claude/projects, and CLAUDE.md,
-#     whose modification time is newer than the stamp of the last successful run. A changed transcript travels whole.
+#     whose modification time is newer than the stamp of the last successful run, plus every path that was not in the
+#     last run's listing (a folder renamed by rename-local-repo.py keeps its files' old times, so the time test alone
+#     would miss it; the listing is state/<dest>/paths). A changed transcript travels whole.
 #   - tar | gzip | openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -md sha256 -salt, the passphrase passed as a file path
 #     (-pass file:), never on the command line or in the environment. /usr/bin/openssl (LibreSSL) by default; the format
 #     opens with OpenSSL 3 too (tested both ways, Nov 6, 2026).
@@ -196,6 +199,9 @@ do_run() {
   elif [ "$OPT_FULL" = 1 ]; then _kind=full; _why="--full"; fi
 
   touch "$STATE/stamp.next" || fail "cannot write $STATE/stamp.next"
+  # every path now, for the rename check above and for the next run
+  (cd "$HOME" && { find .claude/projects \( -type f -o -type l \) -print; [ -f .claude/CLAUDE.md ] && echo .claude/CLAUDE.md; true; } | sort -u) \
+    > "$STATE/work/paths.now" || fail "cannot list $CLAUDE_DIR/projects"
   _list="$STATE/work/files.list"
   (
     cd "$HOME" || exit 1
@@ -203,8 +209,13 @@ do_run() {
       find .claude/projects \( -type f -o -type l \) -print0
       [ -f .claude/CLAUDE.md ] && printf '%s\0' .claude/CLAUDE.md
     else
-      find .claude/projects \( -type f -o -type l \) -newer "$STATE/stamp" -print0
-      [ -f .claude/CLAUDE.md ] && find .claude/CLAUDE.md -newer "$STATE/stamp" -print0
+      {
+        find .claude/projects \( -type f -o -type l \) -newer "$STATE/stamp" -print
+        [ -f .claude/CLAUDE.md ] && find .claude/CLAUDE.md -newer "$STATE/stamp" -print
+        # paths new since the last run's listing (renamed or moved folders keep old modification times)
+        [ -f "$STATE/paths" ] && comm -13 "$STATE/paths" "$STATE/work/paths.now"
+        true
+      } | sort -u | tr '\n' '\000'
     fi
     true
   ) > "$_list" || fail "cannot list $CLAUDE_DIR/projects"
@@ -212,7 +223,7 @@ do_run() {
   _srcbytes="$( (cd "$HOME" && xargs -0 sh -c 'for f; do [ -f "$f" ] && { stat -f %z "$f" 2>/dev/null || stat -c %s "$f"; }; done' sh) < "$_list" | awk '{ s += $1 } END { print s + 0 }')"
 
   if [ "$_count" = 0 ]; then
-    mv "$STATE/stamp.next" "$STATE/stamp"; date +%s > "$STATE/last-success"
+    mv "$STATE/stamp.next" "$STATE/stamp"; mv "$STATE/work/paths.now" "$STATE/paths"; date +%s > "$STATE/last-success"
     printf '%s\t%s\t0\t0\t-\n' "$_now" "$_kind" >> "$STATE/history.tsv"
     say "Nothing changed since the last success; no archive written. Destination: $DEST_BASE"
     return 0
@@ -245,6 +256,7 @@ do_run() {
   PARTIAL=""
 
   mv "$STATE/stamp.next" "$STATE/stamp"
+  mv "$STATE/work/paths.now" "$STATE/paths"
   date +%s > "$STATE/last-success"
   [ "$_kind" = full ] && printf '%s\n' "$_month" > "$STATE/last-full"
   _bytes="$(size_of "$_final")"
@@ -387,13 +399,62 @@ do_prune_plan() {
     printf '  %10s  %s\n' "$(human "$_s")" "$_b"
   done
   IFS="$_ifs"; set +f
-  say "$_n archive(s), $(human "$_tot"), each with its .sha256. To do it, a person moves them, e.g. to an external drive."
+  say "$_n archive(s), $(human "$_tot"), each with its .sha256. To do it: --move-old $1 DIR (moves them, e.g. to a drive)."
+}
+
+# --move-old KEEP DIR: the same selection as --prune-plan, moved (never deleted) into DIR/<year>/, each with its .sha256,
+# and each checked against its .sha256 after the move. DIR must exist and must not be inside this destination or
+# ~/.claude. A name that already exists in DIR is refused. Partial leftovers are never moved.
+do_move_old() {
+  case "$1" in ''|*[!0-9]*|0) refuse "--move-old KEEP DIR: KEEP is a whole number, 1 or more" ;; esac
+  [ -n "${2-}" ] || refuse "usage: --move-old KEEP DIR"
+  [ -d "$2" ] || refuse "--move-old: $2 does not exist (plug the drive in, or make the folder) first."
+  resolve_dest look
+  _to="$(physpath "$2")"
+  if inside "$_to" "$DEST_PHYS" || [ "$_to" = "$DEST_PHYS" ]; then refuse "--move-old: $2 is inside the destination itself."; fi
+  if inside "$_to" "$(physpath "$CLAUDE_DIR")"; then refuse "--move-old: $2 is inside ~/.claude."; fi
+  _fulls="$(archives | grep -c '_full\.tar\.gz\.enc$')"
+  if [ "$_fulls" -le "$1" ]; then say "There are $_fulls full archive(s); keeping $1 moves nothing."; return 0; fi
+  _cut="$(archives | grep '_full\.tar\.gz\.enc$' | tail -n "$1" | head -n 1)"; _cb="$(basename "$_cut")"
+  _n=0; _tot=0; _all="$(archives)"
+  set -f; _ifs="$IFS"; IFS='
+'
+  for _f in $_all; do
+    IFS="$_ifs"; _b="$(basename "$_f")"
+    case "$_b" in *.partial) continue ;; esac
+    before "$_b" "$_cb" || continue
+    _y="$(printf '%s' "$_b" | sed -n 's/^claude-projects_\([0-9][0-9][0-9][0-9]\).*/\1/p')"; [ -n "$_y" ] || _y=other
+    mkdir -p "$_to/$_y" || fail "cannot make $_to/$_y"
+    [ -e "$_to/$_y/$_b" ] && refuse "$_to/$_y/$_b already exists; nothing is overwritten (nothing moved after this point)."
+    _s="$(size_of "$_f")"
+    mv "$_f" "$_to/$_y/$_b" || fail "cannot move $_b"
+    [ -f "$_f.sha256" ] && { mv "$_f.sha256" "$_to/$_y/$_b.sha256" || fail "cannot move $_b.sha256"; }
+    if [ -f "$_to/$_y/$_b.sha256" ]; then
+      _want="$(awk '{ print $1 }' "$_to/$_y/$_b.sha256")"; _got="$(shasum -a 256 < "$_to/$_y/$_b" | awk '{ print $1 }')"
+      [ "$_want" = "$_got" ] || fail "$_b moved but its sha256 does not match; check the copy at $_to/$_y before anything else"
+    fi
+    _n=$((_n + 1)); _tot=$((_tot + _s)); say "  moved $_b ($(human "$_s"))"
+  done
+  IFS="$_ifs"; set +f
+  say "$_n archive(s), $(human "$_tot"), moved to $_to (checked against their .sha256). The newest $1 full chain(s) stay in $DEST_BASE."
+  say "To restore from moved archives: --restore-latest --dest $_to DIR (or --restore FILE... DIR)."
 }
 
 # ------------------------------------------------------------------------------------------------------------- install
+# One LaunchAgent per destination: the default (iCloud) keeps the plain label; a --dest gets its own label and log, so
+# a drive can be scheduled beside iCloud instead of replacing it.
+label_for_dest() {
+  [ -n "$OPT_DEST" ] || return 0
+  LABEL="$LABEL.dest-$(printf '%s' "$OPT_DEST" | cksum | awk '{ print $1 }')"
+  PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
+  LOGNAME_="$LABEL.log"
+}
+LOGNAME_="archive.log"
+
 do_install() {
   check_passfile
   resolve_dest look
+  label_for_dest
   mkdir -p "$HOME/Library/LaunchAgents" "$LOGDIR" || fail "cannot make the LaunchAgents or log folder"
   _destxml=""
   if [ -n "$OPT_DEST" ]; then
@@ -440,9 +501,9 @@ do_install() {
         <string>/usr/bin:/bin:/usr/sbin:/sbin</string>
     </dict>
     <key>StandardOutPath</key>
-    <string>$LOGDIR/archive.log</string>
+    <string>$LOGDIR/$LOGNAME_</string>
     <key>StandardErrorPath</key>
-    <string>$LOGDIR/archive.log</string>
+    <string>$LOGDIR/$LOGNAME_</string>
 </dict>
 </plist>
 EOF
@@ -458,10 +519,11 @@ EOF
   if [ "${CLAUDE_ARCHIVE_NO_LAUNCHCTL:-0}" = 1 ]; then say "rendered $PLIST (CLAUDE_ARCHIVE_NO_LAUNCHCTL=1: not loaded)"; return 0; fi
   launchctl bootout "gui/$(id -u)/$LABEL" 2>/dev/null || true
   launchctl bootstrap "gui/$(id -u)" "$PLIST" || fail "launchctl bootstrap refused $PLIST"
-  say "Loaded $LABEL: nightly at 00:40, --if-due. Log: $LOGDIR/archive.log"
+  say "Loaded $LABEL: nightly at 00:40, --if-due. Log: $LOGDIR/$LOGNAME_"
   say "Check it: launchctl print gui/$(id -u)/$LABEL | grep -E 'state|last exit'"
 }
 do_uninstall() {
+  label_for_dest
   if [ "${CLAUDE_ARCHIVE_NO_LAUNCHCTL:-0}" != 1 ]; then launchctl bootout "gui/$(id -u)/$LABEL" 2>/dev/null || true; fi
   if [ -e "$PLIST" ]; then
     _old="$(retire "$PLIST")" && say "Unloaded $LABEL; its plist was moved to $_old (archives and state untouched)."
@@ -471,7 +533,7 @@ do_uninstall() {
 }
 
 # ---------------------------------------------------------------------------------------------------------------- main
-usage() { sed -n '2,17p' "$SELF" | sed 's/^# \{0,1\}//'; }
+usage() { sed -n '2,18p' "$SELF" | sed 's/^# \{0,1\}//'; }
 OPT_DEST="${CLAUDE_ARCHIVE_DEST:-}"; OPT_FULL=0; MODE=""; POS_N=0
 # Options may come anywhere; what is left, in order, are the mode's own arguments.
 while [ $# -gt 0 ]; do
@@ -480,7 +542,7 @@ while [ $# -gt 0 ]; do
     --dest=*) OPT_DEST="${1#--dest=}" ;;
     --full) OPT_FULL=1 ;;
     -h|--help) usage; exit 0 ;;
-    --init|--run|--if-due|--list|--verify|--restore|--restore-latest|--prune-plan|--install|--uninstall)
+    --init|--run|--if-due|--list|--verify|--restore|--restore-latest|--prune-plan|--move-old|--install|--uninstall)
       [ -z "$MODE" ] || refuse "one mode at a time ($MODE and $1)"; MODE="$1" ;;
     --) shift; while [ $# -gt 0 ]; do POS_N=$((POS_N + 1)); eval "POS_$POS_N=\$1"; shift; done; break ;;
     -*) refuse "unknown option $1 (try --help)" ;;
@@ -500,6 +562,7 @@ case "$MODE" in
   --restore) do_restore "$@" ;;
   --restore-latest) do_restore_latest "$@" ;;
   --prune-plan) [ $# -eq 1 ] || refuse "usage: --prune-plan KEEP"; do_prune_plan "$1" ;;
+  --move-old) [ $# -eq 2 ] || refuse "usage: --move-old KEEP DIR"; do_move_old "$1" "$2" ;;
   --install) do_install ;;
   --uninstall) do_uninstall ;;
   "") usage; exit 2 ;;
