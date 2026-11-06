@@ -1,0 +1,8 @@
+#!/bin/sh
+# Hooks for a retired linked worktree (installed by scripts/retire-worktree.sh). Git runs this before any ref changes
+# made FROM that worktree: commit, reset, merge, rebase, pull, fetch, branch. It refuses them all, so a fossil can be
+# read but never written, and a worktree that shares a branch with the live clone can never move that branch backwards.
+# `--no-verify` does not skip this hook. The live clone and every other worktree are untouched (per-worktree config).
+[ "$1" = prepared ] || exit 0
+echo "refused: this is a retired worktree, history only. Work in the live clone instead (see scripts/retire-worktree.sh)." >&2
+exit 1
