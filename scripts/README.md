@@ -384,6 +384,22 @@ prints what was said, and never edits or moves one. Its Moves section is kept be
 row per start; tell the agent to ask when a session starts in a parent folder) with a zsh `claude` guard and the
 settings block in its header. Neither is installed by default: [`walkthroughs/CLAUDE-SESSION-ORDER.md`](../walkthroughs/CLAUDE-SESSION-ORDER.md).
 
+## `nest-manifest.py` — one MANIFEST.md per parent folder
+
+```sh
+python3 -I scripts/nest-manifest.py ~/dappu            # writes ~/dappu/MANIFEST.md
+python3 -I scripts/nest-manifest.py ~/dappu --check    # exit 1 when the workspace file or the .gitignore has fallen behind
+sh scripts/nest-manifest.selftest.sh                   # fake nests in a temporary folder; no gh calls
+```
+
+A nest is a folder of repositories: a parent repository that gitignores its children, or a plain folder (an
+organisation's) that only holds them. One row per child: origin, visibility (one `gh repo list` per owner, cached for a
+week; offline it shows `?`), branch, ahead / behind its upstream as of the last fetch, last commit, whether the nest's
+`.code-workspace` lists it, and whether the parent's `.gitignore` ignores it. Repositories one level deeper are indented.
+Read-only on every child (`git -C` reads with optional locks off). The table sits between markers, so the intro and the
+line `Outside the workspace on purpose:` are yours to edit. Children named in `~/.claude/projects/MANIFEST-PRIVATE.txt`
+are counted, never opened and never named. Never put a MANIFEST.md in a public repository: it names private ones.
+
 ## `scan-public-lane.sh` — the public-lane tripwire (master copy)
 
 ```sh

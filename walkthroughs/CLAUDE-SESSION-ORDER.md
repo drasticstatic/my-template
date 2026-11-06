@@ -111,6 +111,66 @@ and never edits or moves one. It also lists the sessions about to age out. Folde
 [`rename-local-repo.py`](../scripts/rename-local-repo.py) (SOP-IT-006), which now adds its own line to the manifest's
 Moves section.
 
+## <img src="../assets/icons-phosphor/shield-check.svg" width="24" height="24" alt=""> If something goes wrong: the backups
+
+`install-claude-session-order.sh` changes two files, and copies each one before it touches it:
+
+| File it changes | Its backup | What the change is |
+|---|---|---|
+| `~/.claude/settings.json` | `~/.claude/backups/settings-before-session-order.json` | adds `"cleanupPeriodDays": 3650` (or keeps a larger number already there) and one SessionStart hook; every other key is kept |
+| `~/.zshrc` | `~/.zshrc.before-session-order` | appends the `claude` guard between its `# >>> claude-parent-guard (zsh)` and `# <<< claude-parent-guard (zsh)` lines |
+
+- **The backups are from the first install, and stay that way.** The script copies a file only when its backup does not exist yet, so a second run never overwrites one. `--undo` therefore always returns to the state before the first install.
+- **The copies keep the original's dates** (`cp -p`), so the settings backup shows the day `settings.json` last changed before the install, not the day of the install.
+- **A bad write cannot land.** The new `settings.json` is written to `settings.json.tmp`, read back as JSON, and only then put in place. If `settings.json` did not exist, the script starts from `{}` and that is what is backed up.
+- **The script prints key names, never values** (`settings.json` can hold tokens).
+- Claude Code keeps its own backups in the same folder (`.claude.json.backup.<number>`). They belong to Claude Code; leave them alone.
+
+**Check that it worked.**
+
+```sh
+grep -c claude-parent-guard ~/.zshrc                  # 2: the two marker lines of the guard
+python3 -I -c 'import json, os; print(json.load(open(os.path.expanduser("~/.claude/settings.json"))).get("cleanupPeriodDays"))'   # 3650
+```
+
+Then start a new session and type `/hooks`: SessionStart lists `claude-session-start.sh`. In a new Terminal tab, `cd ~/code && claude` lists the repositories and stops.
+
+**Undo it.** `sh ~/code/my-template/scripts/install-claude-session-order.sh --undo` copies each backup back over its file and says `restored` for each. It puts back the whole file as it was before the first install, so anything added to either file since (a permission you allowed, an alias) goes too: copy the current file aside first if it matters.
+
+**Undo it by hand,** the same two copies:
+
+```sh
+cp -p ~/.claude/settings.json ~/.claude/backups/settings-$(date +%Y%m%d-%H%M).json   # keep today's, just in case
+cp -p ~/.claude/backups/settings-before-session-order.json ~/.claude/settings.json
+cp -p ~/.zshrc.before-session-order ~/.zshrc
+```
+
+Open a new Terminal tab and start a new Claude session afterwards: both files are read only at start.
+
+## <img src="../assets/icons-phosphor/layers.svg" width="24" height="24" alt=""> Workspaces for every nest
+
+Every parent folder now has a VS Code window of its own. What a workspace is, how to open one and how to start Claude in
+the right repository from it: [SOP-IT-006, *Working in VS Code workspaces*](../sop-template/repo/IT/SOP-IT-006-renaming-a-local-folder.md#-working-in-vs-code-workspaces).
+
+| Nest | Workspace file |
+|---|---|
+| `~/code` | `~/code/code.code-workspace` |
+| `~/dappu` | `~/dappu/dappu.code-workspace` |
+| `~/drasticstaticLabs` | `~/drasticstaticLabs/drasticstaticLabs.code-workspace` |
+| `~/littlebirds-git-home` | `~/littlebirds-git-home/littlebirds-git-home.code-workspace` |
+| `~/intent/workspaces` (retired, history only) | `~/intent/intent.code-workspace`, each folder named `retired · <repository> (<branch>) · <Intent workspace>` |
+| each organisation folder | `~/<organisation>/<organisation>.code-workspace`, seven of them |
+
+Each file lists the nest's repositories and, where the nest is itself a repository, the parent last as `<name> (parent)`.
+They describe this machine, so a parent repository gitignores them (`*.code-workspace`). Your own workspace files stay
+as you made them.
+
+Each nest also has a `MANIFEST.md`: what each child is, where its origin is, its branch, whether it is ahead or behind,
+and whether the workspace and the `.gitignore` have kept up. [`scripts/nest-manifest.py`](../scripts/nest-manifest.py)
+writes it (`python3 -I ~/code/my-template/scripts/nest-manifest.py ~/dappu`), and `--check` exits 1 when a child is
+missing from the workspace, a parent repository does not ignore a child, or the workspace names a folder that is gone.
+It is read-only on every child. A MANIFEST.md names private repositories, so it never goes in a public one.
+
 ## <img src="../assets/icons-phosphor/triangle-alert.svg" width="24" height="24" alt=""> Limits, honestly
 
 - The hook speaks to the agent, not to you, and the agent can only ask. The guard is the only piece that stops anything, and only in zsh.
@@ -121,5 +181,6 @@ Moves section.
 ## <img src="../assets/icons-phosphor/history.svg" width="24" height="24" alt=""> Change log
 | Date | Change |
 |---|---|
+| 2026-11-06 | *If something goes wrong: the backups* (what the installer copies, `--undo`, a manual restore) and *Workspaces for every nest* (the workspace files, `nest-manifest.py`). |
 | 2026-11-06 | `scripts/install-claude-session-order.sh`: one line installs the hook, the guard and a ten-year `cleanupPeriodDays` (a helper session is refused this, rightly). |
 | 2026-11-06 | First version: the hook, the zsh guard and the manifest, written after the labs moved to `~/drasticstaticLabs`. Not installed by default. |
