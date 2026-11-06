@@ -8,7 +8,7 @@ import path from "node:path";
 const LOCAL = process.argv.includes("--local");
 const LAB = "https://drasticstatic.github.io/O-R-G-astro-public";
 const DAPP = "https://drasticstatic.github.io/O-R-G-dapp-public-preview/";
-const DIST = process.env.HOME + "/code/O-R-G/O-R-G-astro/dist";
+const DIST = process.env.HOME + "/drasticstaticLabs/O-R-G-lab/O-R-G-astro/dist";
 const SHOTS = path.resolve("../shots/arrival/lab");
 fs.mkdirSync(SHOTS, { recursive: true });
 const types = { ".html": "text/html", ".css": "text/css", ".js": "application/javascript", ".json": "application/json", ".png": "image/png", ".webp": "image/webp" };
