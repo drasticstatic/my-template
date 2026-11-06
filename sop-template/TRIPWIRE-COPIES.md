@@ -249,6 +249,7 @@ copy below was checked by md5 against the master after the push: all 60 rows mat
 | `drasticstatic/aunt-harriot` | main | `c462fc3` | 112/112, matches |
 | `drasticstatic/david-amaringo` | preview | `54b0dfb` | 112/112, matches |
 | `drasticstatic/david-amaringo` | r5-lanes | `9a1f22f` | 112/112, matches, on the held branch, not pushed |
+| `drasticstatic/divorce-custody-assistant` | main | `7f5843f` | 131/131, matches (resynced 2026-11-05 by the main session, closing the long-standing gap below) |
 | `drasticstatic/dpnelson` | main | `c79ce72` | 112/112, matches |
 | `drasticstatic/findyourfeathers` | main | `539c584` | 112/112, matches |
 | `drasticstatic/fortuna-vision` | main | `075d1b0` | 112/112, matches |
@@ -308,8 +309,9 @@ copy below was checked by md5 against the master after the push: all 60 rows mat
 
 **Not refreshed, and why:**
 
-- `drasticstatic/divorce-custody-assistant` (`45c2d96c…`) and `drasticstatic/tax-assistant`: the two personal repositories
-  this page leaves to the main session, as before.
+- `drasticstatic/tax-assistant`: the other personal repository this page leaves to the main
+  session, as before. (`drasticstatic/divorce-custody-assistant` was resynced 2026-11-05 — see
+  the table above — closing out the gap noted in every prior round.)
 - `drasticstatic/my-template-clean`: it takes `scripts/` and `sop-template/repo/` from this repository by
   `sync-clean-template.yml` on push, so it follows `8002408` on its own; it is not a hand copy.
 - `Octagon-Religious-Research-Group-ORG/changelog-astro` on `main`: GitHub's `main` carries no scanner yet; the held
