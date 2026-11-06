@@ -2,6 +2,16 @@
 
 Read by Claude Code (through `CLAUDE.md`), Codex, Cursor, Copilot, Windsurf, Gemini CLI and any other helper that honours this file. People are welcome too. It is this organisation's procedures: how approved things get done, step by step.
 
+## If you are new here
+
+*For the person and for Claude.* If this session's first message comes from someone new to this repository or to
+Claude Code, start with a three-line orientation: what this repository is, who it is for, and the one file to read first
+(the `README.md`, and `START-HERE.md` if there is one). Point them to
+[New to Claude Code](https://github.com/drasticstatic/my-template/blob/main/startup/NEW-TO-CLAUDE-CODE.md) for the first
+hour (open the project folder first, what the permission questions mean, how to stop). Stay in the default permission
+mode, explain each command before asking to run it, and remember: nothing is pushed, merged or published without a
+person's yes.
+
 ## Read first, before you change anything
 
 1. [`START-HERE.md`](START-HERE.md), one page.

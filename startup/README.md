@@ -20,12 +20,13 @@
 2. <img src="../assets/icons-phosphor/list-checks.svg" width="16" height="16" alt=""> **Each page opens with a copy-paste block.** The explanation comes after, for the day the block stops working.
 3. <img src="../assets/icons-phosphor/book-open.svg" width="16" height="16" alt=""> **Why things are set up the way they are** lives in [`walkthroughs/`](../walkthroughs/README.md). This folder only says how to start.
 
-**Which one do I need?** An ordinary Claude session: [Start a Claude session](CLAUDE-SESSION-START.md). Alfred on NVIDIA NIM through the local proxy: [Alfred-NIM](ALFRED-NIM-FREE-CLAUDE-CODE.md).
+**Which one do I need?** Never used Claude Code (coming from ChatGPT)? [New to Claude Code](NEW-TO-CLAUDE-CODE.md) first. An ordinary Claude session: [Start a Claude session](CLAUDE-SESSION-START.md). Alfred on NVIDIA NIM through the local proxy: [Alfred-NIM](ALFRED-NIM-FREE-CLAUDE-CODE.md).
 
 ## <img src="../assets/icons-phosphor/route.svg" width="24" height="24" alt=""> The procedures
 
 | | Procedure | For when you want to… |
 |---|---|---|
+| <img src="../assets/icons-phosphor/door-open.svg" width="16" height="16" alt=""> | [New to Claude Code](NEW-TO-CLAUDE-CODE.md) | your first hour, coming from ChatGPT: open the project folder first, the first message to type, what the permission questions mean, how to stop |
 | <img src="../assets/icons-phosphor/map-pin.svg" width="16" height="16" alt=""> | [Start a Claude session](CLAUDE-SESSION-START.md) | start, resume or move a Claude Code session in the right folder, and see why `claude` in `~/code` refuses until you add `--here` |
 | <img src="../assets/icons-phosphor/network.svg" width="16" height="16" alt=""> | [Alfred-NIM through free-claude-code](ALFRED-NIM-FREE-CLAUDE-CODE.md) | run Claude Code against NVIDIA NIM (GLM-4.7) through the local proxy in `~/code-forked/free-claude-code`: two tabs, the right variables, how to stop and check it |
 
@@ -33,6 +34,7 @@
 
 | Date | Change |
 |---|---|
+| 2026-11-06 | *New to Claude Code*, for people arriving from ChatGPT. |
 | 2026-11-06 | First version: the folder, the session start-up and the Alfred-NIM start-up, written from the installed scripts and the proxy's own code. |
 
 ## <img src="../assets/icons-phosphor/git-pull-request.svg" width="24" height="24" alt=""> Suggest a change
