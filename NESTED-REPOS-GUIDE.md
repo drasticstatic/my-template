@@ -76,7 +76,7 @@ The pattern above is for a person's own work. A repository an organisation owns 
 
 | What it is | Where it lives | Example |
 |---|---|---|
-| A lab: a person's own working copy, on a personal account, drafts and all | `~/code/<lab>/` | `~/code/pir` |
+| A lab: a person's own working copy, on a personal account, drafts and all | `~/code/<lab>/` | `~/code/pir-lab` |
 | A clone of a repository an organisation owns | `~/<org>/<repository>`, the folder named exactly as the GitHub organisation | `~/psychedelicsinrecovery/reading-room` |
 
 A lab never holds an organisation's clone, not even git-ignored. Why:
@@ -106,7 +106,7 @@ organisation's. The rule in one table:
 | <img src="assets/icons-phosphor/files.svg" width="16" height="16" alt=""> **Spare** | A second clone of an organisation repository found under a lab | Left in place, accounted for, not worked in. |
 
 The organisation folders on this machine, each named exactly as the GitHub organisation: `~/theholyearthfoundation`,
-`~/psychedelicsinrecovery`, `~/Octagon-Religious-Research-Group-ORG`, `~/psanctuary`, `~/psanctuarychurch`, `~/taylordwraps-org`
+`~/psychedelicsinrecovery`, `~/Octagon-Religious-Research-Group-ORG`, `~/psanctuary`, `~/psanctuarychurch`, `~/taylordwraps`
 and `~/WILSONSLAWNMAINTENANCE`. Everything else a person clones for themselves goes under a lab in `~/code/<lab>/`
 (coursework and the like have their own homes, such as `~/dappu`, and Intent keeps its workspaces under `~/intent`).
 
@@ -115,9 +115,9 @@ under a lab because that is where it was cloned before the organisation had a fo
 it is not removed. The lab gets a `WHERE-EVERYTHING-WENT.md` beside the spare that says, in a short table, what moved
 where and what stayed, and that the copy here is the spare and the organisation's is the one to use. The spare was
 checked against the canonical clone the day the note was written (same remote, same HEAD, nothing unpushed), and the
-note says so. Three such notes exist today, in `~/code/psanctuarychurch` (two spares: `proposals` and the
-`psanctuarychurch.github.io` site, the second on its own branch), `~/code/pir` (one: `changelog-astro`) and
-`~/code/the-holy-earth-foundation` (one: `changelog-astro`). Each ends the same way: *a person can remove these once
+note says so. Three such notes exist today, in `~/code/psanctuarychurch-lab` (two spares: `proposals` and the
+`psanctuarychurch.github.io` site, the second on its own branch), `~/code/pir-lab` (one: `changelog-astro`) and
+`~/code/the-holy-earth-foundation-lab` (one: `changelog-astro`). Each ends the same way: *a person can remove these once
 sure of them; no helper will.*
 
 **Nothing is deleted by a helper.** This is the rule under the rule. A helper (a Claude Code session, Littlebird, any

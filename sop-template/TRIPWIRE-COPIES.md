@@ -229,7 +229,7 @@ The two duplicate clones of `theholyearthfoundation/changelog-astro` and `psyche
 Two passes the same day: every copy below first took `120bee1`, and then `8002408` after the first live run
 (`iamoneself-retreats`, `preview`) showed pagefind gzips its WebAssembly too; the table shows the second commit in each
 repository, the first sits just below it in each history. Copies were found the round-five way: `find` under `~/code ~/dappu ~/theholyearthfoundation ~/psychedelicsinrecovery
-~/Octagon-Religious-Research-Group-ORG ~/psanctuary ~/psanctuarychurch ~/taylordwraps-org` (to eight folders deep this
+~/Octagon-Religious-Research-Group-ORG ~/psanctuary ~/psanctuarychurch ~/taylordwraps` (to eight folders deep this
 time: four clones sit one level further down than the round-five search reached). In each repository the clone was pulled
 (`git pull --rebase --autostash`), the pair was copied from the master, the self-test was run there and had to be green,
 and the two files were committed on their own and pushed to the working branch (`preview` where the repository has one).

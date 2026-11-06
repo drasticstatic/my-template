@@ -97,7 +97,7 @@ Each place that gives out proposal numbers is a **series**, with one short code.
 | `PSAN` · `PSAN-P` | `psanctuary`, the lab's desk · `psanctuary/proposals` | 000 to 001 · 000 to 005 | PSAN-P-005 |
 | `DAPPU` | `proposals-dappu`, the lab's desk for Ethereal Offering | 000 to 002 | DAPPU-002 |
 | `CHURCH` · `CHURCH-P` | the lab's desk · `psanctuarychurch/proposals` | 000 to 006 · 000 to 006 | CHURCH-P-006 |
-| `TAYLOR` · `TAYLOR-P` | `taylordwraps`, the lab's desk · `taylordwraps-org/proposals` | 001 to 003 · 000 to 001 | TAYLOR-P-001 |
+| `TAYLOR` · `TAYLOR-P` | `taylordwraps`, the lab's desk · `taylordwraps/proposals` | 001 to 003 · 000 to 001 | TAYLOR-P-001 |
 | `LAWN-P` | `WILSONSLAWNMAINTENANCE/proposals` | 000 | LAWN-P-000 |
 
 Any other desk chooses a code the first time one of its proposals is cited, and adds a row. A reading room holds copies, so it is not a series: a page there keeps the number of the desk it came from.

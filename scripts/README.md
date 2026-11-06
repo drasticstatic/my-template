@@ -228,7 +228,7 @@ sh scripts/sync-local.sh --quiet ~/code  # one root; print only what is behind, 
 ```
 
 It looks up to three folders deep under `~/code`, `~/dappu` and each organisation's folder, `~/theholyearthfoundation`,
-`~/psychedelicsinrecovery`, `~/Octagon-Religious-Research-Group-ORG`, `~/psanctuary`, `~/psanctuarychurch`, `~/taylordwraps-org`
+`~/psychedelicsinrecovery`, `~/Octagon-Religious-Research-Group-ORG`, `~/psanctuary`, `~/psanctuarychurch`, `~/taylordwraps`
 and `~/WILSONSLAWNMAINTENANCE` (or the roots you give),
 skips `node_modules`, and reports each clone's branch, ahead/behind and local changes. A clone that would conflict is
 aborted at once and left exactly as it was. It **never** pushes, clones, switches branches or forces anything; it
