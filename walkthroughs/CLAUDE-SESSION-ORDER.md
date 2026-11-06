@@ -40,6 +40,8 @@ Read Nov 6, 2026 from code.claude.com/docs/en/hooks, /sessions, /memory and /cla
 
 ## <img src="../assets/icons-phosphor/wrench.svg" width="24" height="24" alt=""> Install the three pieces
 
+**The short way:** `sh ~/code/my-template/scripts/install-claude-session-order.sh` does steps 1 and 2 below, plus `"cleanupPeriodDays": 3650` so transcripts stop aging out after 30 days. It backs both files up first, is safe to run twice, and `--undo` puts them back. Run it yourself: it changes your own settings.
+
 All three live in [`scripts/claude-session-start.sh`](../scripts/claude-session-start.sh)'s header too. Prove them first:
 `sh scripts/claude-projects-manifest.selftest.sh` (a fake home in a temporary folder; your own `~/.claude` is never read).
 
@@ -118,4 +120,5 @@ Moves section.
 ## <img src="../assets/icons-phosphor/history.svg" width="24" height="24" alt=""> Change log
 | Date | Change |
 |---|---|
+| 2026-11-06 | `scripts/install-claude-session-order.sh`: one line installs the hook, the guard and a ten-year `cleanupPeriodDays` (a helper session is refused this, rightly). |
 | 2026-11-06 | First version: the hook, the zsh guard and the manifest, written after the labs moved to `~/drasticstaticLabs`. Not installed by default. |
