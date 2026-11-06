@@ -148,6 +148,10 @@ cp -p ~/.zshrc.before-session-order ~/.zshrc
 
 Open a new Terminal tab and start a new Claude session afterwards: both files are read only at start.
 
+**A copy of `~/.claude/projects` itself.** The backups above cover two settings files, not your sessions. For a nightly,
+encrypted archive of every transcript and memory file, into iCloud Drive or any folder you choose, see
+[A nightly sealed copy of `~/.claude/projects`](CLAUDE-PROJECTS-ARCHIVE.md) (`scripts/claude-projects-archive.sh`).
+
 ## <img src="../assets/icons-phosphor/layers.svg" width="24" height="24" alt=""> Workspaces for every nest
 
 Every parent folder now has a VS Code window of its own. What a workspace is, how to open one and how to start Claude in
@@ -182,6 +186,7 @@ It is read-only on every child. A MANIFEST.md names private repositories, so it 
 ## <img src="../assets/icons-phosphor/history.svg" width="24" height="24" alt=""> Change log
 | Date | Change |
 |---|---|
+| 2026-11-06 | The backups section links the nightly encrypted archive of `~/.claude/projects` ([CLAUDE-PROJECTS-ARCHIVE.md](CLAUDE-PROJECTS-ARCHIVE.md)). |
 | 2026-11-06 | TL;DR point 5: the short start-up page in [`startup/`](../startup/README.md). |
 | 2026-11-06 | *If something goes wrong: the backups* (what the installer copies, `--undo`, a manual restore) and *Workspaces for every nest* (the workspace files, `nest-manifest.py`). |
 | 2026-11-06 | `scripts/install-claude-session-order.sh`: one line installs the hook, the guard and a ten-year `cleanupPeriodDays` (a helper session is refused this, rightly). |

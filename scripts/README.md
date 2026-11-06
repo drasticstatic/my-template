@@ -384,6 +384,24 @@ prints what was said, and never edits or moves one. Its Moves section is kept be
 row per start; tell the agent to ask when a session starts in a parent folder) with a zsh `claude` guard and the
 settings block in its header. Neither is installed by default: [`walkthroughs/CLAUDE-SESSION-ORDER.md`](../walkthroughs/CLAUDE-SESSION-ORDER.md).
 
+## `claude-projects-archive.sh` — a nightly sealed copy of `~/.claude/projects`
+
+```sh
+sh scripts/claude-projects-archive.selftest.sh                 # a fake home in a temporary folder; 104 checks
+sh scripts/claude-projects-archive.sh --init                   # once, by you: the passphrase file (never shown)
+sh scripts/claude-projects-archive.sh --run                    # full on the first run of a month, else what changed
+sh scripts/claude-projects-archive.sh --list                   # archives, sizes, total
+sh scripts/claude-projects-archive.sh --restore-latest ~/claude-restore   # into a new, empty folder
+sh scripts/claude-projects-archive.sh --install                # by you: a LaunchAgent at 00:40 nightly (--if-due)
+```
+
+`tar`, `gzip` and `openssl enc -aes-256-cbc -pbkdf2 -iter 600000` over `~/.claude/projects` and `~/.claude/CLAUDE.md`, into
+`iCloud Drive/Backups/claude-projects/YYYY/` or any existing folder given with `--dest`. Each archive is written as `.partial`,
+decrypted again and counted, given a `.sha256`, then renamed; the stamp for the next incremental moves only after that. It
+refuses a destination inside `~/.claude`, a passphrase file that is missing or not mode 600, and a restore into anything but
+a new, empty folder outside `~/.claude`. It deletes no archive (`--prune-plan` only prints a plan). Setup lines, restore
+steps, the measured size and the limits: [`walkthroughs/CLAUDE-PROJECTS-ARCHIVE.md`](../walkthroughs/CLAUDE-PROJECTS-ARCHIVE.md).
+
 ## `nest-manifest.py` — one MANIFEST.md per parent folder
 
 ```sh

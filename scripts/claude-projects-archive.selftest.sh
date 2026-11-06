@@ -1,0 +1,209 @@
+#!/bin/sh
+# claude-projects-archive.selftest.sh: proves claude-projects-archive.sh against a fake home in a throwaway folder,
+# with a fake projects tree and a fake passphrase. It never reads your real ~/.claude, never writes to iCloud Drive and
+# never calls launchctl (the plist is rendered and linted only).
+#
+#   sh scripts/claude-projects-archive.selftest.sh
+#   CLAUDE_ARCHIVE_SELFTEST_DIR=/some/scratch sh scripts/claude-projects-archive.selftest.sh   # where the fake home goes
+#
+# Exit codes: 0 every case as expected · 1 a case failed.
+set -u
+here="$(cd "$(dirname "$0")" && pwd -P)"
+A="$here/claude-projects-archive.sh"
+base="${CLAUDE_ARCHIVE_SELFTEST_DIR:-${TMPDIR:-/tmp}}"
+R="$(mktemp -d "$base/cpa-selftest.XXXXXX")" || exit 1
+R="$(cd "$R" && pwd -P)"
+H="$R/home"; P="$H/.claude/projects"; D="$R/dest"
+mkdir -p "$P/-Users-x-code-repo1/memory" "$P/-Users-x-code-repo2/sub" "$D"
+export HOME="$H"
+unset CLAUDE_ARCHIVE_DEST CLAUDE_ARCHIVE_PASSFILE CLAUDE_ARCHIVE_CONFIG CLAUDE_ARCHIVE_OPENSSL
+export CLAUDE_ARCHIVE_NO_LAUNCHCTL=1
+pass=0; fail=0
+ok() { if [ "$1" = "$2" ]; then pass=$((pass + 1)); else fail=$((fail + 1)); echo "FAIL $3: got [$1] want [$2]"; fi; }
+run() { sh "$A" "$@" > "$R/out" 2>&1; echo $?; }
+SENT="CPASENTINEL""77q"            # assembled, so this file does not hold the text it hunts for
+CFG="$H/.config/claude-archive"
+mode() { stat -f %Lp "$1" 2>/dev/null || stat -c %a "$1"; }
+count() { find "$1" -type f -name "$2" | wc -l | tr -d ' '; }
+statedir() { for s in "$CFG"/state/*/; do [ "$(cat "$s/dest")" = "$1" ] && printf '%s\n' "${s%/}"; done; }
+
+# fixture: two projects, a big-ish transcript, memory, a name with a space, CLAUDE.md
+i=0; while [ $i -lt 2000 ]; do printf '{"type":"user","message":"%s line %d"}\n' "$SENT" $i; i=$((i + 1)); done > "$P/-Users-x-code-repo1/a.jsonl"
+printf '{"cwd":"/x"}\n' > "$P/-Users-x-code-repo2/b.jsonl"
+printf '# memory\n' > "$P/-Users-x-code-repo1/memory/MEMORY.md"
+printf 'spaced\n' > "$P/-Users-x-code-repo2/sub/with space.txt"
+printf '# user claude\n' > "$H/.claude/CLAUDE.md"
+printf 'not archived\n' > "$H/.claude/settings.json"
+
+# 1. init
+ok "$(run --init)" 0 "init succeeds"
+ok "$(mode "$CFG")" 700 "config folder is 700"
+ok "$(mode "$CFG/passphrase")" 600 "passphrase file is 600"
+ok "$(grep -cF "$(cat "$CFG/passphrase")" "$R/out")" 0 "init never prints the passphrase"
+ok "$(grep -c "pbcopy < '$CFG/passphrase'" "$R/out")" 1 "init prints the pbcopy line"
+before="$(shasum < "$CFG/passphrase")"
+ok "$(run --init)" 0 "a second init succeeds"
+ok "$(grep -c 'already exists' "$R/out")" 1 "a second init leaves the file"
+ok "$(shasum < "$CFG/passphrase")" "$before" "the passphrase is unchanged"
+
+# 2. refusals before anything is written
+ok "$(run --run)" 2 "default dest refused when there is no iCloud Drive"
+ok "$(run --run --dest "$R/nope")" 2 "a --dest that does not exist is refused"
+ok "$(test -e "$R/nope" && echo made || echo absent)" absent "and is not created"
+ok "$(run --run --dest "$H/.claude/backup-here")" 2 "dest inside ~/.claude refused"
+mkdir -p "$H/.claude/inner"; ln -s "$H/.claude/inner" "$R/sneaky"
+ok "$(run --run --dest "$R/sneaky")" 2 "dest that is a symlink into ~/.claude refused"
+ok "$(run --run --dest "$H")" 2 "dest that holds ~/.claude refused"
+chmod 644 "$CFG/passphrase"
+ok "$(run --run --dest "$D")" 2 "a 644 passphrase is refused"
+ok "$(grep -c 'mode 644' "$R/out")" 1 "and the reason names the mode"
+chmod 600 "$CFG/passphrase"
+ok "$(CLAUDE_ARCHIVE_PASSFILE="$R/missing" run --run --dest "$D")" 2 "a missing passphrase file is refused"
+ok "$(count "$D" '*')" 0 "no refusal wrote anything at the destination"
+
+# 3. full
+ok "$(run --run --dest "$D")" 0 "first run succeeds"
+ok "$(grep -c '^full archive (first run' "$R/out")" 1 "first run is full"
+ok "$(count "$D" '*_full.tar.gz.enc')" 1 "one full archive"
+ok "$(count "$D" '*_full.tar.gz.enc.sha256')" 1 "its .sha256 beside it"
+ok "$(count "$D" '*.partial')" 0 "no .partial left on success"
+F1="$(find "$D" -name '*_full.tar.gz.enc')"
+ok "$(dirname "$F1")" "$D/$(date +%Y)" "written into the year folder"
+ok "$(mode "$F1")" 600 "archive is mode 600"
+ok "$(grep -c "$SENT" "$F1")" 0 "the archive is ciphertext: the sentinel is not readable in it"
+ok "$(head -c 8 "$F1")" "Salted__" "openssl salted header"
+ok "$(run --verify "$F1")" 0 "verify the full"
+ok "$(grep -c 'ok .*: 5 entries, sha256 matches' "$R/out")" 1 "full holds the 4 project files and CLAUDE.md"
+O3=/opt/homebrew/bin/openssl; [ -x "$O3" ] || O3=/usr/bin/openssl     # OpenSSL 3 when installed, to prove the format travels
+ok "$("$O3" enc -d -aes-256-cbc -pbkdf2 -iter 600000 -md sha256 -pass "file:$CFG/passphrase" -in "$F1" | tar -tzf - | grep -c 'CLAUDE.md$')" 1 "$("$O3" version | cut -d' ' -f1-2) opens it and finds CLAUDE.md"
+ok "$(/usr/bin/openssl enc -d -aes-256-cbc -pbkdf2 -iter 600000 -md sha256 -pass "file:$CFG/passphrase" -in "$F1" | tar -tzf - | grep -c 'settings.json')" 0 "settings.json is not in it"
+
+# 4. --if-due right after: skip
+ok "$(run --if-due --dest "$D")" 0 "if-due exits 0"
+ok "$(grep -c '^not due' "$R/out")" 1 "if-due skips within 20 hours"
+ok "$(count "$D" '*.enc')" 1 "and writes nothing"
+
+# 5. nothing changed: no archive
+ok "$(run --run --dest "$D")" 0 "an incremental with nothing changed succeeds"
+ok "$(grep -c 'Nothing changed' "$R/out")" 1 "and says so"
+ok "$(count "$D" '*.enc')" 1 "and writes nothing"
+
+# 6. incremental
+printf '{"type":"user","message":"appended"}\n' >> "$P/-Users-x-code-repo1/a.jsonl"
+mkdir -p "$P/-Users-x-code-repo3"; printf '{"new":1}\n' > "$P/-Users-x-code-repo3/c.jsonl"
+ok "$(run --run --dest "$D")" 0 "incremental run succeeds"
+ok "$(grep -c '^incr archive' "$R/out")" 1 "second run is incremental"
+I1="$(find "$D" -name '*_incr.tar.gz.enc')"
+ok "$(echo "$I1" | grep -c .)" 1 "one incremental archive"
+ok "$(run --verify "$I1")" 0 "verify the incremental"
+ok "$(grep -c ': 2 entries' "$R/out")" 1 "incremental holds only the 2 changed files"
+ok "$(count "$D" '*.partial')" 0 "no .partial after the incremental"
+
+# 7. if-due when the last success is old
+S="$(statedir "$D")"
+echo $(( $(date +%s) - 21 * 3600 )) > "$S/last-success"
+printf 'x\n' >> "$P/-Users-x-code-repo2/b.jsonl"
+ok "$(run --if-due --dest "$D")" 0 "if-due runs after 20 hours"
+ok "$(grep -c '^incr archive' "$R/out")" 1 "and makes an incremental"
+ok "$(count "$D" '*_incr.tar.gz.enc')" 2 "two incrementals now"
+
+# 8. verify refuses damage and a wrong passphrase
+cp "$F1" "$R/damaged.tar.gz.enc"; cp "$F1.sha256" "$R/damaged.tar.gz.enc.sha256"
+printf 'X' | dd of="$R/damaged.tar.gz.enc" bs=1 seek=4000 conv=notrunc 2>/dev/null
+ok "$(run --verify "$R/damaged.tar.gz.enc")" 1 "verify fails on a damaged copy"
+printf 'wrong-passphrase\n' > "$R/wrong.pass"; chmod 600 "$R/wrong.pass"
+ok "$(CLAUDE_ARCHIVE_PASSFILE="$R/wrong.pass" run --verify "$F1")" 1 "verify fails with the wrong passphrase"
+files_before="$(find "$R" ! -name out | wc -l)"
+run --verify "$F1" >/dev/null
+ok "$(find "$R" ! -name out | wc -l)" "$files_before" "verify writes nothing"
+
+# 9. restore
+ALL="$(find "$D" -name '*.tar.gz.enc' | awk '{ n = $0; sub(/.*\//, "", n); print n "\t" $0 }' | sort | cut -f2-)"
+# shellcheck disable=SC2086
+ok "$(set -f; IFS='
+'; run --restore $ALL "$R/restored")" 0 "restore full then incrementals into a new folder"
+ok "$(diff -r "$P" "$R/restored/.claude/projects" >/dev/null && echo same || echo differ)" same "restored projects match the live tree"
+ok "$(cmp -s "$H/.claude/CLAUDE.md" "$R/restored/.claude/CLAUDE.md" && echo same || echo differ)" same "restored CLAUDE.md matches"
+ok "$(test -e "$R/restored/.claude/settings.json" && echo yes || echo no)" no "nothing else came back"
+ok "$(run --restore-latest --dest "$D" "$R/restored2")" 0 "restore-latest succeeds"
+ok "$(diff -r "$P" "$R/restored2/.claude/projects" >/dev/null && echo same || echo differ)" same "restore-latest matches the live tree"
+ok "$(run --restore "$F1" "$R/restored")" 2 "restore into a non-empty folder is refused"
+mkdir "$R/empty"
+ok "$(run --restore "$F1" "$R/empty")" 0 "restore into an existing empty folder works"
+ok "$(run --restore "$F1" "$H/.claude/restore-here")" 2 "restore into ~/.claude is refused"
+ok "$(test -e "$H/.claude/restore-here" && echo made || echo absent)" absent "and nothing was made there"
+ok "$(run --restore "$I1" "$R/r3")" 2 "restore must start with a full"
+ok "$(run --restore "$F1" "$F1" "$R/r4")" 2 "a full cannot follow a full"
+I2="$(find "$D" -name '*_incr.tar.gz.enc' | sort | tail -n 1)"
+ok "$(run --restore "$F1" "$I2" "$I1" "$R/r5")" 2 "incrementals out of order are refused"
+ok "$(test -e "$R/r5" && echo made || echo absent)" absent "a refused restore makes no folder"
+
+# 10. a failed write leaves no .partial and does not move the stamp
+stamp_before="$(stat -f %Fm "$S/stamp" 2>/dev/null || stat -c %Y "$S/stamp")"
+printf 'y\n' >> "$P/-Users-x-code-repo2/b.jsonl"
+chmod 500 "$D/$(date +%Y)"
+ok "$(run --run --dest "$D")" 1 "a run that cannot write fails"
+chmod 700 "$D/$(date +%Y)"
+ok "$(count "$D" '*.partial')" 0 "no .partial left by the failed run"
+ok "$(stat -f %Fm "$S/stamp" 2>/dev/null || stat -c %Y "$S/stamp")" "$stamp_before" "the stamp did not move"
+ok "$(run --run --dest "$D")" 0 "the next run succeeds"
+ok "$(count "$D" '*_incr.tar.gz.enc')" 3 "and catches up"
+FAKE="$R/fake-openssl"     # decrypts like the real one; encrypting writes half a file, then fails
+cat > "$FAKE" <<'EOS'
+#!/bin/sh
+case " $* " in *" -d "*) exec /usr/bin/openssl "$@" ;; esac
+prev=""; for a in "$@"; do [ "$prev" = -out ] && head -c 100 > "$a"; prev="$a"; done
+echo broken >&2; exit 1
+EOS
+chmod 755 "$FAKE"
+printf 'z\n' >> "$P/-Users-x-code-repo2/b.jsonl"
+ok "$(CLAUDE_ARCHIVE_OPENSSL="$FAKE" run --run --dest "$D")" 1 "a run whose encryption fails, fails"
+ok "$(count "$D" '*.partial')" 0 "and leaves no .partial"
+ok "$(count "$D" '*_incr.tar.gz.enc')" 3 "and no archive"
+
+# 11. a second full, --list, --prune-plan
+ok "$(run --run --full --dest "$D")" 0 "--full forces a full"
+ok "$(count "$D" '*_full.tar.gz.enc')" 2 "two fulls now"
+ok "$(run --list --dest "$D")" 0 "list succeeds"
+ok "$(grep -c ' full$' "$R/out")" 2 "list shows both fulls"
+ok "$(grep -c ' incremental$' "$R/out")" 3 "list shows three incrementals"
+ok "$(grep -c 'destination total' "$R/out")" 1 "list prints the total"
+n_before="$(count "$D" '*')"
+ok "$(run --prune-plan 1 --dest "$D")" 0 "prune-plan succeeds"
+ok "$(grep -c '_full.tar.gz.enc$' "$R/out")" 1 "prune-plan would move the older full"
+ok "$(grep -c '_incr.tar.gz.enc$' "$R/out")" 3 "and the incrementals before the newest full"
+ok "$(count "$D" '*')" "$n_before" "prune-plan changed nothing"
+ok "$(run --prune-plan 5 --dest "$D")" 0 "prune-plan with room to spare"
+ok "$(grep -c 'moves nothing' "$R/out")" 1 "says it moves nothing"
+ok "$(run --prune-plan 0 --dest "$D")" 2 "prune-plan 0 is refused"
+
+# 12. the default destination, inside a fake iCloud Drive in the fake home
+mkdir -p "$H/Library/Mobile Documents/com~apple~CloudDocs"
+ok "$(run --run)" 0 "default destination works when iCloud Drive exists"
+ok "$(count "$H/Library/Mobile Documents/com~apple~CloudDocs/Backups/claude-projects/$(date +%Y)" '*_full.tar.gz.enc')" 1 "a new destination starts with a full"
+ok "$(run --list)" 0 "list the default destination (a path with spaces)"
+ok "$(grep -c ' full$' "$R/out")" 1 "and finds its full"
+
+# 13. install and uninstall render only (no launchctl in the self-test)
+ok "$(run --install)" 0 "install renders the plist"
+PL="$H/Library/LaunchAgents/com.drasticstatic.claude-projects-archive.plist"
+ok "$(plutil -lint "$PL" >/dev/null 2>&1 && echo ok || echo bad)" ok "the plist lints"
+ok "$(plutil -extract StartCalendarInterval.Hour raw "$PL")" 0 "at hour 0"
+ok "$(plutil -extract StartCalendarInterval.Minute raw "$PL")" 40 "minute 40"
+ok "$(plutil -extract ProgramArguments.0 raw "$PL")" /bin/sh "run by /bin/sh"
+ok "$(plutil -extract ProgramArguments.2 raw "$PL")" --if-due "with --if-due"
+ok "$(plutil -extract StandardOutPath raw "$PL")" "$H/Library/Logs/claude-projects-archive/archive.log" "logs in ~/Library/Logs/claude-projects-archive/"
+ok "$(run --install --dest "$D")" 0 "install again with a --dest"
+ok "$(plutil -extract ProgramArguments.4 raw "$PL")" "$D" "the --dest is carried into the plist"
+ok "$(ls "$CFG/retired" | grep -c '\.plist$')" 1 "the replaced plist was moved aside, not deleted"
+ok "$(run --uninstall)" 0 "uninstall succeeds"
+ok "$(test -e "$PL" && echo there || echo gone)" gone "the plist left LaunchAgents"
+ok "$(ls "$CFG/retired" | grep -c '\.plist$')" 2 "and was moved aside"
+
+# 14. usage
+ok "$(run)" 2 "no mode prints usage and exits 2"
+ok "$(run --verify)" 2 "verify without a file is refused"
+ok "$(run --bogus)" 2 "an unknown option is refused"
+
+echo "claude-projects-archive selftest: $pass passed, $fail failed  (scratch: $R)"
+[ "$fail" -eq 0 ]
