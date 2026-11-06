@@ -116,6 +116,7 @@ Moves section.
 - The hook speaks to the agent, not to you, and the agent can only ask. The guard is the only piece that stops anything, and only in zsh.
 - A parent folder that is itself a git repository (`~/code`, `~/dappu`, `~/drasticstaticLabs` are) shares its memory with every plain folder inside it. Starting in the real repository is the cure.
 - Claude Code may change how it files projects. If this page ever seems wrong, re-read the pages named above and re-run the manifest.
+- Several repositories in one VS Code window? [SOP-IT-006, *Working in VS Code workspaces*](../sop-template/repo/IT/SOP-IT-006-renaming-a-local-folder.md#-working-in-vs-code-workspaces) says what a workspace is and how to start Claude in the right repository from one.
 
 ## <img src="../assets/icons-phosphor/history.svg" width="24" height="24" alt=""> Change log
 | Date | Change |
