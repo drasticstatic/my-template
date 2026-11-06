@@ -129,6 +129,7 @@ Copy [`proposals-template/repo/`](./proposals-template/repo/) into a private `pr
 | `changelog-template/` | Astro content-collection scaffold for a public, browsable changelog site — private source, `dist/`-only public pair via the standard sync workflow |
 | `proposals-template/` | A ready-to-copy private `proposals` repo: plain-language proposals (TL;DR, itinerary, questions, decisions log) rendered to PDF on every push |
 | `walkthroughs/` | Plain-language guides for people and their AI helpers: joining an org, connecting tools, keeping an org healthy |
+| `startup/` | Start-up procedures you will forget: starting a Claude session in the right folder (the `claude` guard, `--here`, `/cd`), and Alfred-NIM through the local free-claude-code proxy |
 | `sop-template/` | Procedures beside proposals: a ready-to-copy `ops-standard-operating-procedures` repository (`SOP-[Department]-[ID]-[name].md`, approved versions as tags) with the universal OPS and IT procedures |
 | `org-onboarding/` | The onboarding kit every organization's `.github` carries: ONBOARDING.md, an AGENTS.md template, the advisory credit hook |
 | `decks/` | The template walked through on slides (Marp source, html, pdf), brass on slate |
@@ -146,6 +147,7 @@ Copy [`proposals-template/repo/`](./proposals-template/repo/) into a private `pr
 | **setting up a nested parent repo** (a folder of independent repos) | [`NESTED-REPOS-GUIDE.md`](./NESTED-REPOS-GUIDE.md) |
 | **publishing a private repo's safe half** | the sync workflows below and [`AGENT-SYNC_PUBLIC/`](./AGENT-SYNC_PUBLIC/) |
 | **welcoming someone to an organisation** | [`decks-template/`](./decks-template/): the welcome deck, filled in that organisation's colour |
+| **starting Claude, or Alfred-NIM, and cannot remember how** | [`startup/`](./startup/README.md): a copy-paste block at the top of each page |
 | **an AI helper reading this fleet** | [`AGENTS.md`](./AGENTS.md), then [`AGENT-SYNC/README.md`](./AGENT-SYNC/README.md) for the commit footer; from outside the fleet, [`walkthroughs/WORKING-WITH-THE-FLEET.md`](./walkthroughs/WORKING-WITH-THE-FLEET.md) |
 | **writing a README** | [`README-STANDARD.md`](./README-STANDARD.md): the boilerplate, `scripts/make-banner.py`, and how to suggest a better way |
 | **numbering a procedure or proposal** | [`NUMBERING.md`](./NUMBERING.md): who may issue which numbers, how to cite them, and what never changes |

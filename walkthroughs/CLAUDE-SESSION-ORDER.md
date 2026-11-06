@@ -22,6 +22,7 @@
 2. <img src="../assets/icons-phosphor/triangle-alert.svg" width="16" height="16" alt=""> **Nothing can force the folder.** A SessionStart hook cannot stop a session or change where it is filed. It can log the start and tell the agent to ask.
 3. <img src="../assets/icons-phosphor/wrench.svg" width="16" height="16" alt=""> **Three pieces, installed by you:** the hook (all apps), a `claude` guard for zsh (the terminal), and the manifest that lists every project folder.
 4. <img src="../assets/icons-phosphor/scan-search.svg" width="16" height="16" alt=""> **Started in the wrong place anyway?** Type `/cd ~/path/to/the-repo` in the session. Claude Code moves the session there.
+5. <img src="../assets/icons-phosphor/footprints.svg" width="16" height="16" alt=""> **Just want the commands?** [`startup/CLAUDE-SESSION-START.md`](../startup/CLAUDE-SESSION-START.md) is the short start-up page: what to type, what the guard refuses, how to check and undo.
 
 ## <img src="../assets/icons-phosphor/book-open.svg" width="24" height="24" alt=""> What Claude Code does, from its own documentation
 
@@ -181,6 +182,7 @@ It is read-only on every child. A MANIFEST.md names private repositories, so it 
 ## <img src="../assets/icons-phosphor/history.svg" width="24" height="24" alt=""> Change log
 | Date | Change |
 |---|---|
+| 2026-11-06 | TL;DR point 5: the short start-up page in [`startup/`](../startup/README.md). |
 | 2026-11-06 | *If something goes wrong: the backups* (what the installer copies, `--undo`, a manual restore) and *Workspaces for every nest* (the workspace files, `nest-manifest.py`). |
 | 2026-11-06 | `scripts/install-claude-session-order.sh`: one line installs the hook, the guard and a ten-year `cleanupPeriodDays` (a helper session is refused this, rightly). |
 | 2026-11-06 | First version: the hook, the zsh guard and the manifest, written after the labs moved to `~/drasticstaticLabs`. Not installed by default. |
