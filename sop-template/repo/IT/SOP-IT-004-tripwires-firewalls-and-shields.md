@@ -2,10 +2,10 @@
 
 ![SOP](https://img.shields.io/badge/SOP-IT--004-d9a441?style=flat-square)
 ![Status](https://img.shields.io/badge/Status-draft-334155?style=flat-square)
-![Changed](https://img.shields.io/badge/Changed-2026--11--04-8a6a2a?style=flat-square)
+![Changed](https://img.shields.io/badge/Changed-2026--11--06-8a6a2a?style=flat-square)
 ![For](https://img.shields.io/badge/For-Anyone_who_commits%2C_merges_or_clones-64748b?style=flat-square)
 
-**Department:** IT · **ID:** 004 · **Status:** draft (approved when tagged) · **Owner:** the organisation's stewards · **Last changed:** 2026-11-04
+**Department:** IT · **ID:** 004 · **Status:** draft (approved when tagged) · **Owner:** the organisation's stewards · **Last changed:** 2026-11-06
 
 > [!NOTE]
 > Written for a newcomer who has heard the words *tripwire*, *allowlist*, *attestation*, *deploy key* and *hook* and wants one page that says what each one catches, where it sits, and what it cannot do. Nothing here needs a terminal to understand. The pages it points to say how to run each piece.
@@ -80,6 +80,6 @@ flowchart LR
 |---|---|
 | <img src="../assets/icons/user-round.svg" width="16" height="16" alt=""> Contributor | installs the hooks once, commits with the trailers, opens pull requests, never merges their own |
 | <img src="../assets/icons/hand-helping.svg" width="16" height="16" alt=""> Officer or steward | merges, signs attestations, approves media folders by name and date, mints deploy keys |
-| <img src="../assets/icons/bot.svg" width="16" height="16" alt=""> Helper (an agent) | everything up to the merge; never an attestation, never a merge, never a public-surface action without a person's command |
+| <img src="../assets/icons/bot.svg" width="16" height="16" alt=""> Helper (an agent) | everything up to the merge; prepares attestation lines and attests only where the officers delegated it in writing (their `CLAUDE.md`), never a merge, never a public-surface action without a person's command |
 
 *Sources: the pages named in the table, all in this organisation's procedures or in `my-template`, read on 2026-11-04. Not legal advice.*

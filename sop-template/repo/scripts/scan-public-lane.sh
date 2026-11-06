@@ -36,6 +36,11 @@
 # Attestation: PUBLIC-ALLOWLIST-ATTESTED.txt names files a person opened and read, one per line:
 #   path | officer | YYYY-MM-DD | opened and read
 #   path | officer | YYYY-MM-DD | opened and read | sha256:<64 hex>      (optional fingerprint: void once the file changes)
+# Who attests (rule of Nov 5, 2026): the officer field names whoever actually opened and read the file, never a person
+# who did not, so the trail stays honest. In a repository Christopher owns, that may be an agent, by its attribution
+# name (e.g. "Alfred · ClaudeCodeCLI · Anthropic [Opus-5.5]"). In an organisation's repository a person with the role
+# attests, unless the organisation's officers delegate it in writing (their CLAUDE.md); a helper prepares the lines and
+# hands them over. The scanner checks each line's shape, not who wrote it: this rule is kept by people and review.
 # An attested file may carry a sensitive shape, be a picture outside assets/, or be a PDF without text. An attestation
 # never opens these, which are refused whatever any list says:
 #   - a credential or an agent-note pointer found in any readable text (attested files are still read when they can be)

@@ -400,6 +400,10 @@ names; an SVG that can run something; base64 embedding a script, HTML, a PDF or 
 `entity/ tax/ filings/ counsel/`. A person who opened a file can clear the attestable cases with one line in
 `PUBLIC-ALLOWLIST-ATTESTED.txt` (`path | officer | YYYY-MM-DD | opened and read`, optionally `| sha256:<hex>`); the
 credential, legal-lane and never-travels refusals cannot be attested away. Matched text is never printed.
+The officer field names whoever actually read the file, never a person who did not: in a repository Christopher
+owns that may be an agent by its attribution name (`Alfred · ClaudeCodeCLI · Anthropic [Opus-5.5]`); in an
+organisation's repository a person with the role attests unless its officers delegate it in writing (their
+`CLAUDE.md`), and a helper prepares the lines and hands them over.
 
 `PUBLIC-LANE-MEDIA.txt` lists folders whose pictures and fonts the lane publishes on purpose, each under
 `approved by <name> | YYYY-MM-DD`. A person chose these folders; a machine still reads what it can: bytes must match the

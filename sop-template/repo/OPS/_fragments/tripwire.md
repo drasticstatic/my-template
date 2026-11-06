@@ -47,6 +47,13 @@ The fingerprint is optional and recommended: with it, the attestation ends the m
 sync asks for a fresh reading. An attestation clears a sensitive shape, one picture outside `assets/` and the media
 list, and a PDF with no words. It never clears the three things below.
 
+**Who may attest.** The officer field names whoever actually opened and read the file, never someone who did not, so
+the trail stays honest. In this organisation's repositories that is a person who holds the role, unless the officers
+delegate it in writing (in the repository's `CLAUDE.md`); until then a helper prepares the lines and hands them over.
+(In repositories a single owner keeps for himself, the owner may let an agent attest, signing with its attribution
+name.) When a flagged file names or describes another person or organisation, lean toward transparency, a short note
+they could read, rather than dropping it silently or adding a gate that stalls publishing.
+
 ### <img src="../assets/icons/eye.svg" width="24" height="24" alt=""> When a person chose the folder: the media list
 
 > **A person chose these folders; a machine still reads what it can.**

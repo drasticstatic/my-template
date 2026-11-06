@@ -18,7 +18,7 @@ Every private repository with a public lane: procedures (`ops-standard-operating
 |---|---|
 | <img src="../assets/icons/landmark.svg" width="16" height="16" alt=""> Officer | decides each allowlist line, by pull request; attests a file a machine could not read |
 | <img src="../assets/icons/key-round.svg" width="16" height="16" alt=""> Steward | provisions the deploy key, keeps the workflow, reads the sync's log |
-| <img src="../assets/icons/bot.svg" width="16" height="16" alt=""> Helper | proposes allowlist lines in a pull request; never edits a public lane; never attests |
+| <img src="../assets/icons/bot.svg" width="16" height="16" alt=""> Helper | proposes allowlist lines in a pull request; never edits a public lane; prepares attestation lines for an officer, and attests only where the officers delegated it in writing |
 | <img src="../assets/icons/workflow.svg" width="16" height="16" alt=""> The sync workflow | stages, runs the tripwires, commits to the lane |
 
 ## <img src="../assets/icons/workflow.svg" width="24" height="24" alt=""> The mechanism
@@ -101,6 +101,13 @@ pdf/OPS/SOP-OPS-001-how-a-change-travels.pdf | <officer> | 2026-11-01 | opened a
 The fingerprint is optional and recommended: with it, the attestation ends the moment the file changes, and the next
 sync asks for a fresh reading. An attestation clears a sensitive shape, one picture outside `assets/` and the media
 list, and a PDF with no words. It never clears the three things below.
+
+**Who may attest.** The officer field names whoever actually opened and read the file, never someone who did not, so
+the trail stays honest. In this organisation's repositories that is a person who holds the role, unless the officers
+delegate it in writing (in the repository's `CLAUDE.md`); until then a helper prepares the lines and hands them over.
+(In repositories a single owner keeps for himself, the owner may let an agent attest, signing with its attribution
+name.) When a flagged file names or describes another person or organisation, lean toward transparency, a short note
+they could read, rather than dropping it silently or adding a gate that stalls publishing.
 
 ### <img src="../assets/icons/eye.svg" width="24" height="24" alt=""> When a person chose the folder: the media list
 
@@ -296,3 +303,4 @@ The lane's tree contains exactly the allowlisted paths plus its reserved files; 
 | 2026-11-02 | Where the clones live on a machine: labs under `~/code`, organisation clones at `~/<org>/`, and why. | Alfred |
 | 2026-11-02 | *Rotating a deploy key*: generate, add, set the secret, remove the old, verify; the private half is never printed | Alfred |
 | 2026-11-06 | Labs moved from `~/code` to `~/drasticstaticLabs` (SOP-IT-006, worked example two); *Where the clones live* says so. | Alfred |
+| 2026-11-06 | *Who may attest*: the officer field names the actual reader; a helper attests only where the officers delegated it in writing, otherwise prepares the lines (in `_fragments/tripwire.md` too) | Alfred |

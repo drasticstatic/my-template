@@ -168,6 +168,27 @@ template, don't let this get silently skipped.
 
 ---
 
+<!-- fleet:working-here:start (written from my-template/CLAUDE.md; edit it there) -->
+## Working here (November 2026)
+
+1. **Session order.** Start Claude inside the repository, not in a parent folder (`~`, `~/code`, `~/dappu`,
+   `~/drasticstaticLabs`, an organisation folder): a session is filed under the folder it starts in. Started in the
+   wrong place? `/cd <repo>`. Legend: `~/.claude/projects/MANIFEST-LOG.md`; walkthrough:
+   `my-template/walkthroughs/CLAUDE-SESSION-ORDER.md`. Folders move only with
+   `my-template/scripts/rename-local-repo.py` (`SOP-IT-006`).
+2. **Warn first.** "Anything that mounts a disk or pops a prompt on your screen gets a warning first" (Christopher,
+   Nov 5). Say so before running such a command: disk images, Time Machine, VirusBarrier/Intego scans, system
+   dialogs, keychain prompts. Xcode tools are never run.
+3. **Attestation** (Christopher's policy of Nov 5). In repositories Christopher owns, Claude may do the line-by-line
+   review of files the public-lane scanner (`scripts/scan-public-lane.sh`) flags and record it in
+   `PUBLIC-ALLOWLIST-ATTESTED.txt`. The officer field names the actual reviewer (e.g.
+   `Alfred · ClaudeCodeCLI · Anthropic [Opus-5.5]`), never Christopher's name for a review he did not do, so the
+   trail stays honest. When a flagged file names or describes another person or organisation, lean toward
+   transparency (a short note they could read), not silently dropping it or adding a gate that stalls publishing.
+   In an organisation's repositories, attesting stays with a human who holds the role unless that organisation's
+   officers delegate it in writing (in their `CLAUDE.md`); helpers prepare the attestation lines and hand them over.
+<!-- fleet:working-here:end -->
+
 <!-- fleet:pull-requests-and-promotes:start (synced from my-template/CLAUDE.md by scripts/sync-claude-section.sh; edit it there) -->
 ## Pull requests and Promotes (October 2026)
 

@@ -502,7 +502,9 @@ attestation line. There are four ways through, and only a person chooses:
 4. <img src="repo/assets/icons/badge-check.svg" width="16" height="16" alt=""> **Attest it.** A person opens and reads the file, then adds the printed line to
    `PUBLIC-ALLOWLIST-ATTESTED.txt` at the repository root: `path | officer | YYYY-MM-DD | opened and read | sha256:<hex>`.
    With the fingerprint, the line lapses when the file changes. In a history lane, a line without a fingerprint covers
-   every version of that path.
+   every version of that path. The officer field names whoever actually read the file: in Christopher's own
+   repositories that may be an agent, by its attribution name; in an organisation's, a person with the role, unless
+   its officers delegate it in writing (their `CLAUDE.md`). Never a name for a reading that person did not do.
 
 Two cautions. A stopped lane leaves the public repository as it was: whatever it already shows stays there until the
 next green run replaces it. And build folders name some files by content hash. A media list covers fonts and pictures

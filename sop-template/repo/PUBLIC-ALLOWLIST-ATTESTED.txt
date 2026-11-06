@@ -9,6 +9,10 @@
 #   path | officer | YYYY-MM-DD | opened and read
 #   path | officer | YYYY-MM-DD | opened and read | sha256:<fingerprint the tripwire printed>
 #
+# The officer field names whoever actually opened and read the file, never someone who did not. Here that is a person
+# who holds the role, unless the officers delegate it in writing (in this repository's CLAUDE.md); a helper prepares
+# the lines and hands them over.
+#
 # The fingerprint is optional and recommended: with it, the attestation ends the moment the file changes, and the
 # next sync asks for a fresh reading. Without it, the officer re-reads by habit.
 #
