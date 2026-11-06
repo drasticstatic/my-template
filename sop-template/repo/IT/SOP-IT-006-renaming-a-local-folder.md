@@ -61,7 +61,7 @@ A **workspace** is a small `.code-workspace` file, a JSON list of folders plus a
 | Window | File | What it holds |
 |---|---|---|
 | dappu | `~/dappu/dappu.code-workspace` | the active dappu repositories and `ops-arbitrage`, then `dappu (parent)` |
-| code | `~/code/code.code-workspace` | every repository directly in `~/code` except `divorce-custody-assistant` (it keeps its own window), then `code (parent)` |
+| code | `~/code/code.code-workspace` | every repository directly in `~/code` except the one Christopher keeps in a window of its own, then `code (parent)` |
 | labs | `~/drasticstaticLabs/drasticstaticLabs.code-workspace` | `drasticstaticLabs (map)` first, then each `-lab` folder |
 
 **Using one.**
