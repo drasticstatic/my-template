@@ -18,6 +18,7 @@ git tags (`v1.0.0`…); until the first tag, every procedure here is a draft and
 | [SOP-IT-007](IT/SOP-IT-007-the-machines-three-guards.md) | The machine's three guards: FileVault, a VPN, an antivirus; what each leaves open, and the power-cut trade-off | IT | draft |
 | [SOP-IT-008](IT/SOP-IT-008-disk-utility-and-sparse-images.md) | Disk Utility and sparse images: volumes, containers, snapshots, an encrypted image step by step, the loop to avoid | IT | draft |
 | [SOP-IT-009](IT/SOP-IT-009-cold-storage-data-and-wallets.md) | Cold storage, data and wallets: hot and cold, seed, hardware, multisig and copied cards; four failures, two places, test the recovery | IT | draft |
+| [SOP-IT-010](IT/SOP-IT-010-how-we-keep-our-data.md) | How we keep our data: retention, backups, archives; transcripts kept ten years, a sealed nightly copy, Time Machine, the safety bundles, what never goes to GitHub, the restore drills | IT | draft |
 | [SOP-GOV-001](GOV/SOP-GOV-001-board-reading-room-membership.md) | Board reading room membership: a closed team with Read on the committee repositories | GOV | draft |
 | [SOP-GOV-002](GOV/SOP-GOV-002-github-collaboration.md) | GitHub collaboration: organisations, owners and members, base permission none, teams, issues, discussions, pull requests, projects, Pages | GOV | draft |
 | [SOP-COM-001](COM/SOP-COM-001-new-to-github-your-first-hour.md) | New to GitHub: your first hour (your own account and password, the invitation, five words, the reading room, a helper, the welcome deck) | COM | draft |
