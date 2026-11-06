@@ -8,7 +8,7 @@
 #   --no-fetch    report from what is already known locally (no network at all); implies --dry-run
 #   --skip-lanes  leave out clones whose origin is a public lane (-public, -public-preview, -publish-preview)
 #   --quiet       print only clones that are behind, ahead, dirty or in trouble, and the summary
-#   ROOT ...      where to look (default: ~/code ~/dappu ~/theholyearthfoundation ~/psychedelicsinrecovery
+#   ROOT ...      where to look (default: ~/code ~/drasticstaticLabs ~/dappu ~/theholyearthfoundation ~/psychedelicsinrecovery
 #                 ~/Octagon-Religious-Research-Group-ORG ~/psanctuary ~/psanctuarychurch ~/taylordwraps
 #                 ~/WILSONSLAWNMAINTENANCE)
 #
@@ -45,6 +45,7 @@ $1" ;;
   shift
 done
 [ -n "$ROOTS" ] || ROOTS="$HOME/code
+$HOME/drasticstaticLabs
 $HOME/dappu
 $HOME/theholyearthfoundation
 $HOME/psychedelicsinrecovery

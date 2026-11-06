@@ -63,6 +63,16 @@ The lab's own renames, written down so others know how this is done. **Eight fol
 5. **Seven sessions found only in an archive.** Seven old sessions sat only in `~/.claude/projects/_archived-pre-move-sessions/`, filed under paths that had not existed since earlier moves, so `/resume` could list them nowhere. They were **copied, not moved,** into the project folders of their repositories' current homes. The archive stays as it was.
 6. **The nightly job, before its run.** The nightly job named two paths inside a renamed lab. Both were fixed the same day, before its next run, so it never had the chance to fail at night.
 
+## <img src="../assets/icons/notebook-pen.svg" width="24" height="24" alt=""> Worked example two, later on Nov 6, 2026: the labs get a home of their own
+The same morning, a second move, this time out of `~/code` altogether. `~/code` was to keep Christopher's own repositories and the tools; every lab was to live in `~/drasticstaticLabs`. **Ten folders:** the seven labs renamed above, the one the editor window had held back (`taylordwraps` became `taylordwraps-lab` on the way), and three more that took the suffix as they moved (`wilson-lawn-ai-assist`, `RhebekahStar` and `dpnelson`, each now `<name>-lab`). One of the ten is a plain folder holding two spares, not a repository; it moves the same way.
+
+1. **The nightly job first.** The nightly job keeps clones inside one of the labs. Its paths were pointed at `~/drasticstaticLabs/...` and committed before any folder moved, so a run falling between the moves still found its clones. Do this first whenever a scheduled job lives inside what you are moving.
+2. **One dry run per folder, then one apply per folder.** Each old path and its new one. The dry run listed every Claude project entry, the parent and each child; each slug changed from `-Users-<you>-code-<old>` to `-Users-<you>-drasticstaticLabs-<new>`.
+3. **`--allow-idle-shells` again.** Terminal tabs parked in several of the labs, from the first move, still sat there with nothing running. The flag let the apply go past them. In each such tab, `cd ~/drasticstaticLabs/<new>` before typing `claude`, or the session files itself under a path that no longer exists.
+4. **`--adopt=NAME` for what the first move left.** Some project folders the first move had carried still held sessions whose `cwd` named the pre-suffix path (`~/code/pir`, not `~/code/pir-lab`). The tool rightly left them alone; reading their `cwd` fields showed they were this lab's own history, and each was vouched for with `--adopt=-Users-...` (the `=` form).
+5. **The fleet's tools learn the new root.** A move out of every default root drops the folder out of the sweeps without a word: the pull-everything sweep, the clone map, the lane health check, the backup and the document catalog all walk a list of roots. `~/drasticstaticLabs` was added to each list, right after `~/code`, the same day. Then `clone-map.sh` was run to see the ten under their new home.
+6. **The living pages, not the history.** Guides, walkthroughs, READMEs and SOP bodies that named the old paths were updated; dated handoffs, session logs and change-log rows were left saying what was true on their day. A dated page that a session reads next as its "start here" got one line at its top giving the new path.
+
 ## <img src="../assets/icons/book-open.svg" width="24" height="24" alt=""> Related
 `my-template/NESTED-REPOS-GUIDE.md` (where clones live), SOP-OPS-003 (the lanes), `scripts/clone-map.sh` (where everything is now). *Read Nov 5, 2026 from the machine itself; Claude Code may change how it files projects, so re-check `~/.claude/projects/` if this page ever seems wrong.*
 
@@ -71,3 +81,4 @@ The lab's own renames, written down so others know how this is done. **Eight fol
 |---|---|
 | 2026-11-05 | Drafted before the lab's own renames, from a heads-up about orphaned sessions. |
 | 2026-11-06 | A worked example from the lab's renames that day; `--adopt=` written with its `=`. |
+| 2026-11-06 | Worked example two: the ten labs moved from `~/code` to `~/drasticstaticLabs`; the nightly job repointed first, `--allow-idle-shells` and `--adopt=` again, the fleet scripts given the new root. |

@@ -90,8 +90,9 @@ import tempfile
 
 # Edit these for your own machine, or write roots.txt and leave this file alone.
 DEFAULT_ROOTS = [
-    "~/code", "~/dappu", "~/theholyearthfoundation", "~/psychedelicsinrecovery",
+    "~/code", "~/drasticstaticLabs", "~/dappu", "~/theholyearthfoundation", "~/psychedelicsinrecovery",
     "~/Octagon-Religious-Research-Group-ORG", "~/psanctuary", "~/psanctuarychurch", "~/taylordwraps",
+    "~/WILSONSLAWNMAINTENANCE",
     "~/intent", "~/code-forked", "~/littlebirds-git-home",
 ]
 ICLOUD_DRIVE = "~/Library/Mobile Documents/com~apple~CloudDocs"

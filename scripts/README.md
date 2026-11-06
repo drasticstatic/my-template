@@ -227,7 +227,7 @@ sh scripts/sync-local.sh --no-fetch      # report from local knowledge, no netwo
 sh scripts/sync-local.sh --quiet ~/code  # one root; print only what is behind, ahead, dirty or in trouble
 ```
 
-It looks up to three folders deep under `~/code`, `~/dappu` and each organisation's folder, `~/theholyearthfoundation`,
+It looks up to three folders deep under `~/code`, `~/drasticstaticLabs` (the labs, since Nov 6, 2026), `~/dappu` and each organisation's folder, `~/theholyearthfoundation`,
 `~/psychedelicsinrecovery`, `~/Octagon-Religious-Research-Group-ORG`, `~/psanctuary`, `~/psanctuarychurch`, `~/taylordwraps`
 and `~/WILSONSLAWNMAINTENANCE` (or the roots you give),
 skips `node_modules`, and reports each clone's branch, ahead/behind and local changes. A clone that would conflict is
@@ -241,7 +241,7 @@ it; one already cloned is pulled like any other (it only reads), or left out wit
 sh scripts/clone-map.sh                  # one line per repository: path, origin, branch, dirty, ahead, marks
 sh scripts/clone-map.sh --duplicates     # only the rows that share an origin URL with another
 sh scripts/clone-map.sh --json           # the same rows as a JSON array
-sh scripts/clone-map.sh ~/code ~/pir     # your own roots
+sh scripts/clone-map.sh ~/drasticstaticLabs  # your own roots
 ```
 
 The map behind [`NESTED-REPOS-GUIDE.md`](../NESTED-REPOS-GUIDE.md) § *The organisation clone is canonical*. It walks

@@ -6,7 +6,7 @@ without any of them tracking each other's content.
 ## <img src="assets/icons-phosphor/compass.svg" width="24" height="24" alt=""> TL;DR
 
 1. <img src="assets/icons-phosphor/layers.svg" width="16" height="16" alt=""> **A parent folder can be a lightweight repository** that holds several full repositories side by side, each git-ignored by the parent. No submodules.
-2. <img src="assets/icons-phosphor/building-2.svg" width="16" height="16" alt=""> **An organisation's clone lives at `~/<org>/<repository>` and that clone is canonical.** Labs explore under `~/code/<lab>/`.
+2. <img src="assets/icons-phosphor/building-2.svg" width="16" height="16" alt=""> **An organisation's clone lives at `~/<org>/<repository>` and that clone is canonical.** Labs explore under `~/drasticstaticLabs/<lab>/`.
 3. <img src="assets/icons-phosphor/files.svg" width="16" height="16" alt=""> **A second clone under a lab is a spare.** It stays where it is, with a `WHERE-EVERYTHING-WENT.md` beside it. Nothing is deleted by a helper.
 4. <img src="assets/icons-phosphor/map.svg" width="16" height="16" alt=""> **See the whole map:** `sh scripts/clone-map.sh` lists every repository on the machine and marks the duplicates and spares, without changing anything.
 
@@ -70,13 +70,19 @@ running `/cd <new-path>` *inside* a still-open session for that project, which i
 sessions that already ended before the move. Skip this if the encoded path would exceed roughly 200
 characters — Claude Code truncates and hashes long paths, and the hash won't match after a move.
 
-## Where a clone lives: labs under `~/code`, organisation clones at `~/<org>/`
+## Where a clone lives: labs under `~/drasticstaticLabs`, organisation clones at `~/<org>/`
 
 The pattern above is for a person's own work. A repository an organisation owns does not nest inside it.
 
+**Since Nov 6, 2026 the labs live in `~/drasticstaticLabs`.** `~/code` holds Christopher's own repositories and the tools
+(`my-template` among them); every folder named `-lab` moved out of it that morning, ten
+at once, with `scripts/rename-local-repo.py` (their Claude Code project folders moved with them; the procedure is
+`SOP-IT-006`). Organisation clones stay at `~/<org>/`. Three homes, one question each: *is it mine, is it a lab, or
+is it an organisation's?*
+
 | What it is | Where it lives | Example |
 |---|---|---|
-| A lab: a person's own working copy, on a personal account, drafts and all | `~/code/<lab>/` | `~/code/pir-lab` |
+| A lab: a person's own working copy, on a personal account, drafts and all | `~/drasticstaticLabs/<lab>/` | `~/drasticstaticLabs/pir-lab` |
 | A clone of a repository an organisation owns | `~/<org>/<repository>`, the folder named exactly as the GitHub organisation | `~/psychedelicsinrecovery/reading-room` |
 
 A lab never holds an organisation's clone, not even git-ignored. Why:
@@ -86,7 +92,7 @@ A lab never holds an organisation's clone, not even git-ignored. Why:
   (a lab and its organisation each have a `proposals`).
 - **One place to look.** "Where is that organisation's reading room?" has one answer, for a person and for a helper,
   and it is the same answer for every organisation.
-- **The tools know the roots.** `scripts/sync-local.sh`, `scripts/agent-sync-health.py` and `scripts/clone-map.sh` walk `~/code`, `~/dappu` and
+- **The tools know the roots.** `scripts/sync-local.sh`, `scripts/agent-sync-health.py` and `scripts/clone-map.sh` walk `~/code`, `~/drasticstaticLabs`, `~/dappu` and
   every `~/<org>/` by default. A new organisation's folder gets added to each default the day it is created.
 
 **Moving a clone home.** Check first that its remote is the organisation's and that it has nothing uncommitted, unpushed or
@@ -102,12 +108,12 @@ organisation's. The rule in one table:
 | | Where | What it is for |
 |---|---|---|
 | <img src="assets/icons-phosphor/landmark.svg" width="16" height="16" alt=""> **Organisation clone** | `~/<org>/<repository>` | The canonical copy. Edit here, commit here, push from here. |
-| <img src="assets/icons-phosphor/flask-conical.svg" width="16" height="16" alt=""> **Lab** | `~/code/<lab>/` | A person's own exploring: drafts, experiments, a lightweight parent with its own children. |
+| <img src="assets/icons-phosphor/flask-conical.svg" width="16" height="16" alt=""> **Lab** | `~/drasticstaticLabs/<lab>/` | A person's own exploring: drafts, experiments, a lightweight parent with its own children. |
 | <img src="assets/icons-phosphor/files.svg" width="16" height="16" alt=""> **Spare** | A second clone of an organisation repository found under a lab | Left in place, accounted for, not worked in. |
 
 The organisation folders on this machine, each named exactly as the GitHub organisation: `~/theholyearthfoundation`,
 `~/psychedelicsinrecovery`, `~/Octagon-Religious-Research-Group-ORG`, `~/psanctuary`, `~/psanctuarychurch`, `~/taylordwraps`
-and `~/WILSONSLAWNMAINTENANCE`. Everything else a person clones for themselves goes under a lab in `~/code/<lab>/`
+and `~/WILSONSLAWNMAINTENANCE`. Everything else a person clones for themselves goes under a lab in `~/drasticstaticLabs/<lab>/`
 (coursework and the like have their own homes, such as `~/dappu`, and Intent keeps its workspaces under `~/intent`).
 
 **What a spare is, and what happens to it.** A spare is a second clone of a repository an organisation owns, sitting
@@ -115,9 +121,9 @@ under a lab because that is where it was cloned before the organisation had a fo
 it is not removed. The lab gets a `WHERE-EVERYTHING-WENT.md` beside the spare that says, in a short table, what moved
 where and what stayed, and that the copy here is the spare and the organisation's is the one to use. The spare was
 checked against the canonical clone the day the note was written (same remote, same HEAD, nothing unpushed), and the
-note says so. Three such notes exist today, in `~/code/psanctuarychurch-lab` (two spares: `proposals` and the
-`psanctuarychurch.github.io` site, the second on its own branch), `~/code/pir-lab` (one: `changelog-astro`) and
-`~/code/the-holy-earth-foundation-lab` (one: `changelog-astro`). Each ends the same way: *a person can remove these once
+note says so. Three such notes exist today, in `~/drasticstaticLabs/psanctuarychurch-lab` (two spares: `proposals` and the
+`psanctuarychurch.github.io` site, the second on its own branch), `~/drasticstaticLabs/pir-lab` (one: `changelog-astro`) and
+`~/drasticstaticLabs/the-holy-earth-foundation-lab` (one: `changelog-astro`). Each ends the same way: *a person can remove these once
 sure of them; no helper will.*
 
 **Nothing is deleted by a helper.** This is the rule under the rule. A helper (a Claude Code session, Littlebird, any
@@ -126,7 +132,7 @@ agent) may move a clone home, write the note, add the git-ignore line and report
 reflog, a branch that was never pushed, or a session someone means to resume from that path. The person who owns the
 machine decides, with the note in front of them, and the spare costs nothing while they wait.
 
-**Seeing the map.** `sh scripts/clone-map.sh` walks every root (`~/code`, `~/dappu`, `~/code-forked`, `~/intent`,
+**Seeing the map.** `sh scripts/clone-map.sh` walks every root (`~/code`, `~/drasticstaticLabs`, `~/dappu`, `~/code-forked`, `~/intent`,
 `~/littlebirds-git-home` and each `~/<org>/`) and prints one line per repository: its path, origin URL, branch, how
 many files are changed locally and how many commits it is ahead of its upstream. Two clones of the same origin are
 both marked `DUPLICATE`; the one under a lab, when the organisation has its own, is also `SPARE`, and `NOTED` when the

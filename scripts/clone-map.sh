@@ -6,7 +6,7 @@
 #   (no flag)      a table: path, origin URL, current branch, dirty count, commits ahead of upstream, marks
 #   --json         the same rows as a JSON array (one object per repository)
 #   --duplicates   only the rows that share an origin URL with another row
-#   ROOT ...       where to look (default: ~/code ~/dappu ~/code-forked ~/intent ~/littlebirds-git-home and every
+#   ROOT ...       where to look (default: ~/code ~/drasticstaticLabs ~/dappu ~/code-forked ~/intent ~/littlebirds-git-home and every
 #                  organisation folder: ~/theholyearthfoundation ~/psychedelicsinrecovery
 #                  ~/Octagon-Religious-Research-Group-ORG ~/psanctuary ~/psanctuarychurch ~/taylordwraps
 #                  ~/WILSONSLAWNMAINTENANCE)
@@ -27,7 +27,7 @@
 # Read-only, by construction: GIT_OPTIONAL_LOCKS=0 so `git status` writes nothing, not even an index refresh;
 # it never fetches, pulls, pushes, switches, clones or deletes. It looks up to four folders deep under each root
 # (Intent keeps repositories at workspaces/<slug>/<repository>), skips node_modules, and does not descend into .git.
-# A nested repository (a lab under ~/code with children inside it) is listed once for the parent and once per child.
+# A nested repository (a lab under ~/drasticstaticLabs with children inside it) is listed once for the parent and once per child.
 #
 # Exit code: 0 always, unless an option is unknown (2). Reporting a duplicate is information, not a failure.
 set -u
@@ -55,6 +55,7 @@ $HOME/taylordwraps
 $HOME/WILSONSLAWNMAINTENANCE"
 
 [ -n "$ROOTS" ] || ROOTS="$HOME/code
+$HOME/drasticstaticLabs
 $HOME/dappu
 $HOME/code-forked
 $HOME/intent
