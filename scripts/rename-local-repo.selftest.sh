@@ -26,4 +26,12 @@ ok "$($T "$R/home/code/pir-lab" "$R/home/code/pir-foo" --projects "$P" | head -1
 mkdir -p "$R/home/code/abc" "$R/home/code/abc-x"; d="$P/$(enc "$R/home/code/abc")-x"; mkdir -p "$d"; printf '{"cwd":"%s"}\n' "$R/home/code/abc-x" > "$d/s.jsonl"
 $T "$R/home/code/abc" "$R/home/code/abc-lab" --projects "$P" --apply >/dev/null
 ok "$([ -d "$d" ] && echo stays)" stays "a sibling's history is not taken by a name match"
+# a move is noted in MANIFEST-LOG.md's Moves section, above its end marker; a dry run notes nothing
+printf '## Moves\n- an older line\n<!-- moves:end (new lines go above this one) -->\n## After\n' > "$P/MANIFEST-LOG.md"
+mkdir -p "$R/home/code/mno"; d2="$P/$(enc "$R/home/code/mno")"; mkdir -p "$d2"; printf '{"cwd":"%s"}\n' "$R/home/code/mno" > "$d2/s.jsonl"
+$T "$R/home/code/mno" "$R/home/code/mno-lab" --projects "$P" >/dev/null
+ok "$(wc -l < "$P/MANIFEST-LOG.md" | tr -d ' ')" 4 "a dry run leaves the manifest alone"
+$T "$R/home/code/mno" "$R/home/code/mno-lab" --projects "$P" --apply >/dev/null
+ok "$(sed -n 3p "$P/MANIFEST-LOG.md" | grep -c -F -- "mno-lab\`, by rename-local-repo.py. Claude project folders: \`$(enc "$R/home/code/mno")\` to \`$(enc "$R/home/code/mno-lab")\`")" 1 "the move is noted above the Moves end marker"
+ok "$(sed -n 4p "$P/MANIFEST-LOG.md" | cut -c1-14)" "<!-- moves:end" "the end marker stays below it"
 echo "rename-local-repo: $pass passed, $fail failed"; exit $fail

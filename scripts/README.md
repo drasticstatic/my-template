@@ -368,6 +368,22 @@ counted. It refuses to run until a skip list exists, so a new Mac cannot send a 
 misses a sleeping Mac. Why it works this way, the restore steps and its limits:
 [`walkthroughs/ICLOUD-AND-GITHUB-TOGETHER.md`](../walkthroughs/ICLOUD-AND-GITHUB-TOGETHER.md).
 
+## `claude-projects-manifest.py` and `claude-session-start.sh` — order in `~/.claude/projects`
+
+```sh
+python3 -I scripts/claude-projects-manifest.py           # writes ~/.claude/projects/MANIFEST-LOG.md
+python3 -I scripts/claude-projects-manifest.py --check   # exit 1 on an orphan, or an old-path folder Moves does not list
+sh scripts/claude-projects-manifest.selftest.sh          # the manifest, the hook and the zsh guard, in a fake home
+```
+
+Claude Code files a session under the folder it started in, flattened. The manifest gives one row per project folder:
+its real folder (from the recorded `cwd`), whether that exists, sessions, memory files, and a status (live, moved-here,
+memory-only, orphan, archived). It reads only `cwd` and timestamps from the first lines of each session file, never
+prints what was said, and never edits or moves one. Its Moves section is kept between runs, and
+`rename-local-repo.py --apply` now adds a line there itself. `claude-session-start.sh` is a SessionStart hook (log one
+row per start; tell the agent to ask when a session starts in a parent folder) with a zsh `claude` guard and the
+settings block in its header. Neither is installed by default: [`walkthroughs/CLAUDE-SESSION-ORDER.md`](../walkthroughs/CLAUDE-SESSION-ORDER.md).
+
 ## `scan-public-lane.sh` — the public-lane tripwire (master copy)
 
 ```sh

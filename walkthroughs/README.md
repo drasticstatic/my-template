@@ -7,7 +7,7 @@
 *Plain-language guides for joining one of our GitHub organizations and connecting your AI helpers. Follow one yourself, or hand it to your helper.*
 
 ![Kind](https://img.shields.io/badge/Kind-Walkthroughs-800020?style=flat-square)
-![Changed](https://img.shields.io/badge/Changed-2026--11--04-800020?style=flat-square)
+![Changed](https://img.shields.io/badge/Changed-2026--11--06-800020?style=flat-square)
 ![For](https://img.shields.io/badge/For-Members_and_their_AI_helpers-800020?style=flat-square)
 
 <img src="../assets/icons-phosphor/map-pin.svg" width="16" height="16" alt=""> **You are here:** drasticstatic lab › [`my-template`](../README.md) › `walkthroughs/` · public · `main` is the working branch
@@ -37,6 +37,7 @@
 | <img src="../assets/icons-phosphor/bird.svg" width="16" height="16" alt=""> | [Connect Littlebird](CONNECT-LITTLEBIRD.md) | let your coding helper read your Littlebird briefs and chats, and write project summaries back to her, without leaking anything private | [PDF](pdf/CONNECT-LITTLEBIRD.pdf) |
 | <img src="../assets/icons-phosphor/eye.svg" width="16" height="16" alt=""> | [Show hidden files](SHOW-HIDDEN-FILES.md) | see `.git` and friends on a Mac (⌘⇧.), and check where a copied folder pushes before it pushes to the wrong place | [PDF](pdf/SHOW-HIDDEN-FILES.pdf) |
 | <img src="../assets/icons-phosphor/bell.svg" width="16" height="16" alt=""> | [Session messaging](SESSION-MESSAGING.md) | let your Claude Code sessions tell each other there is a new handoff: git stays the record, a message is only the doorbell, and the token stays alone | [PDF](pdf/SESSION-MESSAGING.pdf) |
+| <img src="../assets/icons-phosphor/map-pin.svg" width="16" height="16" alt=""> | [Start Claude in the right folder](CLAUDE-SESSION-ORDER.md) | keep `~/.claude/projects` in order: a log line per session, a word to the agent when it starts in a parent folder, a `claude` guard for zsh, and a manifest of every project folder (you install them) | — |
 | <img src="../assets/icons-phosphor/cloud.svg" width="16" height="16" alt=""> | [iCloud and GitHub, together](ICLOUD-AND-GITHUB-TOGETHER.md) | keep uncommitted and unpushed work safe in iCloud Drive as verified git bundles, without ever putting a repository in iCloud or a secret in a backup, and get it back after losing the machine | [PDF](pdf/ICLOUD-AND-GITHUB-TOGETHER.pdf) |
 | <img src="../assets/icons-phosphor/users.svg" width="16" height="16" alt=""> | [Working with the fleet](WORKING-WITH-THE-FLEET.md) | bring an outside helper (ChatGPT, Codex, a Harness Cosmos agent) to work at the fleet's level: read the welcome path, pull first, pull requests into `preview`, never merge, sign every commit | [PDF](pdf/WORKING-WITH-THE-FLEET.pdf) |
 

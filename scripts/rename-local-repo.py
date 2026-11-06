@@ -12,11 +12,12 @@ The flattening turns every character but a letter or a digit into "-", so ~/code
 match alone would move the wrong history, so each candidate is confirmed against the "cwd" recorded inside its own session files.
 A candidate that cannot be confirmed is left where it is and named. Transcripts are moved whole and never edited.
 
+When ~/.claude/projects/MANIFEST-LOG.md exists (claude-projects-manifest.py), --apply adds one line to its Moves section.
 It refuses to run while a process is working inside OLD. It repairs linked git worktrees and reports every file it knows of that
 still names the old path (launchd agents, Claude settings, fleet scripts), which a person or a session then updates.
 Nothing is deleted. Exit: 0 fine, 1 refused, 2 usage.
 """
-import argparse, json, os, re, shutil, subprocess, sys
+import argparse, datetime, json, os, re, shutil, subprocess, sys
 
 HOME = os.path.expanduser('~')
 
@@ -130,6 +131,36 @@ def linked_worktrees(new):
     return repaired
 
 
+MOVES_END = '<!-- moves:end'
+
+
+def log_move(projects, old, new, moves):
+    """One line in MANIFEST-LOG.md's Moves section (claude-projects-manifest.py), when that file exists. Returns its path."""
+    path = os.path.join(projects, 'MANIFEST-LOG.md')
+    if not os.path.isfile(path):
+        return None
+    short = lambda p: '~' + p[len(HOME):] if p.startswith(HOME + os.sep) else p
+    carried = '; '.join(f'`{os.path.basename(f)}` to `{os.path.basename(t)}`' for f, t in moves) or 'none'
+    line = (f"- **{datetime.datetime.now():%Y-%m-%d %H:%M}**: `{short(old)}` to `{short(new)}`, by rename-local-repo.py. "
+            f"Claude project folders: {carried}.\n")
+    try:
+        with open(path, encoding='utf-8') as fh:
+            text = fh.read()
+        i = text.find(MOVES_END)
+        if i < 0:
+            text = text + ('' if text.endswith('\n') else '\n') + line
+        else:
+            i = text.rfind('\n', 0, i) + 1
+            text = text[:i] + line + text[i:]
+        with open(path + '.tmp', 'w', encoding='utf-8') as fh:
+            fh.write(text)
+        os.replace(path + '.tmp', path)
+    except OSError as e:
+        print(f'  could not note the move in {path}: {e}')
+        return None
+    return path
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('old')
@@ -175,7 +206,10 @@ def main():
     for f, t in moves:
         shutil.move(f, t)
     repaired = linked_worktrees(new)
+    logged = log_move(a.projects, old, new, moves)
     print(f'  moved. Worktrees repaired in {len(repaired)} repositories. Update the files named above, then open one moved project and run /resume.')
+    if logged:
+        print(f'  noted in {logged}')
     return 0
 
 
