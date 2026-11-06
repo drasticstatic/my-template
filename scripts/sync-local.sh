@@ -9,7 +9,7 @@
 #   --skip-lanes  leave out clones whose origin is a public lane (-public, -public-preview, -publish-preview)
 #   --quiet       print only clones that are behind, ahead, dirty or in trouble, and the summary
 #   ROOT ...      where to look (default: ~/code ~/dappu ~/theholyearthfoundation ~/psychedelicsinrecovery
-#                 ~/Octagon-Religious-Research-Group-ORG ~/psanctuary ~/psanctuarychurch ~/taylordwraps-org
+#                 ~/Octagon-Religious-Research-Group-ORG ~/psanctuary ~/psanctuarychurch ~/taylordwraps
 #                 ~/WILSONSLAWNMAINTENANCE)
 #
 # What it does, per clone found up to three folders deep under each ROOT (node_modules skipped):
@@ -51,7 +51,7 @@ $HOME/psychedelicsinrecovery
 $HOME/Octagon-Religious-Research-Group-ORG
 $HOME/psanctuary
 $HOME/psanctuarychurch
-$HOME/taylordwraps-org
+$HOME/taylordwraps
 $HOME/WILSONSLAWNMAINTENANCE"
 
 limit () { perl -e 'alarm shift; exec @ARGV' "$@"; }   # limit SECONDS cmd...

@@ -8,7 +8,7 @@
 #   --duplicates   only the rows that share an origin URL with another row
 #   ROOT ...       where to look (default: ~/code ~/dappu ~/code-forked ~/intent ~/littlebirds-git-home and every
 #                  organisation folder: ~/theholyearthfoundation ~/psychedelicsinrecovery
-#                  ~/Octagon-Religious-Research-Group-ORG ~/psanctuary ~/psanctuarychurch ~/taylordwraps-org
+#                  ~/Octagon-Religious-Research-Group-ORG ~/psanctuary ~/psanctuarychurch ~/taylordwraps
 #                  ~/WILSONSLAWNMAINTENANCE)
 #
 # Columns:
@@ -51,7 +51,7 @@ $HOME/psychedelicsinrecovery
 $HOME/Octagon-Religious-Research-Group-ORG
 $HOME/psanctuary
 $HOME/psanctuarychurch
-$HOME/taylordwraps-org
+$HOME/taylordwraps
 $HOME/WILSONSLAWNMAINTENANCE"
 
 [ -n "$ROOTS" ] || ROOTS="$HOME/code
