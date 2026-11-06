@@ -18,6 +18,7 @@ mkdir -p "$P/-Users-x-code-repo1/memory" "$P/-Users-x-code-repo2/sub" "$D"
 export HOME="$H"
 unset CLAUDE_ARCHIVE_DEST CLAUDE_ARCHIVE_PASSFILE CLAUDE_ARCHIVE_CONFIG CLAUDE_ARCHIVE_OPENSSL
 export CLAUDE_ARCHIVE_NO_LAUNCHCTL=1
+export CLAUDE_ARCHIVE_NO_BANNER=1
 pass=0; fail=0
 ok() { if [ "$1" = "$2" ]; then pass=$((pass + 1)); else fail=$((fail + 1)); echo "FAIL $3: got [$1] want [$2]"; fi; }
 run() { sh "$A" "$@" > "$R/out" 2>&1; echo $?; }
@@ -209,6 +210,22 @@ ok "$(run --restore-latest --dest "$D" "$R/restored-after-move")" 0 "the destina
 ok "$(diff -r "$P" "$R/restored-after-move/.claude/projects" >/dev/null && echo same || echo differ)" same "and matches the live tree"
 ok "$(run --move-old 1 "$M" --dest "$D")" 0 "a second move-old with one full"
 ok "$(grep -c 'moves nothing' "$R/out")" 1 "moves nothing"
+
+# 12d. a failed run is never silent: recorded, passed to the notify hook, and --status says STALE (Nov 6 finding)
+printf '#!/bin/sh\nprintf "%%s\\n" "$1" >> "%s/notified.txt"\n' "$R" > "$CFG/notify"; chmod 700 "$CFG/notify"
+ok "$(run --status)" 0 "status is ok after the successes above"
+ok "$(run --run --dest "$R/unplugged-drive")" 2 "a run to a missing drive fails"
+ok "$(test -s "$CFG/state/last-failure" && echo yes || echo no)" yes "the failure is recorded"
+ok "$(grep -c 'unplugged-drive' "$R/notified.txt" 2>/dev/null)" 1 "the notify hook got one message naming the problem"
+ok "$(run --status)" 1 "status says STALE when a failure came after the last success"
+ok "$(grep -c '^STALE: the last run failed' "$R/out")" 1 "and says why"
+ok "$(run --list --dest "$R/also-missing")" 2 "a failed --list is refused"
+ok "$(grep -c . "$R/notified.txt")" 1 "but only --run and --if-due notify"
+sleep 1
+ok "$(run --run --dest "$D")" 0 "the next good run succeeds"
+ok "$(run --status)" 0 "and status is ok again"
+sleep 1
+ok "$(CLAUDE_ARCHIVE_STALE_HOURS=0 run --status)" 1 "status says STALE once the newest success is older than the limit"
 
 # 13. install and uninstall render only (no launchctl in the self-test)
 ok "$(run --install)" 0 "install renders the plist"

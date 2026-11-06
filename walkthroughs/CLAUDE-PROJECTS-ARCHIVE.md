@@ -109,7 +109,32 @@ Without this passphrase nobody can open the archives, you included. If the Mac i
 sh ~/code/my-template/scripts/claude-projects-archive.sh --list         # every archive, its size, the total
 launchctl print gui/$(id -u)/com.drasticstatic.claude-projects-archive | grep -E 'state|last exit'
 tail ~/Library/Logs/claude-projects-archive/archive.log                 # the morning after
+sh ~/code/my-template/scripts/claude-projects-archive.sh --status       # ok, or STALE and why
 ```
+
+**A failed night is never silent.** A background job that macOS blocks from iCloud Drive would just stop, and it would
+look as if you were backed up. So a failed `--run` or `--if-due` is written to `~/.config/claude-archive/state/`, shows
+a macOS banner (*Claude archive failed*, no prompt), and is passed to `~/.config/claude-archive/notify` if you make that
+file executable (for example, two lines that push to your phone). `--status` reads it back without touching iCloud: exit
+0 when the newest sealed copy is under 36 hours old and nothing failed after it, exit 1 otherwise. On the DEX desk's
+Mac, the 23:58 journal job asks `--status` every night once the archive is installed and rings the phone when it is
+stale.
+
+**The morning after `--install`, check it once:**
+
+```sh
+sh ~/code/my-template/scripts/claude-projects-archive.sh --status   # "ok: ..." or "STALE: ..." and why
+grep -i 'not permitted' ~/Library/Logs/claude-projects-archive/archive.log   # nothing printed is good
+```
+
+**If macOS blocked it** (*Operation not permitted* in the log, or `--status` says STALE while the hand run from Terminal
+worked): the background job may not write into iCloud Drive. Pick one:
+1. **Lean: schedule a folder outside iCloud** and keep iCloud for a hand run. `mkdir -p ~/Archives/claude-projects`,
+   then `--install --dest ~/Archives/claude-projects` (Time Machine copies that folder), and once a week
+   `--run` from Terminal for the iCloud copy. `--uninstall` the iCloud schedule if it keeps failing.
+2. **Or a drive:** `--install --dest /Volumes/<drive>/claude-projects`; each destination has its own schedule.
+3. **Not recommended:** giving `/bin/sh` Full Disk Access in System Settings › Privacy & Security. It would let every
+   shell script read everything.
 
 **Turn it off** any time: `sh ~/code/my-template/scripts/claude-projects-archive.sh --uninstall`. The plist is moved into
 `~/.config/claude-archive/retired/`, not deleted, and the archives stay where they are.
@@ -231,8 +256,8 @@ fills, iPhone backups and photo uploads stop too, so leave room.
 - **A renamed project folder is caught.** `rename-local-repo.py` keeps the files' old modification times, so the time test alone would miss them; each run also keeps the list of every path it saw and adds any path that is new since the last run. The old folder name still comes back in a restore from an older full: archives remember, they do not forget.
 - **A run that fails writes nothing and is retried the next night,** or the next time `--if-due` is called. A file that
   vanishes between the listing and the archive (a project folder moved mid-run) fails that night's run; the next run catches up.
-- **Whether a LaunchAgent may write into iCloud Drive without asking is UNVERIFIED** on this Mac. If the morning log says
-  *Operation not permitted*, run `--run` by hand once from Terminal and allow the prompt, or use a `--dest` outside iCloud.
+- **Whether a LaunchAgent may write into iCloud Drive without asking is UNVERIFIED** on this Mac. A failure is no longer
+  silent (banner, `notify`, `--status`, the desk's nightly check); what to do is under *Check it*: a `--dest` outside iCloud.
 - **iCloud takes time to upload.** An archive written just before a disaster may not have left the Mac.
 - **The passphrase is the only key.** Lose both copies (this Mac's file and 1Password) and the archives are noise. Advanced
   Data Protection is a second lock, not a second key.
@@ -247,6 +272,7 @@ fills, iPhone backups and photo uploads stop too, so leave room.
 | `--run` | full or incremental, as above; prints the sizes and the destination's total |
 | `--run --full` | a full archive whatever the date |
 | `--if-due` | `--run` only if the last success is over 20 hours old |
+| `--status` | did it work? reads only the state: exit 1 when the newest success is over 36 h old or a failure came after it |
 | `--list` | every archive at the destination, oldest first, with sizes; flags an unfinished `.partial` left by a crash |
 | `--verify FILE` | check the `.sha256`, decrypt to a pipe, read the tar; write nothing |
 | `--restore FULL [INCR ...] DIR` | unpack those, in that order, into a new or empty `DIR` |

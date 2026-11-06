@@ -7,6 +7,7 @@
 #     sh scripts/claude-projects-archive.sh --run               archive now: full, or incremental since the last success
 #     sh scripts/claude-projects-archive.sh --run --full        archive now, a full one whatever the date
 #     sh scripts/claude-projects-archive.sh --if-due            --run, but only if the last success is over 20 hours old
+#     sh scripts/claude-projects-archive.sh --status            did the last run work? exit 1 if stale (36 h) or it failed
 #     sh scripts/claude-projects-archive.sh --list              every archive at the destination, with sizes and the total
 #     sh scripts/claude-projects-archive.sh --verify FILE       check its .sha256, decrypt to a pipe, read the tar; write nothing
 #     sh scripts/claude-projects-archive.sh --restore FULL [INCR ...] DIR   into a new, empty DIR, in that order
@@ -60,6 +61,7 @@ umask 077
 if ! (set -o pipefail) 2>/dev/null; then echo "claude-projects-archive: this sh has no 'set -o pipefail'; run it with /bin/sh" >&2; exit 2; fi
 set -o pipefail
 LC_ALL=C; export LC_ALL
+MODE=""
 
 LABEL="com.drasticstatic.claude-projects-archive"
 ITER=600000
@@ -76,7 +78,8 @@ LOGDIR="$HOME/Library/Logs/claude-projects-archive"
 SELF="$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")"
 
 say() { printf '%s\n' "$*"; }
-warn() { printf 'claude-projects-archive: %s\n' "$*" >&2; }
+LASTERR=""
+warn() { LASTERR="$*"; printf 'claude-projects-archive: %s\n' "$*" >&2; }
 refuse() { warn "refused: $*"; exit 2; }
 fail() { warn "failed: $*"; exit 1; }
 
@@ -146,7 +149,23 @@ take_lock() {
   printf '%s\n' "$$" > "$_lk"; LOCKED=1
 }
 PARTIAL=""
+# A failed --run or --if-due must not be silent (Nov 6 finding: macOS may block a background job from writing into
+# iCloud Drive, and nothing would tell you). It is written to state/failures.tsv and last-failure, shown as a macOS
+# banner (no prompt; CLAUDE_ARCHIVE_NO_BANNER=1 turns it off), and passed to ~/.config/claude-archive/notify if you made
+# that file executable (for example, a one-line push to your phone). --status reads it back.
+note_failure() {
+  mkdir -p "$CONFIG/state" 2>/dev/null || return 0
+  _msg="claude-projects-archive failed (exit $1) on $(hostname -s) at $(date '+%Y-%m-%d %H:%M'): ${LASTERR:-see the log}"
+  date +%s > "$CONFIG/state/last-failure" 2>/dev/null
+  printf '%s\t%s\t%s\n' "$(date +%Y%m%d-%H%M%S)" "$1" "${LASTERR:-}" >> "$CONFIG/state/failures.tsv" 2>/dev/null
+  if [ "${CLAUDE_ARCHIVE_NO_BANNER:-0}" != 1 ] && command -v osascript >/dev/null 2>&1; then
+    osascript -e "display notification \"$(printf '%s' "${LASTERR:-see the log}" | tr -d '"\\' | cut -c1-180)\" with title \"Claude archive failed\"" >/dev/null 2>&1 || true
+  fi
+  [ -x "$CONFIG/notify" ] && "$CONFIG/notify" "$_msg" >/dev/null 2>&1 || true
+}
 on_exit() {
+  _rc=$?
+  if [ "$_rc" -ne 0 ] && { [ "$MODE" = --run ] || [ "$MODE" = --if-due ]; }; then note_failure "$_rc"; fi
   [ -n "$PARTIAL" ] && [ -e "$PARTIAL" ] && rm -f "$PARTIAL" && warn "removed this run's unfinished $(basename "$PARTIAL")"
   [ "$LOCKED" = 1 ] && : > "$STATE/lock"
 }
@@ -274,6 +293,26 @@ do_if_due() {
     return 0
   fi
   do_run
+}
+
+# --------------------------------------------------------------------------------------------------------------- status
+# --status: reads only ~/.config/claude-archive/state (never the destination, so it works where iCloud is blocked).
+# Exit 0: the newest success is under STALE_HOURS (36) old and no failure came after it. Exit 1 otherwise.
+STALE_HOURS="${CLAUDE_ARCHIVE_STALE_HOURS:-36}"
+do_status() {
+  _best=0; _now="$(date +%s)"
+  for _s in "$CONFIG"/state/*/; do
+    [ -f "$_s/dest" ] || continue
+    _ls="$( [ -s "$_s/last-success" ] && cat "$_s/last-success" || echo 0)"
+    [ "$_ls" -gt "$_best" ] && _best="$_ls"
+    if [ "$_ls" -gt 0 ]; then say "$(cat "$_s/dest"): last success $(( (_now - _ls) / 3600 )) h ago"; else say "$(cat "$_s/dest"): no success yet"; fi
+  done
+  _lf="$( [ -s "$CONFIG/state/last-failure" ] && cat "$CONFIG/state/last-failure" || echo 0)"
+  [ "$_lf" -gt 0 ] && say "last failure $(( (_now - _lf) / 3600 )) h ago: $(tail -n 1 "$CONFIG/state/failures.tsv" 2>/dev/null | cut -f3)"
+  if [ "$_best" -eq 0 ]; then say "STALE: no archive has ever succeeded."; return 1; fi
+  if [ "$_lf" -gt "$_best" ]; then say "STALE: the last run failed after the last success."; return 1; fi
+  if [ $((_now - _best)) -gt $((STALE_HOURS * 3600)) ]; then say "STALE: the newest success is over ${STALE_HOURS} h old."; return 1; fi
+  say "ok: the newest success is under ${STALE_HOURS} h old."
 }
 
 # ---------------------------------------------------------------------------------------------------------------- list
@@ -533,7 +572,7 @@ do_uninstall() {
 }
 
 # ---------------------------------------------------------------------------------------------------------------- main
-usage() { sed -n '2,18p' "$SELF" | sed 's/^# \{0,1\}//'; }
+usage() { sed -n '2,19p' "$SELF" | sed 's/^# \{0,1\}//'; }
 OPT_DEST="${CLAUDE_ARCHIVE_DEST:-}"; OPT_FULL=0; MODE=""; POS_N=0
 # Options may come anywhere; what is left, in order, are the mode's own arguments.
 while [ $# -gt 0 ]; do
@@ -542,7 +581,7 @@ while [ $# -gt 0 ]; do
     --dest=*) OPT_DEST="${1#--dest=}" ;;
     --full) OPT_FULL=1 ;;
     -h|--help) usage; exit 0 ;;
-    --init|--run|--if-due|--list|--verify|--restore|--restore-latest|--prune-plan|--move-old|--install|--uninstall)
+    --init|--run|--if-due|--status|--list|--verify|--restore|--restore-latest|--prune-plan|--move-old|--install|--uninstall)
       [ -z "$MODE" ] || refuse "one mode at a time ($MODE and $1)"; MODE="$1" ;;
     --) shift; while [ $# -gt 0 ]; do POS_N=$((POS_N + 1)); eval "POS_$POS_N=\$1"; shift; done; break ;;
     -*) refuse "unknown option $1 (try --help)" ;;
@@ -557,6 +596,7 @@ case "$MODE" in
   --init) [ $# -eq 0 ] || refuse "--init takes no arguments"; do_init ;;
   --run) [ $# -eq 0 ] || refuse "--run takes no arguments"; do_run ;;
   --if-due) [ $# -eq 0 ] || refuse "--if-due takes no arguments"; do_if_due ;;
+  --status) [ $# -eq 0 ] || refuse "--status takes no arguments"; do_status ;;
   --list) do_list ;;
   --verify) [ $# -eq 1 ] || refuse "usage: --verify FILE"; do_verify "$1" ;;
   --restore) do_restore "$@" ;;

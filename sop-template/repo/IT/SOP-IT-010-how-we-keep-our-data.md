@@ -109,7 +109,7 @@ find ~/code ~/dappu ~/drasticstaticLabs -maxdepth 3 -path '*/.claude/settings*.j
 
 **Set it up.** The person at the keyboard runs steps 2 to 5; a helper may run step 1 and hand over the rest.
 
-1. **Prove the script on this Mac:** `sh ~/code/my-template/scripts/claude-projects-archive.selftest.sh`. It works in a temporary folder with a fake home. *You should see:* every check pass (127 of 127 on Nov 6, 2026).
+1. **Prove the script on this Mac:** `sh ~/code/my-template/scripts/claude-projects-archive.selftest.sh`. It works in a temporary folder with a fake home. *You should see:* every check pass (138 of 138 on Nov 6, 2026).
 2. **Make the passphrase:** `sh ~/code/my-template/scripts/claude-projects-archive.sh --init`. It writes a random passphrase only if there is none, and never shows it. *You should see:* the folder made and a `pbcopy` line to run next.
 3. **Put it in the password manager,** then clear the clipboard. Make a password item (for example *claude-projects archive passphrase*) and paste between these two lines:
    ```sh
@@ -119,6 +119,7 @@ find ~/code ~/dappu ~/drasticstaticLabs -maxdepth 3 -path '*/.claude/settings*.j
    *You should see:* the item saved. Without this copy, a lost Mac means every archive is noise.
 4. **The first archive, by hand:** `sh ~/code/my-template/scripts/claude-projects-archive.sh --run`. **This may put a prompt on your screen:** the first time Terminal writes into iCloud Drive, macOS may ask for access. *You should see:* a full archive, its size and the destination's total. iCloud uploads it in the background.
 5. **Schedule it:** `sh ~/code/my-template/scripts/claude-projects-archive.sh --install`. macOS shows a *Background Items Added* notification; that is expected. *You should see:* the agent loaded. To turn it off later: `--uninstall` (the plist is moved aside, not deleted, and the archives stay).
+6. **The morning after, once:** `sh ~/code/my-template/scripts/claude-projects-archive.sh --status`. *You should see:* `ok: the newest success is under 36 h old`. A failed night is never silent: it is recorded, shows a macOS banner, and goes to `~/.config/claude-archive/notify` if that file is executable (a one-line push to your phone). Where a nightly desk job exists, have it run `--status` and alert when it exits 1. If the log says *Operation not permitted*, macOS kept the background job out of iCloud Drive: schedule a folder outside iCloud instead (`--install --dest ~/Archives/claude-projects`, which Time Machine copies) and make the iCloud copy by hand from Terminal once a week. Do not give `/bin/sh` Full Disk Access.
 
 **No iCloud, or a drive as well.** Any mode takes `--dest DIR`, or `CLAUDE_ARCHIVE_DEST=DIR`:
 
@@ -239,7 +240,7 @@ The procedure is in place when all of these are true:
 | Symptom | Likely cause | What to do |
 |---|---|---|
 | `/resume` no longer lists a session from last month | `cleanupPeriodDays` is not set, or a project's own settings file sets it lower | run the one-key check and the `find` line in part 1; restore the session from the archive |
-| The archive log says *Operation not permitted* | the LaunchAgent may not write into iCloud Drive without a prompt | run `--run` once by hand from Terminal and allow the prompt, or use a `--dest` outside iCloud |
+| The archive log says *Operation not permitted*, or `--status` says STALE | macOS keeps the background job out of iCloud Drive | schedule a folder outside iCloud (`--install --dest ~/Archives/claude-projects`) and make the iCloud copy by hand from Terminal weekly; never give `/bin/sh` Full Disk Access |
 | *refused: no passphrase file* | `--init` never ran, or this is a new Mac | run `--init`, or put the file back from the password manager (the walkthrough's three lines) |
 | *refused: ... is mode 644; it must be 600* | the passphrase file is readable by others | `chmod 600 ~/.config/claude-archive/passphrase` |
 | *refused: --dest ... does not exist* | the drive is unplugged | plug it in; the next night tries again |
@@ -257,5 +258,6 @@ The procedure is in place when all of these are true:
 ## <img src="../assets/icons/history.svg" width="24" height="24" alt=""> Change log
 | Date | Change |
 |---|---|
+| 2026-11-06 | A failed night is never silent: `--status`, the failure record, the banner and the `notify` hook; the morning-after check; what to do when macOS blocks the background job from iCloud Drive. |
 | 2026-11-06 | Later the same day: an exclusion can be set before a drive exists, and how to take it off; hiding a folder from Finder (`chflags hidden`), and why it is neither privacy nor an exclusion; each destination gets its own schedule; `--move-old` and the three-months-in-iCloud rhythm; check the iCloud plan before scheduling; a renamed project folder is caught. |
 | 2026-11-06 | Drafted, on the ask to bake transcript retention into how we protect, back up and store our data: retention at 3650 days, the nightly sealed archive and its measured sizes, Time Machine's exclusions, the safety bundles, readings and records, what never goes to GitHub, and a restore drill schedule with its log. |
