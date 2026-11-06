@@ -53,6 +53,27 @@ It deletes nothing. It does not edit transcripts, so an old session still record
 ## <img src="../assets/icons/users.svg" width="24" height="24" alt=""> If it already happened
 Nothing is lost. Your old sessions sit in `~/.claude/projects/` under the old flattened name. Move that folder to the new flattened name and `/resume` finds them again.
 
+## <img src="../assets/icons/layers.svg" width="24" height="24" alt=""> Working in VS Code workspaces
+A **workspace** is a small `.code-workspace` file, a JSON list of folders plus any settings for them, that VS Code opens as one window with every folder in its sidebar.
+
+**The three windows.** Each file sits in its parent folder, lists that folder's repositories by relative path, and lists the parent itself last. All three are gitignored: they describe this machine.
+
+| Window | File | What it holds |
+|---|---|---|
+| dappu | `~/dappu/dappu.code-workspace` | the active dappu repositories and `ops-arbitrage`, then `dappu (parent)` |
+| code | `~/code/code.code-workspace` | every repository directly in `~/code` except `divorce-custody-assistant` (it keeps its own window), then `code (parent)` |
+| labs | `~/drasticstaticLabs/drasticstaticLabs.code-workspace` | `drasticstaticLabs (map)` first, then each `-lab` folder |
+
+**Using one.**
+- **Open:** File > Open Workspace from File, and pick the file. Or double-click it in Finder, or run `code ~/dappu/dappu.code-workspace` in a terminal (once the `code` command is installed: Command Palette > *Shell Command: Install 'code' command in PATH*). Next time it is in File > Open Recent, marked *(Workspace)*.
+- **Add a folder:** File > Add Folder to Workspace. A new clone does not appear by itself; add it, then save.
+- **Save:** File > Save Workspace As. VS Code writes the folder paths relative to wherever you save the file, so keep it in its parent folder.
+
+**Why it matters for order.**
+1. **Each folder stays its own repository.** A workspace is a view, not a parent repository: git, the Source Control panel and every commit still belong to one folder at a time. Nothing about a workspace is committed anywhere.
+2. **A Claude session is filed under the folder it starts in.** Claude Code's VS Code pages speak of "the folder you have open"; they do not say which folder a session takes in a window with several (read Nov 6, 2026). Don't leave it to chance: open the integrated terminal, `cd` into the repository, then type `claude`. To be sure afterwards, find the session's folder in `~/.claude/projects/MANIFEST-LOG.md`, or type `/cd ~/path/to/the-repo` in the session to move it. The session-order walkthrough (`my-template/walkthroughs/CLAUDE-SESSION-ORDER.md`) and its hook speak up when a session starts in a parent folder.
+3. **After a folder moves, update the workspace files.** `rename-local-repo.py` reports a file only when you pass it with `--ref` and it names the old path in full; the relative entries here (`"path": "pir-lab"`) never match. So look for yourself: `grep -n '"path"' ~/code/code.code-workspace ~/dappu/dappu.code-workspace ~/drasticstaticLabs/drasticstaticLabs.code-workspace`, fix any entry that names the old folder, and reopen the window.
+
 ## <img src="../assets/icons/notebook-pen.svg" width="24" height="24" alt=""> Worked example, Nov 6, 2026
 The lab's own renames, written down so others know how this is done. **Eight folders:** seven labs under `~/code/` were to take a `-lab` suffix (`pir` became `pir-lab`, `the-holy-earth-foundation` became `the-holy-earth-foundation-lab`, and so on), and one organisation folder was to drop its `-org` (`~/taylordwraps-org` became `~/taylordwraps`).
 
@@ -82,3 +103,4 @@ The same morning, a second move, this time out of `~/code` altogether. `~/code` 
 | 2026-11-05 | Drafted before the lab's own renames, from a heads-up about orphaned sessions. |
 | 2026-11-06 | A worked example from the lab's renames that day; `--adopt=` written with its `=`. |
 | 2026-11-06 | Worked example two: the ten labs moved from `~/code` to `~/drasticstaticLabs`; the nightly job repointed first, `--allow-idle-shells` and `--adopt=` again, the fleet scripts given the new root. |
+| 2026-11-06 | Working in VS Code workspaces: what a workspace is, the dappu, code and labs windows, and starting Claude from the repository's own folder. |
