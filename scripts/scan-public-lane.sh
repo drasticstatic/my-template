@@ -6,7 +6,8 @@
 # It reads EVERY file under the directory (only the top-level .git is skipped) and exits non-zero, naming each file,
 # when anything there has not been read:
 #   text           scanned for credentials, agent-note pointers and sensitive shapes (identity numbers, labelled tax
-#                  identifiers, birth dates, street addresses, giver lists, labelled account numbers, personal matters).
+#                  identifiers, birth dates, street addresses, giver lists, labelled account, policy and member numbers,
+#                  personal matters).
 #                  Base64 embedded as a data: address is decoded and read: a plain picture passes; a script, HTML, a PDF
 #                  or an executable is refused; a font passes only where a font file would; a credential inside is
 #                  refused like any other; any other long embed is refused outside assets/ or icons/. An .svg that
@@ -131,6 +132,24 @@ NEVER = [
         AS + "/" + w("created", "-by") + "|" + AS + "-[a-z]|" + w("created", "-by-")
         + "(?:fortuna|alfred|kavanah|auggie|littlebird|mystarch|cosmos)|" + w("HAND", "OFF_20") + "[0-9]{6}|"
         + w("_PRO", "MPT_20") + "[0-9]{6}", re.I)),
+    # v5 (Nov 9). A bare 64-hex string is a checksum or a transaction hash as often as a key, and twelve ordinary words are
+    # a sentence, so both need a label within a few characters; values that repeat and the published test phrases pass.
+    ("a labelled private key (64 hex digits)", re.compile(
+        r"(?i:(?:private|priv|secret|signing|wallet)[ \t_-]*key)[^A-Za-z0-9\n]{1,8}(?:0[xX])?"
+        r"(?!(?P<unit>[0-9a-fA-F]{1,16})(?P=unit)+(?![0-9a-fA-F]))[0-9a-fA-F]{64}(?![0-9a-zA-Z])")),
+    ("a labelled seed phrase", re.compile(
+        r"(?i:mnemonic|(?:seed|recovery)[ \t_-]*phrase)[^A-Za-z0-9\n]{1,8}(?!test[ \t]+test|abandon[ \t]+abandon|word[ \t]+word)"
+        r"(?:" + "|".join(rf"(?:[a-z]{{3,8}}[ \t]+){{{n}}}" for n in (23, 20, 17, 14, 11)) + r")[a-z]{3,8}(?![ \t]*[A-Za-z0-9-])")),
+    ("a signed web token (three parts)", re.compile(
+        r"(?<![A-Za-z0-9_-])" + w("ey", r"J[A-Za-z0-9_-]{10,}\.ey", r"J[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}"))),
+    ("an authorization header with a bearer token", re.compile(
+        r"(?i:authorization)[\"'\s:=]{1,6}(?i:bearer)[ \t]+(?=[A-Za-z0-9._~+/=-]*[0-9])[A-Za-z0-9._~+/=-]{20,}")),
+    # A password in a database address, on a host with a real name. Placeholders and local addresses are documentation.
+    ("a database address with a password", re.compile(
+        r"(?i:\b(?:postgres(?:ql)?|mysql|mariadb|mongodb(?:\+srv)?|rediss?|amqps?)://)[^\s:/@'\"`<>{}$]*:"
+        r"(?!(?i:pass(?:word)?|pwd|secret|changeme|change_me|test|dummy|sample|example|x{3,}|\*{3,}|your[a-z_-]*)@)"
+        r"[^\s/@'\"`<>{}$]{3,}@"
+        r"(?!(?i:localhost|127\.|0\.0\.0\.0|[^\s/:]*example|[^\s/:]*\.local\b|[^\s/:]*\.test\b))[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+")),
 ]
 # The bare agent-notes folder name (Psanctuary family), except the public attribution spec link.
 BARE_AS = re.compile(AS, re.I)
@@ -200,6 +219,22 @@ SENSITIVE = [
 ]
 ACCOUNT = re.compile(r"\b(?:" + w("acc", "ount") + r"|acct|routing|iban|aba)\b(?:[ \t]*(?:number|num|no\.?|#))?[ \t]*[:#.-]?[ \t]*"
                      r"((?:[A-Z]{2}[0-9]{2}[ ]?)?[0-9][0-9 -]{3,}[0-9])", re.I)
+# v5 (Nov 9): insurance policy and member numbers have no standard format, so the label carries it: the label, then within a
+# few characters a run of six or more letters and digits holding at least one digit. Like an account number, a person may
+# read and attest it. A masked value (X or * standing in for all but a few digits), a date and a shorter number pass.
+POLICY = re.compile("".join(f"(?<!{b})" for b in ("privacy ", "privacy-", "privacy_", "cookie ", "cookie-", "refund ", "return ", "retention "))
+                    + r"(?i:\b(?:policy|member|subscriber|insured)[ \t_-]*(?:(?:number|num|nbr|no\.?|id)(?![A-Za-z])|\#))[^A-Za-z0-9]{0,8}"
+                    r"([A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])|(?<=[0-9])[ ](?=[0-9]))*)")
+
+
+def policy_value(value):
+    """True when what follows a policy or member label is the number itself, not a date, a mask or a short reference."""
+    if re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+        return False
+    real = re.sub(r"[^A-Za-z0-9]|[xX]", "", value)
+    return len(real) >= 6 and any(c.isdigit() for c in real)
+
+
 EMBED = re.compile(r"data:([A-Za-z0-9.+/-]*)(?:;[A-Za-z0-9=._-]+)*?;base64,([A-Za-z0-9+/=%\s]*)", re.I)
 # What an embed may not be, by its label or by its bytes.
 ACTIVE_MIME = re.compile(r"html|script|wasm|pdf|executable|msdownload|dosexec|portable-exec|x-sh\b|x-elf|mach-?o|x-msi|java-archive", re.I)
@@ -215,7 +250,7 @@ SVG_LINK = re.compile(r"=\s*[\"']?\s*(?:javascript|vbscript):", re.I)
 SEG_NEVER = re.compile(r"^(?:" + AS + r".*|\.git|\.github|\.claude|\.env.*|CLAUDE\.md|AGENTS(?:\.override)?\.md|"
                        r"PENDING-TASKS\.md|pending-tasks.*\.md|node_modules|memory|keys|keystore|wallets?|credentials|secrets)$", re.I)
 FILE_NEVER = re.compile(r"^(?:.*\.(?:pem|key|p12|pfx|keystore)|id_rsa.*|id_ed25519.*|.*keystore.*|.*mnemonic.*|.*seed-phrase.*|"
-                        r"seed.*|.*secret.*|.*credential.*|.*\.env|\.env.*|.*service-account.*\.json)$", re.I)
+                        r"seed.*|.*secret.*|.*credential.*|.*\.env|\.env.*|.*service-account.*\.json|.*\.tfstate(?:\..*)?)$", re.I)
 LEGAL_LANES = {"entity", "tax", "filings", "counsel"}
 ASSET_DIRS = {"assets", "icons"}
 
@@ -395,6 +430,10 @@ def scan_text(text, paged=False):
     for m in ACCOUNT.finditer(text):
         if sum(c.isdigit() for c in m.group(1)) > 4:
             sens.append(f"a labelled account number longer than four digits ({where(text, m.start(), paged)})")
+            break
+    for m in POLICY.finditer(text):
+        if policy_value(m.group(1)):
+            sens.append(f"a labelled policy or member number ({where(text, m.start(), paged)})")
             break
     return never, sens
 

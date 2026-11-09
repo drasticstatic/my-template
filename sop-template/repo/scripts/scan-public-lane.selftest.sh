@@ -217,6 +217,43 @@ write("pagefind_fake_wasm_gz/pagefind/wasm.en.pagefind", gzip.compress(b"pagefin
 write("pagefind_outside/search/en_abc12.pf_fragment", GZ)
 write("pagefind_secret/pagefind/fragment/en_abc12.pf_fragment", gzip.compress(('{"content":"' + TOKEN + '"}').encode()))
 write("pagefind_other_binary/pagefind/blob.bin", b"\x00\x01\x02\x03binary")
+# v5 (Nov 9): policy and member numbers, labelled keys and phrases, tokens and database addresses. Planted values are fakes.
+write("policy_number/README.md", "Policy " + "Number: 1234" + "5678\n")
+write("policy_hash/README.md", "Policy #" + "A12" + "3456 on file.\n")
+write("policy_dotted/README.md", "policy no. " + "LF-123" + "4567\n")
+write("policy_member/README.md", "Member " + "ID: W12" + "345678\n")
+write("policy_camel/data.json", '{"policy' + 'Number": "ZX9' + '87654321"}\n')
+write("policy_table/README.md", "| Policy " + "No | 987" + "6543 |\n")
+write("policy_spaced/README.md", "Subscriber " + "number 123 " + "456 789\n")
+pdf("policy_pdf/letter.pdf", "Policy " + "Number 1234" + "5678")
+office("policy_sheet/sheet.xlsx", {"xl/sharedStrings.xml": '<sst><si><t>Policy ' + 'No</t></si><si><t>' + '1234' + '5678</t></si></sst>', "xl/worksheets/sheet1.xml": "<worksheet/>"})
+write("policy_privacy/README.md", "Our privacy " + "policy id 1234" + "567 applies, and the cookie " + "policy no. 2345" + "678.\n")
+write("policy_version/README.md", "Policy " + "Version 2026" + "1109, policy " + "revision 2.1, policy v2.1.\n")
+write("policy_short/README.md", "Policy " + "no. 12345 and member " + "id 99 are too short.\n")
+write("policy_words/README.md", "Policy " + "number: ABCDEFGH. See the member " + "ID on your card.\n")
+write("policy_masked/README.md", "Policy " + "number: ****" + "1234 and member " + "ID XXXXXX" + "1234.\n")
+write("policy_prose/README.md", "The policy " + "no longer applies after 1234" + "567.\n")
+write("policy_date/README.md", "Policy " + "id (2026-" + "11-09) is current.\n")
+HEX = "a1b2c3d4e5f60718" + "293a4b5c6d7e8f90" + "0f1e2d3c4b5a6978" + "8796a5b4c3d2e1f0"
+write("key_labelled/config.txt", "DEPLOYER_PRI" + "VATE_KEY=0x" + HEX + "\n")
+write("key_quoted/config.json", '{"pri' + 'vateKey": "' + HEX + '"}\n')
+write("key_checksum/README.md", "sha" + "256:" + HEX + " and tx 0x" + HEX + "\n")
+write("key_zeros/README.md", "PRI" + "VATE_KEY=0x" + "0" * 64 + " and PRI" + "VATE_KEY=" + "ab" * 32 + "\n")
+WORDS = "apple river stone cloud mango tiger piano lemon grape candle forest window"
+write("phrase_labelled/config.txt", "MNE" + 'MONIC="' + WORDS + '"\n')
+write("phrase_test_vector/README.md", "MNE" + 'MONIC="' + "test " * 11 + 'junk"\n')
+write("phrase_prose/README.md", "Your recovery " + "phrase: write it on paper and keep it in a safe place at home, not in any file.\n")
+write("phrase_unlabelled/README.md", WORDS + "\n")
+write("sk_ant/config.txt", "key = s" + "k-ant-api03-" + "Q" * 40 + "\n")
+JWT_HEAD = "ey" + "JhbGciOiJIUzI1NiJ9"
+write("jwt_full/config.txt", "t=" + JWT_HEAD + "." + "ey" + "JzdWIiOiIxMjM0NTY3ODkwIn0" + "." + "dozjgNryP4J3jVmNHl0w5N" + "_XgL0n3I9PlFUP0THsR8U\n")
+write("jwt_partial/README.md", "A header begins " + JWT_HEAD + " and nothing follows it.\n")
+write("bearer_hit/config.txt", "Author" + "ization: Bearer " + "abc123DEF456" + "ghi789JKL012\n")
+write("bearer_placeholder/README.md", "Author" + "ization: Bearer $TOKEN and Author" + "ization: Bearer YOUR_TOKEN_HERE_PLEASE\n")
+write("db_hit/config.txt", "DATABASE_URL=postgres" + "://app:s3cr3tPw@db.abc" + "xyz.supabase.co:5432/app\n")
+write("db_placeholder/README.md", "postgres" + "://user:password@localhost:5432/db and mysql" + "://root:changeme@db.example.com/x and postgres" + "://u:${DB_PASS}@db.abc" + "xyz.supabase.co/x and sqlite" + ":///local.db\n")
+write("tfstate/terraform.tfstate", "{}\n")
+write("tfstate_backup/terraform.tfstate.backup", "{}\n")
 PY
 
 # ── harness ───────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -418,6 +455,46 @@ expect 1 "binary file"              "the same gzip outside a pagefind/ folder is
 expect 1 "GitHub token"             "a token inside a compressed fragment is inflated, found and refused" -- "$fx/pagefind_secret"
 expect 1 "No attestation opens"     "and no attestation opens it"                                         -- "$fx/pagefind_secret"
 expect 1 "binary file"              "any other binary under pagefind/ is still refused"                   -- "$fx/pagefind_other_binary"
+# ── v5 (Nov 9): policy and member numbers, labelled keys and phrases, tokens and database addresses ──────────────────
+expect 1 "policy or member"         "v5: a labelled policy number is refused"                             -- "$fx/policy_number"
+expect 1 "policy or member"         "v5: the # label with a letter-led value is refused"                  -- "$fx/policy_hash"
+expect 1 "policy or member"         "v5: lower case, a dotted label and a hyphenated value are refused"   -- "$fx/policy_dotted"
+expect 1 "policy or member"         "v5: a labelled member identifier is refused"                         -- "$fx/policy_member"
+expect 1 "policy or member"         "v5: the same label inside JSON is refused"                           -- "$fx/policy_camel"
+expect 1 "policy or member"         "v5: the same label in a Markdown table is refused"                   -- "$fx/policy_table"
+expect 1 "policy or member"         "v5: a subscriber number written in groups is refused"                -- "$fx/policy_spaced"
+expect 1 "policy or member"         "v5: label and value in neighbouring spreadsheet cells are refused"   -- "$fx/policy_sheet"
+if [ "$have_pdf" = 1 ]; then
+  expect 1 "policy or member"       "v5: a labelled policy number inside a PDF is refused"                -- "$fx/policy_pdf"
+fi
+attest "README.md | Test Officer | 2026-11-01 | opened and read"
+expect 0 "attested  README.md"      "v5: a person may read a policy number and attest it, like an account" -- "$fx/policy_number" "$att"
+expect 0 "clean"                    "v5: a privacy or cookie policy reference passes"                     -- "$fx/policy_privacy"
+expect 0 "clean"                    "v5: a policy version passes"                                         -- "$fx/policy_version"
+expect 0 "clean"                    "v5: a number shorter than six passes"                                -- "$fx/policy_short"
+expect 0 "clean"                    "v5: a value with no digit passes"                                    -- "$fx/policy_words"
+expect 0 "clean"                    "v5: a masked value passes"                                           -- "$fx/policy_masked"
+expect 0 "clean"                    "v5: prose where 'no' is just the word passes"                        -- "$fx/policy_prose"
+expect 0 "clean"                    "v5: a date after the label passes"                                   -- "$fx/policy_date"
+expect 1 "labelled private key"     "v5: a labelled 64-hex key is refused"                                -- "$fx/key_labelled"
+expect 1 "No attestation opens"     "and no attestation opens it"                                         -- "$fx/key_labelled"
+expect 1 "labelled private key"     "v5: the same key named inside JSON is refused"                       -- "$fx/key_quoted"
+expect 0 "clean"                    "v5: a checksum and a transaction hash, unlabelled, pass"             -- "$fx/key_checksum"
+expect 0 "clean"                    "v5: a labelled value that merely repeats passes"                     -- "$fx/key_zeros"
+expect 1 "labelled seed phrase"     "v5: a labelled twelve-word phrase is refused"                        -- "$fx/phrase_labelled"
+expect 0 "clean"                    "v5: the published test phrase passes"                                -- "$fx/phrase_test_vector"
+expect 0 "clean"                    "v5: a sentence after the label passes"                               -- "$fx/phrase_prose"
+expect 0 "clean"                    "v5: twelve words with no label pass"                                 -- "$fx/phrase_unlabelled"
+expect 1 "API key shape"            "v5: a key with the longer vendor prefix is caught by the existing rule" -- "$fx/sk_ant"
+expect 1 "signed web token"         "v5: a three-part signed token is refused"                            -- "$fx/jwt_full"
+expect 0 "clean"                    "v5: a token header alone passes"                                     -- "$fx/jwt_partial"
+expect 1 "bearer token"             "v5: a hardcoded bearer header is refused"                            -- "$fx/bearer_hit"
+expect 0 "clean"                    "v5: a variable or placeholder in that header passes"                 -- "$fx/bearer_placeholder"
+expect 1 "database address"         "v5: a password in a database address is refused"                     -- "$fx/db_hit"
+expect 1 "No attestation opens"     "and no attestation opens it"                                         -- "$fx/db_hit"
+expect 0 "clean"                    "v5: placeholders, local addresses and variables pass"                -- "$fx/db_placeholder"
+expect 1 "it never travels"         "v5: an infrastructure state file never travels"                      -- "$fx/tfstate"
+expect 1 "it never travels"         "v5: nor does its backup"                                             -- "$fx/tfstate_backup"
 # the scanner and this test are publishable through a lane: they trip nothing themselves
 mkdir -p "$work/self/scripts"; cp "$scan" "$0" "$work/self/scripts/"
 expect 0 "clean"                    "the scanner and its self-test pass their own tripwire"               -- "$work/self"
