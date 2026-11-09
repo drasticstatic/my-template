@@ -13,12 +13,12 @@ need one decision from Christopher, and the lab `iamoneself` needs a master rule
 
 | File | Commit | md5 |
 |---|---|---|
-| `scripts/scan-public-lane.sh` | `3d1a6c7` | `e0a8a277e4048adeaec5698227f2ea3b` |
-| `scripts/scan-public-lane.selftest.sh` | `3d1a6c7` | `e0b53b25122f4fa5af6ad7e4cba4a3cb` |
+| `scripts/scan-public-lane.sh` | `37424c7` | `f3f44d835ae7be59b3f124e74e40aae6` |
+| `scripts/scan-public-lane.selftest.sh` | `37424c7` | `178045eb3451251ad609d7928d0e4c21` |
 
 Copy, do not fork: when the master changes, copy it again into each repository on this page. The self-test reports
-131/131 in a copy, 135/135 where `scripts/sync-allowlist.sh` sits beside it, and 137/137 here (the `06ac002` master
-reported 127, 131 and 133; `8002408` 112, 116 and 118). Lanes on the template's family
+167/167 in a copy, 171/171 where `scripts/sync-allowlist.sh` sits beside it, and 173/173 here (the `3d1a6c7` master
+reported 131, 135 and 137; `06ac002` 127, 131 and 133; `8002408` 112, 116 and 118). Lanes on the template's family
 carry `sop-template/repo/scripts/sync-allowlist.sh` byte for byte (md5 `504181e2…`). Psanctuary's `--check` family keeps
 its own script with the call site edited.
 
@@ -60,6 +60,16 @@ words altogether: under Christopher's standing rule a bare own-repo name in pros
 v3 surfaced) is not a matter. The walled-off repository's two words stay, since they name the matter itself and not only a
 repository; a matter word or a credential in the same prose still trips, and no attestation opens the credential. Four
 self-test cases added, the real README line among them, verbatim; 137/137 here.
+
+**2026-11-09, v5: policy and member numbers, labelled keys, tokens and database addresses (`37424c7`).** A labelled insurance
+policy or member number (no standard format, so the label carries it: the label, then within a few characters six or more
+letters and digits holding a digit) is refused unless a person attests the file, as a labelled account number is. Masked
+values, dates, policy versions and privacy-policy references pass. Five credential rules join the ones no attestation opens:
+a 64-hex key or a seed phrase beside its label (bare, each is a checksum or a sentence as often as a secret), a three-part
+signed token, a hardcoded bearer header, and a database address with a real password on a named host. Infrastructure state
+files never travel. Thirty-six self-test cases added. A dry run of the new rules over the 62 clones found 4 files in one
+lab, all the labelled-key rule, in saved vendor pages; that lane stops when it takes v5. The copies on this page are still
+v4 (`3d1a6c7`) except the row marked v5: the fleet re-copy has not been run.
 
 The 28188db master (2026-11-02) added the media list. `PUBLIC-LANE-MEDIA.txt` names folders whose pictures and fonts a
 lane publishes on purpose: a person chose them, and a machine still reads what it can. Base64 in text is decoded and
@@ -249,7 +259,7 @@ copy below was checked by md5 against the master after the push: all 60 rows mat
 | `drasticstatic/aunt-harriot` | main | `c462fc3` | 112/112, matches |
 | `drasticstatic/david-amaringo` | preview | `54b0dfb` | 112/112, matches |
 | `drasticstatic/david-amaringo` | r5-lanes | `9a1f22f` | 112/112, matches, on the held branch, not pushed |
-| `drasticstatic/divorce-custody-assistant` | main | `7f5843f` | 131/131, matches (resynced 2026-11-05 by the main session, closing the long-standing gap below) |
+| `drasticstatic/divorce-custody-assistant` | main | `a54e9c9` | 167/167, matches the v5 master `37424c7` (refreshed 2026-11-09; first resynced 2026-11-05 at `7f5843f`, closing the long-standing gap below) |
 | `drasticstatic/dpnelson` | main | `c79ce72` | 112/112, matches |
 | `drasticstatic/findyourfeathers` | main | `539c584` | 112/112, matches |
 | `drasticstatic/fortuna-vision` | main | `075d1b0` | 112/112, matches |
