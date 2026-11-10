@@ -2,10 +2,10 @@
 
 ![SOP](https://img.shields.io/badge/SOP-IT--010-d9a441?style=flat-square)
 ![Status](https://img.shields.io/badge/Status-draft-334155?style=flat-square)
-![Changed](https://img.shields.io/badge/Changed-2026--11--06-8a6a2a?style=flat-square)
+![Changed](https://img.shields.io/badge/Changed-2026--11--10-8a6a2a?style=flat-square)
 ![For](https://img.shields.io/badge/For-Anyone_who_keeps_work_on_their_own_Mac-64748b?style=flat-square)
 
-**Department:** IT · **ID:** 010 · **Status:** draft (approved when tagged) · **Owner:** the organisation's stewards; any person may run the checks · **Last changed:** 2026-11-06
+**Department:** IT · **ID:** 010 · **Status:** draft (approved when tagged) · **Owner:** the organisation's stewards; any person may run the checks · **Last changed:** 2026-11-10
 
 > [!NOTE]
 > **TL;DR.** Each kind of data has one place that is its record, and at least one copy somewhere else.
@@ -13,6 +13,8 @@
 > - **Transcripts:** Claude Code deletes them after **30 days** unless told otherwise, silently. We set `cleanupPeriodDays` to **3650** (ten years), and seal a copy of `~/.claude/projects` every night, encrypted, into iCloud Drive or a folder you name. The live `~/.claude` never goes into iCloud.
 > - **Code:** git and GitHub are the record. The safety bundles carry what GitHub does not have yet.
 > - **The whole Mac:** Time Machine, once a destination exists. Leave out only what can be rebuilt.
+> - **Scratch that must survive a restart:** save it with `keep-scratch.sh`. It picks the road: anything that looks like a secret, or is over 1 GB, stays on the Mac (never synced; Time Machine covers it); everything else goes to a synced folder. Nothing is overwritten or deleted.
+> - **Three layers, three different failures:** GitHub for pushed work, the sealed copies for what is not pushed, Time Machine for the whole Mac. During a legal hold, nothing is deleted or moved out of reach.
 > - **Databases are readings, raw logs are the record.** Back up the logs; rebuild the database.
 > - **Never to GitHub:** transcripts, keys, passphrases, `.env` files, databases, archives. **Passphrases and keys live in the password manager.**
 > - **A copy you have never restored from is a hope.** Run the [restore drills](#7-the-restore-drills) on their schedule.
@@ -26,6 +28,8 @@
 | Which copy is the record | [5. Readings and records](#5-databases-are-readings-raw-logs-are-the-record) |
 | What must never be pushed | [6. What never goes to GitHub](#6-what-never-goes-to-github) |
 | How often to prove it works | [7. The restore drills](#7-the-restore-drills) |
+| Where scratch work goes so a restart cannot lose it | [8. Scratch that must survive a restart](#8-scratch-that-must-survive-a-restart) |
+| Which layer protects against what, and what a legal hold changes | [9. Three layers, and a legal hold](#9-three-layers-and-a-legal-hold) |
 
 ## <img src="../assets/icons/compass.svg" width="24" height="24" alt=""> Purpose
 Say, in one place, how we keep each kind of data: how long it is kept, where its record lives, where its copies go, and how we prove we can get it back. The procedures are short and each has commands, so anyone can run them and anyone can check.
@@ -65,6 +69,8 @@ flowchart LR
 | Raw logs | git, while they fit; an off-machine copy once they leave it | Time Machine | as their procedure says |
 | Databases built from logs | none: they are readings | none needed: rebuild from the logs | until rebuilt |
 | Passphrases, keys, `.env` values | the password manager | the password manager's own backup | as long as what they open |
+| Scratch work waiting on a person | the folder `keep-scratch.sh` saved it to | Time Machine (the local road) or the sync service (the synced road) | until moved to `done/`; never deleted |
+| The organisation's accounts (email, shared drive, GitHub organisation) | the organisation's own account, never a personal one | the provider's own; an export kept in the organisation's records | as the organisation decides |
 
 ## <img src="../assets/icons/files.svg" width="24" height="24" alt=""> 1. Transcript retention
 
@@ -220,12 +226,50 @@ A drill restores into a new folder, never over live data. The person at the keyb
 | **Quarterly** | one file from Time Machine | Finder › Browse Time Machine Backups (it mounts the backup: say so first), restore one file to a new place | the file opens, from a dated backup |
 | **Twice a year** | the second key works | `--verify` an archive with `CLAUDE_ARCHIVE_PASSFILE` pointing at a file pasted from the password manager, not the Mac's own | `verify` passes: the password manager's copy opens the archives |
 | **Monthly** | the space | `--list` total against the iCloud plan | under the plan with room to spare; otherwise `--move-old 3 DIR` to the drive |
+| **Monthly** | nothing waiting forgotten | `keep-scratch.sh status` | every open folder has a `NOTE.md`, and none is older than 30 days without a reason |
 
 **Drill log.** One row per drill, newest last. A missed month is written down too.
 
 | Date | Drill | Result | By |
 |---|---|---|---|
 | 2026-11-06 | archive measured before first use: a full and a one-day incremental of the real folder, into scratch, with a scratch passphrase, then verified | full 1,913 files, 1.2 GB sealed, verified in 7 s; incremental 285 files, 216 MB. Not yet run into its real destination | a helper |
+
+## <img src="../assets/icons/folder-lock.svg" width="24" height="24" alt=""> 8. Scratch that must survive a restart
+
+**Why.** A helper's scratchpad lives in a temporary folder, and a restart empties it. Work that has to wait for a person, such as a list of `!` commands, a backup made before a risky move, or a draft for review, would be lost. So it goes through one script that picks the right place for it.
+
+**The fork in the road.** `scripts/keep-scratch.sh` looks at what you are saving:
+
+| If it | It goes | Because |
+|---|---|---|
+| has file names that look like secrets (`.env`, keys, passphrases, credentials, wallets) | a local folder on this Mac | it must never sync anywhere; Time Machine covers it |
+| is over 1 GB | the same local folder | too big to sync for no reason |
+| is saved with `--local` | the same local folder | you asked |
+| is anything else | a synced folder | it follows you to your other devices |
+
+The two folders are named in the person's own user-level instructions, never in a public page.
+
+1. **Save:** `sh ~/code/my-template/scripts/keep-scratch.sh save SRC REPO TOPIC "what it is waiting on"`. *You should see:* the folder it was copied to. A `NOTE.md` inside says when, from where, which road and why, and what it waits on. It copies, and it never overwrites: a second save of the same topic gets `-2`.
+2. **See what is open:** `sh ~/code/my-template/scripts/keep-scratch.sh status`. *You should see:* a count for each road and one line per open folder. A session-start hook runs `status --hook`, so every new session sees the list; it prints nothing when both are empty.
+3. **Finish:** once the commands have run and the work is committed, `sh ~/code/my-template/scripts/keep-scratch.sh done FOLDER`. *You should see:* the folder's new place under `done/YYYY/MM/`. Nothing is deleted; the person empties `done/` themselves if they ever want the space.
+
+A helper may run `save`, `status` and `done`. It never moves a secret into the synced road by hand, and case or legal documents go in neither road.
+
+## <img src="../assets/icons/shield-check.svg" width="24" height="24" alt=""> 9. Three layers, and a legal hold
+
+**Three layers, each covering a different failure:**
+
+| Layer | Holds | Protects against | Does not protect against |
+|---|---|---|---|
+| **GitHub** | everything committed and pushed | a lost, stolen or broken Mac | work not yet pushed; anything that should never be pushed |
+| **Sealed copies** (the nightly transcript archive, the git safety bundles, the synced scratch road) | what GitHub does not have | a dead disk before a push; a session swept away by retention | a lost passphrase, which turns every copy into noise |
+| **Time Machine** | the whole Mac, hourly | everything else on the disk, including the local scratch road and gitignored logs | the house itself: a fire or theft takes the drive too, which is why a copy away from the house comes next |
+
+A layer the organisation has never restored from is a hope, not a backup. Section 7's drills prove each one.
+
+**During a legal hold, nothing is deleted.** the organisation's legal-hold procedure says when a hold applies (in an organisation's own procedures repository, SOP-GOV-101). Once a hold applies, keep every copy in every layer as it is: no clean-up, no `--move-old`, no emptying `done/`, no rewriting git history, and no moving material somewhere a request cannot reach. Restructuring existing material to keep it from a request can be treated as concealment. Changes to how *new* work is kept are fine, and are written down here.
+
+**Who checks, monthly.** A steward, in the first week of each month: runs `keep-scratch.sh status` and asks about any folder open for more than 30 days, runs the drills in section 7 that fall due, confirms Time Machine has a recent backup or says plainly that it has no drive yet, and adds a row to the drill log.
 
 ## <img src="../assets/icons/circle-check.svg" width="24" height="24" alt=""> Verification
 The procedure is in place when all of these are true:
@@ -234,6 +278,7 @@ The procedure is in place when all of these are true:
 - both passphrases are in the password manager, and the clipboard was cleared;
 - `git-safety-backup.sh --dry-run` lists nothing you did not expect, or bundles are being written;
 - `tmutil latestbackup` gives a recent date, or the page says plainly that Time Machine has no destination yet;
+- `keep-scratch.sh status` shows nothing open for more than 30 days without a reason;
 - the drill log has a row from this quarter.
 
 ## <img src="../assets/icons/wrench.svg" width="24" height="24" alt=""> Troubleshooting
@@ -258,6 +303,7 @@ The procedure is in place when all of these are true:
 ## <img src="../assets/icons/history.svg" width="24" height="24" alt=""> Change log
 | Date | Change |
 |---|---|
+| 2026-11-10 | Scratch that must survive a restart (`keep-scratch.sh`, its two roads and the session-start hook); the three layers and what each protects against; what a legal hold changes; the monthly check. Time Machine is still waiting on a drive. |
 | 2026-11-06 | A failed night is never silent: `--status`, the failure record, the banner and the `notify` hook; the morning-after check; what to do when macOS blocks the background job from iCloud Drive. |
 | 2026-11-06 | Later the same day: an exclusion can be set before a drive exists, and how to take it off; hiding a folder from Finder (`chflags hidden`), and why it is neither privacy nor an exclusion; each destination gets its own schedule; `--move-old` and the three-months-in-iCloud rhythm; check the iCloud plan before scheduling; a renamed project folder is caught. |
 | 2026-11-06 | Drafted, on the ask to bake transcript retention into how we protect, back up and store our data: retention at 3650 days, the nightly sealed archive and its measured sizes, Time Machine's exclusions, the safety bundles, readings and records, what never goes to GitHub, and a restore drill schedule with its log. |
