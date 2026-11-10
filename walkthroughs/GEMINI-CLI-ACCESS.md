@@ -20,7 +20,7 @@
 1. <img src="../assets/icons-phosphor/lock.svg" width="16" height="16" alt=""> **Signing Gemini CLI in with a Workspace account can no longer be bought.** Google closed Gemini Code Assist Standard and Enterprise to new buyers on 2026-10-09, and Workspace AI Ultra Access is closed too ([Google's words](#-what-changed-in-googles-words)).
 2. <img src="../assets/icons-phosphor/door-open.svg" width="16" height="16" alt=""> **Three doors are still open:** a **paid Gemini API key** (cheapest, prepaid from $5), **Vertex AI** on a Cloud project with billing, or Google's own successor, **Antigravity CLI (`agy`)**, which the administrator provisions.
 3. <img src="../assets/icons-phosphor/shield-alert.svg" width="16" height="16" alt=""> **Paid Workspace Gemini is not paid Gemini CLI.** A Workspace plan with Gemini in Gmail and Docs does not pay for the terminal. Never fix an entitlement error by quietly turning on API billing.
-4. <img src="../assets/icons-phosphor/users.svg" width="16" height="16" alt=""> **Who does what:** the **Workspace administrator** (for THEF, Kenney) checks licences and turns services on. The **user** (Christopher) sets up an isolated wrapper, keeps the key out of his shell profile, and proves the account before anything runs.
+4. <img src="../assets/icons-phosphor/users.svg" width="16" height="16" alt=""> **Who does what:** the **Workspace administrator** (for THEF, Kenney) checks licences and turns services on in the Admin console. Doors A, D and F also need someone with roles in the **Google Cloud console**, which may be the same person or not ([two consoles](#-who-does-what)). The **user** (Christopher) sets up an isolated wrapper, keeps the key out of his shell profile, and proves the account before anything runs.
 5. <img src="../assets/icons-phosphor/footprints.svg" width="16" height="16" alt=""> **Do this first:** read [Which door is yours](#-which-door-is-yours), agree on one door together, then follow only that door's steps.
 
 > [!IMPORTANT]
@@ -65,7 +65,7 @@ Each door below sets these four separately, on purpose.
 flowchart TD
   S[Start: the user wants<br/>Gemini in the terminal] --> Q1{Does the organisation<br/>already hold a Code Assist<br/>Standard or Enterprise<br/>subscription?}
   Q1 -->|yes| A[Door A: assign a licence<br/>in the Cloud console]
-  Q1 -->|no| Q2{Will the administrator<br/>provision Antigravity with<br/>Gemini Enterprise?}
+  Q1 -->|no| Q2{Will the Cloud administrator<br/>provision Antigravity with<br/>Gemini Enterprise?}
   Q2 -->|yes| F[Door F: agy, Workspace sign-in]
   Q2 -->|no| Q3{Is there a Cloud project<br/>with billing the user<br/>may use?}
   Q3 -->|yes| D[Door D: Vertex AI]
@@ -79,20 +79,22 @@ flowchart TD
 | **C** · Gemini API key from Google AI Studio | **Yes** | the administrator turns AI Studio on; then the user | free tier exists but is unfit for organisation data; paid tier prepaid from $5, per token | the cheapest paid door, no Cloud project needed |
 | **D** · Vertex AI (now Gemini Enterprise Agent Platform), regular mode | **Yes** | the project's owner | per token, the same Flash rates as door C | a Cloud project with billing is already in use |
 | **E** · Vertex AI Express mode | **No** for a Workspace account: it is for "a @gmail.com Google Account," new to Google Cloud | — | 90-day free tier | never, for this account |
-| **F** · Antigravity CLI (`agy`) | **Yes** | the administrator provisions it | a Gemini Enterprise Standard or Plus seat (price not on Google's pages), or Pay-as-you-go at token prices; or a Gemini API key as in door C | the organisation wants Google's supported terminal route, under Workspace sign-in |
+| **F** · Antigravity CLI (`agy`) | **Yes** | the organisation's Google Cloud administrator assigns a licence or role | a Gemini Enterprise Standard or Plus seat (price not on Google's pages), or Pay-as-you-go at token prices; or a Gemini API key as in door C | the organisation wants Google's supported terminal route, under Workspace sign-in |
 
 Gemini CLI 0.67.0 still works through doors C and D. Google's supported terminal route for Workspace accounts is now door F.
 
 ## <img src="../assets/icons-phosphor/users.svg" width="24" height="24" alt=""> Who does what
 
-| Step | The administrator (Kenney) | The user (Christopher) |
+**Two consoles, maybe two people.** Google splits this work between the **Workspace Admin console** (<https://admin.google.com>: users, licences, AI Studio) and the **Google Cloud console** (<https://console.cloud.google.com>: Code Assist, Gemini Enterprise, projects, billing, IAM roles). Being a Workspace administrator does not by itself give Cloud roles. Where a step below says *Cloud administrator*, it means whoever holds that role in the organisation's Google Cloud; if that is not Kenney, he names who it is.
+
+| Step | The administrator (Workspace: Kenney; Cloud: whoever holds the role) | The user (Christopher) |
 |---|---|---|
 | Agree on the door | says which door the organisation will pay for, and who is the billing owner | says what the work is for (the beneficiary) |
-| Check licences | [Licence check](#-licence-check-for-the-administrator) | — |
-| Door A | assigns a Code Assist licence in the **Cloud console** | sets `GOOGLE_CLOUD_PROJECT` in the default wrapper |
-| Door C | turns **AI Studio** on for the user | creates the key, stores it outside the shell profile, uses the second wrapper |
-| Door D | grants the "Vertex AI User" role, or asks the project's owner to | signs in with `gcloud`, uses the second wrapper |
-| Door F | provisions Antigravity and assigns a Gemini Enterprise licence or IAM role | chooses **Business account** at sign-in |
+| Check licences | [Licence check](#-licence-check-for-the-administrator) (Workspace) | — |
+| Door A | Cloud: confirms the subscription, enables the API and grants the roles on `PROJECT_ID` ([below](#-licence-check-for-the-administrator)) | sets `GOOGLE_CLOUD_PROJECT` in the default wrapper |
+| Door C | Workspace: turns **AI Studio** on for the user. The billing owner links billing | creates the key, stores it outside the shell profile, uses the second wrapper |
+| Door D | Cloud: grants the "Vertex AI User" role, or asks the project's owner to | signs in with `gcloud`, uses the second wrapper |
+| Door F | Cloud: assigns a Gemini Enterprise licence or IAM role, and turns on AI developer tools | chooses **Business account** at sign-in |
 | Prove it | — | runs the [identity check](#-4-prove-the-account-and-fail-closed) before any real work |
 | Spend | approves spend before it happens | records each task in the [showback](#-costs) |
 
@@ -105,14 +107,15 @@ In the **Workspace Admin console** (<https://admin.google.com>):
 1. **One user's licences:** **Menu › Directory › Users**, click the user, scroll to **Licenses**. Each service has an on/off switch in the **Status** column; switch it, then **Save**. This needs the *User management* privilege.
    *You should see:* the user's licences listed with their switches.
 2. **Everyone, or automatic assignment:** **Menu › Billing › License settings**. This needs the *License management* privilege.
-3. **AI Expanded Access:** **Directory › Users**, tick the user, **Assign licenses › AI Expanded Access › Assign**. It can take up to 24 hours. Note that Google's AI Expanded page lists **no developer tools**, so this does not open Gemini CLI.
+3. **AI Expanded Access, check only:** if the user already has it, it shows in step 1's list. **Do not assign it for this purpose:** Google's AI Expanded page lists **no developer tools**, so it does not open Gemini CLI. (For other reasons, it is assigned at **Directory › Users**, tick the user, **Assign licenses › AI Expanded Access › Assign**, and can take up to 24 hours.)
 4. **Door C only, AI Studio:** **Menu › Apps › Additional Google services › AI Studio › Service status › On** (for everyone, an organisational unit or a group), then **Save**. This needs the *Gmail Settings administrator* privilege and a verified domain. With it off, users "can't set up or manage billing for the Gemini API."
    *You should see:* AI Studio's status **On** for the user's unit or group.
 
 Not in the Workspace Admin console at all:
 
-- **Code Assist licences (door A):** **Google Cloud console › Admin for Gemini ›** pick the billing account **› Manage Gemini Code Assist Subscription › License management**.
-- **Gemini Enterprise Standard or Plus seats (door F):** in the Google Cloud console, under Gemini Enterprise.
+- **Code Assist licences (door A), for a Cloud billing administrator:** **Google Cloud console › Admin for Gemini ›** pick the billing account **› Manage Gemini Code Assist Subscription › License management**. On `PROJECT_ID`, enable `cloudaicompanion.googleapis.com` (the Gemini for Google Cloud API) and grant the user `roles/cloudaicompanion.user` and `roles/serviceusage.serviceUsageConsumer`. A licence assigns itself when the user has `cloudaicompanion.licenses.selfAssign` on a project tied to that billing account; otherwise assign it on the License management page.
+  *You should see:* the user listed on License management. If there is no subscription to manage, door A is closed: choose another door.
+- **Gemini Enterprise Standard or Plus seats (door F):** in the Google Cloud console, under Gemini Enterprise ([door F's steps](#-3-the-paid-doors-c-d-or-f)).
 
 <img src="../assets/icons-phosphor/circle-dashed.svg" width="16" height="16" alt=""> **Unverified:** the **Menu › Billing › Subscriptions** overview, and an Admin console path for "provisioning Antigravity," which no Google page found on 2026-11-09 describes.
 
@@ -145,7 +148,7 @@ What was checked before this version was installed: the package was published by
 
 ## <img src="../assets/icons-phosphor/folder-lock.svg" width="24" height="24" alt=""> 2. The default wrapper: Google sign-in, no billing
 
-One wrapper per account, so the account is always explicit. This one can **never** bill an API key, because it removes every key from its environment before Gemini starts. It is the right wrapper for door A, and the safe default for everyone else.
+One wrapper per account, so the account is always explicit. This one can **never** bill an API key, because it removes every key from its environment before Gemini starts. It is the right wrapper for door A, and the safe default for everyone else: without a Code Assist licence its sign-in is refused, which is the point. It fails rather than quietly billing someone.
 
 ```sh
 mkdir -m 700 -p ~/.config/gemini-NAME/.gemini
@@ -183,15 +186,15 @@ Then its settings, `~/.config/gemini-NAME/.gemini/settings.json`:
 > [!NOTE]
 > Credential separation is not a sandbox. Two wrappers keep two accounts' logins apart; they do not stop a command run by Gemini from reading your files.
 
-## <img src="../assets/icons-phosphor/key-round.svg" width="24" height="24" alt=""> 3. A second wrapper, only for a paid door (C or D)
+## <img src="../assets/icons-phosphor/key-round.svg" width="24" height="24" alt=""> 3. The paid doors: C, D or F
 
-Doors C and D bill. Keep the default wrapper exactly as it is and add a **second** one, so choosing to pay is always a different command, never a quiet change.
+Follow only the door you agreed on. Doors C and D bill through Gemini CLI: keep the default wrapper exactly as it is and add a **second** one, so choosing to pay is always a different command, never a quiet change. Door F is a different program (`agy`), set up mostly by the Cloud administrator.
 
 <details open>
 <summary><b>Door C: a paid Gemini API key</b></summary>
 
 1. **The administrator** turns AI Studio on for the user ([licence check, step 4](#-licence-check-for-the-administrator)).
-2. **The user** opens <https://aistudio.google.com/app/apikey> as `ACCOUNT`, links billing and prepays (at least $5), and creates a key. Creating a key in an organisation's project needs `apikeys.keys.create`, `serviceusage.services.enable` and related permissions (for example *Project Editor*); without them, the administrator creates it.
+2. **The user** opens <https://aistudio.google.com/app/apikey> as `ACCOUNT` and creates a key. **The billing owner** agreed at the start (often the administrator, who holds the organisation's card) links the billing account and prepays at least $5; until then the key is on the free tier. Creating a key in an organisation's project needs `apikeys.keys.create`, `serviceusage.services.enable` and related permissions (for example *Project Editor*); without them, the administrator creates it.
 3. **Store the key in its own file**, never in `~/.zshrc`, `~/.bashrc`, a repository or a chat:
 
 ```sh
@@ -228,8 +231,11 @@ mkdir -m 700 -p ~/.config/gemini-NAME-paid/.gemini ~/.config/gcloud-NAME
 cat > ~/.local/bin/geminiNAME-paid <<'EOF'
 #!/bin/sh
 # Gemini CLI for ACCOUNT, billed to PROJECT_ID through Vertex AI. A separate command on purpose.
-unset GEMINI_API_KEY GOOGLE_API_KEY GOOGLE_APPLICATION_CREDENTIALS GOOGLE_GENAI_USE_GCA
+unset GEMINI_API_KEY GOOGLE_API_KEY GOOGLE_GENAI_USE_GCA
 export CLOUDSDK_CONFIG="$HOME/.config/gcloud-NAME"
+# Gemini CLI ignores CLOUDSDK_CONFIG, so name this profile's login file directly:
+export GOOGLE_APPLICATION_CREDENTIALS="$HOME/.config/gcloud-NAME/application_default_credentials.json"
+[ -s "$GOOGLE_APPLICATION_CREDENTIALS" ] || { echo "geminiNAME-paid: not signed in (no $GOOGLE_APPLICATION_CREDENTIALS); stopping" >&2; exit 1; }
 export GOOGLE_GENAI_USE_VERTEXAI=true GOOGLE_CLOUD_PROJECT="PROJECT_ID" GOOGLE_CLOUD_LOCATION="LOCATION"
 export GEMINI_CLI_HOME="$HOME/.config/gemini-NAME-paid"
 exec gemini "$@"
@@ -240,22 +246,29 @@ CLOUDSDK_CONFIG=~/.config/gcloud-NAME gcloud auth application-default login   # 
 
 Its settings use `vertex-ai` in place of `oauth-personal`. Google also allows a service-account key (`GOOGLE_APPLICATION_CREDENTIALS`) or a Cloud API key (`GOOGLE_API_KEY`) here; a person's own sign-in is easier to revoke.
 
-<img src="../assets/icons-phosphor/circle-dashed.svg" width="16" height="16" alt=""> **Unverified:** without `CLOUDSDK_CONFIG`, the `gcloud` login is shared by every account on the machine. Whether Gemini CLI reads the login from the folder `CLOUDSDK_CONFIG` names was not tested here; the identity check in step 4 is what catches it if not.
+<img src="../assets/icons-phosphor/circle-dashed.svg" width="16" height="16" alt=""> **Why two variables:** `CLOUDSDK_CONFIG` keeps `gcloud`'s own login in this profile's folder, but the Google sign-in library inside Gemini CLI 0.67.0 does not read it: it looks only in `~/.config/gcloud/`, which every account on the machine shares (read in the 0.67.0 code on 2026-11-09, not run). `GOOGLE_APPLICATION_CREDENTIALS` points it at this profile's file instead. The wrapper as a whole is still untested; the identity check in step 4 is what catches a wrong account.
 
 </details>
 
 <details>
 <summary><b>Door F: Antigravity CLI (agy)</b></summary>
 
-**The administrator** (as a Cloud administrator, with `roles/discoveryengine.agentspaceAdmin`):
+This door is not in the Workspace Admin console. Google: "Licenses are assigned by your organization's Google Cloud administrator."
 
-1. Enables `aiplatform.googleapis.com`.
-2. Turns on **Gemini Enterprise › Settings › AI developer tools** for the region. Google warns "AI developer tools may be turned off by default."
-3. Gives the user one of: a **Gemini Enterprise Standard or Plus seat** (an "active non-trial subscription"; Standard, Plus, Standard Emerging Market or Pay-as-you-go qualify, Business does not), or, on a Cloud project with an invoiced billing account, the role `roles/discoveryengine.agentspaceUser`.
+**The Cloud administrator** (with `roles/discoveryengine.agentspaceAdmin`), in the Google Cloud console:
 
-Google: "Your Workspace administrator must explicitly provision Antigravity for your account. If it isn't provisioned, sign-in fails."
+1. Enables the Gemini Enterprise API, `aiplatform.googleapis.com`, **before** buying anything, and waits about five minutes; Google says a purchase can fail otherwise.
+2. Turns on **Gemini Enterprise › Settings › AI developer tools** for the region (global, us or eu). Google warns "AI developer tools may be turned off by default."
+3. Gives the user access in one of two ways:
+   - a **Gemini Enterprise Standard or Plus seat**. It must be an "active non-trial subscription"; Standard, Plus, Standard Emerging Market and Pay-as-you-go qualify, Business and free trials do not; or
+   - with no seat, a Cloud project on an **invoiced** billing account, billed per use.
+4. Either way, grants the user `roles/discoveryengine.agentspaceUser`, which Google says everyone using Antigravity needs.
 
-**The user** chooses **Business account** at sign-in.
+*You should see:* the user holding a seat (or the role on the project), and AI developer tools **On** for the region.
+
+The Antigravity FAQ puts it as: "Your Workspace administrator must explicitly provision Antigravity for your account. If it isn't provisioned, sign-in fails." Its enterprise page shows the provisioning is the Cloud steps above.
+
+**The user** chooses **Business account** at sign-in, with the same identity the licence was given to.
 
 Without Workspace provisioning, `agy` can also run on a Gemini API key: set `"modelProvider": "gemini"` in `~/.gemini/antigravity-cli/settings.json` and export `GEMINI_API_KEY`, which brings back door C's billing (and its key rules).
 
@@ -266,11 +279,11 @@ Without Workspace provisioning, `agy` can also run on a Gemini API key: set `"mo
 Report four things separately, never as one "it works": **installed** (step 1), **authenticated** (signed in), **read-tested** (one read under the right account) and **write-tested** (only when a write is actually needed, and only after the read).
 
 <details open>
-<summary><b>Door A or F: the signed-in Google account</b></summary>
+<summary><b>Door A: the signed-in Google account</b></summary>
 
-Start the wrapper and run `/about` inside Gemini. It should show the sign-in method, which must be Google sign-in, never an API key (*unverified* for 0.67.0: what `/about` prints was not re-checked).
+Start the wrapper and run `/about` inside Gemini. Its **Auth Method** line must read `Signed in with Google (ACCOUNT)`, never `gemini-api-key` or `vertex-ai` (taken from the 0.67.0 code on 2026-11-09, not from a run; the address may be hidden if the user-identity display is off).
 
-<img src="../assets/icons-phosphor/circle-dashed.svg" width="16" height="16" alt=""> **Untested sketch** of an automatic check, to put in the default wrapper above `exec gemini`. It assumes Gemini CLI keeps the active account in `google_accounts.json` under its home, which was not confirmed for 0.67.0:
+<img src="../assets/icons-phosphor/circle-dashed.svg" width="16" height="16" alt=""> **Untested sketch** of an automatic check, to put in the default wrapper above `exec gemini`. The 0.67.0 code keeps the signed-in address under `"active"` in `google_accounts.json`, in the `.gemini/` folder under `GEMINI_CLI_HOME`; the sketch itself has not been run:
 
 ```sh
 ACTIVE="$(sed -n 's/.*"active"[^"]*"\([^"]*\)".*/\1/p' "$GEMINI_CLI_HOME/.gemini/google_accounts.json" 2>/dev/null)"
@@ -280,6 +293,13 @@ fi
 ```
 
 For the very first sign-in, run `FIRST_LOGIN=1 geminiNAME` once.
+
+</details>
+
+<details>
+<summary><b>Door F: the agy sign-in</b></summary>
+
+<img src="../assets/icons-phosphor/circle-dashed.svg" width="16" height="16" alt=""> **Unverified:** Google's Antigravity pages give no command that prints the signed-in account, and `agy` was not run for this page. Until one is known, the user confirms the account on the browser sign-in screen, and the administrator confirms in the Cloud console that the licence or role was given to `ACCOUNT`. If your address belongs to more than one identity provider, Google says to "sign in with the identity that matches your Gemini Enterprise license."
 
 </details>
 
@@ -350,7 +370,8 @@ Gemini CLI strips any variable named like `*KEY*`, `*TOKEN*`, `*SECRET*`, `*AUTH
 | Gemini CLI asks for `GOOGLE_CLOUD_PROJECT` | Workspace sign-in needs a Cloud project | set `PROJECT_ID` in the wrapper; the Gemini for Cloud API must be on there |
 | AI Studio says you "can't set up or manage billing for the Gemini API," or will not open | AI Studio is off for your unit or group | the administrator turns it on ([step 4](#-licence-check-for-the-administrator)) |
 | Requests stop after 250 a day, or Gemini 4 Argon is "not available" | the key is on the free tier | link billing and prepay, or stay on Flash |
-| `agy` sign-in fails with a Workspace account | Antigravity is not provisioned for it | the administrator, door F |
+| `agy` sign-in fails with a Workspace account | Antigravity is not provisioned for it | the Cloud administrator, door F: a seat or `agentspaceUser`, and AI developer tools on |
+| A Gemini Enterprise purchase fails | the Gemini Enterprise API was not on yet | enable `aiplatform.googleapis.com`, wait about five minutes, try again |
 | The administrator cannot find Code Assist in the Admin console | it is not there | **Google Cloud console › Admin for Gemini** |
 | A Vertex AI permission error | role, API or billing missing on `PROJECT_ID` | the project's owner grants "Vertex AI User," enables the Vertex AI API, attaches billing |
 | The wrapper stops: "signed in as …, expected ACCOUNT" | the check did its job: wrong account | sign out inside that wrapper and sign in again as `ACCOUNT` |
@@ -369,6 +390,7 @@ Gemini CLI strips any variable named like `*KEY*`, `*TOKEN*`, `*SECRET*`, `*AUTH
 | Consumer sign-in ended 2026-06-18; paid API keys keep working | <https://developers.googleblog.com/an-important-update-transitioning-gemini-cli-to-antigravity-cli/> | 2026-05-19 |
 | Quota page (stale on the plans it lists) | <https://geminicli.com/docs/resources/quota-and-pricing/> | 2026-06-18 |
 | Workspace sign-in needs a Cloud project; auth types | <https://github.com/google-gemini/gemini-cli/blob/main/docs/get-started/authentication.mdx> | — |
+| `/about`'s Auth Method line; `google_accounts.json` under `GEMINI_CLI_HOME`; the sign-in library ignoring `CLOUDSDK_CONFIG` | the installed `@google/gemini-cli` 0.67.0 bundle, read, not run | read 2026-11-09 |
 | Gemini Enterprise developer tools list | <https://docs.cloud.google.com/gemini/enterprise/docs/ai-developer-tools-overview> | — |
 | Code Assist setup and licences | <https://docs.cloud.google.com/gemini/docs/discover/set-up-gemini>, <https://cloud.google.com/products/gemini/pricing> | 2026-10-27 |
 | AI Studio on or off | <https://knowledge.workspace.google.com/admin/users/access/turn-google-ai-studio-on-or-off-for-users> | — |
