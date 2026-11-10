@@ -16,6 +16,7 @@
 #     sh scripts/claude-projects-archive.sh --move-old KEEP DIR the older chains moved (never deleted) to DIR, e.g. a drive
 #     sh scripts/claude-projects-archive.sh --install           a LaunchAgent at 00:40 nightly (runs --if-due); you run this
 #     sh scripts/claude-projects-archive.sh --uninstall         unload it; the plist is moved aside, not deleted
+#     sh scripts/claude-projects-archive.sh --notify-test       send one test phone note through ntfy.env (below)
 #     sh scripts/claude-projects-archive.selftest.sh            prove all of it against a fake home in a temporary folder
 #
 # Any mode takes --dest DIR (or CLAUDE_ARCHIVE_DEST=DIR). The default is iCloud Drive:
@@ -47,6 +48,19 @@
 # Files (CLAUDE_ARCHIVE_CONFIG moves the folder, CLAUDE_ARCHIVE_PASSFILE the passphrase alone):
 #   ~/.config/claude-archive/            mode 700
 #   ~/.config/claude-archive/passphrase  mode 600 (or 400), written by --init; copy it into your password manager
+#   ~/.config/claude-archive/ntfy.env    optional, mode 600 exactly, you write it: phone notes through ntfy (below)
+#
+# Optional phone notes through ntfy (https://ntfy.sh, or a self-hosted ntfy). Off unless ntfy.env exists. It holds
+# plain KEY=value lines, read as data (never sourced):
+#     NTFY_URL=https://ntfy.sh        optional; https only; the default is https://ntfy.sh
+#     NTFY_TOPIC=<a long random name>  required; letters, digits, - and _, up to 64
+#     NTFY_TOKEN=tk_...                optional; an access token, needed once the topic is reserved or the server has auth
+# It is not read at all unless it is a plain file you own with mode 600 (a warning is printed instead, and no note is
+# sent). One short note is sent when a --run or --if-due fails, and one when a full archive (the monthly one, the first
+# for a destination, or --full) is sealed and verified; never for a routine incremental or a "not due". A note carries
+# the host, the exit code and the reason with every word that holds a "/" replaced by <path>, or the archive's own name
+# and size; never another file name or path. The topic and token travel to curl on its stdin (-K -), never on a command
+# line. If ntfy cannot be reached the run's own result and exit code are unchanged. CLAUDE_ARCHIVE_NO_NTFY=1 turns it off.
 #
 # Optional, opt-in "backup upon commit" (not wired into any hook by this script or the fleet). In a repository of your
 # choosing, add this one line to its post-commit hook (.git/hooks/post-commit, or the folder core.hooksPath names):
@@ -149,6 +163,57 @@ take_lock() {
   printf '%s\n' "$$" > "$_lk"; LOCKED=1
 }
 PARTIAL=""
+
+# ---------------------------------------------------------------------------------------------------------------- ntfy
+NTFY_ENV="$CONFIG/ntfy.env"
+ntfy_warn() { printf 'claude-projects-archive: ntfy: %s\n' "$*" >&2; }
+# Sets N_URL, N_TOPIC, N_TOKEN from ntfy.env. Returns 1 when it is absent or turned off (silently), 2 when it is present
+# but not safe or not valid (with one warning). Never prints the topic or the token.
+ntfy_load() {
+  N_URL=""; N_TOPIC=""; N_TOKEN=""
+  [ "${CLAUDE_ARCHIVE_NO_NTFY:-0}" = 1 ] && return 1
+  [ -e "$NTFY_ENV" ] || [ -L "$NTFY_ENV" ] || return 1
+  if [ -L "$NTFY_ENV" ] || [ ! -f "$NTFY_ENV" ] || [ ! -O "$NTFY_ENV" ]; then
+    ntfy_warn "$NTFY_ENV is not a plain file you own; not read, no phone note."; return 2
+  fi
+  _nm="$(mode_of "$NTFY_ENV")"
+  [ "$_nm" = 600 ] || { ntfy_warn "$NTFY_ENV is mode $_nm; not read until it is 600 (chmod 600 '$NTFY_ENV'), no phone note."; return 2; }
+  while IFS= read -r _l || [ -n "$_l" ]; do
+    _l="$(printf '%s' "$_l" | tr -d '\r')"
+    case "$_l" in ''|'#'*) continue ;; esac
+    _l="${_l#export }"; _k="${_l%%=*}"; _v="${_l#*=}"
+    [ "$_k" = "$_l" ] && continue
+    case "$_v" in \"*\") _v="${_v#\"}"; _v="${_v%\"}" ;; \'*\') _v="${_v#\'}"; _v="${_v%\'}" ;; esac
+    case "$_k" in NTFY_URL) N_URL="$_v" ;; NTFY_TOPIC) N_TOPIC="$_v" ;; NTFY_TOKEN) N_TOKEN="$_v" ;; esac
+  done < "$NTFY_ENV"
+  N_URL="${N_URL:-https://ntfy.sh}"; N_URL="${N_URL%/}"
+  case "$N_URL" in https://?*) ;; *) ntfy_warn "NTFY_URL must start with https://; no phone note."; return 2 ;; esac
+  case "$N_URL" in *[!A-Za-z0-9._:/~-]*) ntfy_warn "NTFY_URL holds characters it may not; no phone note."; return 2 ;; esac
+  case "$N_TOPIC" in ''|*[!A-Za-z0-9_-]*) ntfy_warn "NTFY_TOPIC is missing or holds characters other than letters, digits, - and _; no phone note."; return 2 ;; esac
+  [ "${#N_TOPIC}" -le 64 ] || { ntfy_warn "NTFY_TOPIC is longer than 64 characters; no phone note."; return 2; }
+  case "$N_TOKEN" in *[!A-Za-z0-9_]*) ntfy_warn "NTFY_TOKEN holds characters a token does not; no phone note."; return 2 ;; esac
+  return 0
+}
+# Every word holding a "/" becomes <path>, so a note never carries a file path.
+ntfy_scrub() { printf '%s' "$1" | awk '{ for (i = 1; i <= NF; i++) if ($i ~ /\//) $i = "<path>"; print }'; }
+# ntfy_send TITLE PRIORITY TAGS MESSAGE: 0 sent; 1 not set up, not safe, or ntfy unreachable. Never fatal, never loud.
+ntfy_send() {
+  ntfy_load || return 1
+  command -v curl >/dev/null 2>&1 || { ntfy_warn "curl not found; no phone note."; return 1; }
+  _nt="$(printf '%s' "$1" | tr -d '"\\\r\n' | cut -c1-120)"
+  _nb="$(printf '%s' "$4" | tr '\r\n' '  ' | tr -d '"\\' | cut -c1-600)"
+  # The URL (with the topic) and the token go to curl as a config on stdin, so neither shows in a process listing.
+  if {
+       printf 'url = "%s/%s"\n' "$N_URL" "$N_TOPIC"
+       printf 'header = "Title: %s"\nheader = "Priority: %s"\nheader = "Tags: %s"\n' "$_nt" "$2" "$3"
+       [ -n "$N_TOKEN" ] && printf 'header = "Authorization: Bearer %s"\n' "$N_TOKEN"
+       printf 'data-raw = "%s"\n' "$_nb"
+     } | curl -q -fs --max-time 10 -o /dev/null -K - >/dev/null 2>&1
+  then return 0
+  else ntfy_warn "the ntfy server did not take the note (unreachable, or the token or topic was refused); the run's result is unchanged."; return 1
+  fi
+}
+
 # A failed --run or --if-due must not be silent (Nov 6 finding: macOS may block a background job from writing into
 # iCloud Drive, and nothing would tell you). It is written to state/failures.tsv and last-failure, shown as a macOS
 # banner (no prompt; CLAUDE_ARCHIVE_NO_BANNER=1 turns it off), and passed to ~/.config/claude-archive/notify if you made
@@ -162,6 +227,8 @@ note_failure() {
     osascript -e "display notification \"$(printf '%s' "${LASTERR:-see the log}" | tr -d '"\\' | cut -c1-180)\" with title \"Claude archive failed\"" >/dev/null 2>&1 || true
   fi
   [ -x "$CONFIG/notify" ] && "$CONFIG/notify" "$_msg" >/dev/null 2>&1 || true
+  ntfy_send "Claude archive failed" high warning \
+    "On $(hostname -s), exit $1: $(ntfy_scrub "${LASTERR:-see the log}") Run --status, or read the log, for details." || true
 }
 on_exit() {
   _rc=$?
@@ -283,6 +350,11 @@ do_run() {
   _t1="$(date +%s)"
   say "  done in $((_t1 - _t0)) s: $(human "$_bytes") sealed, verified ($_seen entries), sha256 written"
   say "  destination total: $(human "$(dir_bytes "$DEST_BASE")") in $DEST_BASE"
+  if [ "$_kind" = full ]; then
+    ntfy_send "Claude archive: full copy sealed" default lock \
+      "$_name on $(hostname -s): $_count files, $(human "$_bytes"), verified ($_why)." || true
+  fi
+  return 0
 }
 
 do_if_due() {
@@ -309,6 +381,11 @@ do_status() {
   done
   _lf="$( [ -s "$CONFIG/state/last-failure" ] && cat "$CONFIG/state/last-failure" || echo 0)"
   [ "$_lf" -gt 0 ] && say "last failure $(( (_now - _lf) / 3600 )) h ago: $(tail -n 1 "$CONFIG/state/failures.tsv" 2>/dev/null | cut -f3)"
+  ntfy_load; case $? in
+    0) say "phone notes (ntfy): on, $( [ -n "$N_TOKEN" ] && echo with || echo without) a token (failures and full archives)" ;;
+    1) say "phone notes (ntfy): off (no ntfy.env)" ;;
+    *) say "phone notes (ntfy): ntfy.env present but not used (see the warning above)" ;;
+  esac
   if [ "$_best" -eq 0 ]; then say "STALE: no archive has ever succeeded."; return 1; fi
   if [ "$_lf" -gt "$_best" ]; then say "STALE: the last run failed after the last success."; return 1; fi
   if [ $((_now - _best)) -gt $((STALE_HOURS * 3600)) ]; then say "STALE: the newest success is over ${STALE_HOURS} h old."; return 1; fi
@@ -573,8 +650,20 @@ do_uninstall() {
   fi
 }
 
+do_notify_test() {
+  ntfy_load; _rc=$?
+  [ "$_rc" = 1 ] && refuse "no $NTFY_ENV (or CLAUDE_ARCHIVE_NO_NTFY=1). See the walkthrough: how to make ntfy.env."
+  [ "$_rc" = 0 ] || refuse "$NTFY_ENV is not usable (the line above says why)."
+  if ntfy_send "Claude archive: test note" low test_tube \
+       "A test from $(hostname -s). Failures and full archives will arrive here."; then
+    say "sent a test note to the topic in ntfy.env ($( [ -n "$N_TOKEN" ] && echo with || echo without) a token). Check your phone."
+  else
+    fail "the test note was not taken (see the line above)."
+  fi
+}
+
 # ---------------------------------------------------------------------------------------------------------------- main
-usage() { sed -n '2,19p' "$SELF" | sed 's/^# \{0,1\}//'; }
+usage() { sed -n '2,20p' "$SELF" | sed 's/^# \{0,1\}//'; }
 OPT_DEST="${CLAUDE_ARCHIVE_DEST:-}"; OPT_FULL=0; MODE=""; POS_N=0
 # Options may come anywhere; what is left, in order, are the mode's own arguments.
 while [ $# -gt 0 ]; do
@@ -583,7 +672,7 @@ while [ $# -gt 0 ]; do
     --dest=*) OPT_DEST="${1#--dest=}" ;;
     --full) OPT_FULL=1 ;;
     -h|--help) usage; exit 0 ;;
-    --init|--run|--if-due|--status|--list|--verify|--restore|--restore-latest|--prune-plan|--move-old|--install|--uninstall)
+    --init|--run|--if-due|--status|--list|--verify|--restore|--restore-latest|--prune-plan|--move-old|--install|--uninstall|--notify-test)
       [ -z "$MODE" ] || refuse "one mode at a time ($MODE and $1)"; MODE="$1" ;;
     --) shift; while [ $# -gt 0 ]; do POS_N=$((POS_N + 1)); eval "POS_$POS_N=\$1"; shift; done; break ;;
     -*) refuse "unknown option $1 (try --help)" ;;
@@ -607,5 +696,6 @@ case "$MODE" in
   --move-old) [ $# -eq 2 ] || refuse "usage: --move-old KEEP DIR"; do_move_old "$1" "$2" ;;
   --install) do_install ;;
   --uninstall) do_uninstall ;;
+  --notify-test) [ $# -eq 0 ] || refuse "--notify-test takes no arguments"; do_notify_test ;;
   "") usage; exit 2 ;;
 esac

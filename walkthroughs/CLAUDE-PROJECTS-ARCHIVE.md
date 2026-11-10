@@ -9,7 +9,7 @@
 *The live `~/.claude` stays where it is. Only finished, sealed archives of it travel.*
 
 ![Walkthrough](https://img.shields.io/badge/Walkthrough-projects_archive-800020?style=flat-square)
-![Changed](https://img.shields.io/badge/Changed-2026--11--06-5c1a2b?style=flat-square)
+![Changed](https://img.shields.io/badge/Changed-2026--11--10-5c1a2b?style=flat-square)
 ![Status](https://img.shields.io/badge/Status-tested_not_yet_scheduled-1a1a2e?style=flat-square)
 ![For](https://img.shields.io/badge/For-Claude_Code_on_a_Mac-64748b?style=flat-square)
 
@@ -49,7 +49,7 @@ flowchart TD
 | **What goes in** | everything under `~/.claude/projects` (transcripts, `memory/` folders, tool results, the manifest and session logs) and `~/.claude/CLAUDE.md`. Nothing is left out: all of it is wanted back. |
 | **What stays out** | the rest of `~/.claude`: `settings.json`, credentials, caches, plugins. Those are not yours to lose in the same way, and some hold tokens. |
 | **The script** | [`scripts/claude-projects-archive.sh`](../scripts/claude-projects-archive.sh), plain `/bin/sh` and the tools macOS ships with |
-| **The proof** | [`scripts/claude-projects-archive.selftest.sh`](../scripts/claude-projects-archive.selftest.sh): a fake home in a temporary folder, 104 checks. Your real `~/.claude` is never read by it |
+| **The proof** | [`scripts/claude-projects-archive.selftest.sh`](../scripts/claude-projects-archive.selftest.sh): a fake home in a temporary folder and a stand-in `curl`, 184 checks. Your real `~/.claude` is never read by it, and nothing goes over the network |
 | **Names** | `claude-projects_20261107-004012_full.tar.gz.enc`, then `..._incr.tar.gz.enc`, each with a `.sha256` beside it. A plain sort of the names is the order they were made, and the order to restore them |
 | **The seal** | `openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -md sha256 -salt`. The passphrase is read from its file (`-pass file:`), never typed on a command line. LibreSSL (in macOS) and OpenSSL 3 open each other's archives; the self-test checks it |
 | **Where the passphrase lives** | `~/.config/claude-archive/passphrase`, mode 600, in a folder of mode 700. The script refuses to run if the file is missing or anyone else can read it |
@@ -115,7 +115,7 @@ sh ~/code/my-template/scripts/claude-projects-archive.sh --status       # ok, or
 **A failed night is never silent.** A background job that macOS blocks from iCloud Drive would just stop, and it would
 look as if you were backed up. So a failed `--run` or `--if-due` is written to `~/.config/claude-archive/state/`, shows
 a macOS banner (*Claude archive failed*, no prompt), and is passed to `~/.config/claude-archive/notify` if you make that
-file executable (for example, two lines that push to your phone). `--status` reads it back without touching iCloud: exit
+file executable, and sent to your phone if you set up [phone notes](#phone-notes-through-ntfy-optional). `--status` reads it back without touching iCloud: exit
 0 when the newest sealed copy is under 36 hours old and nothing failed after it, exit 1 otherwise. On the DEX desk's
 Mac, the 23:58 journal job asks `--status` every night once the archive is installed and rings the phone when it is
 stale.
@@ -138,6 +138,62 @@ worked): the background job may not write into iCloud Drive. Pick one:
 
 **Turn it off** any time: `sh ~/code/my-template/scripts/claude-projects-archive.sh --uninstall`. The plist is moved into
 `~/.config/claude-archive/retired/`, not deleted, and the archives stay where they are.
+
+## <img src="../assets/icons-phosphor/bell.svg" width="24" height="24" alt=""> Phone notes through ntfy (optional)
+
+[ntfy](https://ntfy.sh) carries a short note from a script to the ntfy app on your phone. With one small file in place, the
+archive sends **one note when a run fails** and **one when a full archive is sealed** (the monthly one, the first for a new
+destination, or `--full`). Routine nightly incrementals and "not due" stay quiet, so a note always means something.
+
+**What a note says, and what it never says.** A failure note carries the Mac's short name, the exit code and the reason,
+with every word that holds a `/` replaced by `<path>`. A full-archive note carries the archive's own name, its file count
+and size. No other file name or path leaves the Mac. The topic and token are handed to `curl` on its input, never on a
+command line, so they do not show in a process list. If ntfy cannot be reached, the run's own result is unchanged and the
+log gets one line saying so.
+
+**1. Make `ntfy.env`** in `~/.config/claude-archive/`, which never syncs and is never in a repository. A long random topic
+name is the only lock on a free ntfy.sh topic, so let the Mac pick one:
+
+```sh
+! mkdir -p -m 700 ~/.config/claude-archive
+! ( umask 077; printf 'NTFY_URL=https://ntfy.sh\nNTFY_TOPIC=claude-archive-%s\n' "$(openssl rand -hex 12)" > ~/.config/claude-archive/ntfy.env ) && chmod 600 ~/.config/claude-archive/ntfy.env
+```
+
+Already follow a private topic of your own? Put its name after `NTFY_TOPIC=` instead (with any editor; keep the file at
+mode 600).
+
+**2. Subscribe on your phone.** Copy the topic name, paste it into the ntfy app (**+**, server `ntfy.sh`), then clear the
+clipboard:
+
+```sh
+! sed -n 's/^NTFY_TOPIC=//p' ~/.config/claude-archive/ntfy.env | tr -d '\n' | pbcopy
+! pbcopy < /dev/null
+```
+
+**3. Send a test note.** It prints only whether it was sent, never the topic or token:
+
+```sh
+! sh ~/code/my-template/scripts/claude-projects-archive.sh --notify-test
+```
+
+**4. Later, if you reserve the topic or use a server with sign-in,** add the access token. Create it on the ntfy web app's
+*Account* page, copy it there, then run these two lines straight away (the second clears the clipboard). The `grep` must
+print `1`; if it prints `0`, the clipboard held something else, so fix the line by hand:
+
+```sh
+! ( umask 077; printf 'NTFY_TOKEN=%s\n' "$(pbpaste | tr -d '[:space:]')" >> ~/.config/claude-archive/ntfy.env ) && pbcopy < /dev/null
+! grep -c '^NTFY_TOKEN=tk_' ~/.config/claude-archive/ntfy.env
+```
+
+| Line in `ntfy.env` | |
+|---|---|
+| `NTFY_URL=https://ntfy.sh` | optional; `https://` only; a self-hosted server's address goes here |
+| `NTFY_TOPIC=...` | required; letters, digits, `-` and `_`, up to 64 |
+| `NTFY_TOKEN=tk_...` | optional; sent as `Authorization: Bearer`. On ntfy.sh a token opens your whole account, so give it a label and an expiry, keep it out of every repository, and delete it on the Account page if it is ever exposed |
+
+**The checks.** The file is read as data, never run. It is ignored, with one warning in the log, unless it is a plain file
+you own with mode **600** exactly, and a value with unexpected characters is refused. `--status` says whether phone notes
+are on. `CLAUDE_ARCHIVE_NO_NTFY=1` turns them off for one run.
 
 ## <img src="../assets/icons-phosphor/history.svg" width="24" height="24" alt=""> Getting it back
 
@@ -279,6 +335,7 @@ fills, iPhone backups and photo uploads stop too, so leave room.
 | `--restore-latest DIR` | the newest full and every incremental after it |
 | `--prune-plan KEEP` | print what keeping the newest `KEEP` fulls would move aside; change nothing |
 | `--install` / `--uninstall` | load or unload the 00:40 LaunchAgent; the plist is moved aside, never deleted |
+| `--notify-test` | send one test note through `ntfy.env`; exit 2 if it is missing or unsafe, 1 if the server did not take it |
 | `--dest DIR` (or `CLAUDE_ARCHIVE_DEST`) | another destination, with any mode |
 
 `CLAUDE_ARCHIVE_CONFIG` moves the config folder and `CLAUDE_ARCHIVE_PASSFILE` the passphrase file; the self-test and the
@@ -294,6 +351,7 @@ helper, in your own words.
 ## <img src="../assets/icons-phosphor/history.svg" width="24" height="24" alt=""> Change log
 | Date | Change |
 |---|---|
+| 2026-11-10 | Optional phone notes through ntfy (`ntfy.env`, mode 600): one on a failed run, one on each full archive, none for incrementals; `--notify-test`; the self-test grows to 184 checks with a stand-in `curl`. |
 | 2026-11-06 | First version: `claude-projects-archive.sh` and its self-test (104 checks), a real-size measurement into a scratch folder, this page. Not yet run into iCloud, not yet scheduled. |
 
 <sub>Written 2026-11-06 in the drasticstatic lab. Related: [Start Claude in the right folder](CLAUDE-SESSION-ORDER.md),
