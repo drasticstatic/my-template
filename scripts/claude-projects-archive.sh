@@ -502,7 +502,10 @@ do_install() {
         <string>--dest</string>
         <string>$_d</string>"
   fi
-  _selfxml="$(printf '%s' "$SELF" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')"
+  # Launched through a file named after the job, so Login Items shows "claude-projects-archive", not "sh".
+  _launcher="$(dirname "$SELF")/launchd/claude-projects-archive"
+  [ -x "$_launcher" ] || fail "missing or not executable: $_launcher"
+  _launcherxml="$(printf '%s' "$_launcher" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')"
   _new="$CONFIG/work-$LABEL.plist"
   mkdir -p "$CONFIG" && chmod 700 "$CONFIG"
   cat > "$_new" <<EOF
@@ -520,8 +523,7 @@ do_install() {
     <string>$LABEL</string>
     <key>ProgramArguments</key>
     <array>
-        <string>/bin/sh</string>
-        <string>$_selfxml</string>
+        <string>$_launcherxml</string>
         <string>--if-due</string>$_destxml
     </array>
     <key>StartCalendarInterval</key>

@@ -85,6 +85,5 @@ open door doesn't turn into blindly overwriting someone else's work.
 **Worked example:** this exact sequence landed a fleet-wide `Co-Authored-By` signature-fix rebase on
 `my-template`, `resume`, and `gratitude-token-project_docs` on 2026-09-09 — three repos whose
 `protect-main` ruleset initially rejected the rebase's force-push with
-`GH013: Cannot force-push to this branch`. Full story:
-[`littlebird-ambassador/AGENT-SYNC/created-by-alfred/20260909-handoff-littlebird-audit-findings.md`](https://github.com/drasticstatic/littlebird-ambassador/blob/main/AGENT-SYNC/created-by-alfred/20260909-handoff-littlebird-audit-findings.md)
-(private repo, gated to Christopher and the agent fleet).
+`GH013: Cannot force-push to this branch`. The full story is the 2026-09-09 audit-findings handoff in the
+private `littlebird-ambassador` repository, open to Christopher and the agent fleet.

@@ -1,0 +1,4 @@
+#!/bin/sh
+# claude-projects-archive: the launchd entry point, so macOS Login Items shows this name rather than "sh".
+# It only runs ../claude-projects-archive.sh with the arguments it was given.
+exec /bin/sh "$(cd "$(dirname "$0")/.." && pwd)/claude-projects-archive.sh" "$@"
