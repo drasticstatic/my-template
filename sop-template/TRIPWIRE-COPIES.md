@@ -2,7 +2,7 @@
 
 **TL;DR:** the public-lane tripwire ([`scripts/scan-public-lane.sh`](../scripts/scan-public-lane.sh), self-test beside
 it) reads every file a lane is about to publish, and stops the lane when something has not been read. This page says
-where each copy stands on 2026-11-04. 61 repositories are listed below; every copy was refreshed to the `8002408` master that day, and again that evening to `06ac002` (v3: own-repo links and their anchor text) and `3d1a6c7` (v4: repository names are public). Nine lanes were finished
+where each copy stands on 2026-11-09. 61 repositories are listed below; every copy was refreshed to the `8002408` master on 2026-11-04, and again that evening to `06ac002` (v3: own-repo links and their anchor text) and `3d1a6c7` (v4: repository names are public). On 2026-11-09 the v5 master (`37424c7`) went to 52 of them: pushed where Christopher's own private repository allows it, a pull request where an organisation's or a Promote flow decides, one lab held (see *Re-copy of the 37424c7 master*). `sh scripts/check-tripwire-copies.sh` lists every copy that still differs. Nine lanes were finished
 this round and **their fixes wait on branch `r5-lanes`, not yet pushed.** Six of the nine rehearse clean. Two others each
 need one decision from Christopher, and the lab `iamoneself` needs a master rule.
 
@@ -68,12 +68,106 @@ values, dates, policy versions and privacy-policy references pass. Five credenti
 a 64-hex key or a seed phrase beside its label (bare, each is a checksum or a sentence as often as a secret), a three-part
 signed token, a hardcoded bearer header, and a database address with a real password on a named host. Infrastructure state
 files never travel. Thirty-six self-test cases added. A dry run of the new rules over the 62 clones found 4 files in one
-lab, all the labelled-key rule, in saved vendor pages; that lane stops when it takes v5. The copies on this page are still
-v4 (`3d1a6c7`) except the row marked v5: the fleet re-copy has not been run.
+lab, all the labelled-key rule, in saved vendor pages; that lane stops when it takes v5. The fleet re-copy ran the same
+day: see the next section.
 
 The 28188db master (2026-11-02) added the media list. `PUBLIC-LANE-MEDIA.txt` names folders whose pictures and fonts a
 lane publishes on purpose: a person chose them, and a machine still reads what it can. Base64 in text is decoded and
 read, and an SVG that can run something is refused.
+
+## <img src="repo/assets/icons/fingerprint.svg" width="24" height="24" alt=""> Re-copy of the 37424c7 master (2026-11-09, v5)
+
+The v5 pair (`f3f44d83…` / `178045eb…`) went into every copy below by the same mechanism, with one step added before each
+commit: the tree at the commit about to change was laid out (`git archive HEAD`) and scanned twice, with the old copy and
+with v5, each given that repository's `PUBLIC-ALLOWLIST-ATTESTED.txt` and `PUBLIC-LANE-MEDIA.txt`. A repository was
+committed only when v5 refused no file the old copy did not; the tree at HEAD is a superset of what a snapshot or
+allowlist lane stages (a built site and past versions are read on GitHub). Then the pair was copied, its md5 checked, the
+self-test run there (167/167, or 171/171 beside `sync-allowlist.sh`) and the two files committed on their own
+(`:lock: security(tripwire): scanner copy refreshed (policy and member numbers, labelled keys, tokens and database
+addresses)`). Where the copy went depended on the repository, all of them private: Christopher's own with no preview flow
+were pushed to `main`; the two lab sites with a `preview` flow and every organisation repository got a branch
+`tripwire-v5-copy`, pushed, and a pull request into the working branch, **open, waiting for a person with the role to
+merge** (merge commit, not squash). Organisation and preview copies count as current only once that merge lands.
+
+| Repository | Branch | Commit | Self-test, and where it went |
+|---|---|---|---|
+| `drasticstatic/alexandrina` | main | `b88db95` | 167/167, matches; pushed |
+| `drasticstatic/anthropas-argus-alfred` | main | `d5dd539` | 167/167, matches; pushed |
+| `drasticstatic/augment-intent-properties` | main | `519b733` | 167/167, matches; pushed |
+| `drasticstatic/aunt-harriot` | main | `c4c57e6` | 167/167, matches; pushed |
+| `drasticstatic/david-amaringo` | tripwire-v5-copy | `2db13f5` | 167/167, matches; pull request #7 into `preview`, open |
+| `drasticstatic/dpnelson` | main | `16a209b` | 167/167, matches; pushed |
+| `drasticstatic/findyourfeathers` | main | `65e4162` | 167/167, matches; pushed |
+| `drasticstatic/fortuna-vision` | main | `0525020` | 167/167, matches; pushed |
+| `drasticstatic/gratitude-token-project_astro` | main | `418db0e` | 167/167, matches; pushed |
+| `drasticstatic/iamoneself` | tripwire-v5-copy | `db01d95` | 167/167, matches; pull request #22 into `preview`, open |
+| `drasticstatic/littlebird-ambassador` | main | `e648f0c` | 167/167, matches; pushed |
+| `drasticstatic/O-R-G-astro` | main | `fee4b96` | 167/167, matches; pushed (from a worktree: the clone's main is checked out elsewhere) |
+| `drasticstatic/O-R-G-dapp` | main | `731eb56` | 167/167, matches; pushed (from a worktree: the clone's main is checked out elsewhere) |
+| `drasticstatic/O-R-G` | main | `1fc6976` | 167/167, matches; pushed |
+| `drasticstatic/ops-arbitrage` | main | `49d690d` | 167/167, matches; pushed (new to this page: it carried v4) |
+| `drasticstatic/pir-devine-news` | main | `45fe2d5` | 167/167, matches; pushed |
+| `drasticstatic/pir` | main | `3afd518` | 167/167, matches; pushed |
+| `drasticstatic/Psanctuary` | main | `49ea802` | 171/171, matches; pushed |
+| `drasticstatic/psychedelic-policy-reform-astro` | main | `e0411cc` | 167/167, matches; pushed |
+| `drasticstatic/psychedelic-policy-reform-dapp` | main | `fa61100` | 167/167, matches; pushed |
+| `drasticstatic/tax-assistant` | main | `740f5ce` | 167/167, matches; pushed |
+| `drasticstatic/taylordwraps` | main | `74f1e54` | 167/167, matches; pushed |
+| `Octagon-Religious-Research-Group-ORG/changelog-astro` | tripwire-v5-copy | `b4112ea` | 167/167, matches; pull request #11 into `main`, open |
+| `Octagon-Religious-Research-Group-ORG/legal` | tripwire-v5-copy | `4f05026` | 167/167, matches; pull request #1 into `main`, open |
+| `Octagon-Religious-Research-Group-ORG/reading-room` | tripwire-v5-copy | `40546ae` | 167/167, matches; pull request #2 into `main`, open |
+| `psanctuary/changelog-astro` | tripwire-v5-copy | `f0b5d84` | 167/167, matches; pull request #8 into `main`, open |
+| `psanctuary/legal` | tripwire-v5-copy | `55e2490` | 171/171, matches; pull request #1 into `main`, open |
+| `psanctuary/reading-room` | tripwire-v5-copy | `16c0b2a` | 167/167, matches; pull request #1 into `main`, open |
+| `psanctuarychurch/changelog-astro` | tripwire-v5-copy | `04a2f7d` | 167/167, matches; pull request #8 into `main`, open |
+| `psanctuarychurch/legal` | tripwire-v5-copy | `d137cf9` | 171/171, matches; pull request #1 into `main`, open |
+| `psanctuarychurch/reading-room` | tripwire-v5-copy | `fead102` | 171/171, matches; pull request #1 into `main`, open |
+| `psychedelicsinrecovery/.github-private` | tripwire-v5-copy | `185e5e6` | 167/167, matches; pull request #1 into `main`, open |
+| `psychedelicsinrecovery/alex-desk` | tripwire-v5-copy | `ee64b09` | 167/167, matches; pull request #7 into `main`, open |
+| `psychedelicsinrecovery/board-of-directors` | tripwire-v5-copy | `854cf98` | 167/167, matches; pull request #2 into `main`, open |
+| `psychedelicsinrecovery/catalyst-desk` | tripwire-v5-copy | `14d20b1` | 167/167, matches; pull request #1 into `main`, open |
+| `psychedelicsinrecovery/changelog-astro` | tripwire-v5-copy | `1589e1e` | 167/167, matches; pull request #11 into `main`, open |
+| `psychedelicsinrecovery/github-desk` | tripwire-v5-copy | `5e69774` | 167/167, matches; pull request #2 into `main`, open |
+| `psychedelicsinrecovery/legal` | tripwire-v5-copy | `aa38c82` | 171/171, matches; pull request #1 into `main`, open |
+| `psychedelicsinrecovery/litcom-desk` | tripwire-v5-copy | `c266d80` | 167/167, matches; pull request #2 into `main`, open |
+| `psychedelicsinrecovery/literature-committee` | tripwire-v5-copy | `aebb941` | 167/167, matches; pull request #2 into `main`, open |
+| `psychedelicsinrecovery/pr-desk` | tripwire-v5-copy | `179ee2e` | 167/167, matches; pull request #2 into `main`, open |
+| `psychedelicsinrecovery/public-relations` | tripwire-v5-copy | `6f00dff` | 167/167, matches; pull request #2 into `main`, open |
+| `psychedelicsinrecovery/reading-room` | tripwire-v5-copy | `128ca27` | 171/171, matches; pull request #1 into `main`, open |
+| `psychedelicsinrecovery/tech-committee` | tripwire-v5-copy | `b2d956b` | 167/167, matches; pull request #3 into `main`, open |
+| `psychedelicsinrecovery/techcom-desk` | tripwire-v5-copy | `b0c2b82` | 167/167, matches; pull request #2 into `main`, open |
+| `taylordwraps/legal` | tripwire-v5-copy | `d25a27d` | 171/171, matches; pull request #1 into `main`, open (new to this page: its copy was still v3 `06ac002`) |
+| `taylordwraps/reading-room` | tripwire-v5-copy | `ced90d0` | 171/171, matches; pull request #1 into `main`, open |
+| `theholyearthfoundation/changelog-astro` | tripwire-v5-copy | `ef14500` | 167/167, matches; pull request #6 into `main`, open |
+| `theholyearthfoundation/david-amaringo` | tripwire-v5-copy | `b392c2a` | 167/167, matches; pull request #21 into `preview`, open |
+| `theholyearthfoundation/iamoneself-retreats` | tripwire-v5-copy | `04fcb35` | 167/167, matches; pull request #19 into `preview`, open |
+| `theholyearthfoundation/legal` | tripwire-v5-copy | `d0238ed` | 171/171, matches; pull request #1 into `main`, open |
+| `theholyearthfoundation/reading-room` | tripwire-v5-copy | `9e169a9` | 171/171, matches; pull request #1 into `main`, open |
+
+**Held: `drasticstatic/wilson-lawn-ai-assist`.** v5 refuses four saved vendor pages under `versions/01-gohighlevel/pages/`
+(`index.html` and three page exports) for a labelled 64-hex key: the hosted site builder's own client configuration,
+which every page it serves carries, not one of Christopher's secrets. The lane's denylist publishes that folder, so the lane
+would stop. No attestation opens a credential rule. Two ways through, for Christopher: add `versions/01-gohighlevel/pages/`
+to the `--path` list in `.github/workflows/sync-public.yml` (the saved pages stay in the private repository, out of the
+mirror and its history), or add a line to `.github/public-reword.txt` that blanks that configuration value in the mirror.
+Then copy v5 in. The clone was left as it was, still v4.
+
+**Next sweep** (other agents are editing these tonight, or they are current already): `drasticstatic/divorce-custody-assistant`
+(current: `a54e9c9`, row below), `drasticstatic/trading-assistant`, `drasticstatic/trading-bot_arbitrage_DAPPUv3_hardhat_UNI-CAKE`,
+`drasticstatic/bushido-code`, `drasticstatic/proposals-thef`, every `ops-standard-operating-procedures` repository
+(`drasticstatic/ops-standard-operating-procedures-thef`, and those of `Octagon-Religious-Research-Group-ORG`, `psanctuary`,
+`psanctuarychurch`, `psychedelicsinrecovery`, `taylordwraps` and `theholyearthfoundation`), and this repository, whose pair
+and `sop-template/repo/scripts/` copy are the master.
+
+**Not refreshed, and why:** the held `r5-lanes` branches of the two lab sites (`david-amaringo`, `iamoneself`) and of the
+ORG `changelog-astro`: the first two are checked out in another session's worktrees with uncommitted work in them, the third
+in a worktree whose folder is gone, so their v4 copies wait for whoever lands those branches. The duplicate clones of
+`psychedelicsinrecovery/changelog-astro` and `theholyearthfoundation/changelog-astro` follow their pull requests.
+`drasticstatic/my-template-clean` follows this repository on its own.
+
+**Drift in one command:** `sh scripts/check-tripwire-copies.sh` reads every copy on this machine and lists the ones whose
+md5 differs from the master, naming the master each came from; `--refs` adds each clone's `origin/main` and
+`origin/preview` as last fetched, so a copy waiting in an open pull request shows there too. Exit 1 while anything differs.
 
 ## <img src="repo/assets/icons/fingerprint.svg" width="24" height="24" alt=""> Re-copy of the 3d1a6c7 master (2026-11-04, evening, v4)
 

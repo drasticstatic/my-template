@@ -460,3 +460,18 @@ committed) and checks that `sop-template/repo/scripts/` holds byte-identical cop
 that model publishes history), `workflow-templates/sync-public-excludelist.yml` and
 `workflow-templates/publish-masked-public-copy.yml`. Copy it, do not fork it. Every copy in the fleet, with the commit
 that added it and what a rehearsal found: [`sop-template/TRIPWIRE-COPIES.md`](../sop-template/TRIPWIRE-COPIES.md).
+
+### `check-tripwire-copies.sh` — which copies have drifted from the master
+
+```sh
+sh scripts/check-tripwire-copies.sh            # only the copies that differ, then a count; exit 1 if any differ
+sh scripts/check-tripwire-copies.sh --all      # every copy, current ones too
+sh scripts/check-tripwire-copies.sh --refs     # also origin/main and origin/preview of each clone, as of the last fetch
+```
+
+One command for the question a sweep keeps asking: which `scripts/scan-public-lane.sh` on this machine is not byte for
+byte the master? It finds every copy under the fleet's folders (eight deep, `node_modules` skipped), compares the scanner
+and its self-test by md5 with this folder's pair, and names the master a drifted copy came from when its md5 is one the
+fleet has carried (`v4 3d1a6c7`, `v3 06ac002`, …); an md5 it does not know is a hand edit, a fork. `--refs` reads what
+each clone last fetched from GitHub, so a copy waiting in an open pull request still shows as drift on the branch the lane
+runs from. Read-only: it never fetches, copies or commits. Fetch first (`sync-local.sh`) when you want GitHub's view.
