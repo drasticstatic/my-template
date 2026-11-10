@@ -68,7 +68,7 @@ Icons: an organisation's repository wears Lucide in its tone (`python3 scripts/m
 
 1. **Copy** `repo/_template/`, `repo/walkthroughs/README.md` and `repo/assets/icons/` into your repository, keeping the folder names.
 2. **Write the first guide:** copy `_template/WALKTHROUGH-NAME.md` to `walkthroughs/<TASK-IN-CAPITALS>.md`, fill it in, and run `--icons` on it so every icon it names is in `assets/icons/`.
-3. **Render its PDF** into `walkthroughs/pdf/`. The lab's renderer is [`scripts/render-walkthrough-pdfs.sh`](../scripts/render-walkthrough-pdfs.sh) (`md-to-pdf`, Mermaid drawn first by [`sop-template/repo/scripts/mermaid-prerender.sh`](../sop-template/repo/scripts/mermaid-prerender.sh)); on GitHub, `.github/workflows/walkthroughs-pdf.yml` runs it on a push to `main`. Copy both, and the prerender script, and set your tone's shades at the top.
+3. **Render its PDF** into `walkthroughs/pdf/`. The lab's renderer is [`scripts/render-walkthrough-pdfs.sh`](../scripts/render-walkthrough-pdfs.sh) (`md-to-pdf`, Mermaid drawn first by [`sop-template/repo/scripts/mermaid-prerender.sh`](../sop-template/repo/scripts/mermaid-prerender.sh)); on GitHub, `.github/workflows/walkthroughs-pdf.yml` runs it on a push to `main`. Copy both, and the prerender script, and set your tone's shades at the top. The renderer names the prerender script's path (`PRERENDER=`) and the workflow lists the paths that trigger it; change both if you put the script somewhere else.
 4. **Add its row** to `walkthroughs/README.md`, then commit on the working branch and open a pull request. A person with the role merges.
 
 Or ask your AI helper: *"Read my-template/walkthroughs-template/README.md and write a walkthrough for … in our repository."*
