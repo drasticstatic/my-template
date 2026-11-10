@@ -1,0 +1,5 @@
+# Repositories set-merge-methods.sh reports but never changes. One owner/repo per line.
+# Keep each line's reason beside it.
+Octagon-Religious-Research-Group-ORG/org-frontend   # set up before Christopher joined; the organisation's own call
+Octagon-Religious-Research-Group-ORG/org-backend    # same
+Octagon-Religious-Research-Group-ORG/ORG-Website    # same

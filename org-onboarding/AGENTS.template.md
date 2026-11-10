@@ -66,6 +66,10 @@ Co-Authored-By: <Agent> · <Engine> · <Provider> [<Model>]
 
 - `PENDING-TASKS.md`: the shared to-do list. Add, don't erase.
 - `AGENT-SYNC/created-by-<you>/`: handoff notes between helpers.
+- **Scratch that must survive a restart** (commands waiting for a person, a backup before a risky move, a draft
+  awaiting review) goes in the synced scratch folder your person's own instructions name, under
+  `open/<date>_<repo>_<topic>/` with a short `NOTE.md`. Never overwrite another folder there, never delete one:
+  move it to `done/` when finished. Never put secrets there. Throwaway files stay in your session's temporary folder.
 
 ## Pull requests and Promotes (October 2026)
 

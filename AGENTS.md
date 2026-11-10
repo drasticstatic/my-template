@@ -161,6 +161,10 @@ See `AGENTS.override.md` in this repo for the template. Use cases:
 - Follow the task as scoped — don't expand scope unilaterally
 - Ask before creating new directories or files outside the expected structure
 - Commit after every meaningful change
+- Keep scratch that must survive a restart (pending commands, backups before a risky move, drafts awaiting review)
+  in the synced scratch folder named in the user-level instructions, under `open/<date>_<repo>_<topic>/` with a
+  `NOTE.md`; never overwrite, never delete (move to `done/` when finished), never put secrets there. Throwaway files
+  stay in the session's temporary scratchpad
 
 **Don't:**
 - Modify `.env`, secrets, or credential files

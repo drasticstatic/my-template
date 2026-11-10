@@ -103,6 +103,18 @@ Most outside helpers arrive with a person who means well. The thing to send them
 
 > Welcome. Before your helper changes anything here, please give it this sentence: *"Read START-HERE.md in this repository and do what it says before you change anything."* It will open a pull request, and someone here will read it and merge it. You cannot break anything by trying.
 
+## <img src="assets/icons-phosphor/folder-lock.svg" width="24" height="24" alt=""> Scratch that survives a restart
+
+Every helper's own temporary folder is wiped when the machine restarts. Anything that must outlive that goes in the synced scratch folder named in the person's user-level instructions:
+
+| Rule | Why |
+|---|---|
+| One folder per task: `open/<date>_<repo>_<topic>/`, with a short `NOTE.md` saying who made it, what it waits on, and the command that finishes it | the next helper, or the person, can pick it up cold |
+| Never overwrite: if the name exists, add `-2` | two helpers never clobber each other |
+| Finished work moves to `done/`; nothing is deleted | the fleet's "delete nothing" rule |
+| No secrets, keys, passphrases or case documents | the folder syncs to every device on the account |
+| Throwaway files stay in the session's temporary folder | they don't matter after a restart |
+
 ## <img src="assets/icons-phosphor/route.svg" width="24" height="24" alt=""> What happens next
 
 Nothing has been spread. `mystarch_chief-of-staff/PENDING-TASKS.md` holds the task: copying the files to each organisation's procedures repository, and listing IT-004 on each public twin's allowlist so the page the line names can actually be read by a stranger. Whether to pay for Team is each organisation's decision, not this page's.

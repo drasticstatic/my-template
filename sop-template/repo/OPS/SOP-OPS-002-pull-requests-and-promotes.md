@@ -51,6 +51,13 @@ gh api -X PATCH repos/<owner>/<repo> -F allow_squash_merge=false -F allow_rebase
 ```
 (The fleet's proposals and procedures repositories were set to merge commits only on 2026-10-31; each organisation keeps its own list in its private copy of this procedure.)
 
+**Turn off squash and rebase on every repository, including new ones.** GitHub has no organisation-wide default for merge methods: every new repository starts with merge commit, squash and rebase all allowed, and rebase-merge drops the merge commit just as squash does. From a clone of `my-template`, after creating any repository:
+```sh
+sh scripts/set-merge-methods.sh --fix <owner>/<repo>     # squash off, rebase off, merge commit on
+sh scripts/set-merge-methods.sh --audit <owner>          # read-only; exits 1 if any repository drifted
+```
+Repositories that keep another method on purpose go in `my-template/scripts/merge-methods-exceptions.txt`, with the reason. **The stronger option, where a ruleset is allowed** (see the legend below): a ruleset's *Require a pull request before merging* rule takes `allowed_merge_methods: ["merge"]`, and GitHub then blocks any other merge even if the repository setting drifts. Not applied by the template; an officer adds it.
+
 **Merge commits only, set on 2026-10-31** (squash and rebase off, merge commit on; read back from the API the same day) on these twelve:
 
 | Kind | Repositories |

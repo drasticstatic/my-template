@@ -418,6 +418,25 @@ Read-only on every child (`git -C` reads with optional locks off). The table sit
 line `Outside the workspace on purpose:` are yours to edit. Children named in `~/.claude/projects/MANIFEST-PRIVATE.txt`
 are counted, never opened and never named. Never put a MANIFEST.md in a public repository: it names private ones.
 
+## `set-merge-methods.sh` — merge commits only, on every repository
+
+```sh
+sh scripts/set-merge-methods.sh --audit <owner> [<owner>...]       # read-only; exit 1 if any repository drifted
+sh scripts/set-merge-methods.sh --fix <owner>/<repo> [...]         # squash off, rebase off, merge commit on
+sh scripts/set-merge-methods.selftest.sh                           # offline, against a stub gh
+```
+
+The fleet merges with a merge commit, never a squash, so every commit's author and session trailer survive (SOP-OPS-002).
+Rebase-merge drops the merge commit too, so it is off as well. GitHub has no organisation-wide default: every new
+repository starts with all three methods on, so run `--fix` once on each new one. `--audit` lists every non-archived
+repository of each owner with its three settings and a state (`ok`, `DRIFT`, `exception`, `unreadable`). `--fix`
+touches only the repositories named on its command line. Repositories listed in `merge-methods-exceptions.txt` (or the
+file named by `$MERGE_EXCEPTIONS`) are reported and never changed; keep a reason beside each line. The stronger option,
+a ruleset whose pull-request rule sets `allowed_merge_methods` to `["merge"]`, is described in SOP-OPS-002; GitHub
+offers rulesets on public repositories on every plan, on private ones only from GitHub Team, and organisation-level
+rulesets only on Enterprise. The current table across Christopher's organisations lives in the private
+`mystarch_chief-of-staff` repository (`specs/MERGE-METHODS-LEGEND.md`).
+
 ## `scan-public-lane.sh` — the public-lane tripwire (master copy)
 
 ```sh

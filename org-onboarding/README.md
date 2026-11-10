@@ -45,6 +45,19 @@ plain-words table. Keep it in `.github-private`, not a site repo, so every helpe
 leave a short "this has moved" page at any old address. The connector must reach `.github-private`
 for the helper to read it.
 
+## Every new repository: merge commits only
+
+GitHub starts every new repository with squash and rebase merging allowed, and has no organisation-wide default
+to change that. Both erase the record of who made each commit (SOP-OPS-002). Right after creating a repository:
+
+```sh
+sh scripts/set-merge-methods.sh --fix <owner>/<repo>    # run from a clone of my-template
+```
+
+Check a whole organisation at any time with `--audit <owner>` (read-only). Exceptions, with their reasons, live in
+`scripts/merge-methods-exceptions.txt`. Christopher's current table across every organisation is kept in the private
+`mystarch_chief-of-staff` repository (`specs/MERGE-METHODS-LEGEND.md`).
+
 ## Rolled out
 
 | Organization | `ONBOARDING.md` | Hook-in note | Notes |
