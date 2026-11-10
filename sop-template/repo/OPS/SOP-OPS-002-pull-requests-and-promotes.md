@@ -67,6 +67,23 @@ Repositories that keep another method on purpose go in `my-template/scripts/merg
 
 **Before the setting changed, some Promotes were squashed.** A check on 2026-10-31 looked only at the latest Promotes and found two-parent merges; a full audit on 2026-11-01 found earlier squashes. What that cost, and how it was recovered, is in **Honest history** below.
 
+## <img src="../assets/icons/shield-check.svg" width="24" height="24" alt=""> Guardrails on our repositories
+
+**Guardrails, not distrust.** Everyone who helps gets real access. These two rules sit on the main branch so that a slip by anyone, person or helper, cannot undo work. They stay while we all learn the road together.
+
+| Rule | What it blocks | Who can get past it |
+|---|---|---|
+| **Merge commits only** | A pull request can be merged only with a merge commit. Squash and rebase merges are refused, so every commit keeps its author. | Repository admins may still push directly to `main`. |
+| **No force-push, no deletion** | Rewriting the history of `main`, or deleting `main`. | Nobody, admins included. |
+
+**Where they apply today:** the `brand-assets` repository of every organisation we serve, as a pilot from 2026-11-10. If it causes no trouble, the same two rules go on the other public repositories. Private repositories cannot carry rulesets on GitHub's free plan; there, the merge settings and habit keep the rule (see the legend below).
+
+**If a push is refused:** do not force it, and do not look for a way around it. Push to a branch, open a pull request (the steps above), and a person with the role merges it with a merge commit. If you believe the rule is wrong for this case, stop and ask.
+
+**To ask for a change:** open an issue in this repository or tell a steward, naming the repository, the rule and the reason. A steward with admin rights edits the ruleset on GitHub, never deletes it, and records the change in the change log below.
+
+**For stewards:** both rules are kept as files in `my-template/branch-protection/` (`ruleset-merge-commits-only.json` and `ruleset-no-force-push.json`). Apply one with `gh api -X POST repos/OWNER/REPO/rulesets --input FILE`. Never put the no-force-push rule on a public twin that a sync force-pushes into; twins take the deletion-only file.
+
 ## <img src="../assets/icons/scroll-text.svg" width="24" height="24" alt=""> Legend: what is protected, and what runs on pull requests
 GitHub's free plan decides much of this, so the rule depends on what kind of repository you are in. Find your row.
 
@@ -144,3 +161,4 @@ The pull request page shows **Merged** with a merge commit; `git log --merges -1
 | 2026-10-31 | Merge commits only on the twelve proposals and procedures repositories (one PATCH each, read back); the five earlier Promotes verified as two-parent merges; the legend by repository type; `scripts/legend.sh` | Alfred |
 | 2026-11-01 | Lucid pass (icons, a `gitGraph` of a merge commit); **Honest history**: the squash audit, what a squash costs and how a later merge restores it, with a generic worked example; the 2026-10-31 "no attribution was lost" corrected (it checked only the latest Promotes); names may be public | Alfred |
 | 2026-11-01 | Each organisation's audit result goes on a members-only page beside this procedure (`SOP-OPS-002-honest-history.md`), not in this procedure, which usually travels to the public twin | Alfred |
+| 2026-11-10 | **Guardrails on our repositories**: merge-commits-only and no-force-push rulesets, piloted on `brand-assets` in every organisation | Alfred |

@@ -20,6 +20,32 @@ a force-push.
 which one a repo needs, ask: "does anything other than a human ever force-push to this `main`?" If
 yes, it needs the deletion-only version.
 
+## Guardrails: the pair piloted on `brand-assets` (2026-11-10)
+
+Two more templates, applied together on the default branch of every organisation's `brand-assets`
+repository as a pilot. Guardrails, not distrust: people get real access, and the rails keep a slip
+from undoing work while everyone learns.
+
+- **`ruleset-merge-commits-only.json`**: a pull request can be merged only with a merge commit
+  (`allowed_merge_methods: ["merge"]`, no approvals required). Squash and rebase merges are refused,
+  so every commit keeps its author. Repository admins bypass it, so their direct pushes to `main`
+  still work.
+- **`ruleset-no-force-push.json`**: no force-push and no deletion of `main`, with **no bypass at all**,
+  admins included. It never gets in the way of normal work. (It matches `ruleset.json` above except
+  for its name; Octagon's and PIR's `brand-assets` already carried that one as `protect-main`.)
+
+Apply each once:
+```
+gh api -X POST repos/OWNER/REPO/rulesets --input branch-protection/ruleset-merge-commits-only.json
+gh api -X POST repos/OWNER/REPO/rulesets --input branch-protection/ruleset-no-force-push.json
+```
+
+Check what is in force: `gh api repos/OWNER/REPO/rules/branches/main`. Rulesets are free on public
+repositories; private ones need GitHub Team. Where every collaborator is an admin, the merge-commit
+rule is a backstop rather than a gate; it starts to matter when someone with write access joins.
+The plain-language version for everyone is in `sop-template/repo/OPS/SOP-OPS-002-pull-requests-and-promotes.md`,
+section "Guardrails on our repositories".
+
 ## Temporarily allowing a force-push, then restoring protection
 
 Sometimes you legitimately need to force-push to a protected `main` — the clearest example: a
