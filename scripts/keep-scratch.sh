@@ -25,6 +25,14 @@ secret_hits() {
     -o -iname 'id_rsa*' -o -iname 'id_ed25519*' -o -iname '*.p12' -o -iname '*.keystore' \
     -o -iname '*mnemonic*' -o -iname '*wallet*.json' -o -iname '*token*.json' \) \
     -print 2>/dev/null | head -5
+  # Also look inside text files (under 5 MB) for common credential shapes. Only file names are reported,
+  # never the matching text.
+  find "$1" -type f -size -5M -print0 2>/dev/null | xargs -0 grep -I -l -E \
+    -e '-----BEGIN [A-Z ]*PRIVATE KEY-----' -e 'AKIA[0-9A-Z]{16}' -e 'sk-ant-[A-Za-z0-9_-]{20,}' \
+    -e 'sk-[A-Za-z0-9]{32,}' -e 'gh[pousr]_[A-Za-z0-9]{30,}' -e 'xox[abprs]-[A-Za-z0-9-]{10,}' \
+    -e 'AIza[0-9A-Za-z_-]{35}' -e 'eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}' \
+    -e '(api[_-]?key|secret|token|passphrase|password)["'"'"' ]*[:=]["'"'"' ]*[A-Za-z0-9/+_.-]{12,}' \
+    2>/dev/null | head -5 || true
 }
 
 fresh_dir() {
