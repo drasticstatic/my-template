@@ -7,7 +7,7 @@
 *Plain-language guides for joining one of our GitHub organizations and connecting your AI helpers. Follow one yourself, or hand it to your helper.*
 
 ![Kind](https://img.shields.io/badge/Kind-Walkthroughs-800020?style=flat-square)
-![Changed](https://img.shields.io/badge/Changed-2026--11--06-800020?style=flat-square)
+![Changed](https://img.shields.io/badge/Changed-2026--11--09-800020?style=flat-square)
 ![For](https://img.shields.io/badge/For-Members_and_their_AI_helpers-800020?style=flat-square)
 
 <img src="../assets/icons-phosphor/map-pin.svg" width="16" height="16" alt=""> **You are here:** drasticstatic lab › [`my-template`](../README.md) › `walkthroughs/` · public · `main` is the working branch
@@ -33,6 +33,8 @@
 | <img src="../assets/icons-phosphor/shapes.svg" width="16" height="16" alt=""> | [Connect Wix](CONNECT-WIX.md) | let your helper read and help with a Wix site | [PDF](pdf/CONNECT-WIX.pdf) |
 | <img src="../assets/icons-phosphor/notebook-pen.svg" width="16" height="16" alt=""> | [Connect WordPress](CONNECT-WORDPRESS.md) | let your helper read and draft on a WordPress site *(groundwork)* | [PDF](pdf/CONNECT-WORDPRESS.pdf) |
 | <img src="../assets/icons-phosphor/files.svg" width="16" height="16" alt=""> | [Connect Google Drive](CONNECT-GOOGLE-DRIVE.md) | let your helper read the documents you keep in Drive | [PDF](pdf/CONNECT-GOOGLE-DRIVE.pdf) |
+| <img src="../assets/icons-phosphor/user-round.svg" width="16" height="16" alt=""> | [Give an agent its own Google account profile](GOOGLE-WORKSPACE-CLI-NEW-PROFILE.md) | connect one Google account to the `gws` command-line tool, read-only, in its own folder, project and login, and prove it is the right account | [PDF](pdf/GOOGLE-WORKSPACE-CLI-NEW-PROFILE.pdf) |
+| <img src="../assets/icons-phosphor/door-open.svg" width="16" height="16" alt=""> | [Gemini CLI for a Workspace account](GEMINI-CLI-ACCESS.md) | find which door to Gemini in the terminal is still open for a Workspace account, what the administrator does versus the user, what it costs, and how to keep billing from starting by surprise | [PDF](pdf/GEMINI-CLI-ACCESS.pdf) |
 | <img src="../assets/icons-phosphor/network.svg" width="16" height="16" alt=""> | [Connect Graphify](CONNECT-GRAPHIFY.md) | give your helper a map of a codebase, so it reads less and understands more | [PDF](pdf/CONNECT-GRAPHIFY.pdf) |
 | <img src="../assets/icons-phosphor/bird.svg" width="16" height="16" alt=""> | [Connect Littlebird](CONNECT-LITTLEBIRD.md) | let your coding helper read your Littlebird briefs and chats, and write project summaries back to her, without leaking anything private | [PDF](pdf/CONNECT-LITTLEBIRD.pdf) |
 | <img src="../assets/icons-phosphor/eye.svg" width="16" height="16" alt=""> | [Show hidden files](SHOW-HIDDEN-FILES.md) | see `.git` and friends on a Mac (⌘⇧.), and check where a copied folder pushes before it pushes to the wrong place | [PDF](pdf/SHOW-HIDDEN-FILES.pdf) |
@@ -67,7 +69,7 @@
 3. <img src="../assets/icons-phosphor/key-round.svg" width="16" height="16" alt=""> **Keys stay yours.** No guide ever asks you to paste a password or key into a chat. Where a key is
    needed, you put it straight into the tool's own settings.
 
-Building your own fleet of helpers? See [BUILD_YOUR_OWN_FLEET.md](../BUILD_YOUR_OWN_FLEET.md).
+Writing a new guide? Start from [`walkthroughs-template/`](../walkthroughs-template/). Building your own fleet of helpers? See [BUILD_YOUR_OWN_FLEET.md](../BUILD_YOUR_OWN_FLEET.md).
 
 ## <img src="../assets/icons-phosphor/git-pull-request.svg" width="24" height="24" alt=""> Suggest a change
 

@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="260" viewBox="0 0 1200 260" role="img" aria-labelledby="t d">
+  <title id="t">Walkthroughs template</title>
+  <desc id="d">One guide, one action per step, a PDF beside it. The picture: 6 numbered stops on a line that climbs, each arriving in turn. With reduced motion, the finished picture shows at once.</desc>
+  <style>
+    /* Motion only for readers who have not asked for less. Outside this block everything is in its finished state. */
+    @media (prefers-reduced-motion: no-preference) {
+      .draw { stroke-dasharray: 100; animation: draw 2.6s cubic-bezier(.4,0,.2,1) both; }
+      .arrive { animation: arrive .5s ease-out both; }
+      .breathe { transform-box: fill-box; transform-origin: center; animation: breathe 8s steps(48) 3s infinite; }
+      .halo { transform-box: fill-box; transform-origin: center; animation: halo 5s steps(60) 3.6s infinite; }
+    }
+    @keyframes draw { from { stroke-dashoffset: 100 } to { stroke-dashoffset: 0 } }
+    @keyframes arrive { from { opacity: 0 } to { opacity: 1 } }
+    @keyframes breathe { 0%, 100% { transform: scale(1) } 50% { transform: scale(1.07) } }
+    @keyframes halo { 0% { opacity: .55; transform: scale(1) } 70%, 100% { opacity: 0; transform: scale(2.1) } }
+    .halo { opacity: 0 }
+  </style>
+  <defs>
+    <linearGradient id="ground" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1a1a2e"/><stop offset="1" stop-color="#0f3460"/></linearGradient>
+    <linearGradient id="line" gradientUnits="userSpaceOnUse" x1="668" y1="0" x2="1160" y2="0"><stop offset="0.00" stop-color="#804c5a"/><stop offset="0.50" stop-color="#b87082"/><stop offset="1.00" stop-color="#ddb5bf"/></linearGradient>
+    <linearGradient id="fade" gradientUnits="userSpaceOnUse" x1="620" y1="0" x2="1200" y2="0"><stop offset="0" stop-color="#b87082" stop-opacity="0"/><stop offset=".35" stop-color="#b87082"/><stop offset="1" stop-color="#ddb5bf"/></linearGradient>
+    <clipPath id="card"><rect width="1200" height="260" rx="18"/></clipPath>
+    <radialGradient id="ember" gradientUnits="userSpaceOnUse" cx="962" cy="124" r="390"><stop offset="0" stop-color="#800020" stop-opacity=".8"/><stop offset=".6" stop-color="#5c1a2b" stop-opacity=".45"/><stop offset="1" stop-color="#5c1a2b" stop-opacity="0"/></radialGradient>
+  </defs>
+  <g clip-path="url(#card)">
+    <!-- an opaque ground: the same picture on GitHub's light and dark themes -->
+    <rect width="1200" height="260" fill="url(#ground)"/>
+    <rect width="1200" height="260" fill="url(#ember)"/>
+    <g stroke="#3a2b3f" stroke-width="1" opacity=".5">
+    <path d="M668 28V222"/>
+    <path d="M738 28V222"/>
+    <path d="M809 28V222"/>
+    <path d="M879 28V222"/>
+    <path d="M949 28V222"/>
+    <path d="M1019 28V222"/>
+    <path d="M1090 28V222"/>
+    <path d="M1160 28V222"/>
+    <path d="M668 28H1160"/>
+    <path d="M668 93H1160"/>
+    <path d="M668 157H1160"/>
+    <path d="M668 222H1160"/>
+    </g>
+    <path class="draw" pathLength="100" d="M692.0 198.0 L780.8 167.8 L869.6 160.9 L958.4 134.5 L1047.2 76.7 L1136.0 56.0" fill="none" stroke="url(#line)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:0.30s"/>
+    <circle class="halo" cx="1136.0" cy="56.0" r="13" fill="none" stroke="#ddb5bf" stroke-width="2"/>
+    <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" text-anchor="middle">
+    <g class="arrive" style="animation-delay:0.40s"><circle cx="692.0" cy="198.0" r="13" fill="#121424" stroke="#b87082" stroke-width="2.5"/><text x="692.0" y="202.5" fill="#ddb5bf">1</text></g>
+    <g class="arrive" style="animation-delay:0.96s"><circle cx="780.8" cy="167.8" r="13" fill="#121424" stroke="#b87082" stroke-width="2.5"/><text x="780.8" y="172.3" fill="#ddb5bf">2</text></g>
+    <g class="arrive" style="animation-delay:1.52s"><circle cx="869.6" cy="160.9" r="13" fill="#121424" stroke="#b87082" stroke-width="2.5"/><text x="869.6" y="165.4" fill="#ddb5bf">3</text></g>
+    <g class="arrive" style="animation-delay:2.08s"><circle cx="958.4" cy="134.5" r="13" fill="#121424" stroke="#b87082" stroke-width="2.5"/><text x="958.4" y="139.0" fill="#ddb5bf">4</text></g>
+    <g class="arrive" style="animation-delay:2.64s"><circle cx="1047.2" cy="76.7" r="13" fill="#121424" stroke="#b87082" stroke-width="2.5"/><text x="1047.2" y="81.2" fill="#ddb5bf">5</text></g>
+    <g class="arrive" style="animation-delay:3.20s"><circle cx="1136.0" cy="56.0" r="13" fill="#121424" stroke="#b87082" stroke-width="2.5"/><text x="1136.0" y="60.5" fill="#ddb5bf">6</text></g>
+    </g>
+    <rect x="0.0" y="248" width="300.5" height="12" fill="#1a1a2e"/><rect x="300.0" y="248" width="300.5" height="12" fill="#5c1a2b"/><rect x="600.0" y="248" width="300.5" height="12" fill="#800020"/><rect x="900.0" y="248" width="300.5" height="12" fill="#fbeef1"/>
+    <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif"><text x="56" y="77.6" fill="#c78f9d" font-size="15" font-weight="700" letter-spacing=".6">drasticstatic lab</text><text x="56" y="133.6" fill="#fbeef1" font-size="50" font-weight="700" letter-spacing="-.5">Walkthroughs template</text><text x="56" y="175.8" fill="#dcd0d6" font-size="23">One guide, one action per step, a PDF beside it.</text></g>
+  </g>
+</svg>
