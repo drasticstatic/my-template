@@ -25,6 +25,8 @@
 
 > [!IMPORTANT]
 > **Asking Gemini (or any assistant) about this?** It may still say a Workspace edition or AI Expanded includes Gemini CLI, recommend buying Code Assist Standard or AI Ultra, or suggest `gws mcp`. All of those are out of date. The dated quotes below are the answer to show it. Code Assist licences live in the **Google Cloud console**, not the Workspace Admin console.
+>
+> **Paste the text or attach the PDF; do not send a link.** Tested 2026-11-09 with Gemini (Flash) on a Workspace account: it could not open this page from GitHub, by either link, and answered from memory instead. It recommended buying Code Assist, putting the API key in `~/.zshrc`, and a `gemini whoami` command, all wrong. Given the pasted text, it rebuilt the answer correctly and listed seven places its first answer had been wrong. It also questioned the AI Studio privilege below; Google's page confirms it is the **Gmail Settings administrator** privilege, as written.
 
 Throughout, replace:
 
