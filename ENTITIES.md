@@ -7,7 +7,7 @@
 *One map, so every page names each one the same honourable way.*
 
 ![Status](https://img.shields.io/badge/Status-draft%2C_we_massage_this_as_we_go-800020?style=flat-square)
-![Changed](https://img.shields.io/badge/Changed-2026--11--03-5c1a2b?style=flat-square)
+![Changed](https://img.shields.io/badge/Changed-2026--11--12-5c1a2b?style=flat-square)
 ![For](https://img.shields.io/badge/For-Every_writer_and_helper-64748b?style=flat-square)
 
 </div>
@@ -63,15 +63,26 @@ flowchart TB
     KG["Kenney's ChatGPT, also called Alfred"]
   end
 
+  subgraph KNOW["Knowledge: what is learned, kept on the right shelf"]
+    PV["A personal vault<br/>(one person's second brain)"]
+    OV["An organisation's shared vault<br/>(incubated in its lab)"]
+    OA["One Alfred<br/>the shared coordinator"]
+  end
+
   SOURCE -. "inspires" .-> PEOPLE
   PEOPLE -- "steward and decide" --> HOUSES
   HOUSES -. "hand over, when decided" .-> DAO
   HELPERS -- "prepare, propose, open the pull request" --> PEOPLE
   PS --- PC
+  AL -. "proposes notes" .-> PV
+  OA --- OV
+  OV -. "serves" .-> HOUSES
+  PEOPLE -- "approve what is kept" --> KNOW
 ```
 
 The arrows are the whole idea: **inspiration** comes from the source; **decisions** are made by people; the houses are
-**stewarded**, not owned outright; helpers **prepare** and people **merge**.
+**stewarded**, not owned outright; helpers **prepare** and people **merge**. What is learned is **kept**: in a person's own
+vault, or in an organisation's shared vault with One Alfred beside it, and a person approves what stays.
 
 ## <img src="assets/icons-phosphor/sun.svg" width="24" height="24" alt=""> The divine
 
@@ -132,6 +143,7 @@ The colours are in [`proposals-template/TONES.md`](proposals-template/TONES.md).
 | **Kavanah** | none now; was Augment Intent | **sunset** (Christopher, Nov 3, 2026): Auggie can't log in to Intent. Old commits and `created-by-kavanah` stay as the record |
 | **Auggie** | Augment CLI | resting; may return |
 | **Kenney's helper** | ChatGPT, which Kenney also calls **Alfred** | Kenney, in his own words and language |
+| **One Alfred** | an organisation's shared coordinator, beside its shared vault | that organisation's people; its handoffs go in `created-by-1alfred`, never in the personal Alfred's `created-by-alfred` ([`AGENT-SYNC/README.md`](AGENT-SYNC/README.md#two-alfreds-two-lanes)) |
 
 **One intelligence, many seats.** Each helper signs its work with its own seat (`Co-Authored-By: <Agent> · <Engine> · …`,
 [`AGENT-SYNC/README.md`](AGENT-SYNC/README.md)), so the record stays true about who did what. And each one is in the
@@ -143,10 +155,22 @@ How helpers are spoken of:
 - **Serving, never deciding.** "Alfred prepared; the steward merged."
 - **No will of their own.** A bot that watches is a wakeful servant; the guardrails are the feedback loop and the people who read it.
 
+## <img src="assets/icons-phosphor/book-marked.svg" width="24" height="24" alt=""> Knowledge: the vaults
+
+| Role | What it holds | Who keeps it |
+|---|---|---|
+| **A personal vault** | one person's second brain: notes distilled from their work and their sources, each citing where it came from | that person; helpers propose notes, the person approves them. Private, and never named by its path on a public page |
+| **An organisation's shared vault** | what an organisation has learned together: coordination notes, links to its proposals and procedures rather than copies | incubated in the organisation's lab until its officers take it home; the officers decide what it holds |
+| **One Alfred** | the shared coordinator that works beside the organisation's vault | serves the organisation's people, by the same rule as every helper: prepares, never decides |
+
+A personal vault and an organisation's vault never reach into each other: nothing personal goes into a shared
+vault, and a shared vault links out rather than copying private pages in.
+
 ## <img src="assets/icons-phosphor/history.svg" width="24" height="24" alt=""> Change log
 
 | Date | Change | By |
 |---|---|---|
+| 2026-11-12 | The knowledge layer: a personal vault, an organisation's shared vault in its lab, and One Alfred beside it | Alfred |
 | 2026-11-03 | Kavanah sunset; Mystarch lives on as chief of staff, on Christopher's word | Alfred |
 | 2026-11-01 | Drafted from Christopher's Nov 1 brief: the divine per house, stewards per item, the future DAO, the helpers and "we are all Alfred" | Alfred |
 
