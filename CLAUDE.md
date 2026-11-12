@@ -124,6 +124,20 @@ run, scan the staged copy (the clone or download, still unrun) with the machine'
 4. **A clean scan is not a review.** An antivirus looks for what it already knows; it cannot tell whether the code
    does what its README claims. The read-only review above still decides.
 
+**Outside code travels one way, and nothing updates itself:**
+
+```text
+upstream  →  public fork, at a reviewed pin  →  private working copy (the one that runs)
+```
+
+- **The public fork is the line in the sand.** It sits at the revision that was reviewed, and moves only when a new
+  revision has been reviewed the same way. Nothing is fetched from upstream into the copy that runs.
+- **The private working copy** is cloned from the public fork, carries our own patches, and is the only one that runs.
+- **Every public fork has a front door**: a file named after its owner's GitHub handle in capitals (this fleet's is
+  `DRASTICSTATIC.md`), saying why the fork exists, a thank-you to upstream, the reviewed revision it is pinned to, the
+  licence, where the review is kept, and which private working copy runs it. Template:
+  [`workflow-templates/FORK-FRONT-DOOR.md`](https://github.com/drasticstatic/my-template/blob/main/workflow-templates/FORK-FRONT-DOOR.md).
+
 ---
 
 ## Context Rules
