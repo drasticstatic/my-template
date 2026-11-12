@@ -410,16 +410,22 @@ settings block in its header. Neither is installed by default: [`walkthroughs/CL
 ## `claude-projects-archive.sh` — a nightly sealed copy of `~/.claude/projects`
 
 ```sh
-sh scripts/claude-projects-archive.selftest.sh                 # a fake home in a temporary folder; 104 checks
+sh scripts/claude-projects-archive.selftest.sh                 # a fake home in a temporary folder; 297 checks
 sh scripts/claude-projects-archive.sh --init                   # once, by you: the passphrase file (never shown)
 sh scripts/claude-projects-archive.sh --run                    # full on the first run of a month, else what changed
 sh scripts/claude-projects-archive.sh --list                   # archives, sizes, total
 sh scripts/claude-projects-archive.sh --restore-latest ~/claude-restore   # into a new, empty folder
 sh scripts/claude-projects-archive.sh --install                # by you: a LaunchAgent at 00:40 nightly (--if-due)
+sh scripts/claude-projects-archive.sh --run --source ~/Notes --name notes # another folder, its own chain
 ```
 
-`tar`, `gzip` and `openssl enc -aes-256-cbc -pbkdf2 -iter 600000` over `~/.claude/projects` and `~/.claude/CLAUDE.md`, into
-`iCloud Drive/Backups/claude-projects/YYYY/` or any existing folder given with `--dest`. Each archive is written as `.partial`,
+`tar`, `gzip` and `openssl enc -aes-256-cbc -pbkdf2 -iter 600000` over `~/.claude/projects`, and `~/.claude/CLAUDE.md`,
+`history.jsonl` (your typed prompts, kept after their transcripts are swept), `plans/` and `file-history/` when they
+exist, into `iCloud Drive/Backups/claude-projects/YYYY/` or any existing folder given with `--dest`. A chain begun before
+those three were added carries on: the next incremental picks them up. `--source DIR --name NAME` seals another folder
+the same way, with every mode but `--install`/`--uninstall`: archives named `NAME_…_full.tar.gz.enc` under
+`<dest>/NAME/YYYY/`, paths relative to DIR's parent, and a state folder of its own, so it never shares a stamp with the
+Claude chain. It refuses a NAME other than letters, digits, `-` and `_`, and a DIR inside `~/.claude` or overlapping the destination. Each archive is written as `.partial`,
 decrypted again and counted, given a `.sha256`, then renamed; the stamp for the next incremental moves only after that. It
 refuses a destination inside `~/.claude`, a passphrase file that is missing or not mode 600, and a restore into anything but
 a new, empty folder outside `~/.claude`. It deletes no archive (`--prune-plan` only prints a plan). Setup lines, restore
