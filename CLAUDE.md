@@ -111,6 +111,19 @@ Before running `git clone`, `npm install`, `pip install`, `cargo build`, or addi
 - **Most importantly: a real "product" distributed as a separate, unreviewable compiled binary (a `.exe`/`.dmg`/`.7z`/`.zip` in Releases) that is functionally disconnected from a harmless-looking open-sourced stub.** This is the standard bait-and-switch shape — the visible source builds legitimacy while the actual behavior ships unreviewable. Never download or run the binary to "just check" — the read-only source/metadata inspection above is sufficient to form a judgment without that risk.
 - If the read-only inspection can't resolve the question either way, that's what "ask before proceeding" in step 6 is for — don't escalate to actually running anything as the next step.
 
+**Screen the staged copy before anything runs.** After the source-as-text review and before any install, build or
+run, scan the staged copy (the clone or download, still unrun) with the machine's antivirus:
+
+1. **Use an interface the antivirus vendor documents** (its app, or a command line the vendor itself publishes).
+   Some products have **no supported command line**; then the scan is a **manual step by the owner**, who runs it in
+   the app. A helper says so and waits; it never drives the app's window or an undocumented tool. Running a scan can
+   pop a prompt on screen, so warn first.
+2. **Keep the result beside the review**, as a short receipt: the engine and its definitions version, the time of
+   the scan, the revision scanned (commit hash or download checksum), and whether the scan was complete.
+3. **A partial or unreadable scan counts as unresolved**, the same as an open question in step 6: nothing runs.
+4. **A clean scan is not a review.** An antivirus looks for what it already knows; it cannot tell whether the code
+   does what its README claims. The read-only review above still decides.
+
 ---
 
 ## Context Rules
@@ -166,8 +179,9 @@ When these exist in this repo, they are the **source of truth** — do not dupli
 
 ## Agent-Specific Notes
 
-**Before this repo is considered "shipped"**, run the checklist in this repo's
-own `README.md` ("New Repo Checklist") — most importantly a real `LICENSE`
+**Before this repo is considered "shipped"**, walk the numbered path in my-template's
+`README.md` (["The path"](https://github.com/drasticstatic/my-template/blob/main/README.md#-the-path),
+Stops 1 to 8; licence, security and topics are Stop 3) — most importantly a real `LICENSE`
 file in the public repo (not covered by the `drasticstatic/.github` fallback,
 unlike `SECURITY.md`/`CONTRIBUTING.md`) and an accurate README License
 section. See [`how-to-establish-cross_repo_CONTRIBUTORS_SECURITY_LICENSING.md`](https://github.com/drasticstatic/drasticstatic/blob/main/how-to-establish-cross_repo_CONTRIBUTORS_SECURITY_LICENSING.md)
