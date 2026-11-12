@@ -58,7 +58,7 @@
 |---|---|---|---|
 | <img src="../assets/icons-phosphor/history.svg" width="16" height="16" alt=""> | [Version lineage](VERSION-LINEAGE.md) | keep old and rehearsal copies of a site up **without** `noindex`, each greeting visitors once and linking forward to newer versions | [PDF](pdf/VERSION-LINEAGE.pdf) |
 | <img src="../assets/icons-phosphor/scroll-text.svg" width="16" height="16" alt=""> | [Proposals template](../proposals-template/README.md) | give your organization a private `proposals` repo where each idea is a plain-language page and a PDF, decided by the people it affects | — |
-| <img src="../assets/icons-phosphor/brain-circuit.svg" width="16" height="16" alt=""> | [Ultra runs](ULTRA-RUNS.md) | tell ultracode from ultrareview, stage a review so a free run isn't spent on an empty diff, pick what deserves one, and know why publishing runs in the main session | [PDF](pdf/ULTRA-RUNS.pdf) |
+| <img src="../assets/icons-phosphor/brain-circuit.svg" width="16" height="16" alt=""> | [Ultra runs](ULTRA-RUNS.md) | tell ultracode from ultrareview, stage a review so a free run isn't spent on an empty diff, pick what deserves one, know why publishing runs in the main session, and split model and effort between one coordinator and its workers | [PDF](pdf/ULTRA-RUNS.pdf) |
 | <img src="../assets/icons-phosphor/file-text.svg" width="16" height="16" alt=""> | [Markdown beside the PDF](MARKDOWN-BESIDE-PDF.md) | one document, two readers; why every PDF we send ships with its markdown, and what we ask partners to send | [PDF](pdf/MARKDOWN-BESIDE-PDF.pdf) |
 
 ## <img src="../assets/icons-phosphor/shield-check.svg" width="24" height="24" alt=""> Three promises every guide keeps
