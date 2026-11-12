@@ -130,6 +130,9 @@ Copy [`proposals-template/repo/`](./proposals-template/repo/) into a private `pr
 | `proposals-template/` | A ready-to-copy private `proposals` repo: plain-language proposals (TL;DR, itinerary, questions, decisions log) rendered to PDF on every push |
 | `walkthroughs/` | Plain-language guides for people and their AI helpers: joining an org, connecting tools, keeping an org healthy |
 | `walkthroughs-template/` | The shape every walkthrough follows: a skeleton guide, an index, the Lucide icons they name, and why `workflow-templates/` keeps GitHub's own folder name |
+| `tutorials/` | Learn by doing: one task start to finish, with what you should see at each step; and the four shelves (SOP, proposal, walkthrough, tutorial) in one table |
+| `tutorials-template/` | The shape every tutorial follows: a skeleton, an index and its icons |
+| `scripts/lay-tutorials-shelf.sh` | Fleet sweep: lays a `tutorials/README.md` shelf beside each SOP location and reading room (dry run by default; `test-lay-tutorials-shelf.sh` is its self-test) |
 | `startup/` | Start-up procedures you will forget: starting a Claude session in the right folder (the `claude` guard, `--here`, `/cd`), and Alfred-NIM through the local free-claude-code proxy |
 | `sop-template/` | Procedures beside proposals: a ready-to-copy `ops-standard-operating-procedures` repository (`SOP-[Department]-[ID]-[name].md`, approved versions as tags) with the universal OPS and IT procedures |
 | `org-onboarding/` | The onboarding kit every organization's `.github` carries: ONBOARDING.md, an AGENTS.md template, the advisory credit hook |
@@ -153,6 +156,7 @@ Copy [`proposals-template/repo/`](./proposals-template/repo/) into a private `pr
 | **writing a README** | [`README-STANDARD.md`](./README-STANDARD.md): the boilerplate, `scripts/make-banner.py`, and how to suggest a better way |
 | **numbering a procedure or proposal** | [`NUMBERING.md`](./NUMBERING.md): who may issue which numbers, how to cite them, and what never changes |
 | **letting someone else's AI helper in** | [`AGENT-ONBOARDING.md`](./AGENT-ONBOARDING.md): the honest answer, the layers, and the kit to copy |
+| **learning a tool by doing**, or choosing which shelf a page belongs on | [`tutorials/`](./tutorials/README.md): the tutorials, and the four shelves (SOP, proposal, walkthrough, tutorial) |
 | **writing any page** | [`LUCID.md`](./LUCID.md) (how), [`ENTITIES.md`](./ENTITIES.md) (whom we name, and how), [`NAMES-POLICY.md`](./NAMES-POLICY.md) (what may be public) |
 
 ---

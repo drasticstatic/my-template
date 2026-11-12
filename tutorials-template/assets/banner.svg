@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="260" viewBox="0 0 1200 260" role="img" aria-labelledby="t d">
+  <title id="t">Tutorials template</title>
+  <desc id="d">Learn by doing: one task, start to finish, with what you should see at each step. The picture: thin threads leave one point and find each other: 7 reach out, and each one meets its neighbour on the way. With reduced motion, the finished picture shows at once.</desc>
+  <style>
+    /* Motion only for readers who have not asked for less. Outside this block everything is in its finished state. */
+    @media (prefers-reduced-motion: no-preference) {
+      .draw { stroke-dasharray: 100; animation: draw 2.6s cubic-bezier(.4,0,.2,1) both; }
+      .arrive { animation: arrive .5s ease-out both; }
+      .breathe { transform-box: fill-box; transform-origin: center; animation: breathe 8s steps(48) 3s infinite; }
+      .halo { transform-box: fill-box; transform-origin: center; animation: halo 5s steps(60) 3.6s infinite; }
+    }
+    @keyframes draw { from { stroke-dashoffset: 100 } to { stroke-dashoffset: 0 } }
+    @keyframes arrive { from { opacity: 0 } to { opacity: 1 } }
+    @keyframes breathe { 0%, 100% { transform: scale(1) } 50% { transform: scale(1.07) } }
+    @keyframes halo { 0% { opacity: .55; transform: scale(1) } 70%, 100% { opacity: 0; transform: scale(2.1) } }
+    .halo { opacity: 0 }
+  </style>
+  <defs>
+    <linearGradient id="ground" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1a1a2e"/><stop offset="1" stop-color="#0f3460"/></linearGradient>
+    <linearGradient id="line" gradientUnits="userSpaceOnUse" x1="668" y1="0" x2="1160" y2="0"><stop offset="0.00" stop-color="#804c5a"/><stop offset="0.50" stop-color="#b87082"/><stop offset="1.00" stop-color="#ddb5bf"/></linearGradient>
+    <linearGradient id="fade" gradientUnits="userSpaceOnUse" x1="620" y1="0" x2="1200" y2="0"><stop offset="0" stop-color="#b87082" stop-opacity="0"/><stop offset=".35" stop-color="#b87082"/><stop offset="1" stop-color="#ddb5bf"/></linearGradient>
+    <clipPath id="card"><rect width="1200" height="260" rx="18"/></clipPath>
+    <radialGradient id="ember" gradientUnits="userSpaceOnUse" cx="962" cy="124" r="390"><stop offset="0" stop-color="#800020" stop-opacity=".8"/><stop offset=".6" stop-color="#5c1a2b" stop-opacity=".45"/><stop offset="1" stop-color="#5c1a2b" stop-opacity="0"/></radialGradient>
+  </defs>
+  <g clip-path="url(#card)">
+    <!-- an opaque ground: the same picture on GitHub's light and dark themes -->
+    <rect width="1200" height="260" fill="url(#ground)"/>
+    <rect width="1200" height="260" fill="url(#ember)"/>
+    <path class="draw" pathLength="100" d="M1106.0 119.6C975.2 82.9 859.6 51.7 748.7 48.1" fill="none" stroke="url(#line)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:0.20s"/>
+    <path class="draw" pathLength="100" d="M1106.0 119.6C969.3 107.6 805.4 82.1 724.7 72.0" fill="none" stroke="url(#line)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:0.45s"/>
+    <path class="draw" pathLength="100" d="M1106.0 119.6C1004.9 118.1 809.9 116.8 703.2 99.5" fill="none" stroke="url(#line)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:0.70s"/>
+    <path class="draw" pathLength="100" d="M1106.0 119.6C1014.4 110.3 821.1 133.4 743.2 125.1" fill="none" stroke="url(#line)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:0.95s"/>
+    <path class="draw" pathLength="100" d="M1106.0 119.6C983.7 138.1 813.0 138.9 726.6 149.3" fill="none" stroke="url(#line)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:1.20s"/>
+    <path class="draw" pathLength="100" d="M1106.0 119.6C1004.5 139.3 817.1 167.4 692.5 173.3" fill="none" stroke="url(#line)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:1.45s"/>
+    <path class="draw" pathLength="100" d="M1106.0 119.6C987.3 153.2 947.8 194.7 814.4 197.0" fill="none" stroke="url(#line)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:1.70s"/>
+    <path class="draw" pathLength="100" d="M892.6 65.8Q846.6 77.3 848.7 88.9" fill="none" stroke="#614154" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:1.80s"/>
+    <path class="draw" pathLength="100" d="M748.7 48.1Q706.7 60.1 724.7 72.0" fill="none" stroke="#614154" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:2.40s"/>
+    <path class="draw" pathLength="100" d="M848.7 88.9Q847.5 101.9 894.4 115.0" fill="none" stroke="#614154" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:2.05s"/>
+    <path class="draw" pathLength="100" d="M724.7 72.0Q684.0 85.8 703.2 99.5" fill="none" stroke="#614154" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:2.65s"/>
+    <path class="draw" pathLength="100" d="M894.4 115.0Q861.0 119.6 875.6 124.2" fill="none" stroke="#614154" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:2.30s"/>
+    <path class="draw" pathLength="100" d="M703.2 99.5Q693.2 112.3 743.2 125.1" fill="none" stroke="#614154" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:2.90s"/>
+    <path class="draw" pathLength="100" d="M875.6 124.2Q844.7 132.0 861.8 139.7" fill="none" stroke="#614154" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:2.55s"/>
+    <path class="draw" pathLength="100" d="M743.2 125.1Q704.9 137.2 726.6 149.3" fill="none" stroke="#614154" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:3.15s"/>
+    <path class="draw" pathLength="100" d="M861.8 139.7Q858.6 146.0 903.3 152.2" fill="none" stroke="#614154" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:2.80s"/>
+    <path class="draw" pathLength="100" d="M726.6 149.3Q679.6 161.3 692.5 173.3" fill="none" stroke="#614154" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:3.40s"/>
+    <path class="draw" pathLength="100" d="M903.3 152.2Q895.6 166.0 935.9 179.8" fill="none" stroke="#614154" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:3.05s"/>
+    <path class="draw" pathLength="100" d="M692.5 173.3Q723.5 185.1 814.4 197.0" fill="none" stroke="#614154" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:3.65s"/>
+    <circle class="arrive" style="animation-delay:1.40s" cx="748.7" cy="48.1" r="4.5" fill="#b87082"/>
+    <circle class="arrive" style="animation-delay:1.65s" cx="724.7" cy="72.0" r="4.5" fill="#b87082"/>
+    <circle class="arrive" style="animation-delay:1.90s" cx="703.2" cy="99.5" r="4.5" fill="#b87082"/>
+    <circle class="arrive" style="animation-delay:2.15s" cx="743.2" cy="125.1" r="4.5" fill="#b87082"/>
+    <circle class="arrive" style="animation-delay:2.40s" cx="726.6" cy="149.3" r="4.5" fill="#b87082"/>
+    <circle class="arrive" style="animation-delay:2.65s" cx="692.5" cy="173.3" r="4.5" fill="#b87082"/>
+    <circle class="arrive" style="animation-delay:2.90s" cx="814.4" cy="197.0" r="4.5" fill="#b87082"/>
+    <circle class="arrive" style="animation-delay:2.20s" cx="892.6" cy="65.8" r="2.5" fill="#614154"/>
+    <circle class="arrive" style="animation-delay:2.45s" cx="848.7" cy="88.9" r="2.5" fill="#614154"/>
+    <circle class="arrive" style="animation-delay:2.70s" cx="894.4" cy="115.0" r="2.5" fill="#614154"/>
+    <circle class="arrive" style="animation-delay:2.95s" cx="875.6" cy="124.2" r="2.5" fill="#614154"/>
+    <circle class="arrive" style="animation-delay:3.20s" cx="861.8" cy="139.7" r="2.5" fill="#614154"/>
+    <circle class="arrive" style="animation-delay:3.45s" cx="903.3" cy="152.2" r="2.5" fill="#614154"/>
+    <circle class="arrive" style="animation-delay:3.70s" cx="935.9" cy="179.8" r="2.5" fill="#614154"/>
+    <circle class="halo" cx="1106.0" cy="119.6" r="18" fill="none" stroke="#ddb5bf" stroke-width="2"/>
+    <circle class="breathe" cx="1106.0" cy="119.6" r="14" fill="#b87082"/>
+    <circle cx="1106.0" cy="119.6" r="5.5" fill="#fbeef1"/>
+    <rect x="0.0" y="248" width="300.5" height="12" fill="#1a1a2e"/><rect x="300.0" y="248" width="300.5" height="12" fill="#5c1a2b"/><rect x="600.0" y="248" width="300.5" height="12" fill="#800020"/><rect x="900.0" y="248" width="300.5" height="12" fill="#fbeef1"/>
+    <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif"><text x="56" y="56.6" fill="#c78f9d" font-size="15" font-weight="700" letter-spacing=".6">drasticstatic lab</text><text x="56" y="122.2" fill="#fbeef1" font-size="60" font-weight="700" letter-spacing="-.5">Tutorials template</text><text x="56" y="166.0" fill="#dcd0d6" font-size="23">Learn by doing: one task, start to finish, with what</text><text x="56" y="196.8" fill="#dcd0d6" font-size="23">you should see at each step.</text></g>
+  </g>
+</svg>

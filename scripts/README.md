@@ -206,6 +206,23 @@ with a start marker but no end marker is skipped and reported.
 
 ---
 
+## `lay-tutorials-shelf.sh` — a tutorials shelf beside every SOP location and reading room
+
+```sh
+sh scripts/lay-tutorials-shelf.sh --scan ~/<org> --scan ~/drasticstaticLabs     # dry run
+sh scripts/lay-tutorials-shelf.sh --apply --list ~/private/shelf-repos.txt
+sh scripts/test-lay-tutorials-shelf.sh                                           # self-test, on a made-up fleet
+```
+
+The third fleet sweep, in the same shape as the two above: a dry run unless `--apply`, idempotent, never commits,
+no repository list inside. It finds **SOP locations** (a git repository named `ops-standard-operating-procedures` or
+`ops-standard-operating-procedures-<desk>`) and **reading rooms** (one named `reading-room`), skips every name ending
+in `-public` (a twin receives files only from its sync), and lays a `tutorials/README.md` that points to
+[`../tutorials/README.md`](../tutorials/README.md) with an empty table for the repository's own tutorials. An existing
+`tutorials/README.md`, in any case, is never overwritten.
+
+---
+
 ## Before you start work in an existing clone
 
 Fetch first, and do it in a way that cannot lose uncommitted work:
