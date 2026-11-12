@@ -9,7 +9,7 @@
 
 ![Standard](https://img.shields.io/badge/Standard-README-800020?style=flat-square)
 ![Status](https://img.shields.io/badge/Status-living-5c1a2b?style=flat-square)
-![Updated](https://img.shields.io/badge/Updated-2026--11--02-1a1a2e?style=flat-square)
+![Updated](https://img.shields.io/badge/Updated-2026--11--12-1a1a2e?style=flat-square)
 [![Licence: MIT](https://img.shields.io/badge/Licence-MIT-1a1a2e?style=flat-square)](./LICENSE)
 ![For](https://img.shields.io/badge/For-Anyone_who_keeps_a_repository-64748b?style=flat-square)
 
@@ -152,6 +152,23 @@ A private repository whose README syncs to a public twin carries its pictures wi
 
 <img src="assets/icons-phosphor/shield-check.svg" width="16" height="16" alt=""> **A `SECURITY.md` beside the README** says in one page why a clone is safe to fetch (nothing runs on clone or install, hooks only by hand, every public page read before it left), where to report a concern, and the honest limit of branch protection on a private repository: [`SECURITY.md`](./SECURITY.md) here, [`sop-template/repo/SECURITY.md`](./sop-template/repo/SECURITY.md) for an organisation's repository.
 
+## <img src="assets/icons-phosphor/tags.svg" width="24" height="24" alt=""> The sign above the door: description and topics
+
+The line under a repository's name on GitHub, and its topic tags, are what a search result and a profile show before
+anyone opens the README. **Every repository gets both, set when it is created and checked whenever its README
+changes:**
+
+- **A one-line description** with a few fitting emojis, saying what the README's TL;DR says, in fewer words.
+- **Its topics filled in.** GitHub allows up to 20 per repository: lowercase letters, numbers and hyphens, 50
+  characters or fewer each.
+
+```sh
+gh repo edit <OWNER>/<REPOSITORY> --description "🧭 <WHAT IT IS, IN ONE LINE> 🌱"
+gh repo edit <OWNER>/<REPOSITORY> --add-topic <topic-one>,<topic-two>,<topic-three>
+```
+
+For a public repository the description is public too, so it follows [*What a front door never says*](#-what-a-front-door-never-says) below.
+
 ## <img src="assets/icons-phosphor/shield-alert.svg" width="24" height="24" alt=""> What a front door never says
 
 Secrets of any kind. Personal data, or anything about someone's family, health or legal matters. Filings. A person's account-security status. The contents of a private repository, when the page is public. A repository that publishes in costume keeps its costume in the banner and the alt text too. A picture of markets is illustration, never data.
@@ -168,6 +185,7 @@ python3 scripts/make-banner.py --check-readme README.md
 - [ ] A stranger knows within ten seconds where they are and what to do first.
 - [ ] Every link and path opened, every command run, or marked untested.
 - [ ] Everything true the old README said is still there.
+- [ ] The repository's description and topics still match the page ([above](#-the-sign-above-the-door-description-and-topics)).
 
 ## <img src="assets/icons-phosphor/git-pull-request.svg" width="24" height="24" alt=""> Suggest a change
 
@@ -186,5 +204,6 @@ Not on GitHub? Tell any steward you know, or your helper, in your own words. A c
 | 2026-11-04 | *Two house styles*: `--style waves` for a front door and `--style seed` for a beginning (the seed picture, first drawn by hand, is now a motif of its own) |
 | 2026-11-05 | `--motif proposal` for every proposals repository, with `--labels`, `--glyph` and `--accent` |
 | 2026-11-05 | *The unbound motif*: a chain whose middle link has opened; and `--subtitle ""`, a banner that says only its name |
+| 2026-11-12 | *The sign above the door*: a one-line description with a few emojis and topics filled in (up to 20), set at creation and checked whenever the README changes |
 
 <sub>Related: [`LUCID.md`](./LUCID.md) (how a page reads), [`ENTITIES.md`](./ENTITIES.md) (whom we name, and how), [`NAMES-POLICY.md`](./NAMES-POLICY.md) (what may be public), [`proposals-template/TONES.md`](./proposals-template/TONES.md) (colours), [`GITMOJI.md`](./GITMOJI.md) (commit subjects). Icons: Phosphor duotone (MIT). Diagrams: Mermaid (MIT). Words and script: MIT.</sub>
