@@ -21,6 +21,49 @@ not who it's for:
 | `created-by-auggie` | Auggie (Augment CLI, code builds) |
 | `created-by-Littlebird` | LittlebirdAI (app.littlebird.ai, screen context & fleet memory) |
 | `created-by-cosmos` | Any Cosmos agent — Cosmos Advisor and the code-review experts it runs |
+| `created-by-Gemini` | Google's Gemini, when it writes handoffs (capitalised, like `created-by-Littlebird`) |
+| `created-by-1alfred` | One Alfred, an organisation's shared coordinator. Lives in that organisation's repositories only ([below](#two-alfreds-two-lanes)) |
+| `created-by-<first name>` | A named collaborator who works in this repository, lower case (for example `created-by-kenney`), with a README saying whose it is ([below](#named-collaborator-lanes)) |
+
+### Two Alfreds, two lanes
+
+The names are one digit apart, so here is the difference in one table:
+
+| Lane | Who | Where it lives | Rules |
+|---|---|---|---|
+| `created-by-alfred` | **Alfred**: the fleet owner's own Alfred (Claude Code CLI), personal to him | his own repositories and the lab | private; **never renamed, never published** |
+| `created-by-1alfred` | **One Alfred**: an organisation's shared coordinator, working for that organisation's people | that organisation's repositories | the organisation's lane; it follows that house's rules for what may be published |
+
+A handoff from the personal Alfred goes in `created-by-alfred`, even in an organisation's repository. A handoff
+from One Alfred goes in `created-by-1alfred`, wherever it lands. If you cannot tell which one wrote a note, the
+footer's Agent field says (`Co-Authored-By: <Agent> · …`).
+
+### Named-collaborator lanes
+
+A person who works in a repository may have a lane of their own: `created-by-<first name>`, in lower case
+(`created-by-kenney`). Its `README.md` says whose it is, in one line, so a reader never has to guess. The rule
+that the name says **who wrote it, not who it is for** still holds: a note written *for* that person goes in the
+writer's lane (`created-by-alfred/2026-11-12-for-kenney.md`), not in theirs. Their lane holds what they wrote.
+
+### Verbatim chat threads
+
+A person's saved, **unedited** chat transcripts live in that person's lane, one folder per source:
+
+```text
+created-by-<person>/<source>_verbatim-chat-threads/
+  created-by-christopher/littlebird_verbatim-chat-threads/
+  created-by-christopher/google-search-ai-mode_verbatim-chat-threads/
+  (later: chatgpt_verbatim-chat-threads/, gemini_verbatim-chat-threads/, …)
+```
+
+- **Verbatim means unedited.** No front matter added, no tidying, no fixing of typos. If a thread needs a summary
+  or a note, write it beside the thread as a separate file.
+- **Private lanes only.** These folders never go into `AGENT-SYNC_PUBLIC/` or a public twin. An allowlist never
+  names them.
+- **Filed where it belongs.** A thread is saved in the repository it is about, not in a general pile.
+- **Older names.** On 2026-11-12 the folders `google-ai-verbatim-chat-threads` and
+  `littlebird-verbatim-chat-threads` were renamed to this pattern. Dated records (handoffs, logs, commit
+  messages) written before then may still show the old names.
 
 For who each of these personas actually is — surface, model, commit attribution, and how they
 relate to each other — see
@@ -66,8 +109,9 @@ ever making it a repository, so seven weeks of handoffs existed only on one iMac
 | A public repo with no private lane (Pattern B) | `AGENT-SYNC_PUBLIC/`, tracked | write only what anyone may read; a local `AGENT-SYNC/` must be in `.gitignore` |
 | A private repo with a public twin (Pattern A) | `AGENT-SYNC/` in the private repo | the twin's sync never copies it (allowlist, or the exclude list names it) |
 
-**Inside a lane:** the eight `created-by-*` folders above (`created-by-Littlebird` is capitalised everywhere;
-match it). These are allowed alongside them:
+**Inside a lane:** the `created-by-*` folders above (`created-by-Littlebird` and `created-by-Gemini` are
+capitalised everywhere; match them). A named collaborator's `created-by-<first name>` is allowed when it holds a
+`README.md`. These are allowed alongside them:
 - `archive*/`, `app-data-<agent>/` (an app's exported data), `VSCode/` (IDE chat exports), and in hub repos
   `scripts/`, `.githooks/`, `logs/`.
 - Historical lanes kept exactly as they were, because we delete nothing: `created-by-augment-vscode-migration/` and
