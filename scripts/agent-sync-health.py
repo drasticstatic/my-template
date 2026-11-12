@@ -4,6 +4,8 @@
     python3 ~/code/my-template/scripts/agent-sync-health.py [root ...]     # default: ~/code ~/drasticstaticLabs ~/dappu ~/theholyearthfoundation ~/psychedelicsinrecovery ~/Octagon-Religious-Research-Group-ORG ~/psanctuary ~/psanctuarychurch ~/taylordwraps ~/WILSONSLAWNMAINTENANCE
 
 my-template's own AGENT-SYNC/ is the public skeleton every repo copies, so it is exempt from the public-repo rule.
+Lanes: the canonical created-by-* names below; any other created-by-<name> passes only when it holds a README.md
+(a named collaborator's lane), and is flagged otherwise.
 Read-only. It runs `git` locally and `gh repo list` once per owner (to learn each repository's visibility).
 Prints one line per lane, then the problems; exits 1 if any lane breaks a rule.
 """
@@ -12,7 +14,9 @@ import os, re, subprocess, sys
 OWNERS = ["drasticstatic", "theholyearthfoundation", "psychedelicsinrecovery", "psanctuary", "psanctuarychurch",
           "Octagon-Religious-Research-Group-ORG", "taylordwraps"]
 LANES = {"created-by-christopher", "created-by-alfred", "created-by-fortuna", "created-by-kavanah",
-         "created-by-mystarch", "created-by-auggie", "created-by-Littlebird", "created-by-cosmos"}
+         "created-by-mystarch", "created-by-auggie", "created-by-Littlebird", "created-by-cosmos",
+         "created-by-Gemini", "created-by-1alfred"}
+PERSON = re.compile(r"^created-by-[A-Za-z0-9][A-Za-z0-9_-]*$")   # a named collaborator's lane: allowed with a README.md
 HISTORICAL = {"created-by-augment-vscode-migration", "created-in-claude-cloud"}   # kept as they were: delete nothing
 EXTRAS = re.compile(r"^(archive.*|app-data-[a-z]+|VSCode|logs|scripts|\.githooks|\.github)$")
 
@@ -66,8 +70,10 @@ for r in sorted(repos):
             if run("git", "status", "--porcelain", "--", a, cwd=r): issues.append("uncommitted files")
         if a == "AGENT-SYNC_PUBLIC" and v == "private": issues.append("AGENT-SYNC_PUBLIC in a private repo (Pattern A)")
         subs = [s for s in os.listdir(p) if os.path.isdir(os.path.join(p, s)) and s != ".git"]
-        odd = [s for s in subs if s not in LANES and s not in HISTORICAL and not EXTRAS.match(s)]
-        if odd: issues.append("unexpected folders: " + ", ".join(odd))
+        odd = [s for s in subs if s not in LANES and s not in HISTORICAL and not EXTRAS.match(s)
+               and not (PERSON.match(s) and os.path.isfile(os.path.join(p, s, "README.md")))]
+        if odd: issues.append("unexpected folders: " + ", ".join(odd)
+                              + " (a person's created-by-<name> lane is allowed once it has a README.md saying whose it is)")
         if not os.path.exists(os.path.join(p, "README.md")) and not (a == "AGENT-SYNC" and v == "public" and ignored):
             issues.append("no README (a pointer to my-template/AGENT-SYNC/README.md is enough)")
         bad += bool(issues)

@@ -133,6 +133,12 @@ choice is not cosmetic:
 Visibility is detected via `gh`, then an anonymous API call, then a naming heuristic — in that order,
 so it still works without a GitHub token. Pass `--private` or `--public` to skip detection.
 
+The lanes it creates inside that folder: `created-by-` `alfred`, `auggie`, `christopher`, `fortuna`,
+`kavanah`, `mystarch`, `Littlebird`, `cosmos` and `Gemini` (Nov 12, 2026: the two retired per-environment
+Cosmos lanes are no longer created). `created-by-1alfred` and a collaborator's `created-by-<first name>` are
+made by hand where they belong. `agent-sync-health.py` accepts all of these, and flags any other
+`created-by-<name>` until it has a `README.md` saying whose it is ([`AGENT-SYNC/README.md`](../AGENT-SYNC/README.md)).
+
 ### The trap this script exists to prevent
 
 Getting it wrong is silent. Committing `AGENT-SYNC/` to a public repo does not error; it publishes

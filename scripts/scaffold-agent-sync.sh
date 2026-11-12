@@ -20,8 +20,11 @@
 set -e
 cd "$(git rev-parse --show-toplevel)"
 
-AGENTS="alfred auggie christopher fortuna kavanah mystarch Littlebird
-cosmos_Advisor-drasticstatic cosmos_Advisor-drasticstatica"
+# The default lanes (AGENT-SYNC/README.md). One lane for every Cosmos agent: the two
+# per-environment Cosmos lanes this list once created are retired. Not created by default:
+# created-by-1alfred (only in an organisation's repositories) and a named collaborator's
+# created-by-<first name> (made by hand, with a README saying whose it is).
+AGENTS="alfred auggie christopher fortuna kavanah mystarch Littlebird cosmos Gemini"
 
 # Repo identity comes from the remote, not the checkout directory name — a clone
 # may sit in a directory called anything at all.
