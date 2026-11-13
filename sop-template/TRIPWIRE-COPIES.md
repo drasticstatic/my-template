@@ -91,6 +91,7 @@ merge** (merge commit, not squash). Organisation and preview copies count as cur
 
 | Repository | Branch | Commit | Self-test, and where it went |
 |---|---|---|---|
+| `drasticstatic/trading-assistant` | main | 4f75944 | 167/167 as expected; the v4-vs-v5 scan of the tree refused nothing new (2026-11-13, Fortuna) |
 | `drasticstatic/alexandrina` | main | `b88db95` | 167/167, matches; pushed |
 | `drasticstatic/anthropas-argus-alfred` | main | `d5dd539` | 167/167, matches; pushed |
 | `drasticstatic/augment-intent-properties` | main | `519b733` | 167/167, matches; pushed |
@@ -153,7 +154,7 @@ mirror and its history), or add a line to `.github/public-reword.txt` that blank
 Then copy v5 in. The clone was left as it was, still v4.
 
 **Next sweep** (other agents are editing these tonight, or they are current already): `drasticstatic/divorce-custody-assistant`
-(current: `a54e9c9`, row below), `drasticstatic/trading-assistant`, `drasticstatic/trading-bot_arbitrage_DAPPUv3_hardhat_UNI-CAKE`,
+(current: `a54e9c9`, row below), `drasticstatic/trading-bot_arbitrage_DAPPUv3_hardhat_UNI-CAKE` (`trading-assistant` done 2026-11-13, row above),
 `drasticstatic/bushido-code`, `drasticstatic/proposals-thef`, every `ops-standard-operating-procedures` repository
 (`drasticstatic/ops-standard-operating-procedures-thef`, and those of `Octagon-Religious-Research-Group-ORG`, `psanctuary`,
 `psanctuarychurch`, `psychedelicsinrecovery`, `taylordwraps` and `theholyearthfoundation`), and this repository, whose pair
