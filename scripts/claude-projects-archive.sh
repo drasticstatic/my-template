@@ -1,7 +1,8 @@
 #!/bin/sh
-# claude-projects-archive.sh: a nightly, encrypted snapshot of ~/.claude/projects (and ~/.claude/CLAUDE.md), written as
-# finished files into iCloud Drive or any folder you name. The live ~/.claude never lives in iCloud; only sealed
-# archives of it do. Walkthrough: walkthroughs/CLAUDE-PROJECTS-ARCHIVE.md
+# claude-projects-archive.sh: a nightly, encrypted snapshot of ~/.claude/projects (and, when they exist,
+# ~/.claude/CLAUDE.md, history.jsonl, plans/ and file-history/), written as finished files into iCloud Drive or any
+# folder you name. The live ~/.claude never lives in iCloud; only sealed archives of it do. --source seals another
+# folder the same way (below). Walkthrough: walkthroughs/CLAUDE-PROJECTS-ARCHIVE.md
 #
 #     sh scripts/claude-projects-archive.sh --init              once: make the passphrase file (never shown)
 #     sh scripts/claude-projects-archive.sh --run               archive now: full, or incremental since the last success
@@ -14,7 +15,8 @@
 #     sh scripts/claude-projects-archive.sh --restore-latest DIR            the newest full and every incremental after it
 #     sh scripts/claude-projects-archive.sh --prune-plan KEEP   what keeping the last KEEP fulls WOULD move aside; changes nothing
 #     sh scripts/claude-projects-archive.sh --move-old KEEP DIR the older chains moved (never deleted) to DIR, e.g. a drive
-#     sh scripts/claude-projects-archive.sh --install           a LaunchAgent at 00:40 nightly (runs --if-due); you run this
+#     sh scripts/claude-projects-archive.sh --install           a LaunchAgent at 00:40 nightly (runs --if-due); you run this.
+#                                                               The Claude chain only: no --source
 #     sh scripts/claude-projects-archive.sh --uninstall         unload it; the plist is moved aside, not deleted
 #     sh scripts/claude-projects-archive.sh --notify-test       send one test phone note through ntfy.env (below)
 #     sh scripts/claude-projects-archive.selftest.sh            prove all of it against a fake home in a temporary folder
@@ -24,12 +26,27 @@
 # A --dest folder must already exist (an unplugged drive must not become a folder on the boot disk); the YYYY folder
 # inside it is made as needed. A destination inside ~/.claude is refused, symlinks followed.
 #
+# Another folder, sealed the same way: add --source DIR --name NAME to --run (and --full), --if-due, --status, --list,
+# --verify, --restore, --restore-latest, --prune-plan or --move-old, and that mode works on DIR instead of ~/.claude:
+#     sh scripts/claude-projects-archive.sh --run --source ~/Notes --name notes
+#     sh scripts/claude-projects-archive.sh --restore-latest --source ~/Notes --name notes ~/notes-restore
+# Its archives are NAME_YYYYMMDD-HHMMSS_full.tar.gz.enc (and _incr) under <dest>/NAME/YYYY/, so they are never taken
+# for the Claude chain's; paths inside them are relative to DIR's parent (Notes/...); its state is a folder of its own,
+# so the two chains never share a stamp. Same seal, same passphrase file, same check before the rename, and nothing is
+# ever deleted. NAME is letters, digits, - and _ (up to 64, a letter or digit first; not all digits, and not
+# claude-projects...). DIR must exist for --run, --if-due and --status (a restore works without it), must not be inside
+# ~/.claude, hold ~/.claude or the passphrase, and must not be the destination, hold it or lie inside it. --install and
+# --uninstall stay with the Claude chain for now: to schedule a second chain, put its one-line --if-due form in a
+# LaunchAgent of your own (the walkthrough shows it).
+#
 # How a run works:
 #   - Full on the first run for a destination, on the first run of each calendar month (the 1st, or the first night the
-#     Mac is on after it), and with --full. Otherwise incremental: every file under ~/.claude/projects, and CLAUDE.md,
-#     whose modification time is newer than the stamp of the last successful run, plus every path that was not in the
-#     last run's listing (a folder renamed by rename-local-repo.py keeps its files' old times, so the time test alone
-#     would miss it; the listing is state/<dest>/paths). A changed transcript travels whole.
+#     Mac is on after it), and with --full. Otherwise incremental: every file under ~/.claude/projects, plans/ and
+#     file-history/, and CLAUDE.md and history.jsonl, whose modification time is newer than the stamp of the last
+#     successful run, plus every path that was not in the last run's listing (a folder renamed by rename-local-repo.py
+#     keeps its files' old times, so the time test alone would miss it; the listing is state/<dest>/paths). A changed
+#     transcript, or history.jsonl, travels whole. A chain begun before history.jsonl, plans/ and file-history/ were
+#     archived needs nothing done: their files are not in its last listing, so the next incremental carries them.
 #   - tar | gzip | openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -md sha256 -salt, the passphrase passed as a file path
 #     (-pass file:), never on the command line or in the environment. /usr/bin/openssl (LibreSSL) by default; the format
 #     opens with OpenSSL 3 too (tested both ways, Nov 6, 2026).
@@ -37,13 +54,16 @@
 #     then its .sha256 written beside it, then renamed to NAME. The stamp advances only after all of that.
 #   - Names sort in the order they were made: claude-projects_YYYYMMDD-HHMMSS_full.tar.gz.enc, ..._incr.tar.gz.enc.
 #     (The time is in the name so two runs on one day never collide and a plain sort is the restore order.)
-#   - Paths inside the archive are relative to your home: .claude/projects/... and .claude/CLAUDE.md.
-#   - Nothing is excluded: the tree is transcripts, memory and the fleet's manifests, and all of it is wanted back.
+#   - Paths inside the archive are relative to your home: .claude/projects/..., .claude/CLAUDE.md, .claude/history.jsonl,
+#     .claude/plans/... and .claude/file-history/...
+#   - Nothing is excluded: the tree is transcripts, memory and the fleet's manifests, your prompt history, plans and
+#     the snapshots behind checkpoint restore, and all of it is wanted back. The rest of ~/.claude stays out.
 #   - Keep everything: no archive is ever deleted. --prune-plan only prints a plan.
 #   - The only files the script ever removes are ones it made in the same run: a failed run's NAME.partial. The lock is
 #     a pid file that is emptied, not removed.
 #   - State (the stamp, the last success, the last full's month, a history.tsv) lives in ~/.config/claude-archive/state/,
-#     one folder per destination, so switching destinations starts a fresh chain with a full.
+#     one folder per destination, so switching destinations starts a fresh chain with a full. A --source chain's lives
+#     in ~/.config/claude-archive/sources/NAME/, one folder per destination and DIR, with its own last-failure.
 #
 # Files (CLAUDE_ARCHIVE_CONFIG moves the folder, CLAUDE_ARCHIVE_PASSFILE the passphrase alone):
 #   ~/.config/claude-archive/            mode 700
@@ -90,6 +110,11 @@ CLAUDE_DIR="$HOME/.claude"
 PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
 LOGDIR="$HOME/Library/Logs/claude-projects-archive"
 SELF="$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")"
+# The chain a run works on: the Claude chain unless --source DIR --name NAME (checked in main, below) says otherwise.
+PREFIX="claude-projects"          # the archives' names begin with this and _
+STATE_ROOT="$CONFIG/state"        # one folder per destination under it, and last-failure; "" until --name is checked
+WHAT="Claude archive"             # how a banner or a phone note names the chain
+OPT_SOURCE=""; OPT_NAME=""; SRC_PHYS=""
 
 say() { printf '%s\n' "$*"; }
 LASTERR=""
@@ -145,12 +170,21 @@ resolve_dest() {
   if inside "$DEST_PHYS" "$CLAUDE_PHYS"; then refuse "the destination $DEST_BASE is inside ~/.claude ($CLAUDE_PHYS)."; fi
   if inside "$CLAUDE_PHYS" "$DEST_PHYS"; then refuse "the destination $DEST_BASE contains ~/.claude; an archive would archive itself."; fi
   STATE="$CONFIG/state/$(printf '%s' "$DEST_PHYS" | cksum | awk '{ print $1 }')"
+  ARCH_DIR="$DEST_BASE"            # where this chain's archives are: <dest>/YYYY/, or <dest>/NAME/YYYY/ for a --source
+  if [ -n "$OPT_SOURCE" ]; then
+    if inside "$SRC_PHYS" "$DEST_PHYS" || inside "$DEST_PHYS" "$SRC_PHYS"; then
+      refuse "--source $OPT_SOURCE and the destination $DEST_BASE overlap (one is, holds or lies inside the other); an archive would archive itself."
+    fi
+    ARCH_DIR="$DEST_BASE/$OPT_NAME"
+    STATE="$STATE_ROOT/$(printf '%s\n%s' "$DEST_PHYS" "$SRC_PHYS" | cksum | awk '{ print $1 }')"
+  fi
 }
 
 state_init() {
   mkdir -p "$CONFIG" && chmod 700 "$CONFIG" || fail "cannot make $CONFIG"
   mkdir -p "$STATE/work" || fail "cannot make $STATE"
   printf '%s\n' "$DEST_PHYS" > "$STATE/dest"
+  if [ -n "$OPT_SOURCE" ]; then printf '%s\n' "$SRC_PHYS" > "$STATE/source"; fi
 }
 
 LOCKED=0
@@ -217,22 +251,24 @@ ntfy_send() {
 # A failed --run or --if-due must not be silent (Nov 6 finding: macOS may block a background job from writing into
 # iCloud Drive, and nothing would tell you). It is written to state/failures.tsv and last-failure, shown as a macOS
 # banner (no prompt; CLAUDE_ARCHIVE_NO_BANNER=1 turns it off), and passed to ~/.config/claude-archive/notify if you made
-# that file executable (for example, a one-line push to your phone). --status reads it back.
+# that file executable (for example, a one-line push to your phone). --status reads it back. A --source chain's
+# failure is written in its own state folder, so it never makes the Claude chain look stale, nor the other way round.
 note_failure() {
-  mkdir -p "$CONFIG/state" 2>/dev/null || return 0
-  _msg="claude-projects-archive failed (exit $1) on $(hostname -s) at $(date '+%Y-%m-%d %H:%M'): ${LASTERR:-see the log}"
-  date +%s > "$CONFIG/state/last-failure" 2>/dev/null
-  printf '%s\t%s\t%s\n' "$(date +%Y%m%d-%H%M%S)" "$1" "${LASTERR:-}" >> "$CONFIG/state/failures.tsv" 2>/dev/null
+  mkdir -p "$STATE_ROOT" 2>/dev/null || return 0
+  _msg="claude-projects-archive${OPT_NAME:+ --name $OPT_NAME} failed (exit $1) on $(hostname -s) at $(date '+%Y-%m-%d %H:%M'): ${LASTERR:-see the log}"
+  date +%s > "$STATE_ROOT/last-failure" 2>/dev/null
+  printf '%s\t%s\t%s\n' "$(date +%Y%m%d-%H%M%S)" "$1" "${LASTERR:-}" >> "$STATE_ROOT/failures.tsv" 2>/dev/null
   if [ "${CLAUDE_ARCHIVE_NO_BANNER:-0}" != 1 ] && command -v osascript >/dev/null 2>&1; then
-    osascript -e "display notification \"$(printf '%s' "${LASTERR:-see the log}" | tr -d '"\\' | cut -c1-180)\" with title \"Claude archive failed\"" >/dev/null 2>&1 || true
+    osascript -e "display notification \"$(printf '%s' "${LASTERR:-see the log}" | tr -d '"\\' | cut -c1-180)\" with title \"$WHAT failed\"" >/dev/null 2>&1 || true
   fi
   [ -x "$CONFIG/notify" ] && "$CONFIG/notify" "$_msg" >/dev/null 2>&1 || true
-  ntfy_send "Claude archive failed" high warning \
+  ntfy_send "$WHAT failed" high warning \
     "On $(hostname -s), exit $1: $(ntfy_scrub "${LASTERR:-see the log}") Run --status, or read the log, for details." || true
 }
 on_exit() {
   _rc=$?
-  if [ "$_rc" -ne 0 ] && { [ "$MODE" = --run ] || [ "$MODE" = --if-due ]; }; then note_failure "$_rc"; fi
+  # (STATE_ROOT is empty while a --name is still unchecked: a mistyped command is not a failed night for either chain)
+  if [ "$_rc" -ne 0 ] && [ -n "$STATE_ROOT" ] && { [ "$MODE" = --run ] || [ "$MODE" = --if-due ]; }; then note_failure "$_rc"; fi
   [ -n "$PARTIAL" ] && [ -e "$PARTIAL" ] && rm -f "$PARTIAL" && warn "removed this run's unfinished $(basename "$PARTIAL")"
   [ "$LOCKED" = 1 ] && : > "$STATE/lock"
 }
@@ -271,9 +307,30 @@ do_init() {
 }
 
 # ----------------------------------------------------------------------------------------------------------------- run
+# What goes in: the start points, relative to $ROOT (the folder tar and find run in), one per line, only those that
+# exist now. The Claude chain: projects/ always, then plans/, file-history/, CLAUDE.md and history.jsonl when present.
+# A --source chain: DIR's own name, under its parent.
+inputs() {
+  if [ -n "$OPT_SOURCE" ]; then printf '%s\n' "$SRC_BASE"; return 0; fi
+  printf '%s\n' .claude/projects
+  for _in in .claude/plans .claude/file-history; do [ -d "$_in" ] && printf '%s\n' "$_in"; done
+  for _in in .claude/CLAUDE.md .claude/history.jsonl; do [ -f "$_in" ] && printf '%s\n' "$_in"; done
+  return 0
+}
+# find_inputs ARGS...: find over every input, the ARGS (tests and an action) after each; run from $ROOT.
+find_inputs() {
+  inputs | while IFS= read -r _in; do find "$_in" "$@"; done
+  return 0
+}
+
 do_run() {
   check_passfile
-  [ -d "$CLAUDE_DIR/projects" ] || refuse "there is no $CLAUDE_DIR/projects to archive."
+  if [ -n "$OPT_SOURCE" ]; then
+    ROOT="$(dirname "$SRC_PHYS")"; SRC_BASE="$(basename "$SRC_PHYS")"
+  else
+    ROOT="$HOME"
+    [ -d "$CLAUDE_DIR/projects" ] || refuse "there is no $CLAUDE_DIR/projects to archive."
+  fi
   resolve_dest create
   state_init
   take_lock
@@ -286,50 +343,50 @@ do_run() {
 
   touch "$STATE/stamp.next" || fail "cannot write $STATE/stamp.next"
   # every path now, for the rename check above and for the next run
-  (cd "$HOME" && { find .claude/projects \( -type f -o -type l \) -print; [ -f .claude/CLAUDE.md ] && echo .claude/CLAUDE.md; true; } | sort -u) \
-    > "$STATE/work/paths.now" || fail "cannot list $CLAUDE_DIR/projects"
+  _what="$CLAUDE_DIR"; [ -n "$OPT_SOURCE" ] && _what="$SRC_PHYS"
+  (cd "$ROOT" && { find_inputs \( -type f -o -type l \) -print; true; } | sort -u) \
+    > "$STATE/work/paths.now" || fail "cannot list $_what"
   _list="$STATE/work/files.list"
   (
-    cd "$HOME" || exit 1
+    cd "$ROOT" || exit 1
     if [ "$_kind" = full ]; then
-      find .claude/projects \( -type f -o -type l \) -print0
-      [ -f .claude/CLAUDE.md ] && printf '%s\0' .claude/CLAUDE.md
+      find_inputs \( -type f -o -type l \) -print0
     else
       {
-        find .claude/projects \( -type f -o -type l \) -newer "$STATE/stamp" -print
-        [ -f .claude/CLAUDE.md ] && find .claude/CLAUDE.md -newer "$STATE/stamp" -print
-        # paths new since the last run's listing (renamed or moved folders keep old modification times)
+        find_inputs \( -type f -o -type l \) -newer "$STATE/stamp" -print
+        # paths new since the last run's listing (renamed or moved folders keep old modification times, and so do the
+        # files of an input this script began to archive after the chain began)
         [ -f "$STATE/paths" ] && comm -13 "$STATE/paths" "$STATE/work/paths.now"
         true
       } | sort -u | tr '\n' '\000'
     fi
     true
-  ) > "$_list" || fail "cannot list $CLAUDE_DIR/projects"
+  ) > "$_list" || fail "cannot list $_what"
   _count="$(tr -cd '\000' < "$_list" | wc -c | tr -d ' ')"
-  _srcbytes="$( (cd "$HOME" && xargs -0 sh -c 'for f; do [ -f "$f" ] && { stat -f %z "$f" 2>/dev/null || stat -c %s "$f"; }; done' sh) < "$_list" | awk '{ s += $1 } END { print s + 0 }')"
+  _srcbytes="$( (cd "$ROOT" && xargs -0 sh -c 'for f; do [ -f "$f" ] && { stat -f %z "$f" 2>/dev/null || stat -c %s "$f"; }; done' sh) < "$_list" | awk '{ s += $1 } END { print s + 0 }')"
 
   if [ "$_count" = 0 ]; then
     mv "$STATE/stamp.next" "$STATE/stamp"; mv "$STATE/work/paths.now" "$STATE/paths"; date +%s > "$STATE/last-success"
     printf '%s\t%s\t0\t0\t-\n' "$_now" "$_kind" >> "$STATE/history.tsv"
-    say "Nothing changed since the last success; no archive written. Destination: $DEST_BASE"
+    say "Nothing changed since the last success; no archive written. Destination: $ARCH_DIR"
     return 0
   fi
 
-  _outdir="$DEST_BASE/$_year"
+  _outdir="$ARCH_DIR/$_year"
   mkdir -p "$_outdir" || fail "cannot make $_outdir"
   # One archive per second at most, so the name order is the order they were made (a full and an incremental in the
   # same second would otherwise sort full first, whichever came first).
-  while [ -n "$(find "$_outdir" -maxdepth 1 -name "claude-projects_${_now}_*" 2>/dev/null | head -n 1)" ]; do
+  while [ -n "$(find "$_outdir" -maxdepth 1 -name "${PREFIX}_${_now}_*" 2>/dev/null | head -n 1)" ]; do
     sleep 1; _now="$(date +%Y%m%d-%H%M%S)"
   done
-  _name="claude-projects_${_now}_${_kind}.tar.gz.enc"
+  _name="${PREFIX}_${_now}_${_kind}.tar.gz.enc"
   _final="$_outdir/$_name"
   [ -e "$_final" ] && refuse "$_final already exists; nothing is ever overwritten."
   say "$_kind archive ($_why): $_count files, $(human "$_srcbytes") before compression"
   say "  -> $_final"
 
   PARTIAL="$_final.partial"
-  (cd "$HOME" && tar -czf - --null -T "$_list") \
+  (cd "$ROOT" && tar -czf - --null -T "$_list") \
     | "$OPENSSL" enc -aes-256-cbc -pbkdf2 -iter "$ITER" -md sha256 -salt -pass "file:$PASSFILE" -out "$PARTIAL" \
     || fail "tar or openssl stopped; nothing kept, the stamp did not move"
   chmod 600 "$PARTIAL"
@@ -349,9 +406,9 @@ do_run() {
   printf '%s\t%s\t%s\t%s\t%s\n' "$_now" "$_kind" "$_count" "$_bytes" "$_name" >> "$STATE/history.tsv"
   _t1="$(date +%s)"
   say "  done in $((_t1 - _t0)) s: $(human "$_bytes") sealed, verified ($_seen entries), sha256 written"
-  say "  destination total: $(human "$(dir_bytes "$DEST_BASE")") in $DEST_BASE"
+  say "  destination total: $(human "$(dir_bytes "$ARCH_DIR")") in $ARCH_DIR"
   if [ "$_kind" = full ]; then
-    ntfy_send "Claude archive: full copy sealed" default lock \
+    ntfy_send "$WHAT: full copy sealed" default lock \
       "$_name on $(hostname -s): $_count files, $(human "$_bytes"), verified ($_why)." || true
   fi
   return 0
@@ -370,17 +427,19 @@ do_if_due() {
 # --------------------------------------------------------------------------------------------------------------- status
 # --status: reads only ~/.config/claude-archive/state (never the destination, so it works where iCloud is blocked).
 # Exit 0: the newest success is under STALE_HOURS (36) old and no failure came after it. Exit 1 otherwise.
+# With --source DIR --name NAME it reads that chain's own folder, ~/.config/claude-archive/sources/NAME, instead.
 STALE_HOURS="${CLAUDE_ARCHIVE_STALE_HOURS:-36}"
 do_status() {
   _best=0; _now="$(date +%s)"
-  for _s in "$CONFIG"/state/*/; do
+  for _s in "$STATE_ROOT"/*/; do
     [ -f "$_s/dest" ] || continue
+    _sd="$(cat "$_s/dest")"; [ -f "$_s/source" ] && _sd="$(cat "$_s/source") -> $_sd/$OPT_NAME"
     _ls="$( [ -s "$_s/last-success" ] && cat "$_s/last-success" || echo 0)"
     [ "$_ls" -gt "$_best" ] && _best="$_ls"
-    if [ "$_ls" -gt 0 ]; then say "$(cat "$_s/dest"): last success $(( (_now - _ls) / 3600 )) h ago"; else say "$(cat "$_s/dest"): no success yet"; fi
+    if [ "$_ls" -gt 0 ]; then say "$_sd: last success $(( (_now - _ls) / 3600 )) h ago"; else say "$_sd: no success yet"; fi
   done
-  _lf="$( [ -s "$CONFIG/state/last-failure" ] && cat "$CONFIG/state/last-failure" || echo 0)"
-  [ "$_lf" -gt 0 ] && say "last failure $(( (_now - _lf) / 3600 )) h ago: $(tail -n 1 "$CONFIG/state/failures.tsv" 2>/dev/null | cut -f3)"
+  _lf="$( [ -s "$STATE_ROOT/last-failure" ] && cat "$STATE_ROOT/last-failure" || echo 0)"
+  [ "$_lf" -gt 0 ] && say "last failure $(( (_now - _lf) / 3600 )) h ago: $(tail -n 1 "$STATE_ROOT/failures.tsv" 2>/dev/null | cut -f3)"
   ntfy_load; case $? in
     0) say "phone notes (ntfy): on, $( [ -n "$N_TOKEN" ] && echo with || echo without) a token (failures and full archives)" ;;
     1) say "phone notes (ntfy): off (no ntfy.env)" ;;
@@ -393,15 +452,15 @@ do_status() {
 }
 
 # ---------------------------------------------------------------------------------------------------------------- list
-archives() { # every archive and leftover under the destination, oldest first, one path per line
-  find "$DEST_BASE" -type f \( -name 'claude-projects_*.tar.gz.enc' -o -name 'claude-projects_*.partial' \
-       -o -name '.claude-projects_*.icloud' \) 2>/dev/null \
+archives() { # every archive and leftover of this chain under the destination, oldest first, one path per line
+  find "$ARCH_DIR" -type f \( -name "${PREFIX}_*.tar.gz.enc" -o -name "${PREFIX}_*.partial" \
+       -o -name ".${PREFIX}_*.icloud" \) 2>/dev/null \
     | awk '{ n = $0; sub(/.*\//, "", n); sub(/^\./, "", n); print n "\t" $0 }' | sort | cut -f2-
 }
 do_list() {
   resolve_dest look
-  [ -d "$DEST_BASE" ] || { say "No archives yet: $DEST_BASE does not exist."; return 0; }
-  say "Archives in $DEST_BASE (oldest first):"
+  [ -d "$ARCH_DIR" ] || { say "No archives yet: $ARCH_DIR does not exist."; return 0; }
+  say "Archives in $ARCH_DIR (oldest first):"
   _n=0; _all="$(archives)"
   set -f; _ifs="$IFS"; IFS='
 '
@@ -417,7 +476,7 @@ do_list() {
     printf '  %10s  %s%s\n' "$(human "$_s")" "$_b" "$_note"; _n=$((_n + 1))
   done
   IFS="$_ifs"; set +f
-  say "$_n file(s); destination total $(human "$(dir_bytes "$DEST_BASE")")."
+  say "$_n file(s); destination total $(human "$(dir_bytes "$ARCH_DIR")")."
   [ -s "$STATE/last-success" ] && say "Last success: $(date -r "$(cat "$STATE/last-success")" '+%Y-%m-%d %H:%M' 2>/dev/null || cat "$STATE/last-success")"
   return 0
 }
@@ -446,6 +505,9 @@ do_restore() { # args: FILE... DIR
   for _a in "$@"; do _i=$((_i + 1)); [ "$_i" -eq $# ] && _dir="$_a"; done
   _target="$(physpath "$_dir")"; _cl="$(physpath "$CLAUDE_DIR")"
   if inside "$_target" "$_cl" || inside "$_cl" "$_target"; then refuse "$_dir is inside (or holds) ~/.claude. Restore into a new, empty folder elsewhere."; fi
+  if [ -n "$OPT_SOURCE" ] && { inside "$_target" "$SRC_PHYS" || inside "$SRC_PHYS" "$_target"; }; then
+    refuse "$_dir is inside (or holds) the --source $OPT_SOURCE. Restore into a new, empty folder elsewhere."
+  fi
   if [ -e "$_dir" ]; then
     [ -d "$_dir" ] || refuse "$_dir exists and is not a folder."
     [ -z "$(ls -A "$_dir")" ] || refuse "$_dir is not empty. Restore only into a new, empty folder."
@@ -457,10 +519,10 @@ do_restore() { # args: FILE... DIR
     _i=$((_i + 1)); [ "$_i" -eq $# ] && break
     _b="$(basename "$_a")"
     case "$_i:$_b" in
-      1:claude-projects_*_full.tar.gz.enc) ;;
-      1:*) refuse "the first archive must be a _full one; $_b is not." ;;
-      *:claude-projects_*_incr.tar.gz.enc) ;;
-      *) refuse "after the full, only _incr archives may follow; $_b is not." ;;
+      1:"$PREFIX"_*_full.tar.gz.enc) ;;
+      1:*) refuse "the first archive must be a ${PREFIX}_..._full one; $_b is not." ;;
+      *:"$PREFIX"_*_incr.tar.gz.enc) ;;
+      *) refuse "after the full, only ${PREFIX}_..._incr archives may follow; $_b is not." ;;
     esac
     if [ -n "$_prev" ] && ! before "$_prev" "$_b"; then
       refuse "$_b is older than $_prev. Give them oldest first: the full, then each incremental in name order."
@@ -475,14 +537,18 @@ do_restore() { # args: FILE... DIR
     decrypt "$_a" | tar -xzpf - -C "$_dir" || fail "extracting $(basename "$_a") stopped; $_dir holds what came before it"
     say "restored $(basename "$_a")"
   done
-  say "Done: $_dir/.claude/projects (and .claude/CLAUDE.md). Compare before copying anything back, with Claude Code closed."
+  if [ -n "$OPT_SOURCE" ]; then
+    say "Done: $_dir/$(basename "$SRC_PHYS") (or the folder name the archives were made under). Compare before copying anything back."
+  else
+    say "Done: $_dir/.claude/projects (and .claude/CLAUDE.md, history.jsonl, plans/ and file-history/ where the archives hold them). Compare before copying anything back, with Claude Code closed."
+  fi
 }
 do_restore_latest() {
   [ $# -eq 1 ] || refuse "usage: --restore-latest DIR"
   _into="$1"
   resolve_dest look
   _full="$(archives | grep '_full\.tar\.gz\.enc$' | tail -n 1)"
-  [ -n "$_full" ] || refuse "no full archive in $DEST_BASE"
+  [ -n "$_full" ] || refuse "no full archive in $ARCH_DIR"
   _fb="$(basename "$_full")"
   # (no case inside $( ): bash 3.2, which is macOS /bin/sh, misparses it)
   _chain="$(archives | grep '_incr\.tar\.gz\.enc$' | while IFS= read -r _f; do
@@ -520,7 +586,8 @@ do_prune_plan() {
 
 # --move-old KEEP DIR: the same selection as --prune-plan, moved (never deleted) into DIR/<year>/, each with its .sha256,
 # and each checked against its .sha256 after the move. DIR must exist and must not be inside this destination or
-# ~/.claude. A name that already exists in DIR is refused. Partial leftovers are never moved.
+# ~/.claude (or a --source). A name that already exists in DIR is refused. Partial leftovers are never moved. A --source
+# chain's archives go into DIR/NAME/<year>/, so --restore-latest --dest DIR --source ... --name NAME finds them there.
 do_move_old() {
   case "$1" in ''|*[!0-9]*|0) refuse "--move-old KEEP DIR: KEEP is a whole number, 1 or more" ;; esac
   [ -n "${2-}" ] || refuse "usage: --move-old KEEP DIR"
@@ -529,6 +596,8 @@ do_move_old() {
   _to="$(physpath "$2")"
   if inside "$_to" "$DEST_PHYS" || [ "$_to" = "$DEST_PHYS" ]; then refuse "--move-old: $2 is inside the destination itself."; fi
   if inside "$_to" "$(physpath "$CLAUDE_DIR")"; then refuse "--move-old: $2 is inside ~/.claude."; fi
+  if [ -n "$OPT_SOURCE" ] && inside "$_to" "$SRC_PHYS"; then refuse "--move-old: $2 is inside the --source $OPT_SOURCE."; fi
+  _into="$_to"; [ -n "$OPT_SOURCE" ] && _into="$_to/$OPT_NAME"
   _fulls="$(archives | grep -c '_full\.tar\.gz\.enc$')"
   if [ "$_fulls" -le "$1" ]; then say "There are $_fulls full archive(s); keeping $1 moves nothing."; return 0; fi
   _cut="$(archives | grep '_full\.tar\.gz\.enc$' | tail -n "$1" | head -n 1)"; _cb="$(basename "$_cut")"
@@ -539,21 +608,25 @@ do_move_old() {
     IFS="$_ifs"; _b="$(basename "$_f")"
     case "$_b" in *.partial) continue ;; esac
     before "$_b" "$_cb" || continue
-    _y="$(printf '%s' "$_b" | sed -n 's/^claude-projects_\([0-9][0-9][0-9][0-9]\).*/\1/p')"; [ -n "$_y" ] || _y=other
-    mkdir -p "$_to/$_y" || fail "cannot make $_to/$_y"
-    [ -e "$_to/$_y/$_b" ] && refuse "$_to/$_y/$_b already exists; nothing is overwritten (nothing moved after this point)."
+    _y="$(printf '%s' "$_b" | sed -n "s/^${PREFIX}_\([0-9][0-9][0-9][0-9]\).*/\1/p")"; [ -n "$_y" ] || _y=other
+    mkdir -p "$_into/$_y" || fail "cannot make $_into/$_y"
+    [ -e "$_into/$_y/$_b" ] && refuse "$_into/$_y/$_b already exists; nothing is overwritten (nothing moved after this point)."
     _s="$(size_of "$_f")"
-    mv "$_f" "$_to/$_y/$_b" || fail "cannot move $_b"
-    [ -f "$_f.sha256" ] && { mv "$_f.sha256" "$_to/$_y/$_b.sha256" || fail "cannot move $_b.sha256"; }
-    if [ -f "$_to/$_y/$_b.sha256" ]; then
-      _want="$(awk '{ print $1 }' "$_to/$_y/$_b.sha256")"; _got="$(shasum -a 256 < "$_to/$_y/$_b" | awk '{ print $1 }')"
-      [ "$_want" = "$_got" ] || fail "$_b moved but its sha256 does not match; check the copy at $_to/$_y before anything else"
+    mv "$_f" "$_into/$_y/$_b" || fail "cannot move $_b"
+    [ -f "$_f.sha256" ] && { mv "$_f.sha256" "$_into/$_y/$_b.sha256" || fail "cannot move $_b.sha256"; }
+    if [ -f "$_into/$_y/$_b.sha256" ]; then
+      _want="$(awk '{ print $1 }' "$_into/$_y/$_b.sha256")"; _got="$(shasum -a 256 < "$_into/$_y/$_b" | awk '{ print $1 }')"
+      [ "$_want" = "$_got" ] || fail "$_b moved but its sha256 does not match; check the copy at $_into/$_y before anything else"
     fi
     _n=$((_n + 1)); _tot=$((_tot + _s)); say "  moved $_b ($(human "$_s"))"
   done
   IFS="$_ifs"; set +f
-  say "$_n archive(s), $(human "$_tot"), moved to $_to (checked against their .sha256). The newest $1 full chain(s) stay in $DEST_BASE."
-  say "To restore from moved archives: --restore-latest --dest $_to DIR (or --restore FILE... DIR)."
+  say "$_n archive(s), $(human "$_tot"), moved to $_into (checked against their .sha256). The newest $1 full chain(s) stay in $ARCH_DIR."
+  if [ -n "$OPT_SOURCE" ]; then
+    say "To restore from moved archives: --restore-latest --dest $_to --source $OPT_SOURCE --name $OPT_NAME DIR (or --restore FILE... DIR)."
+  else
+    say "To restore from moved archives: --restore-latest --dest $_to DIR (or --restore FILE... DIR)."
+  fi
 }
 
 # ------------------------------------------------------------------------------------------------------------- install
@@ -663,13 +736,17 @@ do_notify_test() {
 }
 
 # ---------------------------------------------------------------------------------------------------------------- main
-usage() { sed -n '2,20p' "$SELF" | sed 's/^# \{0,1\}//'; }
-OPT_DEST="${CLAUDE_ARCHIVE_DEST:-}"; OPT_FULL=0; MODE=""; POS_N=0
+usage() { sed -n '2,/^# How a run works:/p' "$SELF" | sed '$d' | sed 's/^# \{0,1\}//'; }
+OPT_DEST="${CLAUDE_ARCHIVE_DEST:-}"; OPT_FULL=0; MODE=""; POS_N=0; SRC_GIVEN=0
 # Options may come anywhere; what is left, in order, are the mode's own arguments.
 while [ $# -gt 0 ]; do
   case "$1" in
     --dest) [ $# -ge 2 ] || refuse "--dest needs a folder"; OPT_DEST="$2"; shift 2; continue ;;
     --dest=*) OPT_DEST="${1#--dest=}" ;;
+    --source) [ $# -ge 2 ] || refuse "--source needs a folder"; OPT_SOURCE="$2"; SRC_GIVEN=1; shift 2; continue ;;
+    --source=*) OPT_SOURCE="${1#--source=}"; SRC_GIVEN=1 ;;
+    --name) [ $# -ge 2 ] || refuse "--name needs a name"; OPT_NAME="$2"; SRC_GIVEN=1; shift 2; continue ;;
+    --name=*) OPT_NAME="${1#--name=}"; SRC_GIVEN=1 ;;
     --full) OPT_FULL=1 ;;
     -h|--help) usage; exit 0 ;;
     --init|--run|--if-due|--status|--list|--verify|--restore|--restore-latest|--prune-plan|--move-old|--install|--uninstall|--notify-test)
@@ -682,6 +759,43 @@ while [ $# -gt 0 ]; do
 done
 set --
 _k=1; while [ "$_k" -le "$POS_N" ]; do eval "set -- \"\$@\" \"\$POS_$_k\""; _k=$((_k + 1)); done
+
+# --source DIR --name NAME: another folder's chain. Checked here, before any mode runs; nothing is written until it passes.
+if [ "$SRC_GIVEN" = 1 ]; then
+  STATE_ROOT=""        # a refusal below is a mistyped command, not a failed night: no failure is recorded for it
+  [ -n "$OPT_SOURCE" ] && [ -n "$OPT_NAME" ] || refuse "--source DIR and --name NAME go together; give both."
+  case "$MODE" in
+    --run|--if-due|--status|--list|--verify|--restore|--restore-latest|--prune-plan|--move-old) ;;
+    --install|--uninstall) refuse "$MODE is for the Claude chain only, for now. To schedule a --source chain, put its --if-due line in a LaunchAgent of your own (walkthroughs/CLAUDE-PROJECTS-ARCHIVE.md, Sealing another folder)." ;;
+    "") usage; exit 2 ;;
+    *) refuse "$MODE does not take --source and --name." ;;
+  esac
+  case "$OPT_NAME" in
+    *[!A-Za-z0-9_-]*) refuse "--name $OPT_NAME: only letters, digits, - and _." ;;
+    [!A-Za-z0-9]*) refuse "--name $OPT_NAME: it must begin with a letter or a digit." ;;
+    *[!0-9]*) ;;
+    *) refuse "--name $OPT_NAME: all digits would look like a year folder; add a letter." ;;
+  esac
+  [ "${#OPT_NAME}" -le 64 ] || refuse "--name: 64 characters at most."
+  case "$OPT_NAME" in claude-projects*) refuse "--name $OPT_NAME: names beginning claude-projects belong to the Claude chain." ;; esac
+  case "$OPT_SOURCE" in *'
+'*) refuse "--source: a folder name with a line break in it is not supported." ;; esac
+  # A restore, a list or a verify reads only the destination, and may be wanted after DIR is lost; a run must read DIR.
+  case "$MODE" in
+    --run|--if-due|--status) [ -d "$OPT_SOURCE" ] || refuse "--source $OPT_SOURCE does not exist (or is not a folder)." ;;
+    *) [ ! -e "$OPT_SOURCE" ] || [ -d "$OPT_SOURCE" ] || refuse "--source $OPT_SOURCE is not a folder." ;;
+  esac
+  SRC_PHYS="$(physpath "$OPT_SOURCE")"
+  case "$(basename "$SRC_PHYS")" in -*) refuse "--source $OPT_SOURCE: a folder whose name begins with - is not supported (find would read it as an option)." ;; esac
+  [ "$SRC_PHYS" = "" ] && refuse "--source /: the whole disk holds the destination."
+  _cl="$(physpath "$CLAUDE_DIR")"
+  if inside "$SRC_PHYS" "$_cl"; then refuse "--source $OPT_SOURCE is inside ~/.claude ($_cl); the Claude chain already covers what is kept there."; fi
+  if inside "$_cl" "$SRC_PHYS"; then refuse "--source $OPT_SOURCE holds ~/.claude, with its credentials; seal a folder that does not."; fi
+  if inside "$(physpath "$CONFIG")" "$SRC_PHYS" || inside "$(physpath "$PASSFILE")" "$SRC_PHYS"; then
+    refuse "--source $OPT_SOURCE holds the archive's own config folder or passphrase file; seal a folder that does not."
+  fi
+  PREFIX="$OPT_NAME"; WHAT="Archive of $OPT_NAME"; STATE_ROOT="$CONFIG/sources/$OPT_NAME"
+fi
 
 case "$MODE" in
   --init) [ $# -eq 0 ] || refuse "--init takes no arguments"; do_init ;;
