@@ -127,7 +127,13 @@ mode_of() { if [ "$BSDSTAT" = 1 ]; then stat -f %Lp "$1"; else stat -c %a "$1"; 
 size_of() { if [ "$BSDSTAT" = 1 ]; then stat -f %z "$1"; else stat -c %s "$1"; fi; }
 human() { awk -v b="$1" 'BEGIN { split("B KB MB GB TB", u, " "); i = 1; while (b >= 1024 && i < 5) { b /= 1024; i++ }
                                  if (i == 1) printf "%d %s", b, u[i]; else printf "%.1f %s", b, u[i] }'; }
-dir_bytes() { [ -d "$1" ] || { echo 0; return; }; du -sk "$1" 2>/dev/null | awk '{ print $1 * 1024 }'; }
+# The bytes of every file under a folder, by file size. Not disk blocks (du): in the scheduled runs of Nov 12 and 13,
+# 2026 du reported no blocks for the iCloud destination although the sealed files were there, and the log said "0 B".
+dir_bytes() {
+  [ -d "$1" ] || { echo 0; return; }
+  find "$1" -type f -exec sh -c 'for f; do stat -f %z "$f" 2>/dev/null || stat -c %s "$f" 2>/dev/null; done' sh {} + \
+    2>/dev/null | awk '{ s += $1 } END { printf "%.0f\n", s + 0 }'
+}
 
 # The physical path of $1, following symlinks, even when its last parts do not exist yet.
 physpath() {
@@ -406,7 +412,12 @@ do_run() {
   printf '%s\t%s\t%s\t%s\t%s\n' "$_now" "$_kind" "$_count" "$_bytes" "$_name" >> "$STATE/history.tsv"
   _t1="$(date +%s)"
   say "  done in $((_t1 - _t0)) s: $(human "$_bytes") sealed, verified ($_seen entries), sha256 written"
-  say "  destination total: $(human "$(dir_bytes "$ARCH_DIR")") in $ARCH_DIR"
+  _tot="$(dir_bytes "$ARCH_DIR")"
+  if [ "${_tot:-0}" -ge "$_bytes" ] 2>/dev/null; then
+    say "  destination total: $(human "$_tot") in $ARCH_DIR"
+  else
+    say "  destination total: could not be read in this run (the archive above is written and verified) in $ARCH_DIR"
+  fi
   if [ "$_kind" = full ]; then
     ntfy_send "$WHAT: full copy sealed" default lock \
       "$_name on $(hostname -s): $_count files, $(human "$_bytes"), verified ($_why)." || true

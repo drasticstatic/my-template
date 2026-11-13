@@ -410,7 +410,7 @@ settings block in its header. Neither is installed by default: [`walkthroughs/CL
 ## `claude-projects-archive.sh` — a nightly sealed copy of `~/.claude/projects`
 
 ```sh
-sh scripts/claude-projects-archive.selftest.sh                 # a fake home in a temporary folder; 297 checks
+sh scripts/claude-projects-archive.selftest.sh                 # a fake home in a temporary folder; 298 checks
 sh scripts/claude-projects-archive.sh --init                   # once, by you: the passphrase file (never shown)
 sh scripts/claude-projects-archive.sh --run                    # full on the first run of a month, else what changed
 sh scripts/claude-projects-archive.sh --list                   # archives, sizes, total

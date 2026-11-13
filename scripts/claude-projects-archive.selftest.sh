@@ -164,6 +164,7 @@ ok "$(count "$D" '*_incr.tar.gz.enc')" 3 "and no archive"
 
 # 11. a second full, --list, --prune-plan
 ok "$(run --run --full --dest "$D")" 0 "--full forces a full"
+ok "$(grep -c 'destination total: [1-9]' "$R/out")" 1 "and its log line counts the files in the destination"
 ok "$(count "$D" '*_full.tar.gz.enc')" 2 "two fulls now"
 ok "$(run --list --dest "$D")" 0 "list succeeds"
 ok "$(grep -c ' full$' "$R/out")" 2 "list shows both fulls"

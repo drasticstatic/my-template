@@ -50,7 +50,7 @@ flowchart TD
 | **What goes in** | everything under `~/.claude/projects` (transcripts, `memory/` folders, tool results, the manifest and session logs), and, when they exist, `~/.claude/CLAUDE.md`, `~/.claude/history.jsonl`, `~/.claude/plans/` and `~/.claude/file-history/` ([below](#-what-the-archive-holds-and-why-the-history-file-matters)). Nothing inside them is left out: all of it is wanted back. |
 | **What stays out** | the rest of `~/.claude`: `settings.json`, credentials, caches, plugins, debug logs. Those are not yours to lose in the same way, and some hold tokens. |
 | **The script** | [`scripts/claude-projects-archive.sh`](../scripts/claude-projects-archive.sh), plain `/bin/sh` and the tools macOS ships with |
-| **The proof** | [`scripts/claude-projects-archive.selftest.sh`](../scripts/claude-projects-archive.selftest.sh): a fake home in a temporary folder and a stand-in `curl`, 297 checks. Your real `~/.claude` is never read by it, and nothing goes over the network |
+| **The proof** | [`scripts/claude-projects-archive.selftest.sh`](../scripts/claude-projects-archive.selftest.sh): a fake home in a temporary folder and a stand-in `curl`, 298 checks. Your real `~/.claude` is never read by it, and nothing goes over the network |
 | **Names** | `claude-projects_20261107-004012_full.tar.gz.enc`, then `..._incr.tar.gz.enc`, each with a `.sha256` beside it. A plain sort of the names is the order they were made, and the order to restore them |
 | **The seal** | `openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -md sha256 -salt`. The passphrase is read from its file (`-pass file:`), never typed on a command line. LibreSSL (in macOS) and OpenSSL 3 open each other's archives; the self-test checks it |
 | **Where the passphrase lives** | `~/.config/claude-archive/passphrase`, mode 600, in a folder of mode 700. The script refuses to run if the file is missing or anyone else can read it |
@@ -467,6 +467,7 @@ helper, in your own words.
 ## <img src="../assets/icons-phosphor/history.svg" width="24" height="24" alt=""> Change log
 | Date | Change |
 |---|---|
+| 2026-11-13 | The log's "destination total" line is counted from file sizes, not disk blocks: the scheduled runs of Nov 12 and 13 printed "0 B" although the sealed files were in place and verified. If the total still cannot be read, the line says so instead of printing a zero. One more check in the self-test (298). |
 | 2026-11-12 | The archive also takes `history.jsonl`, `plans/` and `file-history/` when they exist; an existing chain carries on with an ordinary incremental. `--source DIR --name NAME` seals another folder in a chain of its own (`<dest>/NAME/YYYY/`, its own state; scheduling it is your own LaunchAgent). New sections: what the archive holds, *When a transcript is already gone*, *Sessions that ran through a gateway*, *Sealing another folder*, and the sources. The self-test grows to 297 checks. |
 | 2026-11-10 | Optional phone notes through ntfy (`ntfy.env`, mode 600): one on a failed run, one on each full archive, none for incrementals; `--notify-test`; the self-test grows to 184 checks with a stand-in `curl`. |
 | 2026-11-06 | First version: `claude-projects-archive.sh` and its self-test (104 checks), a real-size measurement into a scratch folder, this page. Not yet run into iCloud, not yet scheduled. |
