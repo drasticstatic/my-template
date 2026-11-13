@@ -124,6 +124,7 @@ tryc "an entry with both command and open" '{"status": {"command": ["HOMEDIR/bin
 tryc "an id used twice" '{"status": {"command": ["HOMEDIR/bin/status.sh"]}, "entries": [{"id": "a", "title": "A", "open": "/tmp"}, {"id": "a", "title": "B", "open": "/tmp"}]}' "used twice"
 tryc "an id with a space" '{"status": {"command": ["HOMEDIR/bin/status.sh"]}, "entries": [{"id": "Full Check", "title": "A", "open": "/tmp"}]}' "lower-case"
 tryc "a name the tray does not know" '{"status": {"command": ["HOMEDIR/bin/status.sh"]}, "colour": "red"}' "does not know"
+tryc "a fold that is not a list of names" '{"status": {"command": ["HOMEDIR/bin/status.sh"], "fold": "Side list"}}' "list of group names"
 tryc "no status command" '{"entries": []}' "needs a status command"
 tryc "a status command whose script is not there" '{"status": {"command": ["/bin/sh", "HOMEDIR/bin/gone.sh"]}}' "its script is NOT FOUND"
 tryc "a status command that is not there" '{"status": {"command": ["HOMEDIR/bin/gone.sh"]}}' "cannot be run"
@@ -165,6 +166,36 @@ check "render: a row with no name is dropped" "$(q 'len([i for i in items if i["
 check "render: a detail is made one printable line" "$(q 'item("f")["subtitle"]')" "one two three four"
 check "render: a long detail is cut" "$(q 'str(len(item("g")["subtitle"])) + item("g")["subtitle"][-1]')" "300…"
 check "render: rows with no group get a rule, not a header" "$(q 'items[1]["kind"] + str(sum(1 for i in items if i["kind"] == "header"))')" "separator0"
+foldcfg="$work/cfg/fold.json"
+mkcfg "$foldcfg" '{"name": "Runbook", "path": "/usr/bin:/bin", "status": {"command": ["~/bin/status.sh"], "timeout_seconds": 5, "fold": ["Side list", "Never seen"]}}'
+side_status='{"rows": [
+ {"name": "a", "state": "good", "detail": "fine", "group": "Jobs"},
+ {"name": "s1", "state": "good", "detail": "ready", "group": "Side list", "counted": false},
+ {"name": "s2", "state": "off", "detail": "not started", "group": "Side list", "counted": false},
+ {"name": "s3", "state": "look", "detail": "its file is gone", "group": "Side list", "counted": false},
+ {"name": "s4", "state": "unknown", "detail": "cannot be told from here", "group": "Side list", "counted": false},
+ {"name": "b", "state": "good", "detail": "fine", "group": "Jobs"}]}'
+printf '%s\n' "$side_status" > "$HOME/bin/status.out"
+out="$(run render --config "$foldcfg" --state "$work/state" --print 2>&1)"; check "fold: rows that are not counted leave the check good" "$?" 0
+check "fold: and the menu bar has no count and its own colour" "$(q 'repr(m["bar"]["text"]) + m["bar"]["tint"]')" "''none"
+check "fold: the first line still says all good" "$(q 'items[0]["title"]')" "All good"
+check "fold: the group is one row after a rule, and its rows are not in the main menu" "$(q '[i["kind"] for i in items]')" "['info', 'header', 'info', 'info', 'separator', 'group']"
+check "fold: the row counts each state" "$(q 'item("Side list")["subtitle"]')" "1 good · 1 off · 1 to look at · 1 not checked"
+check "fold: and carries the worst state as its mark" "$(q 'item("Side list")["state"] + "|" + item("Side list")["symbol"] + "|" + item("Side list")["tint"]')" "look|exclamationmark.triangle.fill|amber"
+check "fold: its rows sit under it, in order, each with its own mark" "$(q '[(i["title"], i["mark"]) for i in item("Side list")["items"]]')" "[('s1', '✓'), ('s2', '–'), ('s3', '!'), ('s4', '?')]"
+check "fold: a row the check cannot judge is a grey question mark, and is no fault" "$(q 'item("Side list")["items"][3]["symbol"] + "|" + item("Side list")["items"][3]["tint"] + "|" + item("Side list")["items"][3]["subtitle"]')" "questionmark.circle|grey|cannot be told from here"
+check "fold: a group the config names and the check does not print adds nothing" "$(q 'sum(1 for i in items if i["kind"] == "group")')" "1"
+has "fold: --print shows the group with its mark and its count" "$out" "▾ ! Side list  ·  1 good · 1 off · 1 to look at · 1 not checked"
+has "fold: --print shows its rows under it" "$out" "    – s2  ·  not started"
+printf '%s\n' '{"rows": [{"name": "s1", "state": "bad", "detail": "down", "group": "Side list"}, {"name": "s2", "state": "look", "detail": "slow", "group": "Side list", "counted": false}]}' > "$HOME/bin/status.out"
+run render --config "$foldcfg" --state "$work/state" >/dev/null 2>&1; check "fold: a folded row is counted unless it says otherwise" "$?" 1
+check "fold: the count leaves out the row that is not counted" "$(q 'm["bar"]["text"] + m["bar"]["tint"] + "|" + items[0]["title"]')" "1red|1 needs a look: s1"
+check "fold: the group's mark is its worst row, counted or not" "$(q 'item("Side list")["state"] + "|" + item("Side list")["subtitle"]')" "bad|1 to look at · 1 failing"
+check "fold: with only folded rows the menu is the first line, a rule and the group" "$(q '[i["kind"] for i in items]')" "['info', 'separator', 'group']"
+printf '%s\n' "$side_status" > "$HOME/bin/status.out"
+run render --config "$cfg" --state "$work/state" >/dev/null 2>&1
+check "fold: without fold in the config the same rows stay in the main menu, under their header" "$(q '[i["title"] for i in items if i["kind"] == "header"]')" "['Jobs', 'Side list', 'Jobs']"
+check "fold: and a row that is not counted is still not counted there" "$(q 'repr(m["bar"]["text"])')" "''"
 
 printf '%s\n' '{"rows": [{"name": "x", "state": "look", "detail": "slow"}]}' > "$HOME/bin/status.out"
 run render --config "$cfg" --state "$work/state" >/dev/null 2>&1
@@ -497,6 +528,8 @@ if [ "$(uname)" = Darwin ] && [ -x /usr/bin/osacompile ]; then
     printf 'not json\n' > "$fx/03-broken.json"
     cp "$work/machine-fixture.json" "$fx/04-machine.json"
     cp "$work/machine-calm-fixture.json" "$fx/05-machine-calm.json"
+    printf '%s\n' "$side_status" > "$HOME/bin/status.out"
+    run render --config "$foldcfg" --state "$work/state" >/dev/null 2>&1; cp "$work/state/menu.json" "$fx/06-folded.json"
     report="$work/applet-report.txt"
     "$app/Contents/MacOS/applet" --selftest "$fx" "$report" >"$work/applet.out" 2>&1 &
     ap=$!
@@ -527,8 +560,10 @@ if [ "$(uname)" = Darwin ] && [ -x /usr/bin/osacompile ]; then
     has "applet: and the kernel's own reading" "$rep" "under it: [Pressure: warning] sub=[the kernel counts 40% of memory as available] picture=true"
     has "applet: the hour's line is drawn" "$rep" "item: [Memory, last hour] sub=[between 62% and 69% · down 6.0 GB in the last hour] picture=true"
     has "applet: the apps sit in a submenu, each with its bar" "$rep" "under it: [Example Browser × 2] sub=[1.5 GB] picture=true"
+    has "applet: a folded group is one row with its mark and its count" "$rep" "item: [Side list] sub=[1 good · 1 off · 1 to look at · 1 not checked] picture=true"
+    has "applet: and its rows are under it, each with its mark" "$rep" "under it: [s4] sub=[cannot be told from here] picture=true"
     hasnt "applet: every picture it was asked for could be drawn" "$rep" "SHEET ERROR"
-    check "applet: a picture of each menu is saved for a person to look at" "$(ls "$report".*.png 2>/dev/null | wc -l | tr -d ' ')" "5"
+    check "applet: a picture of each menu is saved for a person to look at" "$(ls "$report".*.png 2>/dev/null | wc -l | tr -d ' ')" "6"
     if [ -n "${RUNBOOK_TRAY_KEEP:-}" ]; then
       mkdir -p "$RUNBOOK_TRAY_KEEP" && cp "$report" "$report".*.png "$RUNBOOK_TRAY_KEEP/" && echo "kept  the applet's report and pictures in $RUNBOOK_TRAY_KEEP"
     fi

@@ -94,7 +94,7 @@ sh TRAY/runbook-tray.selftest.sh
 
 It works in a temporary folder with a made-up home, and never reads your jobs or `~/Applications`.
 
-*You should see:* `203 passed, 0 failed` on a Mac (fewer where the compile and the live reading are skipped).
+*You should see:* `222 passed, 0 failed` on a Mac (fewer where the compile and the live reading are skipped).
 
 ### 2. Write a status command
 
@@ -106,7 +106,7 @@ PYTHON -I TRAY/status.example.py "JOB_LABEL=Nightly backup"
 
 *You should see:* one JSON object with a `rows` list, and your job's row with `"state": "good"` and a `detail` such as `waiting for its time`.
 
-A row's `state` is `good`, `look`, `bad` or `off`. Add a `group` to a row to put it under a heading. Keep the command quick, and keep it away from the folders macOS guards (Desktop, Documents, Downloads, iCloud Drive): the tray runs it every minute, and a guarded folder makes macOS ask for permission in the tray's name.
+A row's `state` is `good`, `look`, `bad`, `off` or `unknown` (the check cannot tell from where it runs; shown, never counted). Add a `group` to a row to put it under a heading; name that group under `"fold"` in the config's `status` and its rows move into a submenu, under one row that counts them. Add `"counted": false` to a row that should show its state without raising the mark in the menu bar. Keep the command quick, and keep it away from the folders macOS guards (Desktop, Documents, Downloads, iCloud Drive): the tray runs it every minute, and a guarded folder makes macOS ask for permission in the tray's name.
 
 ### 3. Write the config, and check it
 

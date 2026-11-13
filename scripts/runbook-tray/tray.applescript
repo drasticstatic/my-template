@@ -608,7 +608,11 @@ on fillMenu(aMenu, arr)
 		else if entryKind is "swatch" then
 			my addPicture(aMenu, entry, my swatchImage(entry))
 		else if entryKind is "group" then
-			set groupPicture to my partsImage(entry's objectForKey:"parts", 48, 6)
+			-- a folded group of rows carries the mark of its worst row; memory's parts carry their own small bar
+			set groupPicture to missing value
+			set groupSymbol to my textOf(entry, "symbol", "")
+			if groupSymbol is not "" then set groupPicture to my symbolImage(groupSymbol, my textOf(entry, "tint", "none"), "")
+			if groupPicture is missing value then set groupPicture to my partsImage(entry's objectForKey:"parts", 48, 6)
 			if groupPicture is missing value then set groupPicture to my blankImage()
 			set groupItem to my addPicture(aMenu, entry, groupPicture)
 			set childMenu to (current application's NSMenu's alloc()'s initWithTitle:(my textOf(entry, "title", "")))

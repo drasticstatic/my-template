@@ -14,7 +14,10 @@ The status command is yours. It prints one JSON object:
     {"when": "2026-01-31 08:30:00", "result": "all good", "ok": true,
      "rows": [{"name": "nightly-backup", "state": "good", "detail": "waiting for its time", "group": "Scheduled jobs"}]}
 
-A row's state is good, look, bad or off. "off" means not running and not expected to be: it is shown and never counted.
+A row's state is good, look, bad, off or unknown. "off" means not running and not expected to be; "unknown" means the
+check cannot tell from where it runs. Both are shown and never counted. A row with "counted": false is shown with its
+state and never raises the mark in the menu bar. With "fold": ["A group's name"] beside the status command in the
+config, that group's rows sit in a submenu of their own, under one row that carries their worst state and counts them.
 
 With "machine": true in the config, the menu also carries a section on this Mac itself: memory, swap, processor and
 disk as meters, the last hour of memory as a small line, and which apps hold the most memory. It reads sysctl,
@@ -39,7 +42,7 @@ import subprocess
 import sys
 import time
 
-STATES = ("good", "look", "bad", "off")
+STATES = ("good", "look", "bad", "off", "unknown")
 # state -> (SF Symbol, tint, mark used where a symbol cannot be drawn). Shape and colour both carry the state.
 LOOKS = {
     "good": ("checkmark.circle.fill", "green", "✓"),
@@ -73,7 +76,9 @@ DAY_HEADER = ("time,memory_used_gb,memory_total_gb,pressure,available_percent,sw
 # cached files and free memory are greys, because they are what is not committed.
 PART_COLOURS = {"app": ("#2a78d6", "#3987e5"), "wired": ("#e87ba4", "#d55181"), "compressed": ("#6250d6", "#9085e9"),
                 "cached": ("#9a9aa0", "#7d7d83"), "free": ("#d4d4d8", "#4a4a4e")}
-STATUS_KEYS = {"command", "timeout_seconds", "comment"}
+STATUS_KEYS = {"command", "timeout_seconds", "fold", "comment"}
+# how the row of a folded group counts what is under it, in this order
+FOLD_WORDS = (("good", "good"), ("off", "off"), ("look", "to look at"), ("bad", "failing"), ("unknown", "not checked"))
 ENTRY_KEYS = {"id", "title", "command", "open", "timeout_seconds", "summary", "ok_exit_codes", "separator", "comment"}
 
 
@@ -184,10 +189,14 @@ def load_config(path):
     if "status" not in raw:
         raise ConfigError("the config needs a status command")
     known(raw["status"], STATUS_KEYS, "status")
+    fold = raw["status"].get("fold", [])
+    if not isinstance(fold, list) or not all(isinstance(g, str) and g.strip() and len(g) <= 60 for g in fold):
+        raise ConfigError("status.fold must be a list of group names")
     cfg = {
         "file": path, "name": name.strip(), "path": search,
         "status": {"command": words(raw["status"].get("command"), "status.command"),
-                   "timeout": whole(raw["status"].get("timeout_seconds"), 1, 600, 30, "status.timeout_seconds")},
+                   "timeout": whole(raw["status"].get("timeout_seconds"), 1, 600, 30, "status.timeout_seconds"),
+                   "fold": [g.strip() for g in fold]},
         "stale_after": whole(raw.get("stale_after_seconds"), 60, 86400, 300, "stale_after_seconds"),
         "opener": words(raw.get("open_with", DEFAULT_OPENER), "open_with"),
         "machine": None,
@@ -302,8 +311,8 @@ def read_status(cfg):
         if state not in STATES:
             detail, state = one_line(f"state {state!r} is not one the tray knows; {detail}", 300), "look"
         rows.append({"name": one_line(row["name"], 80), "state": state, "detail": detail,
-                     "group": one_line(row.get("group", ""), 60)})
-    need = [r for r in rows if r["state"] in ("bad", "look")]
+                     "group": one_line(row.get("group", ""), 60), "counted": row.get("counted") is not False})
+    need = [r for r in rows if r["counted"] and r["state"] in ("bad", "look")]
     if need:
         line = f"{len(need)} need{'s' if len(need) == 1 else ''} a look: " + ", ".join(r["name"] for r in need)
     else:
@@ -661,6 +670,16 @@ def entry_note(rec, running, now):
     return " · ".join(bits), True
 
 
+def fold_group(title, rows):
+    """One row for a folded group: the worst state among its rows as its mark, and how many rows are in each state."""
+    worst = next(s for s in ("bad", "look", "good", "off", "unknown") if any(r["state"] == s for r in rows))
+    symbol, tint, mark = LOOKS[worst]
+    counts = [(sum(1 for r in rows if r["state"] == state), word) for state, word in FOLD_WORDS]
+    return {"kind": "group", "title": title, "subtitle": " · ".join(f"{n} {word}" for n, word in counts if n),
+            "state": worst, "symbol": symbol, "tint": tint, "mark": mark,
+            "items": [info(r["name"], r["detail"], r["state"]) for r in rows]}
+
+
 def build_model(cfg, status, problem, state_dir, now, machine=None):
     """machine is (items, bar) from machine_section, or None to read this Mac now when the config asks for it."""
     items = []
@@ -668,8 +687,9 @@ def build_model(cfg, status, problem, state_dir, now, machine=None):
         bar = {"symbol": BAR_SYMBOL, "tint": "none", "text": "?", "tooltip": f"{cfg['name']}: {problem}"}
         items.append(info("The check did not run", one_line(problem, 300), "unknown"))
     else:
-        bad = sum(1 for r in status["rows"] if r["state"] == "bad")
-        look = sum(1 for r in status["rows"] if r["state"] == "look")
+        counted = [r for r in status["rows"] if r.get("counted", True)]
+        bad = sum(1 for r in counted if r["state"] == "bad")
+        look = sum(1 for r in counted if r["state"] == "look")
         worst = "bad" if bad else "look" if look else "good"
         checked = f"checked {datetime.datetime.fromtimestamp(now):%H:%M:%S}"
         bar = {"symbol": BAR_SYMBOL, "tint": {"bad": "red", "look": "amber", "good": "none"}[worst],
@@ -677,12 +697,19 @@ def build_model(cfg, status, problem, state_dir, now, machine=None):
                "tooltip": f"{cfg['name']}: {status['result']}, {checked}"}
         head = status["result"][:1].upper() + status["result"][1:]
         items.append(info(head, checked, worst))
+        fold = (cfg.get("status") or {}).get("fold", [])
         previous = None
         for row in status["rows"]:
+            if row["group"] in fold:
+                continue
             if row["group"] != previous:
                 items.append({"kind": "header", "title": row["group"]} if row["group"] else {"kind": "separator"})
                 previous = row["group"]
             items.append(info(row["name"], row["detail"], row["state"]))
+        folded = [(name, [r for r in status["rows"] if r["group"] == name]) for name in fold]
+        if any(rows for _, rows in folded):
+            items.append({"kind": "separator"})
+        items += [fold_group(name, rows) for name, rows in folded if rows]
     more, gauge = machine if machine is not None else read_machine(cfg, state_dir, now)
     items += more
     if gauge:
@@ -738,7 +765,7 @@ def as_text(model):
         elif item["kind"] == "swatch":
             out.append(f"{indent}■ {item['title']}{tail}")
         elif item["kind"] == "group":
-            out.append(f"{indent}▾ {item['title']}{tail}")
+            out.append(f"{indent}▾ {item['mark'] + ' ' if item.get('mark') else ''}{item['title']}{tail}")
             for child in item["items"]:
                 line(child, indent + "    ")
         else:

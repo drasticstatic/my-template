@@ -13,8 +13,8 @@ python3 -I runbook-tray.py doctor --config YOUR.json           # check a config;
 python3 -I runbook-tray.py render --config YOUR.json --state /tmp/tray-try --print   # the menu, as text
 sh build.sh --config YOUR.json --print                         # what a build would do; writes nothing
 sh build.sh --config YOUR.json                                 # builds ~/Applications/Runbook Tray.app; starts nothing
-sh runbook-tray.selftest.sh                                    # 203 checks in a temporary folder
-sh runbook-tray.selftest.sh --with-applet                      # 230: also draws every menu (an item shows for a second)
+sh runbook-tray.selftest.sh                                    # 222 checks in a temporary folder
+sh runbook-tray.selftest.sh --with-applet                      # 251: also draws every menu (an item shows for a second)
 ```
 
 ## What is here
@@ -37,6 +37,10 @@ sh runbook-tray.selftest.sh --with-applet                      # 230: also draws
 - **It names apps, never their arguments.** The memory list is read with `top -stats pid,mem` and
   `ps -o pid=,comm=`; a helper process is counted with its app.
 - **Two entries are always in the menu,** whatever the helper wrote: *Refresh now* and *Quit*.
+- **A long side list folds away.** Name a group in the config (`"status": {"fold": ["Group name"]}`) and its rows
+  sit in a submenu, under one row that carries their worst state and counts them. A row your status command marks
+  `"counted": false` is shown with its state and never raises the mark in the menu bar: for things worth seeing
+  that are not the machine's own jobs, such as the tools a session needs before it starts.
 - **Its files** are in `~/Library/Application Support/<name>/`, readable by you alone: `menu.json`, `status.json`,
   `history.json` (six hours of samples), `processes.json`, `tray.log`, `actions/` with each entry's last output,
   and `days/<date>.csv`, one line a minute of the Mac's memory, swap and processor, which nothing removes.
@@ -50,6 +54,7 @@ sh runbook-tray.selftest.sh --with-applet                      # 230: also draws
 | Mark | Meaning |
 |---|---|
 | green tick, amber triangle, red octagon, grey dash | a row's state as your status command gave it: good, look, bad, off. The shape carries it as well as the colour |
+| grey question mark | `unknown`: the check cannot tell from where it runs (a remote service it does not call, say). Shown, never counted, like `off` |
 | a blue bar | a measure with no alarm attached |
 | an amber or red memory bar | the kernel's own memory pressure level is *warning* or *critical* (`kern.memorystatus_vm_pressure_level`) |
 | grey bars | a ranking, largest first, each against the largest |
