@@ -298,15 +298,18 @@ hw.logicalcpu: 10
 vm.loadavg: { 2.50 2.00 1.50 }
 vm.swapusage: total = 4096.00M  used = 2048.00M  free = 2048.00M  (encrypted)
 kern.memorystatus_vm_pressure_level: 2
+kern.memorystatus_level: 40
 """
 vm = """Mach Virtual Memory Statistics: (page size of 16384 bytes)
-Pages free:                                1000.
+Pages free:                               16384.
 Pages active:                            400000.
+Pages speculative:                        16384.
 Pages wired down:                        131072.
 Pages purgeable:                          65536.
 "Translation faults":                2294384523.
-File-backed pages:                       244566.
+File-backed pages:                       196608.
 Anonymous pages:                         589824.
+Pages stored in compressor:             1310720.
 Pages occupied by compressor:            262144.
 """
 m = t.memory_facts(sysctl, vm)
@@ -315,6 +318,25 @@ say("memory: wired is its pages times the page size", m["wired"], 2 * G)
 say("memory: app memory leaves out what can be purged", m["app"], 8 * G)
 say("memory: used is app + wired + compressed", m["used"], 14 * G)
 say("memory: swap in use, from megabytes", m["swap_used"], 2 * G)
+say("memory: cached is file-backed pages and what can be purged", m["cached"], 4 * G)
+say("memory: free is the free and the speculative pages", m["free"], G // 2)
+say("memory: what the compressor holds, at its full size", m["stored"], 20 * G)
+say("memory: the kernel's count of memory available", m["headroom"], 40)
+say("memory: a count over a hundred per cent is not believed", t.memory_facts(sysctl.replace("level: 40", "level: 400"), vm)["headroom"], None)
+g = t.memory_parts(m)
+say("parts: five parts, in one fixed order", [x["name"] for x in g["parts"]], ["App memory", "Wired", "Compressed", "Cached files", "Free"])
+say("parts: each is its share of the whole", [x["value"] for x in g["parts"]], [0.25, 0.0625, 0.125, 0.125, 0.0156])
+say("parts: the colours are the three checked hues, then two greys, each with its dark step",
+    [(x["light"], x["dark"]) for x in g["parts"]],
+    [("#2a78d6", "#3987e5"), ("#e87ba4", "#d55181"), ("#6250d6", "#9085e9"), ("#9a9aa0", "#7d7d83"), ("#d4d4d8", "#4a4a4e")])
+say("parts: the submenu is the bar, a line for each part, a rule, and the kernel's reading",
+    [x["kind"] for x in g["items"]], ["parts", "swatch", "swatch", "swatch", "swatch", "swatch", "separator", "info"])
+say("parts: a line gives the amount and what the part is", g["items"][1]["subtitle"], "8.0 GB · what apps hold and are using")
+say("parts: compressed says how much it is holding", g["items"][3]["subtitle"], "4.0 GB · holding 20.0 GB of app data, squeezed")
+say("parts: the kernel's reading has its mark and its words", (g["items"][-1]["title"], g["items"][-1]["state"], g["items"][-1]["subtitle"]),
+    ("Pressure: warning", "look", "the kernel counts 40% of memory as available"))
+say("parts: the row in the main menu gives the four sizes", g["subtitle"], "app 8.0 · wired 2.0 · compressed 4.0 · cached 4.0 GB")
+say("parts: with no count of what the compressor holds, none is claimed", t.memory_parts(dict(m, stored=0))["items"][3]["subtitle"], "4.0 GB · squeezed to make room")
 say("memory: the kernel's pressure level", m["pressure"], 2)
 say("memory: cores and the one-minute load", (m["cores"], m["load"]), (10, 2.5))
 say("memory: tool output that is not what was asked for gives nothing", t.memory_facts("nonsense", "more nonsense"), None)
@@ -351,6 +373,12 @@ say("groups: a process that ended between the two readings is left out", t.group
 say("disk: used, free and the percentage as df prints them", t.disk_facts("Filesystem 1024-blocks Used Available Capacity iused ifree %iused Mounted on\n/dev/disk3s5 1000 300 500 38% 1 2 0% /System/Volumes/Data\n"),
     {"used": 300 * 1024, "free": 500 * 1024, "fraction": 0.375, "percent": 38})
 say("disk: df output that is not a table gives nothing", t.disk_facts("df: no such file"), None)
+import datetime
+say("day: the header names every column of a line", len(t.DAY_HEADER.split(",")), len(t.day_line(m, 0.15, 1_000_000).split(",")))
+say("day: a line is the time, then memory in GB, the kernel's words, and the processor",
+    t.day_line(m, 0.15, 1_000_000).split(",")[1:], ["14.00", "32.00", "warning", "40", "2.00", "8.00", "2.00", "4.00", "20.00", "4.00", "0.50", "15", "2.50"])
+say("day: the time is the local time of the sample", t.day_line(m, None, 1_000_000).split(",")[0], f"{datetime.datetime.fromtimestamp(1_000_000):%Y-%m-%d %H:%M:%S}")
+say("day: what was not read is left empty, not written as nought", t.day_line(dict(m, swap_used=None, load=None, headroom=None), None, 1_000_000).split(",")[4:6] + t.day_line(dict(m, load=None), None, 1_000_000).split(",")[-2:], ["", "", "", ""])
 say("trend: under a twentieth of a gigabyte is steady", t.moved(10 * G + 1000, 10 * G), "steady")
 say("trend: up and down, in gigabytes", (t.moved(11.5 * G, 10 * G), t.moved(9 * G, 10 * G)), ("up 1.5 GB", "down 1.0 GB"))
 now = 1_000_000
@@ -362,7 +390,7 @@ line = t.last_hour(hour, now)
 say("line: one step a minute over the hour", (len(line), line[0], line[-1]), (61, 0.625, 0.6875))
 items, bar = t.machine_section(m, {"used": 3 * G, "free": 5 * G, "fraction": 0.375, "percent": 38}, [700, 350, 5950, 0], hour, groups, now - 120, now)
 kinds = [i["kind"] for i in items]
-say("section: a header, four meters, the hour's line, and the apps", kinds, ["header", "meter", "meter", "meter", "meter", "spark", "group"])
+say("section: a header, memory and its parts, three more meters, the hour's line, and the apps", kinds, ["header", "meter", "group", "meter", "meter", "meter", "spark", "group"])
 by = {i["title"]: i for i in items if "title" in i}
 say("section: memory's bar is its share of the whole", by["Memory"]["value"], 0.4375)
 say("section: memory says what it is in words, state included", by["Memory"]["subtitle"], "14.0 of 32 GB used · pressure warning")
@@ -378,11 +406,12 @@ say("section: the menu bar gets the gauge, the colour and the words", bar, {"gau
 calm = dict(m, pressure=1, load=None, swap_used=None)
 items2, bar2 = t.machine_section(calm, None, None, [], [], now, now)
 say("section: normal pressure is blue, and the menu bar keeps its own colour", (items2[1]["tint"], bar2["tint"]), ("blue", "none"))
-say("section: what cannot be read is left out, not guessed", [i.get("title") for i in items2], ["This Mac", "Memory"])
+say("section: what cannot be read is left out, not guessed", [i.get("title") for i in items2], ["This Mac", "Memory", "Memory, part by part"])
 items3, _ = t.machine_section(dict(m, pressure=4), None, None, [], [], now, now)
 say("section: critical pressure is red", items3[1]["tint"], "red")
 items4, _ = t.machine_section(m, None, None, hour[-1:], [], now, now)
-say("section: with no earlier count the processor shows its load instead", (items4[3]["subtitle"], items4[3]["value"]), ("load 2.5 on 10 cores", 0.25))
+cpu4 = next(i for i in items4 if i.get("title") == "Processor")
+say("section: with no earlier count the processor shows its load instead", (cpu4["subtitle"], cpu4["value"]), ("load 2.5 on 10 cores", 0.25))
 # the fixture the applet draws in its own self-test: made-up status rows plus this made-up Mac
 cfg = {"name": "Runbook", "entries": [], "stale_after": 300, "machine": None}
 status = {"when": "", "result": "all good", "rows": [{"name": "nightly-backup", "state": "good", "detail": "waiting for its time", "group": "Scheduled jobs"}]}
@@ -394,6 +423,7 @@ quiet = t.machine_section(dict(m, pressure=1), None, None, hour, groups, now - 1
 json.dump(t.build_model(cfg, status, "", sys.argv[2], now, machine=quiet), open(sys.argv[2] + "/machine-calm-fixture.json", "w"))
 text = t.as_text(model)
 say("text: a meter prints as ten cells", "▰▰▰▰▱▱▱▱▱▱ Memory" in text, True)
+say("text: the parts print under their heading", "▾ Memory, part by part" in text and "    ■ Compressed  ·  4.0 GB" in text, True)
 say("text: the apps are listed under their heading", "▾ What is holding the most memory" in text and "    ▰▰▰▰▰▰▰▰▰▰ WindowServer" in text, True)
 UNIT_EOF
 unit="$("$PY" -I -B "$work/unit.py" "$tool" "$work" 2>&1)"   # -B: leave no bytecode beside the tool
@@ -419,12 +449,15 @@ if [ "$(uname)" = Darwin ]; then
   check "machine, on this Mac: a render with the section runs" "$([ "$rc" -le 1 ] && echo yes || echo "exit $rc")" "yes"
   check "machine, on this Mac: memory is read as a share between nothing and all" "$(ql '0 < next(i for i in items if i.get("title") == "Memory")["value"] <= 1')" "True"
   check "machine, on this Mac: the menu bar gets its gauge" "$(ql '0 < m["bar"]["gauge"] <= 1')" "True"
+  check "machine, on this Mac: memory comes part by part, and the parts are no more than the whole" "$(ql '(lambda g: len(g["parts"]) == 5 and 0.5 < sum(x["value"] for x in g["parts"]) <= 1.02)(next(i for i in items if i.get("title") == "Memory, part by part"))')" "True"
   check "machine, on this Mac: the disk is read" "$(ql '"% used" in next(i for i in items if i.get("title") == "Disk")["subtitle"]')" "True"
-  check "machine, on this Mac: up to five apps are listed, largest first" "$(ql '(lambda g: 1 <= len(g) <= 5 and g[0]["value"] == 1.0)(next(i for i in items if i["kind"] == "group")["items"])')" "True"
+  check "machine, on this Mac: up to five apps are listed, largest first" "$(ql '(lambda g: 1 <= len(g) <= 5 and g[0]["value"] == 1.0)(next(i for i in items if i.get("title") == "What is holding the most memory")["items"])')" "True"
   check "machine, on this Mac: a sample is kept" "$("$PY" -I -c 'import json,sys; print(len(json.load(open(sys.argv[1]))["samples"]))' "$live/history.json")" "1"
   first="$(cat "$live/processes.json")"
   run render --config "$livecfg" --state "$live" >/dev/null 2>&1
   check "machine, on this Mac: a second sample is added" "$("$PY" -I -c 'import json,sys; print(len(json.load(open(sys.argv[1]))["samples"]))' "$live/history.json")" "2"
+  day="$live/days/$(date +%Y-%m-%d).csv"
+  check "machine, on this Mac: the day's record has its header and a line for each sample" "$(head -1 "$day" | cut -d, -f1-3) $(wc -l < "$day" | tr -d ' ')" "time,memory_used_gb,memory_total_gb 3"
   check "machine, on this Mac: the apps are not counted again inside five minutes" "$(cat "$live/processes.json")" "$first"
   hasnt "machine, on this Mac: no argument of any process is kept" "$(cat "$live/processes.json" "$live/menu.json")" " --"
 else
@@ -477,7 +510,7 @@ if [ "$(uname)" = Darwin ] && [ -x /usr/bin/osacompile ]; then
     has "applet: the first line, with its coloured mark" "$rep" "item: [All good] sub=[checked "
     has "applet: a group header is a real section header" "$rep" "item: [Scheduled jobs] sub=[] picture=false enabled=true wired=false header=true"
     has "applet: a row has its detail and its mark, and does nothing when chosen" "$rep" "item: [watcher] sub=[running, pid 41] picture=true enabled=true wired=false header=false id=[]"
-    has "applet: an entry has its picture" "$rep" "item: [Run the job, first line] sub=[09"
+    check "applet: an entry has its picture and its last result" "$(printf '%s\n' "$rep" | grep -c -E 'item: \[Run the job, first line\] sub=\[[0-9:]+ · first line of the job\] picture=true' | sed 's/^[1-9][0-9]*$/found/')" "found"
     has "applet: an entry is wired to its id" "$rep" "item: [Open the runbook] sub=[opened "
     has "applet: Refresh now is always there" "$rep" "item: [Refresh now] sub=[] picture=true enabled=true wired=true header=false id=[_refresh]"
     has "applet: Quit is always there" "$rep" "item: [Quit Runbook Tray Test] sub=[] picture=true enabled=true wired=true"
@@ -488,6 +521,10 @@ if [ "$(uname)" = Darwin ] && [ -x /usr/bin/osacompile ]; then
     has "applet: and the menu says it is waiting, with Quit still there" "$rep" "item: [Waiting for the first check]"
     check "applet: no helper was started and nothing was opened" "$([ -e "$work/tray-state/menu.json" ] && echo started || echo "not started")" "not started"
     has "applet: a meter row has its bar and its words" "$rep" "item: [Memory] sub=[14.0 of 32 GB used · pressure warning] picture=true enabled=true wired=false"
+    has "applet: memory's parts are a row with their own small picture" "$rep" "item: [Memory, part by part] sub=[app 8.0 · wired 2.0 · compressed 4.0 · cached 4.0 GB] picture=true"
+    has "applet: under it, the bar split into its parts" "$rep" "under it: [] sub=[] picture=true"
+    has "applet: and a line for each part, with its colour" "$rep" "under it: [Compressed] sub=[4.0 GB · holding 20.0 GB of app data, squeezed] picture=true"
+    has "applet: and the kernel's own reading" "$rep" "under it: [Pressure: warning] sub=[the kernel counts 40% of memory as available] picture=true"
     has "applet: the hour's line is drawn" "$rep" "item: [Memory, last hour] sub=[between 62% and 69% · down 6.0 GB in the last hour] picture=true"
     has "applet: the apps sit in a submenu, each with its bar" "$rep" "under it: [Example Browser × 2] sub=[1.5 GB] picture=true"
     hasnt "applet: every picture it was asked for could be drawn" "$rep" "SHEET ERROR"

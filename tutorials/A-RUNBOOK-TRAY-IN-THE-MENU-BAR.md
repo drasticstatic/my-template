@@ -94,7 +94,7 @@ sh TRAY/runbook-tray.selftest.sh
 
 It works in a temporary folder with a made-up home, and never reads your jobs or `~/Applications`.
 
-*You should see:* `182 passed, 0 failed` on a Mac (fewer where the compile and the live reading are skipped).
+*You should see:* `203 passed, 0 failed` on a Mac (fewer where the compile and the live reading are skipped).
 
 ### 2. Write a status command
 
@@ -162,6 +162,7 @@ open -g "$HOME/Applications/Runbook Tray.app"
 | Row | What it measures | What its bar is against |
 |---|---|---|
 | **Memory** | app memory + wired + compressed, from `vm_stat`, with the kernel's own pressure level in words | the Mac's memory |
+| **Memory, part by part** | a submenu: one bar split into app memory, wired, compressed, cached files and free, a line for each with its amount, and the kernel's own pressure level with the share of memory it counts as available | the Mac's memory |
 | **Swap** | swap in use, and how it moved in the last hour | the Mac's memory, since swap has no fixed limit |
 | **Processor** | the share of time not idle since the tray's previous sample, and the one-minute load | all cores busy |
 | **Disk** | used and free as `df` gives them | the disk |
@@ -169,6 +170,9 @@ open -g "$HOME/Applications/Runbook Tray.app"
 | **What is holding the most memory** | each app with its helpers added in, from `top`'s memory column | the largest in the list |
 
 - **Only the memory bar changes colour,** to amber or red, when the kernel reports pressure as *warning* or *critical*. The other bars stay blue: no rule says when they are bad, so none is drawn.
+- **The split bar's colours name parts, not states:** blue for app memory, pink for wired, violet for compressed, greys for cached files and free. Amber, red and green are kept for state everywhere in the menu.
+- **There is no button that frees memory, on purpose.** Cached files are given back by macOS the moment something needs the room, and what apps hold comes back as soon as they are used. What helps is closing what the list names.
+- **Each day is kept:** one line a minute, in `days/<date>.csv` in the tray's folder, so a working day can be read afterwards.
 - **The app list names apps, never their arguments.** It is counted every five minutes, since `top` is the costliest reading.
 - **It is not Activity Monitor.** Apple's guide lists App Memory, Wired Memory and Compressed beside *Memory Used*; the tray adds those three from `vm_stat` and was not compared with Activity Monitor's own figure.
 
@@ -208,6 +212,10 @@ open -g "$HOME/Applications/Runbook Tray.app"
 | A menu-bar item, section headings, two-line rows, coloured marks, a timer and a child process all work from a plain AppleScript applet | the self-test's applet round on that Mac: it draws each menu and reads back from AppKit what was drawn |
 | *Memory Used*, with App Memory, Wired Memory and Compressed listed beside it; "Swap Used: The amount of space being used on your startup disk to swap unused files to and from RAM" | <https://support.apple.com/guide/activity-monitor/view-memory-usage-actmntr1004/mac> |
 | `top`'s `mem` column: "Physical memory footprint of the process" | `man top` on that Mac |
+| "the total number of pages (uncompressed) held within the compressor" and "the number of pages used to store compressed VM pages" | `man vm_stat` on that Mac |
+| "System-wide memory free percentage", the figure the tray shows as the share of memory the kernel counts as available | `memory_pressure` on that Mac; it printed the same number as `sysctl kern.memorystatus_level` |
+| Cached Files: "The size of files cached by the system into unused memory to improve performance" | Apple's Activity Monitor guide, linked above |
+| The three hues of the split bar pass as neighbours, light and dark | the charting validator used to choose them, run on Nov 13, 2026 with menu-like grounds; one hue is under 3:1 against a light menu, which is why every part also has a line with its name and amount |
 | The pressure level's three values, 1 normal, 2 warning, 4 critical | read from `sysctl kern.memorystatus_vm_pressure_level` on that Mac; the meaning of the numbers is the template's reading, not quoted from Apple |
 | `rumps` needs PyObjC; newest release 0.4.0, Oct 15, 2022 (checked 2026-11-12) | <https://github.com/jaredks/rumps>, <https://pypi.org/project/rumps/> |
 | The *Menu Bar* collection, *Allow Running Scripts* and its warning, `shortcuts run` (checked 2026-11-12) | <https://support.apple.com/guide/shortcuts-mac/intro-to-shortcuts-apdf22b0444c/mac>, <https://support.apple.com/guide/shortcuts-mac/advanced-shortcuts-settings-apdfeb05586f/mac>, <https://support.apple.com/guide/shortcuts-mac/run-shortcuts-from-the-command-line-apd455c82f02/mac> |

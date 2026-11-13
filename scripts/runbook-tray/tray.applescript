@@ -313,6 +313,91 @@ on blankImage()
 	return current application's NSImage's alloc()'s initWithSize:(current application's NSMakeSize(48, 12))
 end blankImage
 
+-- Is the menu dark? Colours that tell parts apart have one step for each ground.
+on menuIsDark()
+	try
+		set best to current application's NSApp's effectiveAppearance()'s bestMatchFromAppearancesWithNames:{"NSAppearanceNameAqua", "NSAppearanceNameDarkAqua"}
+		return (best as text) is "NSAppearanceNameDarkAqua"
+	on error
+		return false
+	end try
+end menuIsDark
+
+-- A colour written as #rrggbb, or grey when it cannot be read.
+on colourFromHex(hexText)
+	try
+		set digits to "0123456789abcdef"
+		set parts to {}
+		repeat with i from 0 to 2
+			set pairText to text (2 + i * 2) thru (3 + i * 2) of hexText
+			set hi to (offset of (character 1 of pairText) in digits) - 1
+			set lo to (offset of (character 2 of pairText) in digits) - 1
+			if hi < 0 or lo < 0 then error "not a colour"
+			set end of parts to (hi * 16 + lo) / 255
+		end repeat
+		return current application's NSColor's colorWithSRGBRed:(item 1 of parts) green:(item 2 of parts) blue:(item 3 of parts) alpha:1.0
+	on error
+		return current application's NSColor's systemGrayColor()
+	end try
+end colourFromHex
+
+on partColour(entry)
+	if my menuIsDark() then return my colourFromHex(my textOf(entry, "dark", "#808080"))
+	return my colourFromHex(my textOf(entry, "light", "#808080"))
+end partColour
+
+-- One whole split into its parts: a thin bar with round ends, a gap of the ground between parts, widths in
+-- proportion, nothing drawn for a part too small to see.
+on partsImage(arr, w, h)
+	set img to missing value
+	try
+		if arr is missing value then return missing value
+		set n to (arr's |count|()) as integer
+		if n < 1 then return missing value
+		set img to current application's NSImage's alloc()'s initWithSize:(current application's NSMakeSize(w, h + 4))
+		img's lockFocus()
+		(my capsule(0, 2, w, h, h / 2))'s addClip()
+		-- the whole of memory, faintly, so that what the parts do not account for still shows as part of the bar
+		((current application's NSColor's systemGrayColor())'s colorWithAlphaComponent:0.18)'s setFill()
+		(current application's NSBezierPath's bezierPathWithRect:(current application's NSMakeRect(0, 2, w, h)))'s |fill|()
+		set x to 0.0
+		repeat with i from 0 to (n - 1)
+			set part to (arr's objectAtIndex:i)
+			set partW to w * (my numberOf(part, "value", 0))
+			if partW ≥ 1.5 then
+				(my partColour(part))'s setFill()
+				((current application's NSBezierPath's bezierPathWithRect:(current application's NSMakeRect(x, 2, partW - 1.5, h)))'s |fill|())
+			end if
+			set x to x + partW
+		end repeat
+		img's unlockFocus()
+		return img
+	on error
+		try
+			if img is not missing value then img's unlockFocus()
+		end try
+		return missing value
+	end try
+end partsImage
+
+-- The small square beside a part's name, in that part's colour.
+on swatchImage(entry)
+	set img to missing value
+	try
+		set img to current application's NSImage's alloc()'s initWithSize:(current application's NSMakeSize(12, 12))
+		img's lockFocus()
+		(my partColour(entry))'s setFill()
+		(my capsule(1, 1, 10, 10, 3))'s |fill|()
+		img's unlockFocus()
+		return img
+	on error
+		try
+			if img is not missing value then img's unlockFocus()
+		end try
+		return missing value
+	end try
+end swatchImage
+
 -- A meter: a thin bar with round ends, its track a lighter step of the same colour, so the state reads along the whole bar.
 on barImage(fraction, tint)
 	set img to missing value
@@ -518,8 +603,14 @@ on fillMenu(aMenu, arr)
 			my addPicture(aMenu, entry, my barImage(my numberOf(entry, "value", 0), my textOf(entry, "tint", "blue")))
 		else if entryKind is "spark" then
 			my addPicture(aMenu, entry, my sparkImage(entry's objectForKey:"values", my textOf(entry, "tint", "blue")))
+		else if entryKind is "parts" then
+			my addPicture(aMenu, entry, my partsImage(entry's objectForKey:"parts", 220, 10))
+		else if entryKind is "swatch" then
+			my addPicture(aMenu, entry, my swatchImage(entry))
 		else if entryKind is "group" then
-			set groupItem to my addPicture(aMenu, entry, my blankImage())
+			set groupPicture to my partsImage(entry's objectForKey:"parts", 48, 6)
+			if groupPicture is missing value then set groupPicture to my blankImage()
+			set groupItem to my addPicture(aMenu, entry, groupPicture)
 			set childMenu to (current application's NSMenu's alloc()'s initWithTitle:(my textOf(entry, "title", "")))
 			(childMenu's setAutoenablesItems:false)
 			my fillMenu(childMenu, entry's objectForKey:"items")

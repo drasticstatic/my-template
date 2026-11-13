@@ -18,7 +18,8 @@ A row's state is good, look, bad or off. "off" means not running and not expecte
 
 With "machine": true in the config, the menu also carries a section on this Mac itself: memory, swap, processor and
 disk as meters, the last hour of memory as a small line, and which apps hold the most memory. It reads sysctl,
-vm_stat, top and ps, names apps only (never their arguments), and keeps its samples in DIR/history.json.
+vm_stat, top and ps, names apps only (never their arguments), and keeps its samples in DIR/history.json (six hours)
+and one line a minute in DIR/days/<date>.csv, which nothing removes: a record of each working day.
 
 What this never does: schedule, edit or stop a scheduled job; ask for a password; run anything the config does not
 name. Commands are lists of words and never pass through a shell. A config that another account on the machine could
@@ -65,6 +66,13 @@ TINT_RANK = {"none": 0, "amber": 1, "red": 2}
 ALIASES = {"com.apple.WebKit.WebContent": "WebKit web content", "com.apple.WebKit.GPU": "WebKit graphics",
            "com.apple.WebKit.Networking": "WebKit networking"}
 HISTORY_SECONDS = 6 * 3600
+DAY_HEADER = ("time,memory_used_gb,memory_total_gb,pressure,available_percent,swap_gb,app_gb,wired_gb,compressed_gb,"
+              "held_in_compressed_gb,cached_gb,free_gb,processor_busy_percent,load_1m")
+# Memory's parts are told apart by hue, never by a state colour: amber, red and green stay with state. Each is
+# (light menu, dark menu). The three hues pass the charting validator as neighbours in this order, in both modes;
+# cached files and free memory are greys, because they are what is not committed.
+PART_COLOURS = {"app": ("#2a78d6", "#3987e5"), "wired": ("#e87ba4", "#d55181"), "compressed": ("#6250d6", "#9085e9"),
+                "cached": ("#9a9aa0", "#7d7d83"), "free": ("#d4d4d8", "#4a4a4e")}
 STATUS_KEYS = {"command", "timeout_seconds", "comment"}
 ENTRY_KEYS = {"id", "title", "command", "open", "timeout_seconds", "summary", "ok_exit_codes", "separator", "comment"}
 
@@ -349,7 +357,12 @@ def memory_facts(sysctl_text, vm_text):
     load = re.findall(r"\d+(?:\.\d+)?", facts.get("vm.loadavg", ""))
     level = facts.get("kern.memorystatus_vm_pressure_level", "")
     cores = facts.get("hw.logicalcpu", "")
+    headroom = facts.get("kern.memorystatus_level", "")
     return {"total": total, "used": min(total, app + wired + packed), "app": app, "wired": wired, "compressed": packed,
+            "cached": pages.get("file-backed pages", 0) + pages.get("pages purgeable", 0),
+            "free": pages.get("pages free", 0) + pages.get("pages speculative", 0),
+            "stored": pages.get("pages stored in compressor", 0),
+            "headroom": int(headroom) if headroom.isdigit() and int(headroom) <= 100 else None,
             "swap_used": int(float(swap.group(2)) * 1024 * 1024) if swap else None,
             "pressure": int(level) if level.isdigit() and int(level) in PRESSURE else 0,
             "cores": int(cores) if cores.isdigit() else 0, "load": float(load[0]) if load else None}
@@ -378,6 +391,34 @@ def busy_between(before, after):
     user, system, idle, nice = ((b - a) % (2 ** 32) for a, b in zip(before, after))
     spent = user + system + idle + nice
     return (user + system + nice) / spent if spent else None
+
+
+def busy_since(samples, ticks, now):
+    """The busy share since the newest earlier sample that is 5 s to 15 min old, or None."""
+    recent = [s for s in samples[:-1] if s.get("cpu") and 5 <= now - s["t"] <= 900]
+    return busy_between(recent[-1]["cpu"], ticks) if recent else None
+
+
+def day_line(mem, busy, now):
+    """One line of the day's record, in the order of DAY_HEADER: the time, then this Mac's memory in GB."""
+    def gb(size):
+        return "" if size is None else f"{size / GIB:.2f}"
+    return ",".join([
+        f"{datetime.datetime.fromtimestamp(now):%Y-%m-%d %H:%M:%S}", gb(mem["used"]), gb(mem["total"]),
+        PRESSURE.get(mem["pressure"], ""), "" if mem.get("headroom") is None else str(mem["headroom"]),
+        gb(mem["swap_used"]), gb(mem["app"]), gb(mem["wired"]), gb(mem["compressed"]), gb(mem.get("stored")),
+        gb(mem.get("cached")), gb(mem.get("free")), "" if busy is None else f"{busy * 100:.0f}",
+        "" if mem["load"] is None else f"{mem['load']:.2f}"])
+
+
+def keep_day(state_dir, line, now):
+    """Add the line to today's file, starting the file with its header. Nothing here removes a day."""
+    path = os.path.join(ensure_dir(os.path.join(state_dir, "days")), f"{datetime.datetime.fromtimestamp(now):%Y-%m-%d}.csv")
+    new = not os.path.exists(path)
+    with open(path, "a", encoding="utf-8") as fh:
+        if new:
+            fh.write(DAY_HEADER + "\n")
+        fh.write(line + "\n")
 
 
 def disk_facts(df_text):
@@ -466,6 +507,33 @@ def meter(title, subtitle, value, tint):
             "value": round(max(0.0, min(1.0, value)), 4)}
 
 
+def memory_parts(mem):
+    """Memory part by part, as a submenu: one bar split into its parts, a line for each, and the kernel's own reading."""
+    total = mem["total"]
+    held = f"holding {mem['stored'] / GIB:.1f} GB of app data, squeezed" if mem.get("stored") else "squeezed to make room"
+    lines = [("app", "App memory", "what apps hold and are using"),
+             ("wired", "Wired", "what macOS must keep in memory; it cannot be squeezed or moved"),
+             ("compressed", "Compressed", held),
+             ("cached", "Cached files", "kept for speed, and given back the moment something needs it"),
+             ("free", "Free", "not in use")]
+    parts, rows = [], []
+    for key, name, what in lines:
+        size = mem.get(key, 0)
+        light, dark = PART_COLOURS[key]
+        parts.append({"name": name, "value": round(max(0.0, min(1.0, size / total)), 4), "light": light, "dark": dark})
+        rows.append({"kind": "swatch", "title": name, "subtitle": f"{size / GIB:.1f} GB · {what}", "light": light, "dark": dark})
+    items = [{"kind": "parts", "title": "", "subtitle": "", "parts": parts}] + rows
+    word = PRESSURE.get(mem["pressure"], "")
+    if word:
+        state = {1: "good", 2: "look", 4: "bad"}[mem["pressure"]]
+        note = "the kernel's own level, the one the memory bar's colour follows"
+        if mem.get("headroom") is not None:
+            note = f"the kernel counts {mem['headroom']}% of memory as available"
+        items += [{"kind": "separator"}, info(f"Pressure: {word}", note, state)]
+    short = " · ".join(f"{name.split()[0].lower()} {mem.get(key, 0) / GIB:.1f}" for key, name, _ in lines[:4]) + " GB"
+    return {"kind": "group", "title": "Memory, part by part", "subtitle": short, "parts": parts, "items": items}
+
+
 def machine_section(mem, disk, ticks, samples, groups, groups_at, now):
     """(menu items, what the menu bar shows). Pure: everything it needs is handed to it."""
     used, total = mem["used"], mem["total"]
@@ -473,14 +541,15 @@ def machine_section(mem, disk, ticks, samples, groups, groups_at, now):
     items = [{"kind": "header", "title": "This Mac"}]
     note = f"{used / GIB:.1f} of {total / GIB:.0f} GB used" + (f" · pressure {word}" if word else "")
     items.append(meter("Memory", note, used / total, PRESSURE_TINT.get(mem["pressure"], "blue")))
+    if "cached" in mem:
+        items.append(memory_parts(mem))
     then, span = earlier(samples, now)
     if mem["swap_used"] is not None:
         note = f"{mem['swap_used'] / GIB:.1f} GB in use"
         if then and then.get("swap") is not None:
             note += f" · {moved(mem['swap_used'], then['swap'])} {span}"
         items.append(meter("Swap", note, mem["swap_used"] / total, "blue"))     # against the size of memory
-    recent = [s for s in samples[:-1] if s.get("cpu") and 5 <= now - s["t"] <= 900]
-    busy = busy_between(recent[-1]["cpu"], ticks) if recent else None
+    busy = busy_since(samples, ticks, now)
     load = f"load {mem['load']:.1f} on {mem['cores']} cores" if mem["load"] is not None and mem["cores"] else ""
     if busy is not None:
         items.append(meter("Processor", f"{busy:.0%} busy since the last check" + (f" · {load}" if load else ""), busy, "blue"))
@@ -514,7 +583,8 @@ def read_machine(cfg, state_dir, now):
     if opts is None or sys.platform != "darwin":
         return [], None
     mem = memory_facts(tool_text(["/usr/sbin/sysctl", "hw.memsize", "hw.logicalcpu", "vm.loadavg", "vm.swapusage",
-                                  "kern.memorystatus_vm_pressure_level"]), tool_text(["/usr/bin/vm_stat"]))
+                                  "kern.memorystatus_vm_pressure_level", "kern.memorystatus_level"]),
+                       tool_text(["/usr/bin/vm_stat"]))
     if mem is None:
         return [], None
     ticks = cpu_ticks()
@@ -525,6 +595,7 @@ def read_machine(cfg, state_dir, now):
     samples.append({"t": int(now), "mem": mem["used"], "total": mem["total"], "swap": mem["swap_used"], "cpu": ticks})
     samples = samples[-720:]
     write_json(os.path.join(state_dir, "history.json"), {"samples": samples})
+    keep_day(state_dir, day_line(mem, busy_since(samples, ticks, now), now), now)
     groups, groups_at = [], now
     if opts["processes"]:
         cache_path = os.path.join(state_dir, "processes.json")
@@ -661,6 +732,11 @@ def as_text(model):
             low, high = min(item["values"]), max(item["values"])
             steps = "".join("▁▂▃▄▅▆▇█"[min(7, int((v - low) / ((high - low) or 1) * 8))] for v in item["values"])
             out.append(f"{indent}{steps} {item['title']}{tail}")
+        elif item["kind"] == "parts":
+            cells = "".join(mark * round(part["value"] * 30) for mark, part in zip("█▓▒░·", item["parts"]))
+            out.append(f"{indent}{cells}")
+        elif item["kind"] == "swatch":
+            out.append(f"{indent}■ {item['title']}{tail}")
         elif item["kind"] == "group":
             out.append(f"{indent}▾ {item['title']}{tail}")
             for child in item["items"]:
