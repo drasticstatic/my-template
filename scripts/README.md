@@ -447,6 +447,19 @@ Read-only on every child (`git -C` reads with optional locks off). The table sit
 line `Outside the workspace on purpose:` are yours to edit. Children named in `~/.claude/projects/MANIFEST-PRIVATE.txt`
 are counted, never opened and never named. Never put a MANIFEST.md in a public repository: it names private ones.
 
+## `fork-staleness.sh` — how far each fork's pin sits behind its upstream
+
+```sh
+sh scripts/fork-staleness.sh [--fetch] [--tsv] [<folder>]   # default ~/code-forked; read-only, no network by default
+sh scripts/fork-staleness.selftest.sh                       # throwaway repositories in a temporary folder
+```
+
+For each repository directly under the folder: its pinned revision (HEAD and the nearest tag), its `upstream` remote,
+and how many commits HEAD is behind and ahead of the locally known `upstream/<default branch>`, from what was last
+fetched. `--fetch` runs `git fetch upstream --tags` first; that is its only network call and it never runs by default.
+It never merges, checks out or changes a branch. A fork moves only after review (`code-forked/audits/`); this only says
+how far behind the pin is.
+
 ## `set-merge-methods.sh` — merge commits only, on every repository
 
 ```sh
