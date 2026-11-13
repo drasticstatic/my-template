@@ -157,6 +157,8 @@ Copy [`proposals-template/repo/`](./proposals-template/repo/) into a private `pr
 | **numbering a procedure or proposal** | [`NUMBERING.md`](./NUMBERING.md): who may issue which numbers, how to cite them, and what never changes |
 | **letting someone else's AI helper in** | [`AGENT-ONBOARDING.md`](./AGENT-ONBOARDING.md): the honest answer, the layers, and the kit to copy |
 | **learning a tool by doing**, or choosing which shelf a page belongs on | [`tutorials/`](./tutorials/README.md): the tutorials, and the four shelves (SOP, proposal, walkthrough, tutorial) |
+| **bringing someone else's code in** (a tool, a proxy, a package) | [SOP-IT-900](./sop-template/repo/IT/SOP-IT-900-bringing-in-outside-code.md) (review, pin, scan, private copy), [SOP-IT-901](./sop-template/repo/IT/SOP-IT-901-antivirus-screening-of-outside-code.md) (the antivirus receipt) and the fork's front door, [`FORK-FRONT-DOOR.md`](./workflow-templates/FORK-FRONT-DOOR.md) |
+| **keeping a second brain** | [`walkthroughs/THE-SECOND-BRAIN.md`](./walkthroughs/THE-SECOND-BRAIN.md): a private vault that is also a git repository, and how to start one; a transcript already gone: [SOP-IT-902](./sop-template/repo/IT/SOP-IT-902-salvaging-a-session-whose-transcript-is-gone.md) |
 | **writing any page** | [`LUCID.md`](./LUCID.md) (how), [`ENTITIES.md`](./ENTITIES.md) (whom we name, and how), [`NAMES-POLICY.md`](./NAMES-POLICY.md) (what may be public) |
 
 ---
