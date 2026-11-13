@@ -1,14 +1,14 @@
 <div align="center">
 
-<img src="../assets/icons-phosphor/circle-dashed.svg" width="56" height="56" alt="">
+<img src="../assets/icons-phosphor/circle-check.svg" width="56" height="56" alt="">
 
 # A runbook tray in the menu bar
 
-*Learn how a small menu-bar item could show each scheduled job's state at a glance, why it goes through the same gate as any outside code, and how to get most of it today with the Shortcuts app.*
+*Learn to put one small item in the macOS menu bar that shows each scheduled job's state, your own checks and the Mac's memory at a glance, built from what macOS ships, with nothing installed.*
 
 ![Kind](https://img.shields.io/badge/Kind-Tutorial-800020?style=flat-square)
-![Status](https://img.shields.io/badge/Status-designed,_not_built-5c1a2b?style=flat-square)
-![Changed](https://img.shields.io/badge/Changed-2026--11--12-800020?style=flat-square)
+![Status](https://img.shields.io/badge/Status-built,_running_on_one_Mac-5c1a2b?style=flat-square)
+![Changed](https://img.shields.io/badge/Changed-2026--11--13-800020?style=flat-square)
 ![For](https://img.shields.io/badge/For-Anyone_who_runs_scheduled_jobs_on_a_Mac-64748b?style=flat-square)
 
 <img src="../assets/icons-phosphor/map-pin.svg" width="16" height="16" alt=""> **You are here:** drasticstatic lab › [`my-template`](../README.md) › [`tutorials`](README.md) › `A-RUNBOOK-TRAY-IN-THE-MENU-BAR.md` · public · `main` is the working branch
@@ -16,184 +16,208 @@
 </div>
 
 > [!IMPORTANT]
-> **Designed, not built.** Nothing on this page has been installed or run. The tray is a design; its code below is a
-> sketch that has never been executed. The part that works today is [step 6, the Shortcuts route](#-6-the-route-that-works-today-shortcuts-in-the-menu-bar).
+> **Built on Nov 13, 2026, and running on one Mac** (Apple silicon, macOS 15.4.1). It has not been tried on another
+> Mac or another macOS version. Its self-test passes there; run it on yours before you trust it (step 1).
 
 ## <img src="../assets/icons-phosphor/compass.svg" width="24" height="24" alt=""> TL;DR
 
-1. <img src="../assets/icons-phosphor/circle-dashed.svg" width="16" height="16" alt=""> **The tray:** one small item in the menu bar, a coloured dot per scheduled job, and three entries: *Run the daily check*, *Open the runbook*, *Refresh*.
-2. <img src="../assets/icons-phosphor/sprout.svg" width="16" height="16" alt=""> **The tools:** Python and the `rumps` package, which its maintainers describe as "Ridiculously Uncomplicated macOS Python Statusbar apps". No Xcode.
-3. <img src="../assets/icons-phosphor/shield-check.svg" width="16" height="16" alt=""> **Its packages are outside code.** `rumps` and what it needs go through [SOP-IT-900](../sop-template/repo/IT/SOP-IT-900-bringing-in-outside-code.md) and [SOP-IT-901](../sop-template/repo/IT/SOP-IT-901-antivirus-screening-of-outside-code.md) before anything runs.
-4. <img src="../assets/icons-phosphor/footprints.svg" width="16" height="16" alt=""> **Today:** the built-in Shortcuts app has a *Menu Bar* collection whose shortcuts appear in its menu in the macOS menu bar, so the same scripts can be one click away now.
-5. <img src="../assets/icons-phosphor/list-checks.svg" width="16" height="16" alt=""> **Windows** gets its own counterpart, a listed task for the first Windows machine.
+1. <img src="../assets/icons-phosphor/eye.svg" width="16" height="16" alt=""> **The tray:** one item in the menu bar. Its menu lists each scheduled job with a mark, your own checks, the Mac's memory, swap, processor and disk as meters, and a few entries that run a script or open a page.
+2. <img src="../assets/icons-phosphor/sprout.svg" width="16" height="16" alt=""> **The tools:** AppleScript, compiled by `osacompile`, and a helper in Python's standard library. Both are in [`scripts/runbook-tray/`](../scripts/runbook-tray/). No package, no download, no Xcode.
+3. <img src="../assets/icons-phosphor/shield-check.svg" width="16" height="16" alt=""> **No outside code, so no outside-code gate.** The first design used the `rumps` package and waited on a review and a scan. This one needs neither, because every line is the template's own.
+4. <img src="../assets/icons-phosphor/footprints.svg" width="16" height="16" alt=""> **You bring two things:** a status command that prints your jobs' states as JSON, and a config that names it.
+5. <img src="../assets/icons-phosphor/lock.svg" width="16" height="16" alt=""> **It starts nothing by itself.** Building it does not start it, and nothing is added to Login Items. Both are yours.
 
-> **Handing this to your AI helper?** Say: *"Read A-RUNBOOK-TRAY-IN-THE-MENU-BAR.md. Help me set up step 6 for my
-> daily check script. Don't install any package."*
+> **Handing this to your AI helper?** Say: *"Read A-RUNBOOK-TRAY-IN-THE-MENU-BAR.md. Help me write a status command
+> for my scheduled jobs and a config, check them with doctor, and build the tray. Don't start it and don't add it
+> to Login Items; I will."*
 
 ## <img src="../assets/icons-phosphor/sprout.svg" width="24" height="24" alt=""> What you will learn
 
-- what a runbook tray is for, and what it should and should not do;
-- how a menu-bar app is put together in Python with `rumps`, from its own documentation;
-- why a tray you write yourself still brings in outside code, and the gate it goes through;
-- how to put the same scripts in the menu bar today with Shortcuts.
+- what a runbook tray shows, and what it must never do;
+- how a menu-bar app is put together from AppleScript alone, and why that keeps it out of the outside-code gate;
+- how to write a status command and a config, and prove them before anything appears on screen;
+- how to read the section on the Mac itself: what each meter measures, and what it does not.
 
 ## <img src="../assets/icons-phosphor/list-checks.svg" width="24" height="24" alt=""> Before you start
 
-**You need:** a Mac, a script you already run by hand (a daily check, for example), and about 20 minutes for step 6. Steps 1 to 5 are reading.
+**You need:** a Mac, a `python3` that is not `/usr/bin/python3` (Homebrew's, for example), a scheduled job you already run, and about 30 minutes.
 
 | Placeholder | Meaning | Example |
 |---|---|---|
-| `CHECK_SCRIPT` | the script your daily check runs | `~/code/<tool>/scripts/daily-check.sh` |
-| `RUNBOOK` | the page you keep your runbook in | `~/vault/RUNBOOK.md` |
+| `TRAY` | this template's tray folder | `~/code/my-template/scripts/runbook-tray` |
+| `PYTHON` | the full path of your python3 | `/opt/homebrew/bin/python3` |
 | `JOB_LABEL` | a scheduled job's launchd label | `local.example.nightly` |
+| `MY_CONFIG` | your config, in a folder only you can write | `~/vault/scripts/runbook-tray.config.json` |
+| `RUNBOOK` | the page you keep your runbook in | `~/vault/RUNBOOK.md` |
 
-## <img src="../assets/icons-phosphor/eye.svg" width="24" height="24" alt=""> 1. What the tray shows
+## <img src="../assets/icons-phosphor/eye.svg" width="24" height="24" alt=""> What the tray shows
 
 ```mermaid
 flowchart LR
-  J["scheduled jobs<br/>(launchd)"] -->|"read their state,<br/>every few minutes"| T["menu-bar item<br/>● ● ●"]
-  T --> M1["Run the daily check"]
-  T --> M2["Open the runbook"]
-  T --> M3["Refresh"]
-  M1 -->|"runs"| S["CHECK_SCRIPT,<br/>the same one you<br/>run by hand"]
+  S["your status command<br/>(prints JSON)"] -->|"every minute"| H["the helper<br/>runbook-tray.py"]
+  M["this Mac<br/>(sysctl, vm_stat, top, ps, df)"] --> H
+  H -->|"writes menu.json"| T["the menu-bar item<br/>tray.applescript"]
+  T -->|"you choose an entry"| H
+  H -->|"runs or opens<br/>what your config names"| E["your script,<br/>your page"]
 ```
 
-- **A dot per job:** green when its last run succeeded, amber when it has not run when it should have, red when it failed. Hovering or opening the menu says which job is which.
-- **Three entries, nothing more.** *Run the daily check* runs the script you already trust. *Open the runbook* opens `RUNBOOK`. *Refresh* reads the jobs' state again.
-- **It only reads and runs what exists.** The tray never schedules, edits or deletes a job, and never asks for a password.
+- **A mark per row:** a green tick for good, an amber triangle for a look, a red octagon for bad, a grey dash for *off* (not running and not expected to be). The shape carries the state as well as the colour.
+- **This Mac, as meters:** memory, swap, processor and disk, each a thin bar with its figure in words; the last hour of memory as a small line; and a submenu of the apps holding the most memory.
+- **The menu bar itself:** a plain picture while all is good. When rows need a look it turns amber or red and shows how many. A small upright gauge beside it is memory used.
+- **It only reads and runs what exists.** The tray never schedules, edits or stops a scheduled job, never asks for a password, and runs only the commands your config names.
 
-*You should see,* once it exists: one glance at the menu bar tells you whether the night went well.
+## <img src="../assets/icons-phosphor/layers.svg" width="24" height="24" alt=""> The pieces
 
-## <img src="../assets/icons-phosphor/layers.svg" width="24" height="24" alt=""> 2. The pieces, from `rumps`'s own documentation
-
-| Piece | What `rumps` documents |
+| Piece | What it does |
 |---|---|
-| **The app** | `rumps.App` takes a `name`, a `title` ("text that will be displayed for the application in the statusbar"), an `icon`, a `menu` and a `quit_button`; `run()` starts the timers, registers the click callbacks and starts the run loop |
-| **A menu entry** | a method decorated with `@rumps.clicked("<entry name>")` runs when that entry is chosen |
-| **A timer** | `rumps.Timer(callback, interval)`: "Function that should be called every interval seconds", with `start()` and `stop()` |
-| **What it needs** | PyObjC; installed with `pip install rumps` |
-| **Licence** | Modified BSD (the repository labels it BSD-3-Clause) |
-| **An app of its own later** | its README recommends py2app, and setting `LSUIElement` to `True` so the app shows no Dock icon |
+| [`tray.applescript`](../scripts/runbook-tray/tray.applescript) | the menu-bar item. It only draws: it reads `menu.json`, shows it, and asks the helper to act when you choose an entry |
+| [`runbook-tray.py`](../scripts/runbook-tray/runbook-tray.py) | the helper. It runs your status command, reads the Mac, decides every word and mark, and writes `menu.json` |
+| [`build.sh`](../scripts/runbook-tray/build.sh) | compiles the applet with `osacompile`, marks it as having no Dock icon, and signs it for this Mac only |
+| your status command | prints one JSON object: a list of rows, each with a `name`, a `state` and a `detail` |
+| your config | names the status command and the menu's entries |
 
-The newest release on PyPI on 2026-11-12 was **0.4.0, from Oct 15, 2022**. An old last release is not a fault by itself, but it is a question the review in step 3 asks out loud.
+Because the applet decides nothing, everything it shows can be tested without a screen. That is what the self-test does.
 
-## <img src="../assets/icons-phosphor/shield-check.svg" width="24" height="24" alt=""> 3. The gate comes before any code
+## <img src="../assets/icons-phosphor/shield-check.svg" width="24" height="24" alt=""> Why it needs no gate, and what still does
 
-You write the tray, but `rumps`, PyObjC, and py2app if you ever package it, are **someone else's code**. Before any of them is installed:
+Outside code goes through a review and a scan before it runs ([SOP-IT-900](../sop-template/repo/IT/SOP-IT-900-bringing-in-outside-code.md), [SOP-IT-901](../sop-template/repo/IT/SOP-IT-901-antivirus-screening-of-outside-code.md)). The tray has none: `osacompile`, `plutil` and `codesign` are part of macOS, and the helper imports only Python's standard library.
 
-1. <img src="../assets/icons-phosphor/scan-search.svg" width="16" height="16" alt=""> A text review of each, at a pinned version, against the checklist in [SOP-IT-900](../sop-template/repo/IT/SOP-IT-900-bringing-in-outside-code.md#the-review-checklist): what the install runs, what it writes outside its folder, what leaves the machine, the licence, who publishes each dependency.
-2. <img src="../assets/icons-phosphor/shield-check.svg" width="16" height="16" alt=""> The owner's antivirus scan of the staged packages, with a receipt ([SOP-IT-901](../sop-template/repo/IT/SOP-IT-901-antivirus-screening-of-outside-code.md)).
-3. <img src="../assets/icons-phosphor/lock.svg" width="16" height="16" alt=""> Installed into the tray's own virtual environment, at those pinned versions, never system-wide and never by a piped installer.
+What is still yours to look at: **your own status command and the scripts your entries run.** The tray runs them as you, every minute or on a click. Read them as you would any script you schedule.
 
-*You should see:* a review and a receipt for each package before the first `import rumps`.
+## <img src="../assets/icons-phosphor/footprints.svg" width="24" height="24" alt=""> The steps
 
-## <img src="../assets/icons-phosphor/file-text.svg" width="24" height="24" alt=""> 4. A sketch of the code (never run)
+### 1. Prove the tool on your Mac
 
-> [!WARNING]
-> **Untested sketch.** This has not been run on any machine. It uses only the `rumps` names documented above and
-> Python's own `subprocess`. Read it to learn the shape; do not install anything to try it until step 3 is done.
-
-```python
-import os
-import subprocess
-import rumps
-
-JOBS = ["JOB_LABEL"]                      # one launchd label per scheduled job
-CHECK_SCRIPT = "/path/to/daily-check.sh"  # the script you already run by hand
-RUNBOOK = "/path/to/RUNBOOK.md"
-
-def job_dot(label):
-    """Green, amber or red for one job, from what launchctl prints. A sketch: the parsing is yours to write."""
-    out = subprocess.run(["launchctl", "print", f"gui/{os.getuid()}/{label}"],
-                         capture_output=True, text=True)
-    if out.returncode != 0:
-        return "🔴"
-    return "🟢" if looks_healthy(out.stdout) else "🟠"
-
-def looks_healthy(text):
-    """Placeholder: decide from the job's own status file, or from launchctl's text once you have read it by eye."""
-    return False
-
-class RunbookTray(rumps.App):
-    def __init__(self):
-        super().__init__("Runbook", title="…", quit_button="Quit")
-        self.timer = rumps.Timer(self.refresh, 300)   # every five minutes
-        self.timer.start()
-
-    def refresh(self, _=None):
-        self.title = " ".join(job_dot(j) for j in JOBS)
-
-    @rumps.clicked("Run the daily check")
-    def run_check(self, _):
-        subprocess.Popen(["/bin/sh", CHECK_SCRIPT])
-
-    @rumps.clicked("Open the runbook")
-    def open_runbook(self, _):
-        subprocess.Popen(["open", RUNBOOK])
-
-    @rumps.clicked("Refresh")
-    def refresh_now(self, _):
-        self.refresh()
-
-if __name__ == "__main__":
-    RunbookTray().run()
+```sh
+sh TRAY/runbook-tray.selftest.sh
 ```
 
-The text that `launchctl print` writes is the system's own and is not a documented interface, so the parsing in `job_dot` is a placeholder; the template's archive walkthrough reads the same command by eye ([*Check it*](../walkthroughs/CLAUDE-PROJECTS-ARCHIVE.md#-set-it-up-four-lines-in-this-order)). A job that writes its own status file is easier to read and is the better design.
+It works in a temporary folder with a made-up home, and never reads your jobs or `~/Applications`.
 
-## <img src="../assets/icons-phosphor/wrench.svg" width="24" height="24" alt=""> 5. Running it later, by hand
+*You should see:* `182 passed, 0 failed` on a Mac (fewer where the compile and the live reading are skipped).
 
-Once the gate is passed: start it from Terminal with the tray's own environment's Python, `python tray.py`, and stop it from its *Quit* entry. Making it start at login, or packaging it as an app with py2app, is a later step and a separate decision: py2app is outside code too.
+### 2. Write a status command
 
-## <img src="../assets/icons-phosphor/footprints.svg" width="24" height="24" alt=""> 6. The route that works today: Shortcuts in the menu bar
+Start from [`status.example.py`](../scripts/runbook-tray/status.example.py), which reads `launchctl list`:
 
-Apple's Shortcuts guide for macOS describes a sidebar collection named **Menu Bar**: it "contains shortcuts that appear in the Shortcuts menu in the macOS menu bar". So each entry of the tray can be a shortcut there today, with nothing installed.
+```sh
+PYTHON -I TRAY/status.example.py "JOB_LABEL=Nightly backup"
+```
 
-1. <img src="../assets/icons-phosphor/pencil-line.svg" width="16" height="16" alt=""> **Make a shortcut named *Run the daily check*** in the Shortcuts app, whose one action runs `CHECK_SCRIPT`. The action that runs a shell script is **UNVERIFIED** here: Apple's guide pages read on 2026-11-12 do not describe it; look for it in the app's action library. *You should see:* the shortcut in **All Shortcuts**.
-2. <img src="../assets/icons-phosphor/shield-alert.svg" width="16" height="16" alt=""> **Allow scripts, knowingly.** Apple's guide describes **Shortcuts › Settings › Advanced › Allow Running Scripts**, with its own warning: "Running shortcuts with scripts could cause data loss." Turn it on only if you will run your own reviewed scripts this way. *You should see:* the setting on.
-3. <img src="../assets/icons-phosphor/layers.svg" width="16" height="16" alt=""> **Put the shortcut in the Menu Bar collection.** How a shortcut is added to that collection is **UNVERIFIED**: Apple's guide names the collection but, on the pages read today, does not say how a shortcut gets into it. *You should see:* the shortcut listed under **Menu Bar** in the sidebar.
-4. <img src="../assets/icons-phosphor/circle-check.svg" width="16" height="16" alt=""> **Test it from Terminal first,** with the command Apple documents: `shortcuts run "Run the daily check"`. *You should see:* the same result as running `CHECK_SCRIPT` by hand.
-5. <img src="../assets/icons-phosphor/sparkles.svg" width="16" height="16" alt=""> **Then from the menu bar:** open the Shortcuts menu there and choose it. Repeat for *Open the runbook*. *You should see:* both entries in the menu.
+*You should see:* one JSON object with a `rows` list, and your job's row with `"state": "good"` and a `detail` such as `waiting for its time`.
 
-What Shortcuts does not give you is the row of dots: it runs things, it does not watch them. That is the part the tray adds.
+A row's `state` is `good`, `look`, `bad` or `off`. Add a `group` to a row to put it under a heading. Keep the command quick, and keep it away from the folders macOS guards (Desktop, Documents, Downloads, iCloud Drive): the tray runs it every minute, and a guarded folder makes macOS ask for permission in the tray's name.
+
+### 3. Write the config, and check it
+
+Copy [`config.example.json`](../scripts/runbook-tray/config.example.json) to `MY_CONFIG` and change its paths. Then:
+
+```sh
+PYTHON -I TRAY/runbook-tray.py doctor --config MY_CONFIG
+```
+
+*You should see:* each command and page the tray would use, and `doctor: the config is usable`. Doctor runs nothing.
+
+The rules the config keeps: every command is a list of words whose first word is a full path; an entry has a `command` or an `open`, never both; and the file and its folder must be writable by you alone.
+
+### 4. Read the menu as text first
+
+```sh
+PYTHON -I TRAY/runbook-tray.py render --config MY_CONFIG --state /tmp/tray-try --print
+```
+
+*You should see:* the menu, in words: the result line, your rows under their headings, *This Mac* with its meters as ten cells each, and your entries.
+
+### 5. Build it
+
+```sh
+sh TRAY/build.sh --config MY_CONFIG --print     # what it would do; writes nothing
+sh TRAY/build.sh --config MY_CONFIG
+```
+
+*You should see:* `built    ~/Applications/Runbook Tray.app`, and the line `at login ... yours to choose; this script adds nothing`. Nothing has started.
+
+### 6. Start it
+
+```sh
+open -g "$HOME/Applications/Runbook Tray.app"
+```
+
+*You should see:* a small checklist picture in the menu bar, with an upright gauge beside it. No window opens and no Dock icon appears. Click it for the menu.
+
+> [!NOTE]
+> **This may put a prompt on your screen, later.** The tray's minute-by-minute check should touch nothing macOS
+> guards. An *entry* you choose may: if its script reads iCloud Drive, Desktop, Documents or Downloads, macOS asks
+> once whether "Runbook Tray" may. That was not seen on the Mac this was built on, because the entry had not yet
+> been chosen there when this page was written.
+
+### 7. Stop it, and decide about login
+
+- **Stop:** its own menu, *Quit Runbook Tray*.
+- **Open at login:** System Settings › General › Login Items › Open at Login › `+`, then choose the app. This is your choice; neither the build nor the tray does it.
+- **After changing the config:** nothing to rebuild; the helper reads it each minute. **After changing the tool:** quit the tray, build again, start it. The build moves the earlier app into the tray's own folder, never deleting it.
+
+## <img src="../assets/icons-phosphor/scan-search.svg" width="24" height="24" alt=""> Reading the section on the Mac
+
+| Row | What it measures | What its bar is against |
+|---|---|---|
+| **Memory** | app memory + wired + compressed, from `vm_stat`, with the kernel's own pressure level in words | the Mac's memory |
+| **Swap** | swap in use, and how it moved in the last hour | the Mac's memory, since swap has no fixed limit |
+| **Processor** | the share of time not idle since the tray's previous sample, and the one-minute load | all cores busy |
+| **Disk** | used and free as `df` gives them | the disk |
+| **Memory, last hour** | a thin line of memory used, minute by minute; the newest point is marked | its own range, never tighter than two points of the whole |
+| **What is holding the most memory** | each app with its helpers added in, from `top`'s memory column | the largest in the list |
+
+- **Only the memory bar changes colour,** to amber or red, when the kernel reports pressure as *warning* or *critical*. The other bars stay blue: no rule says when they are bad, so none is drawn.
+- **The app list names apps, never their arguments.** It is counted every five minutes, since `top` is the costliest reading.
+- **It is not Activity Monitor.** Apple's guide lists App Memory, Wired Memory and Compressed beside *Memory Used*; the tray adds those three from `vm_stat` and was not compared with Activity Monitor's own figure.
 
 ## <img src="../assets/icons-phosphor/circle-check.svg" width="24" height="24" alt=""> Check what you learned
 
-- [ ] You can say what the tray shows and what it never does.
-- [ ] You can name the three `rumps` pieces the design uses, and where each is documented.
-- [ ] You know why `rumps` goes through SOP-IT-900 and SOP-IT-901 before it is installed.
-- [ ] Your daily check runs from the Shortcuts menu in the menu bar, and from `shortcuts run`.
+- [ ] You can say what the tray shows and three things it never does.
+- [ ] You can say why this tray needs no outside-code review, and what you still read yourself.
+- [ ] Your status command prints a row for your job, and doctor calls your config usable.
+- [ ] The tray is in your menu bar, and you know how to quit it and where *Open at Login* is.
+- [ ] You can say what the memory bar's colour means, and why the swap bar never changes colour.
+
+## <img src="../assets/icons-phosphor/wrench.svg" width="24" height="24" alt=""> Two other roads
+
+| Road | When | What it costs |
+|---|---|---|
+| **Shortcuts in the menu bar** | you only want to *run* things, with no marks and no meters | nothing installed. Apple's Shortcuts guide names a **Menu Bar** collection whose shortcuts "appear in the Shortcuts menu in the macOS menu bar", an **Allow Running Scripts** setting with the warning "Running shortcuts with scripts could cause data loss", and `shortcuts run "<name>"` for the command line. The action that runs a shell script, and how a shortcut is put in that collection, are **unverified**: the pages read on Nov 12, 2026 do not describe them |
+| **Python with `rumps`** | you want to write the menu in Python | the outside-code gate, for `rumps` and for PyObjC, which it needs. Its newest release on PyPI on Nov 12, 2026 was 0.4.0, from Oct 15, 2022. It was never installed here |
 
 ## <img src="../assets/icons-phosphor/list-checks.svg" width="24" height="24" alt=""> Windows counterpart (a listed task)
 
 | Task | Waits on | Notes |
 |---|---|---|
-| Design the same tray for Windows: a dot per scheduled task, the same three entries | the first Windows machine in the fleet | not started; its tools are outside code and take the same gate; checked against the vendor's own documentation when it is written, not before |
+| The same tray for Windows: a mark per scheduled task, the same entries, the machine's meters | the first Windows machine in the fleet | not started. The helper's status format and config carry over; the drawing and the machine readings do not |
 
 ## <img src="../assets/icons-phosphor/link.svg" width="24" height="24" alt=""> Where next
 
-- <img src="../assets/icons-phosphor/shield-check.svg" width="16" height="16" alt=""> [SOP-IT-900, bringing in outside code](../sop-template/repo/IT/SOP-IT-900-bringing-in-outside-code.md): the gate in full.
-- <img src="../assets/icons-phosphor/brain-circuit.svg" width="16" height="16" alt=""> [The second brain](../walkthroughs/THE-SECOND-BRAIN.md): where a runbook and the daily check notes can live.
+- <img src="../assets/icons-phosphor/file-text.svg" width="16" height="16" alt=""> [`scripts/runbook-tray/README.md`](../scripts/runbook-tray/README.md): the tool's own page, with its rules and its limits.
+- <img src="../assets/icons-phosphor/shield-check.svg" width="16" height="16" alt=""> [SOP-IT-900, bringing in outside code](../sop-template/repo/IT/SOP-IT-900-bringing-in-outside-code.md): the gate this tray did not need, and the `rumps` road would.
+- <img src="../assets/icons-phosphor/sparkles.svg" width="16" height="16" alt=""> [The second brain](../walkthroughs/THE-SECOND-BRAIN.md): where a runbook and the daily check notes can live.
 
 <details>
-<summary><b>Sources, checked 2026-11-12</b></summary>
+<summary><b>Sources, checked 2026-11-13 unless a row says otherwise</b></summary>
 
 | Claim | Source |
 |---|---|
-| `rumps`'s description, PyObjC requirement, `pip install rumps`, the licence, py2app and `LSUIElement`, the `@rumps.clicked` example | <https://github.com/jaredks/rumps> |
-| `rumps.App`'s parameters and `run()` | <https://rumps.readthedocs.io/en/latest/App.html> |
-| `rumps.Timer(callback, interval)`, `start()`, `stop()` | <https://rumps.readthedocs.io/en/latest/Timer.html> |
-| Newest release 0.4.0, Oct 15, 2022; BSD licence | <https://pypi.org/project/rumps/> |
-| The *Menu Bar* collection in the Shortcuts sidebar (guide for macOS 27) | <https://support.apple.com/guide/shortcuts-mac/intro-to-shortcuts-apdf22b0444c/mac> |
-| *Allow Running Scripts* and its warning | <https://support.apple.com/guide/shortcuts-mac/advanced-shortcuts-settings-apdfeb05586f/mac> |
-| `shortcuts run "<name>"` | <https://support.apple.com/guide/shortcuts-mac/run-shortcuts-from-the-command-line-apd455c82f02/mac> |
+| `osacompile`, `plutil` and `codesign` are macOS's own programs, not developer-tool stubs | compared byte for byte with a known stub on one Mac, macOS 15.4.1 |
+| A menu-bar item, section headings, two-line rows, coloured marks, a timer and a child process all work from a plain AppleScript applet | the self-test's applet round on that Mac: it draws each menu and reads back from AppKit what was drawn |
+| *Memory Used*, with App Memory, Wired Memory and Compressed listed beside it; "Swap Used: The amount of space being used on your startup disk to swap unused files to and from RAM" | <https://support.apple.com/guide/activity-monitor/view-memory-usage-actmntr1004/mac> |
+| `top`'s `mem` column: "Physical memory footprint of the process" | `man top` on that Mac |
+| The pressure level's three values, 1 normal, 2 warning, 4 critical | read from `sysctl kern.memorystatus_vm_pressure_level` on that Mac; the meaning of the numbers is the template's reading, not quoted from Apple |
+| `rumps` needs PyObjC; newest release 0.4.0, Oct 15, 2022 (checked 2026-11-12) | <https://github.com/jaredks/rumps>, <https://pypi.org/project/rumps/> |
+| The *Menu Bar* collection, *Allow Running Scripts* and its warning, `shortcuts run` (checked 2026-11-12) | <https://support.apple.com/guide/shortcuts-mac/intro-to-shortcuts-apdf22b0444c/mac>, <https://support.apple.com/guide/shortcuts-mac/advanced-shortcuts-settings-apdfeb05586f/mac>, <https://support.apple.com/guide/shortcuts-mac/run-shortcuts-from-the-command-line-apd455c82f02/mac> |
 
-**Unverified:** the action that runs a shell script, and how a shortcut is added to the Menu Bar collection; neither is described on the Apple pages read that day. The tray's design, the three entries, the dots and the gate are the fleet's own practice.
+**Unverified:** the action that runs a shell script in Shortcuts, and how a shortcut is added to the Menu Bar collection. **Not tested:** any Mac or macOS version but the one named above; an entry whose script reads a folder macOS guards. The tray's design, its marks and its rules are the fleet's own practice.
 
 </details>
 
 ## <img src="../assets/icons-phosphor/git-pull-request.svg" width="24" height="24" alt=""> Suggest a change
 
-Noticed something wrong, or built the tray and learned something? Open an [issue](https://github.com/drasticstatic/my-template/issues) or a pull request against `main`; the lab steward reads them, and a person with the role merges with a merge commit so your name stays on it. Not on GitHub? Tell any steward you know, or your helper, in your own words.
+Noticed something wrong, or built the tray on another Mac and learned something? Open an [issue](https://github.com/drasticstatic/my-template/issues) or a pull request against `main`; the lab steward reads them, and a person with the role merges with a merge commit so your name stays on it. Not on GitHub? Tell any steward you know, or your helper, in your own words.
 
-<sub>One of the [tutorials](README.md) in `my-template`, in the shape of [`tutorials-template/`](../tutorials-template/). Icons: Phosphor duotone (MIT). `rumps` is its maintainers' work and Shortcuts is Apple's; this page is not affiliated with either, and their behaviour is theirs to change.</sub>
+<sub>One of the [tutorials](README.md) in `my-template`, in the shape of [`tutorials-template/`](../tutorials-template/). Icons: Phosphor duotone (MIT). `rumps` is its maintainers' work and Shortcuts, AppleScript and Activity Monitor are Apple's; this page is not affiliated with either, and their behaviour is theirs to change.</sub>

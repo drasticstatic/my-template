@@ -38,7 +38,7 @@ something set up; after a tutorial they **know how** to do it again, and why.
 |---|---|---|
 | <img src="../assets/icons-phosphor/book-marked.svg" width="16" height="16" alt=""> | [Open your first vault](OPEN-YOUR-FIRST-VAULT.md) | install a Markdown vault app, open a folder you already have as a vault, tell whether Restricted mode is on, and know which of the app's own files a team commits |
 | <img src="../assets/icons-phosphor/history.svg" width="16" height="16" alt=""> | [Find, resume or rebuild an old session](FIND-RESUME-OR-REBUILD-A-SESSION.md) | find a Claude Code session's transcript, resume it from any folder, know what a resumed long session remembers, and start again from a rebuilt record when the transcript is gone |
-| <img src="../assets/icons-phosphor/circle-dashed.svg" width="16" height="16" alt=""> | [A runbook tray in the menu bar](A-RUNBOOK-TRAY-IN-THE-MENU-BAR.md) *(designed, not built)* | understand how a menu-bar item in Python with `rumps` could show each scheduled job's state, why its packages go through the outside-code gate first, and put your scripts in the menu bar today with Shortcuts |
+| <img src="../assets/icons-phosphor/circle-check.svg" width="16" height="16" alt=""> | [A runbook tray in the menu bar](A-RUNBOOK-TRAY-IN-THE-MENU-BAR.md) | put one item in the macOS menu bar that shows each scheduled job's state, your own checks and the Mac's memory, swap, processor and disk, built from AppleScript and Python's standard library with nothing installed; write its status command and config, prove them, build it, and read its meters |
 
 ## <img src="../assets/icons-phosphor/shapes.svg" width="24" height="24" alt=""> How a tutorial is named and laid out
 

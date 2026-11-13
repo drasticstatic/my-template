@@ -30,7 +30,8 @@
 # macOS's hidden folder-icon file is named Icon plus one carriage return. The next line is Icon and TWO carriage returns,
 # because git drops one before the newline; made with: printf 'Icon\r\r\n' >> .gitignore  (an editor may strip them).
 # Never "Icon?": on a case-insensitive disk that also matches a folder named icons, and assets/icons goes missing from git.
-Icon
+Icon
+
 .fseventsd
 
 
@@ -103,6 +104,7 @@ gws-credentials*
 !branch-protection/ruleset.json
 !branch-protection/ruleset-public-preview.json
 !graphify-out/graph.json
+!scripts/runbook-tray/config.example.json
 # Uncomment as needed:
 # !hardhat.config.json
 # !dashboard/data.json

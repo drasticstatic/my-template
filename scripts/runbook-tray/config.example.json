@@ -1,0 +1,26 @@
+{
+  "comment": "A config to start from. Copy it somewhere only you can write, change the paths, then: python3 runbook-tray.py doctor --config YOUR-COPY.json",
+  "name": "Runbook",
+  "path": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+  "status": {
+    "comment": "Your status command: it prints the JSON described at the top of runbook-tray.py. The tray runs it every minute.",
+    "command": ["/opt/homebrew/bin/python3", "-I", "~/code/my-template/scripts/runbook-tray/status.example.py", "local.example.nightly=Nightly backup"],
+    "timeout_seconds": 30
+  },
+  "machine": {
+    "comment": "This Mac's own section: memory, swap, processor and disk, the last hour of memory, and the apps holding the most memory. Leave the whole block out to do without it.",
+    "processes": 8,
+    "processes_every_seconds": 300
+  },
+  "entries": [
+    {
+      "id": "daily-check",
+      "title": "Run the daily check",
+      "command": ["/bin/sh", "~/path/to/daily-check.sh"],
+      "timeout_seconds": 300,
+      "summary": "last-line"
+    },
+    {"id": "runbook", "title": "Open the runbook", "open": "~/path/to/RUNBOOK.md"},
+    {"id": "todays-note", "title": "Open today's note", "open": "~/path/to/notes/{date}.md"}
+  ]
+}

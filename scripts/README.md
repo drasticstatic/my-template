@@ -460,6 +460,23 @@ fetched. `--fetch` runs `git fetch upstream --tags` first; that is its only netw
 It never merges, checks out or changes a branch. A fork moves only after review (`code-forked/audits/`); this only says
 how far behind the pin is.
 
+## `runbook-tray/` — scheduled jobs and this Mac, in the menu bar
+
+```sh
+python3 -I scripts/runbook-tray/runbook-tray.py doctor --config YOUR.json    # check a config; runs nothing
+sh scripts/runbook-tray/build.sh --config YOUR.json                          # builds ~/Applications/Runbook Tray.app; starts nothing
+sh scripts/runbook-tray/runbook-tray.selftest.sh [--with-applet]             # a temporary folder; the applet round shows an item for a second
+```
+
+One item in the macOS menu bar: a mark per scheduled job, your own checks, the Mac's memory, swap, processor and disk
+as meters, the apps holding the most memory, and entries that run a script or open a page. The menu-bar item is an
+AppleScript applet compiled by `osacompile`; what it shows is decided by a helper in Python's standard library, so it
+is tested without a screen. Nothing is installed or downloaded, so it stays out of the outside-code gate. It never
+schedules, edits or stops a scheduled job, runs only the commands your config names (as lists of words, never through
+a shell), refuses a config another account could write, and adds nothing to Login Items. Its own page:
+[`runbook-tray/README.md`](runbook-tray/README.md); the lesson:
+[`tutorials/A-RUNBOOK-TRAY-IN-THE-MENU-BAR.md`](../tutorials/A-RUNBOOK-TRAY-IN-THE-MENU-BAR.md).
+
 ## `set-merge-methods.sh` — merge commits only, on every repository
 
 ```sh
