@@ -7,7 +7,7 @@
 *Plain-language guides for joining one of our GitHub organizations and connecting your AI helpers. Follow one yourself, or hand it to your helper.*
 
 ![Kind](https://img.shields.io/badge/Kind-Walkthroughs-800020?style=flat-square)
-![Changed](https://img.shields.io/badge/Changed-2026--11--09-800020?style=flat-square)
+![Changed](https://img.shields.io/badge/Changed-2026--11--12-800020?style=flat-square)
 ![For](https://img.shields.io/badge/For-Members_and_their_AI_helpers-800020?style=flat-square)
 
 <img src="../assets/icons-phosphor/map-pin.svg" width="16" height="16" alt=""> **You are here:** drasticstatic lab › [`my-template`](../README.md) › `walkthroughs/` · public · `main` is the working branch
@@ -59,6 +59,7 @@
 | <img src="../assets/icons-phosphor/history.svg" width="16" height="16" alt=""> | [Version lineage](VERSION-LINEAGE.md) | keep old and rehearsal copies of a site up **without** `noindex`, each greeting visitors once and linking forward to newer versions | [PDF](pdf/VERSION-LINEAGE.pdf) |
 | <img src="../assets/icons-phosphor/scroll-text.svg" width="16" height="16" alt=""> | [Proposals template](../proposals-template/README.md) | give your organization a private `proposals` repo where each idea is a plain-language page and a PDF, decided by the people it affects | — |
 | <img src="../assets/icons-phosphor/brain-circuit.svg" width="16" height="16" alt=""> | [Ultra runs](ULTRA-RUNS.md) | tell ultracode from ultrareview, stage a review so a free run isn't spent on an empty diff, pick what deserves one, know why publishing runs in the main session, and split model and effort between one coordinator and its workers | [PDF](pdf/ULTRA-RUNS.pdf) |
+| <img src="../assets/icons-phosphor/brain-circuit.svg" width="16" height="16" alt=""> | [The second brain](THE-SECOND-BRAIN.md) | keep a private vault that is also a git repository: five parts, pages only scripts write, read from anywhere but written only from inside, and one road out to the public; how to start one from this template, and what it is not | — |
 | <img src="../assets/icons-phosphor/file-text.svg" width="16" height="16" alt=""> | [Markdown beside the PDF](MARKDOWN-BESIDE-PDF.md) | one document, two readers; why every PDF we send ships with its markdown, and what we ask partners to send | [PDF](pdf/MARKDOWN-BESIDE-PDF.pdf) |
 
 ## <img src="../assets/icons-phosphor/shield-check.svg" width="24" height="24" alt=""> Three promises every guide keeps
