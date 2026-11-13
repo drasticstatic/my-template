@@ -1,3 +1,8 @@
+> [!CAUTION]
+> **2026-11-12: out of date.** This page describes the proxy as it was before its November 2026 update, and no longer
+> matches it. Do not start the proxy from the lines below. A rewritten page follows the review of the new revision and
+> a smoke test.
+
 <div align="center">
 
 <img src="../assets/icons-phosphor/network.svg" width="56" height="56" alt="">
