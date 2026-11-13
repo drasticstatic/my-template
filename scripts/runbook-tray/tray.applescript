@@ -7,6 +7,11 @@
 -- write menu.json; draws that file as the menu; when an entry is chosen, asks the helper to do it.
 -- What it never does: decide anything, read the config, or run a command of its own.
 --
+-- Before you edit: AppleScript does not tell upper case from lower, and a variable shares one set of names with
+-- the AppKit methods called here. A variable named subMenu turned the call submenu() into subMenu() and broke it.
+-- Words AppleScript or its standard additions already own cannot be variables either: kind, note, it, name.
+-- The self-test with --with-applet draws every menu and reports the first such mistake by name.
+--
 -- Self-test (no helper is started, nothing is opened):
 --   "<app>/Contents/MacOS/applet" --selftest <folder of menu.json files> <report file>
 use AppleScript version "2.5"
