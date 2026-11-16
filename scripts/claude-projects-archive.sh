@@ -1,8 +1,9 @@
 #!/bin/sh
 # claude-projects-archive.sh: a nightly, encrypted snapshot of ~/.claude/projects (and, when they exist,
-# ~/.claude/CLAUDE.md, history.jsonl, plans/ and file-history/), written as finished files into iCloud Drive or any
-# folder you name. The live ~/.claude never lives in iCloud; only sealed archives of it do. --source seals another
-# folder the same way (below). Walkthrough: walkthroughs/CLAUDE-PROJECTS-ARCHIVE.md
+# ~/.claude/CLAUDE.md, history.jsonl, plans/ and file-history/, and every project's .claude/settings.local.json under
+# your home), written as finished files into iCloud Drive or any folder you name. The live ~/.claude never lives in
+# iCloud; only sealed archives of it do. --source seals another folder the same way (below).
+# Walkthrough: walkthroughs/CLAUDE-PROJECTS-ARCHIVE.md
 #
 #     sh scripts/claude-projects-archive.sh --init              once: make the passphrase file (never shown)
 #     sh scripts/claude-projects-archive.sh --run               archive now: full, or incremental since the last success
@@ -38,6 +39,11 @@
 # ~/.claude, hold ~/.claude or the passphrase, and must not be the destination, hold it or lie inside it. --install and
 # --uninstall stay with the Claude chain for now: to schedule a second chain, put its one-line --if-due form in a
 # LaunchAgent of your own (the walkthrough shows it).
+#     sh scripts/claude-projects-archive.sh --run --source ~/Notes --name notes --exclude private --exclude logs/big
+# --exclude REL (with --source, repeatable) leaves DIR/REL out: a folder (and all under it) or one file, REL relative to
+# DIR, no leading /, no .. (a find -path pattern, so * matches too). A chain remembers the excludes of its first run and
+# refuses a --run or --if-due that gives others (a hand run without them would seal what was meant to stay out); to
+# change them, begin a new chain under a new --name.
 #
 # How a run works:
 #   - Full on the first run for a destination, on the first run of each calendar month (the 1st, or the first night the
@@ -55,9 +61,16 @@
 #   - Names sort in the order they were made: claude-projects_YYYYMMDD-HHMMSS_full.tar.gz.enc, ..._incr.tar.gz.enc.
 #     (The time is in the name so two runs on one day never collide and a plain sort is the restore order.)
 #   - Paths inside the archive are relative to your home: .claude/projects/..., .claude/CLAUDE.md, .claude/history.jsonl,
-#     .claude/plans/... and .claude/file-history/...
-#   - Nothing is excluded: the tree is transcripts, memory and the fleet's manifests, your prompt history, plans and
-#     the snapshots behind checkpoint restore, and all of it is wanted back. The rest of ~/.claude stays out.
+#     .claude/plans/..., .claude/file-history/... and, for each project, code/<repo>/.claude/settings.local.json.
+#   - Nothing inside those is excluded: the tree is transcripts, memory and the fleet's manifests, your prompt history,
+#     plans and the snapshots behind checkpoint restore, and all of it is wanted back. The rest of ~/.claude stays out.
+#   - Each project's .claude/settings.local.json (its allow rules; git ignores it, so no repository keeps it) is found
+#     afresh on every run, at most SETTINGS_DEPTH (6) levels below your home, and travels like any other file: whole
+#     when it changes, and in the next incremental when it is new. The search skips Library (iCloud Drive lives there),
+#     .Trash, the folders macOS guards (Desktop, Documents, Downloads, Movies, Music, Pictures: a background job reading
+#     them could raise a prompt), Archive, Archives, AI-Archive_* and claude-restore* at the top of your home,
+#     node_modules and .git anywhere, and ~/.claude (whose own settings.local.json, if any, is taken by name). It
+#     follows no symlink. A run prints only how many it found, never a name or a line of one.
 #   - Keep everything: no archive is ever deleted. --prune-plan only prints a plan.
 #   - The only files the script ever removes are ones it made in the same run: a failed run's NAME.partial. The lock is
 #     a pid file that is emptied, not removed.
@@ -100,6 +113,7 @@ MODE=""
 LABEL="com.drasticstatic.claude-projects-archive"
 ITER=600000
 DUE_HOURS=20
+SETTINGS_DEPTH=6                  # how deep under your home a project's .claude/settings.local.json is looked for
 OPENSSL="${CLAUDE_ARCHIVE_OPENSSL:-/usr/bin/openssl}"
 [ -x "$OPENSSL" ] || OPENSSL="$(command -v openssl 2>/dev/null || true)"
 CONFIG="${CLAUDE_ARCHIVE_CONFIG:-$HOME/.config/claude-archive}"
@@ -115,6 +129,7 @@ PREFIX="claude-projects"          # the archives' names begin with this and _
 STATE_ROOT="$CONFIG/state"        # one folder per destination under it, and last-failure; "" until --name is checked
 WHAT="Claude archive"             # how a banner or a phone note names the chain
 OPT_SOURCE=""; OPT_NAME=""; SRC_PHYS=""
+EXCL_N=0                          # how many --exclude REL were given (EXCL_1 ... EXCL_n), for a --source chain
 
 say() { printf '%s\n' "$*"; }
 LASTERR=""
@@ -314,17 +329,48 @@ do_init() {
 
 # ----------------------------------------------------------------------------------------------------------------- run
 # What goes in: the start points, relative to $ROOT (the folder tar and find run in), one per line, only those that
-# exist now. The Claude chain: projects/ always, then plans/, file-history/, CLAUDE.md and history.jsonl when present.
+# exist now. The Claude chain: projects/ always, then plans/, file-history/, CLAUDE.md and history.jsonl when present,
+# then each project's settings.local.json (found once per run, by local_settings, into $SETTINGS_LIST).
 # A --source chain: DIR's own name, under its parent.
+SETTINGS_LIST=""
 inputs() {
   if [ -n "$OPT_SOURCE" ]; then printf '%s\n' "$SRC_BASE"; return 0; fi
   printf '%s\n' .claude/projects
   for _in in .claude/plans .claude/file-history; do [ -d "$_in" ] && printf '%s\n' "$_in"; done
   for _in in .claude/CLAUDE.md .claude/history.jsonl; do [ -f "$_in" ] && printf '%s\n' "$_in"; done
+  [ -n "$SETTINGS_LIST" ] && [ -s "$SETTINGS_LIST" ] && cat "$SETTINGS_LIST"
   return 0
 }
-# find_inputs ARGS...: find over every input, the ARGS (tests and an action) after each; run from $ROOT.
+# Every project's .claude/settings.local.json under your home, one per line, relative to it; run from $HOME. What it
+# skips, and why, is in the header (How a run works). Prints names only, and only to its caller's file.
+local_settings() {
+  [ -f .claude/settings.local.json ] && [ ! -L .claude/settings.local.json ] && printf '%s\n' .claude/settings.local.json
+  find . -maxdepth "$SETTINGS_DEPTH" \( -path ./Library -o -path ./.Trash -o -path ./.claude -o -path ./Desktop \
+         -o -path ./Documents -o -path ./Downloads -o -path ./Movies -o -path ./Music -o -path ./Pictures \
+         -o -path ./Archive -o -path ./Archives -o -path './AI-Archive_*' -o -path './claude-restore*' \
+         -o -name node_modules -o -name .git \) -prune \
+       -o -path '*/.claude/settings.local.json' -type f -print 2>/dev/null \
+    | sed 's|^\./||' | grep -v '^-' | sort
+  return 0
+}
+# --exclude, for a --source chain: the excludes, one per line, sorted (how the chain's state remembers them).
+excludes_list() {
+  _k=1; while [ "$_k" -le "$EXCL_N" ]; do eval "printf '%s\n' \"\$EXCL_$_k\""; _k=$((_k + 1)); done | sort -u
+}
+# find_inputs ARGS...: find over every input, the ARGS (tests and an action) after each; run from $ROOT. A --source
+# chain with excludes puts \( -path DIR/REL1 -o -path DIR/REL2 ... \) -prune -o in front of the ARGS.
 find_inputs() {
+  if [ -n "$OPT_SOURCE" ] && [ "$EXCL_N" -gt 0 ]; then
+    set -- \) -prune -o "$@"
+    _k="$EXCL_N"
+    while [ "$_k" -gt 0 ]; do
+      eval "_e=\$EXCL_$_k"
+      set -- -path "$SRC_BASE/$_e" "$@"
+      [ "$_k" -gt 1 ] && set -- -o "$@"
+      _k=$((_k - 1))
+    done
+    set -- \( "$@"
+  fi
   inputs | while IFS= read -r _in; do find "$_in" "$@"; done
   return 0
 }
@@ -340,6 +386,22 @@ do_run() {
   resolve_dest create
   state_init
   take_lock
+  if [ -n "$OPT_SOURCE" ]; then
+    # A chain keeps the excludes of its first run; a run that gives others is refused (exit 2), never sealed.
+    _ex="$(excludes_list)"
+    if [ -e "$STATE/stamp" ]; then
+      _was="$(cat "$STATE/excludes" 2>/dev/null)"
+      if [ "$_ex" != "$_was" ]; then
+        refuse "the $OPT_NAME chain was begun with --exclude $(printf '%s' "${_was:-(none)}" | tr '\n' ' ' | sed 's/ $//'), and this run gives $(printf '%s' "${_ex:-(none)}" | tr '\n' ' ' | sed 's/ $//'). Give the same every time (the LaunchAgent line and every hand run), or begin a new chain under a new --name."
+      fi
+    else
+      printf '%s\n' "$_ex" > "$STATE/excludes" || fail "cannot write $STATE/excludes"
+    fi
+  else
+    SETTINGS_LIST="$STATE/work/settings.list"
+    (cd "$ROOT" && local_settings) > "$SETTINGS_LIST" || fail "cannot look for the projects' settings.local.json"
+    say "projects' settings.local.json among the inputs: $(grep -c . "$SETTINGS_LIST" | tr -d ' ')"
+  fi
 
   _t0="$(date +%s)"; _now="$(date +%Y%m%d-%H%M%S)"; _month="$(date +%Y%m)"; _year="$(date +%Y)"
   _kind=incr; _why="files changed since the last success"
@@ -551,7 +613,7 @@ do_restore() { # args: FILE... DIR
   if [ -n "$OPT_SOURCE" ]; then
     say "Done: $_dir/$(basename "$SRC_PHYS") (or the folder name the archives were made under). Compare before copying anything back."
   else
-    say "Done: $_dir/.claude/projects (and .claude/CLAUDE.md, history.jsonl, plans/ and file-history/ where the archives hold them). Compare before copying anything back, with Claude Code closed."
+    say "Done: $_dir/.claude/projects (and .claude/CLAUDE.md, history.jsonl, plans/ and file-history/ where the archives hold them, and each project's settings.local.json at its own path under $_dir, e.g. code/<repo>/.claude/). Compare before copying anything back, with Claude Code closed."
   fi
 }
 do_restore_latest() {
@@ -758,6 +820,9 @@ while [ $# -gt 0 ]; do
     --source=*) OPT_SOURCE="${1#--source=}"; SRC_GIVEN=1 ;;
     --name) [ $# -ge 2 ] || refuse "--name needs a name"; OPT_NAME="$2"; SRC_GIVEN=1; shift 2; continue ;;
     --name=*) OPT_NAME="${1#--name=}"; SRC_GIVEN=1 ;;
+    --exclude) [ $# -ge 2 ] || refuse "--exclude needs a path inside the --source folder"
+               EXCL_N=$((EXCL_N + 1)); eval "EXCL_$EXCL_N=\$2"; shift 2; continue ;;
+    --exclude=*) EXCL_N=$((EXCL_N + 1)); eval "EXCL_$EXCL_N=\${1#--exclude=}" ;;
     --full) OPT_FULL=1 ;;
     -h|--help) usage; exit 0 ;;
     --init|--run|--if-due|--status|--list|--verify|--restore|--restore-latest|--prune-plan|--move-old|--install|--uninstall|--notify-test)
@@ -805,7 +870,25 @@ if [ "$SRC_GIVEN" = 1 ]; then
   if inside "$(physpath "$CONFIG")" "$SRC_PHYS" || inside "$(physpath "$PASSFILE")" "$SRC_PHYS"; then
     refuse "--source $OPT_SOURCE holds the archive's own config folder or passphrase file; seal a folder that does not."
   fi
+  # --exclude REL: relative to DIR, inside it. A trailing / is dropped; a REL that could leave DIR is refused.
+  _k=1
+  while [ "$_k" -le "$EXCL_N" ]; do
+    eval "_e=\$EXCL_$_k"
+    while :; do case "$_e" in */) _e="${_e%/}" ;; *) break ;; esac; done
+    case "$_e" in
+      '') refuse "--exclude: an empty path." ;;
+      /*) refuse "--exclude $_e: give it relative to the --source folder, without a leading /." ;;
+      -*) refuse "--exclude $_e: a path beginning with - is not supported." ;;
+      ..|../*|*/..|*/../*) refuse "--exclude $_e: .. is not allowed; give a path inside the --source folder." ;;
+      *'
+'*) refuse "--exclude: a path with a line break in it is not supported." ;;
+    esac
+    eval "EXCL_$_k=\$_e"; _k=$((_k + 1))
+  done
   PREFIX="$OPT_NAME"; WHAT="Archive of $OPT_NAME"; STATE_ROOT="$CONFIG/sources/$OPT_NAME"
+elif [ "$EXCL_N" -gt 0 ]; then
+  STATE_ROOT=""        # a mistyped command, not a failed night
+  refuse "--exclude goes with --source DIR --name NAME; the Claude chain leaves nothing out of what it takes."
 fi
 
 case "$MODE" in

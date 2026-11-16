@@ -459,6 +459,87 @@ ok "$(count "$D" '*')" "$nD" "no refusal wrote anything at the destination"
 ok "$(cat "$CFG/state/last-failure")" "$c_lf" "no refusal of a --source command marked the Claude chain as failed"
 ok "$(run --status)" 0 "the Claude status is still ok"
 
+# 12j. each project's .claude/settings.local.json under the home joins the Claude chain, relative to the home. The
+# folders the search must skip are skipped, and no run prints a name or a line of one (Nov 16: the desk's allow rules)
+SL=settings.local.json
+plant() { mkdir -p "$(dirname "$H/$1")"; printf '{"permissions":{"allow":["Bash(%s %s)"]}}\n' "$SENT" "$1" > "$H/$1"; }
+WANT_SL="code/repo-a/.claude/$SL
+code/repo b/.claude/$SL
+labs/org/repo-c/.claude/$SL
+w/x/y/z/.claude/$SL
+.claude/$SL"
+printf '%s\n' "$WANT_SL" | while IFS= read -r p; do plant "$p"; done
+for p in "w/x/y/z/q/.claude/$SL" "Library/Application Support/app/.claude/$SL" "Documents/proj/.claude/$SL" \
+         "Desktop/proj/.claude/$SL" "code/repo-a/node_modules/pkg/.claude/$SL" "code/repo-a/.git/sub/.claude/$SL" \
+         "AI-Archive_Fleet/old/.claude/$SL" "Archive/old/.claude/$SL" "claude-restore/code/repo-a/.claude/$SL"; do plant "$p"; done
+printf '{"not":"archived"}\n' > "$H/code/repo-a/.claude/settings.json"
+want_entries="$(printf '%s\n' "$WANT_SL" | sort | tr '\n' '|')"
+ok "$(run --run --dest "$D")" 0 "the run after settings.local.json files appear"
+ok "$(grep -c '^incr archive' "$R/out")" 1 "is an ordinary incremental"
+ok "$(grep -c "settings.local.json among the inputs: 5$" "$R/out")" 1 "it finds the five within reach, and says how many"
+ok "$(grep -c ': 5 files,' "$R/out")" 1 "and carries those five"
+ok "$(grep -c -e "$SENT" -e 'repo-a' -e 'repo-c' -e 'repo b' "$R/out")" 0 "printing no name and no line of one"
+ISL="$(find "$D/$(date +%Y)" -name 'claude-projects_*_incr.tar.gz.enc' | sort | tail -n 1)"
+ok "$(entries "$ISL")" "$want_entries" "paths relative to the home; nothing too deep, in Library, Documents, Desktop, node_modules, .git, an archive or a restore folder"
+ok "$(grep -c "$SENT" "$ISL")" 0 "sealed like the rest"
+printf '{"more":1}\n' >> "$H/code/repo b/.claude/$SL"
+ok "$(run --run --dest "$D")" 0 "a changed settings.local.json"
+ok "$(grep -c ': 1 files,' "$R/out")" 1 "travels alone in the next incremental, whole"
+ok "$(run --run --dest "$D")" 0 "the run after that"
+ok "$(grep -c '^Nothing changed' "$R/out")" 1 "finds nothing new"
+ok "$(run --restore-latest --dest "$D" "$R/restored-settings")" 0 "restore-latest with the settings files in the chain"
+ok "$(printf '%s\n' "$WANT_SL" | while IFS= read -r p; do cmp -s "$H/$p" "$R/restored-settings/$p" && echo same; done | grep -c same)" 5 "each comes back at its own path under the restore folder"
+ok "$(find "$R/restored-settings" -name "$SL" | wc -l | tr -d ' ')" 5 "and none of the skipped ones"
+ok "$(test -e "$R/restored-settings/code/repo-a/.claude/settings.json" && echo yes || echo no)" no "a project's settings.json stays out"
+D4="$R/dest-settings"; mkdir -p "$D4"
+ok "$(run --run --dest "$D4")" 0 "a new chain's first full"
+ok "$(entries "$(find "$D4" -name '*_full.tar.gz.enc')" | tr '|' '\n' | grep -c "$SL\$")" 5 "holds the five settings.local.json"
+ok "$(srun --run --full)" 0 "a notes full after they appear"
+ok "$(entries "$(find "$D/notes" -name 'notes_*_full.tar.gz.enc' | sort | tail -n 1)" | grep -c "$SL")" 0 "a --source chain takes none of them"
+
+# 12k. --exclude REL leaves part of a --source folder out; the chain remembers its excludes and refuses a run with others
+FL="$R/src/Fleet"; mkdir -p "$FL/keep/private" "$FL/private" "$FL/logs" "$FL/scratch/deep"
+printf 'k\n' > "$FL/keep/a.md"; printf 'kp\n' > "$FL/keep/private/k.md"; printf 't\n' > "$FL/top.md"
+printf '%s\n' "$SENT" > "$FL/private/p.md"; printf '%s\n' "$SENT" > "$FL/logs/l.log"; printf 's\n' > "$FL/scratch/deep/s.md"
+printf 'one file\n' > "$FL/keep/skip-me.txt"
+frun() { run "$@" --source "$FL" --name fleet --dest "$D"; }
+EX4="--exclude private --exclude logs --exclude scratch/ --exclude keep/skip-me.txt"
+# shellcheck disable=SC2086
+ok "$(frun --run $EX4)" 0 "a --source run with four excludes"
+FF="$(find "$D/fleet" -name 'fleet_*_full.tar.gz.enc')"
+ok "$(entries "$FF")" "Fleet/keep/a.md|Fleet/keep/private/k.md|Fleet/top.md|" "two folders, a folder given with a trailing / and one file stay out; a same-named folder deeper down does not"
+ok "$(grep -c "$SENT" "$FF")" 0 "(ciphertext)"
+ok "$(cat "$CFG"/sources/fleet/*/excludes | tr '\n' ' ')" "keep/skip-me.txt logs private scratch " "the chain remembers its excludes, sorted"
+fl_n="$(count "$D/fleet" '*.enc')"
+printf 'changed\n' >> "$FL/private/p.md"
+ok "$(frun --run --exclude logs --exclude keep/skip-me.txt --exclude private --exclude scratch)" 0 "the same excludes in another order"
+ok "$(grep -c '^Nothing changed' "$R/out")" 1 "and a change inside an excluded folder does not travel"
+sleep 1
+ok "$(frun --run)" 2 "a run of that chain without its excludes is refused"
+ok "$(grep -c 'begun with --exclude keep/skip-me.txt logs private scratch, and this run gives (none)' "$R/out")" 1 "and the refusal says what the chain was begun with"
+ok "$(frun --run --exclude private)" 2 "so is a run with only some of them"
+ok "$(count "$D/fleet" '*.enc')" "$fl_n" "neither refused run wrote an archive"
+ok "$(test -s "$CFG/sources/fleet/last-failure" && echo yes || echo no)" yes "a refused run is recorded as that chain's failure"
+ok "$(frun --status)" 1 "so its --status says STALE"
+ok "$(run --status)" 0 "and the Claude chain's stays ok"
+sleep 1
+printf 'k2\n' >> "$FL/keep/a.md"
+# shellcheck disable=SC2086
+ok "$(frun --run $EX4)" 0 "an incremental with the right excludes"
+ok "$(grep -c ': 1 files,' "$R/out")" 1 "carries the one changed file outside them"
+ok "$(frun --status)" 0 "and that chain's status is ok again"
+ok "$(frun --restore-latest "$R/fleet-restored")" 0 "restore-latest of the chain"
+ok "$(find "$R/fleet-restored/Fleet" -type f | wc -l | tr -d ' ')" 3 "three files come back"
+ok "$(test -e "$R/fleet-restored/Fleet/private" -o -e "$R/fleet-restored/Fleet/logs" -o -e "$R/fleet-restored/Fleet/scratch" && echo yes || echo no)" no "and nothing of what was excluded"
+c_lf="$(cat "$CFG/state/last-failure")"
+ok "$(run --run --exclude private --dest "$D")" 2 "--exclude without --source is refused"
+ok "$(cat "$CFG/state/last-failure")" "$c_lf" "as a mistyped command, not as the Claude chain's failure"
+for bad in /abs ../up a/../b .. -x ''; do
+  ok "$(frun --run --exclude "$bad")" 2 "--exclude '$bad' is refused"
+done
+ok "$(count "$D/fleet" '*.enc')" "$((fl_n + 1))" "no refusal wrote an archive"
+ok "$(frun --status)" 0 "and none marked the chain as failed"
+
 # 13. install and uninstall render only (no launchctl in the self-test)
 ok "$(run --install)" 0 "install renders the plist"
 PL="$H/Library/LaunchAgents/com.drasticstatic.claude-projects-archive.plist"

@@ -9,7 +9,7 @@
 *The live `~/.claude` stays where it is. Only finished, sealed archives of it travel.*
 
 ![Walkthrough](https://img.shields.io/badge/Walkthrough-projects_archive-800020?style=flat-square)
-![Changed](https://img.shields.io/badge/Changed-2026--11--12-5c1a2b?style=flat-square)
+![Changed](https://img.shields.io/badge/Changed-2026--11--16-5c1a2b?style=flat-square)
 ![Status](https://img.shields.io/badge/Status-tested_not_yet_scheduled-1a1a2e?style=flat-square)
 ![For](https://img.shields.io/badge/For-Claude_Code_on_a_Mac-64748b?style=flat-square)
 
@@ -19,7 +19,7 @@
 
 ## <img src="../assets/icons-phosphor/compass.svg" width="24" height="24" alt=""> TL;DR
 
-1. <img src="../assets/icons-phosphor/files.svg" width="16" height="16" alt=""> **`~/.claude/projects` holds every session you have had,** and your agents' memory. It is not in git and it should never go to GitHub. Until now it lived on one disk. The archive also takes your prompt history (`history.jsonl`), your plans and the snapshots behind checkpoint restore.
+1. <img src="../assets/icons-phosphor/files.svg" width="16" height="16" alt=""> **`~/.claude/projects` holds every session you have had,** and your agents' memory. It is not in git and it should never go to GitHub. Until now it lived on one disk. The archive also takes your prompt history (`history.jsonl`), your plans, the snapshots behind checkpoint restore, and each project's `.claude/settings.local.json` (its allow rules, which git ignores).
 2. <img src="../assets/icons-phosphor/lock.svg" width="16" height="16" alt=""> **One script seals a copy each night.** `tar`, `gzip`, then `openssl` AES-256 with a passphrase that lives in a file on this Mac and in your password manager.
 3. <img src="../assets/icons-phosphor/cloud.svg" width="16" height="16" alt=""> **It lands in iCloud Drive by default,** as finished files only. Advanced Data Protection covers it there; the passphrase covers it everywhere else.
 4. <img src="../assets/icons-phosphor/layers.svg" width="16" height="16" alt=""> **A full copy once a month, then only what changed.** Each archive is checked after it is written. Nothing is ever deleted.
@@ -34,7 +34,7 @@
 
 ```mermaid
 flowchart TD
-  L["~/.claude/projects<br/>+ CLAUDE.md, history.jsonl,<br/>plans/, file-history/<br/>(live, never moved)"] --> Q{"First run, first run<br/>of the month, or --full?"}
+  L["~/.claude/projects<br/>+ CLAUDE.md, history.jsonl,<br/>plans/, file-history/,<br/>each project's settings.local.json<br/>(live, never moved)"] --> Q{"First run, first run<br/>of the month, or --full?"}
   Q -->|"yes"| F["full: every file"]
   Q -->|"no"| I["incremental: files changed<br/>since the last success"]
   F --> S["tar | gzip | openssl enc<br/>→ NAME.partial"]
@@ -47,10 +47,10 @@ flowchart TD
 
 | | |
 |---|---|
-| **What goes in** | everything under `~/.claude/projects` (transcripts, `memory/` folders, tool results, the manifest and session logs), and, when they exist, `~/.claude/CLAUDE.md`, `~/.claude/history.jsonl`, `~/.claude/plans/` and `~/.claude/file-history/` ([below](#-what-the-archive-holds-and-why-the-history-file-matters)). Nothing inside them is left out: all of it is wanted back. |
-| **What stays out** | the rest of `~/.claude`: `settings.json`, credentials, caches, plugins, debug logs. Those are not yours to lose in the same way, and some hold tokens. |
+| **What goes in** | everything under `~/.claude/projects` (transcripts, `memory/` folders, tool results, the manifest and session logs), and, when they exist, `~/.claude/CLAUDE.md`, `~/.claude/history.jsonl`, `~/.claude/plans/` and `~/.claude/file-history/` ([below](#-what-the-archive-holds-and-why-the-history-file-matters)), and every project's `.claude/settings.local.json` under your home ([below](#-each-projects-settingslocaljson)). Nothing inside them is left out: all of it is wanted back. |
+| **What stays out** | the rest of `~/.claude`: `settings.json`, credentials, caches, plugins, debug logs. Those are not yours to lose in the same way, and some hold tokens. A project's `settings.json` stays out too: git keeps it. |
 | **The script** | [`scripts/claude-projects-archive.sh`](../scripts/claude-projects-archive.sh), plain `/bin/sh` and the tools macOS ships with |
-| **The proof** | [`scripts/claude-projects-archive.selftest.sh`](../scripts/claude-projects-archive.selftest.sh): a fake home in a temporary folder and a stand-in `curl`, 298 checks. Your real `~/.claude` is never read by it, and nothing goes over the network |
+| **The proof** | [`scripts/claude-projects-archive.selftest.sh`](../scripts/claude-projects-archive.selftest.sh): a fake home in a temporary folder and a stand-in `curl`, 346 checks. Your real `~/.claude` is never read by it, and nothing goes over the network |
 | **Names** | `claude-projects_20261107-004012_full.tar.gz.enc`, then `..._incr.tar.gz.enc`, each with a `.sha256` beside it. A plain sort of the names is the order they were made, and the order to restore them |
 | **The seal** | `openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -md sha256 -salt`. The passphrase is read from its file (`-pass file:`), never typed on a command line. LibreSSL (in macOS) and OpenSSL 3 open each other's archives; the self-test checks it |
 | **Where the passphrase lives** | `~/.config/claude-archive/passphrase`, mode 600, in a folder of mode 700. The script refuses to run if the file is missing or anyone else can read it |
@@ -81,6 +81,27 @@ self-test proves it on a chain made before and continued after).
 > If you set `plansDirectory` in your settings, plan mode writes its plans there instead of `~/.claude/plans/` (the path
 > is relative to the project), and this archive does not see them. `claude purge` deletes a project's transcripts,
 > memory, file history and its lines in `history.jsonl`; what an archive already sealed is unaffected.
+
+## <img src="../assets/icons-phosphor/list-checks.svg" width="24" height="24" alt=""> Each project's settings.local.json
+
+A project's `.claude/settings.local.json` holds what you allowed in that project (its allow rules) and any local
+settings. Claude Code tells git to ignore it, so no repository keeps a copy, and a lost disk would take it. So each
+run also takes every one it finds under your home, as `code/<repo>/.claude/settings.local.json` and so on (paths
+relative to your home, like the rest), and treats each like any other file: whole when it changes, in the next
+incremental when it is new.
+
+- **Found afresh on every run,** at most six levels below your home (`~/code/<repo>/.claude/settings.local.json` is
+  four). A new project needs nothing done; the night after it gets the file, the file is sealed.
+- **Skipped:** `~/Library` (iCloud Drive lives there), the Trash, the folders macOS guards (Desktop, Documents,
+  Downloads, Movies, Music, Pictures: a background job reading them could put a prompt on your screen), archive
+  folders at the top of your home (`Archive`, `Archives`, `AI-Archive_*`), restore folders named `claude-restore*`,
+  and every `node_modules` and `.git`. Symlinks are not followed. A project kept in Documents or on the Desktop is
+  therefore not covered: move it into your home's own folders.
+- **Never shown.** A run prints only how many it found (`projects' settings.local.json among the inputs: 14`), never a
+  name or a line of one. Their content is sealed with the same passphrase as the transcripts, which already hold the
+  same commands.
+- **A chain that began before this carries on:** the files are not in its last listing, so the next incremental carries
+  them, whatever their dates.
 
 ## <img src="../assets/icons-phosphor/wrench.svg" width="24" height="24" alt=""> Set it up: four lines, in this order
 
@@ -252,9 +273,25 @@ Restore into a folder in your home, as above, not into Desktop or Documents: tho
 macOS may ask before a script writes there.
 
 **Putting it back.** The restore lands in `<folder>/.claude/projects`, `<folder>/.claude/CLAUDE.md` and, where the
-archives hold them, `history.jsonl`, `plans/` and `file-history/` beside them. Compare first
+archives hold them, `history.jsonl`, `plans/` and `file-history/` beside them, and each project's settings file at its
+own path (`<folder>/code/<repo>/.claude/settings.local.json`). Compare first
 (`diff -rq ~/claude-restore/.claude/projects ~/.claude/projects`). Then quit every Claude Code session and copy back
 only what you need. The script never writes into `~/.claude`, and refuses to restore there.
+
+**Just one project's `settings.local.json`.** Restore the newest state into a new folder, compare, then copy that one
+file back with `cp -n` beside a moved-aside copy of the live one (never over it unseen). The folder is named
+`claude-restore*`, so the next night's run does not take the restored copies for projects of their own:
+
+```sh
+sh ~/code/my-template/scripts/claude-projects-archive.sh --restore-latest ~/claude-restore-settings
+diff -q ~/claude-restore-settings/code/<repo>/.claude/settings.local.json ~/code/<repo>/.claude/settings.local.json
+mv ~/code/<repo>/.claude/settings.local.json ~/code/<repo>/.claude/settings.local.json.before-restore   # if one is there
+cp -n ~/claude-restore-settings/code/<repo>/.claude/settings.local.json ~/code/<repo>/.claude/
+```
+
+`diff -q` says only whether they differ; open both in an editor to see how (a helper should not print them: allow
+rules can carry tokens). It unpacks the whole chain (a few GB, a few minutes) to bring back one small file; the
+restore folder can be moved aside afterwards.
 
 **On a new Mac.** Clone `my-template`, then put the passphrase back from 1Password (copy it in 1Password first; a missing final newline does
 not matter, tested):
@@ -335,6 +372,17 @@ sh ~/code/my-template/scripts/claude-projects-archive.sh --status --source ~/Not
 - **`DIR` must exist** for `--run`, `--if-due` and `--status`. It may not be inside `~/.claude` (the Claude chain covers
   what is kept there), hold `~/.claude` or the passphrase, or be, hold or lie inside the destination. Each refusal
   exits 2 with one line saying why, and writes nothing.
+- **`--exclude REL` leaves part of it out,** as often as you need: a folder (with everything under it) or one file,
+  `REL` relative to `DIR` (`--exclude private --exclude logs/server.log`). No leading `/`, no `..`; a trailing `/` is
+  dropped. Use it for whatever must not leave the Mac even sealed: key material, case files, large scratch.
+- **A chain keeps the excludes of its first run.** A later `--run` or `--if-due` that gives other excludes, or none, is
+  refused (exit 2, recorded as that chain's failure, so `--status` says STALE): a hand run that forgot them would
+  otherwise seal what was meant to stay out. To change them, begin a new chain under a new `--name`; the old chain's
+  archives stay as they are.
+
+```sh
+sh ~/code/my-template/scripts/claude-projects-archive.sh --run --source ~/Notes --name notes --exclude private --exclude drafts/big.pdf
+```
 
 **Getting it back.** The same as for the Claude chain, with the same two options. `DIR` need not exist any more; the
 restore goes into a new, empty folder, never into `DIR` itself:
@@ -353,8 +401,48 @@ of its own:
 ```
 
 In the plist, `ProgramArguments` takes it word by word (`/bin/sh`, the script's full path, `--if-due`, `--source`, the
-folder's full path, `--name`, `notes`; add `--dest` and its folder for a destination other than iCloud). The `post-commit`
-line below works the same way with `--source` and `--name` added.
+folder's full path, `--name`, `notes`, then each `--exclude` and its path; add `--dest` and its folder for a destination
+other than iCloud). The `post-commit` line below works the same way with `--source` and `--name` added.
+
+**Weekly is often enough** for a folder you add to by hand (exports, finished work): a missed week costs at most a week
+of additions, and the first run of each month is a full copy whatever the schedule, so a nightly job buys little more
+than log lines. A weekly plist, Sundays at 01:10 (replace `YOU` with your user name; `plutil -lint` checks it):
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>                 <string>local.archive.notes</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/YOU/code/my-template/scripts/launchd/claude-projects-archive</string>
+        <string>--if-due</string>
+        <string>--source</string> <string>/Users/YOU/Notes</string>
+        <string>--name</string>   <string>notes</string>
+        <string>--exclude</string> <string>private</string>
+    </array>
+    <key>StartCalendarInterval</key> <dict><key>Weekday</key><integer>0</integer><key>Hour</key><integer>1</integer><key>Minute</key><integer>10</integer></dict>
+    <key>RunAtLoad</key>             <true/>
+    <key>ProcessType</key>           <string>Background</string>
+    <key>LowPriorityIO</key>         <true/>
+    <key>Nice</key>                  <integer>10</integer>
+    <key>EnvironmentVariables</key>  <dict><key>PATH</key><string>/usr/bin:/bin:/usr/sbin:/sbin</string></dict>
+    <key>StandardOutPath</key>       <string>/Users/YOU/Library/Logs/claude-projects-archive/notes.log</string>
+    <key>StandardErrorPath</key>     <string>/Users/YOU/Library/Logs/claude-projects-archive/notes.log</string>
+</dict>
+</plist>
+```
+
+Save it as `~/Library/LaunchAgents/local.archive.notes.plist`, then `launchctl bootstrap gui/$(id -u)
+~/Library/LaunchAgents/local.archive.notes.plist` (macOS shows *Background Items Added*). `RunAtLoad` with `--if-due`
+catches up at login after a Sunday the Mac was off, and does nothing within 20 hours of a success. To stop it:
+`launchctl bootout gui/$(id -u)/local.archive.notes`, then move the plist aside.
+
+**The fleet's own local archive folder** is `~/AI-Archive_Fleet` (named `~/Archive` until 2026-11-16; a link with the old
+name points to it, so older notes and scripts still work). The link can be moved aside, never deleted, once nothing
+uses the old name: `grep -rn '~/Archive/' ~/code` and the vault show what still does. Seal it with `--exclude` for
+each of its folders that must stay on the Mac.
 
 ## <img src="../assets/icons-phosphor/git-branch.svg" width="24" height="24" alt=""> Optional: a backup upon commit
 
@@ -440,6 +528,7 @@ fills, iPhone backups and photo uploads stop too, so leave room.
 | `--notify-test` | send one test note through `ntfy.env`; exit 2 if it is missing or unsafe, 1 if the server did not take it |
 | `--dest DIR` (or `CLAUDE_ARCHIVE_DEST`) | another destination, with any mode |
 | `--source DIR --name NAME` | [another folder, in a chain of its own](#-sealing-another-folder), with `--run`, `--if-due`, `--status`, `--list`, `--verify`, `--restore`, `--restore-latest`, `--prune-plan` and `--move-old` |
+| `--exclude REL` | with `--source`, repeatable: leave `DIR/REL` (a folder or a file) out. The chain keeps the excludes of its first run and refuses a run with others |
 
 `CLAUDE_ARCHIVE_CONFIG` moves the config folder and `CLAUDE_ARCHIVE_PASSFILE` the passphrase file; the self-test and the
 measurement above use them so that nothing touches your own.
@@ -467,6 +556,7 @@ helper, in your own words.
 ## <img src="../assets/icons-phosphor/history.svg" width="24" height="24" alt=""> Change log
 | Date | Change |
 |---|---|
+| 2026-11-16 | Each project's `.claude/settings.local.json` under the home joins the Claude chain (found afresh each run, six levels deep at most, skipping Library, the Trash, the folders macOS guards, archive and restore folders, `node_modules` and `.git`; only the count is printed). `--exclude REL` for a `--source` chain, remembered by the chain, which refuses a run with other excludes. A weekly LaunchAgent example for a second chain, and the fleet's archive folder's new name. The self-test grows to 346 checks. |
 | 2026-11-13 | The log's "destination total" line is counted from file sizes, not disk blocks: the scheduled runs of Nov 12 and 13 printed "0 B" although the sealed files were in place and verified. If the total still cannot be read, the line says so instead of printing a zero. One more check in the self-test (298). |
 | 2026-11-12 | The archive also takes `history.jsonl`, `plans/` and `file-history/` when they exist; an existing chain carries on with an ordinary incremental. `--source DIR --name NAME` seals another folder in a chain of its own (`<dest>/NAME/YYYY/`, its own state; scheduling it is your own LaunchAgent). New sections: what the archive holds, *When a transcript is already gone*, *Sessions that ran through a gateway*, *Sealing another folder*, and the sources. The self-test grows to 297 checks. |
 | 2026-11-10 | Optional phone notes through ntfy (`ntfy.env`, mode 600): one on a failed run, one on each full archive, none for incrementals; `--notify-test`; the self-test grows to 184 checks with a stand-in `curl`. |
