@@ -276,6 +276,22 @@ URL, current branch, dirty count and commits ahead of its upstream (0 when it ha
 beside it. It is read-only by construction: `GIT_OPTIONAL_LOCKS=0`, so even `git status` writes nothing, and it never
 fetches, pulls, pushes, switches or removes. A spare is information for a person; no helper removes one.
 
+### `open-loops.py` — every open task in the fleet, on one page
+
+```sh
+python3 -I scripts/open-loops.py --out ~/private/OPEN-LOOPS.md              # walks clone-map.sh --json itself
+sh scripts/clone-map.sh --json | python3 -I scripts/open-loops.py --clone-map - --out PAGE --extra ~/another-folder
+python3 -I scripts/open-loops.py --out PAGE --counts-only 'legal|tax'       # those repositories show a count only
+sh scripts/test-open-loops.sh
+```
+
+Reads the first of `PENDING-TASKS.md` / `pending-tasks.md` / `PENDING_TASKS.md` in every repository clone-map finds
+and lists each top-level open item (`- [ ]`) with its date and its owner, where the item writes one as
+`**Owner: X**`, `**X (prep)**` or a closing `(Christopher)`; nothing is guessed. Sections: named for Christopher,
+named for someone else, one row per repository. The page links to local files, so it belongs in a private place.
+Read-only on the repositories, idempotent, no network. A personal vault runs it on every refresh through a small
+wrapper of its own.
+
 ---
 
 ## `shrink-images.sh` — pictures small enough to commit and publish

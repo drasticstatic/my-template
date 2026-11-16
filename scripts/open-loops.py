@@ -1,0 +1,199 @@
+#!/usr/bin/env python3
+"""open-loops.py: every open item in the fleet's task lists, on one page, with whose turn it is where that is written.
+
+    python3 -I scripts/open-loops.py --out OPEN-LOOPS.md                run clone-map.sh --json, then write the page
+    python3 -I scripts/open-loops.py --clone-map FILE|- --out PAGE      take clone-map's JSON from a file or stdin
+    python3 -I scripts/open-loops.py --extra DIR --out PAGE             add a folder clone-map does not list (repeatable)
+    python3 -I scripts/open-loops.py --counts-only REGEX --out PAGE     show only a count for repositories whose path matches
+    sh scripts/test-open-loops.sh                                       the self-test (made-up repositories)
+
+For each repository clone-map lists (plus any --extra folder), it reads the first of PENDING-TASKS.md /
+pending-tasks.md / PENDING_TASKS.md and takes every top-level open item (`- [ ] ...`): its title (the first bold run,
+else the first words), its date (`· Nov 12, 2026` or `YYYY-MM-DD` in the line), and its owner only where the item
+says so in one of the fleet's written forms: `**Owner: X**`, `**X (prep)**`, or a closing `(Christopher)`. Nothing is
+guessed: an item with no written owner shows "-".
+
+Every title is shown by default. With --counts-only, repositories whose path matches the pattern show a count only,
+for a page that will be read by someone who should not see those titles. The page links to local files, so it belongs
+in a private place (a personal vault, a private lane), never a public one. It is generated: never edit it by hand.
+Idempotent; no network. Used by the personal vault's refresh; see AGENT-SYNC/README.md, "Open loops".
+"""
+
+import argparse
+import json
+import os
+import re
+import subprocess
+import sys
+
+HOME = os.path.expanduser("~")
+HERE = os.path.dirname(os.path.abspath(__file__))
+CLONE_MAP = os.path.join(HERE, "clone-map.sh")
+TASK_FILES = ("PENDING-TASKS.md", "pending-tasks.md", "PENDING_TASKS.md")
+OPEN = re.compile(r"^[-*+] \[ \] (.*)$")
+MONTHS = "Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec"
+DATE_WORDS = re.compile(r"(%s)[a-z]* (\d{1,2}), (20\d\d)" % MONTHS)
+DATE_ISO = re.compile(r"\b(20\d\d)-(\d\d)-(\d\d)\b")
+OWNER_FORMS = (
+    re.compile(r"\*\*Owner: ([^*]{1,60})\*\*"),
+    re.compile(r"\*\*([A-Z][A-Za-z ]{1,30}) \(prep\)\*\*"),
+    re.compile(r"\((Christopher|Alfred|Fortuna|Mystarch|Auggie|Kenney|Littlebird)\)\s*\.?\s*$"),
+)
+
+
+def tilde(p):
+    return "~" + p[len(HOME):] if p == HOME or p.startswith(HOME + "/") else p
+
+
+def absolute(p):
+    return os.path.join(HOME, p[2:]) if p.startswith("~/") else (HOME if p == "~" else p)
+
+
+def esc(t):
+    return t.replace("|", "\\|").replace("\n", " ")
+
+
+def item_blocks(lines):
+    """Top-level open items, each with the indented lines that continue it."""
+    blocks, cur = [], None
+    for line in lines:
+        m = OPEN.match(line)
+        if m:
+            cur = [m.group(1)]
+            blocks.append(cur)
+        elif cur is not None and line.startswith((" ", "\t")) and line.strip():
+            cur.append(line.strip())
+        elif cur is not None and not line.strip():
+            continue
+        else:
+            cur = None
+    return blocks
+
+
+def title_of(first):
+    m = re.search(r"\*\*(.+?)\*\*", first)
+    t = m.group(1) if m else re.sub(r"[*_`]", "", first)
+    t = re.sub(r"\s+", " ", t).strip(" .:")
+    return t if len(t) <= 110 else t[:107].rsplit(" ", 1)[0] + " …"
+
+
+def date_of(text):
+    m = DATE_WORDS.search(text)
+    if m:
+        mon = MONTHS.split("|").index(m.group(1)[:3]) + 1
+        return f"{m.group(3)}-{mon:02d}-{int(m.group(2)):02d}"
+    m = DATE_ISO.search(text)
+    return "-".join(m.groups()) if m else ""
+
+
+def owner_of(block):
+    text = "\n".join(block)
+    found = []
+    for form in OWNER_FORMS:
+        for m in form.finditer(text):
+            found.append(m.group(1).strip(" ."))
+    return ", ".join(dict.fromkeys(found)) if found else ""
+
+
+def read_tasks(repo):
+    for name in TASK_FILES:
+        p = os.path.join(repo, name)
+        if os.path.isfile(p):
+            with open(p, encoding="utf-8", errors="replace") as fh:
+                return name, item_blocks(fh.read().splitlines())
+    return None, []
+
+
+def build(paths, counts_only=None, generator="open-loops.py"):
+    rows, private, total = [], [], 0
+    for repo in paths:
+        name, blocks = read_tasks(repo)
+        if not blocks:
+            continue
+        total += len(blocks)
+        if counts_only and counts_only.search(repo):
+            private.append((tilde(repo), name, len(blocks)))
+            continue
+        for b in blocks:
+            rows.append({"repo": tilde(repo), "file": name, "title": title_of(b[0]),
+                         "date": date_of(" ".join(b)), "owner": owner_of(b)})
+    mine = [r for r in rows if "Christopher" in r["owner"]]
+    named = [r for r in rows if r["owner"] and "Christopher" not in r["owner"]]
+    out = [
+        f"<!-- Generated by {generator}. Never edit by hand: change the script and run it again. -->",
+        "# Open loops",
+        "",
+        "Every open item (`- [ ]`) in the task list of each repository on this Mac, read by "
+        f"`{generator}`. *Owner* shows only what the item itself writes (`**Owner: X**`, `**X (prep)**`, a "
+        "closing `(Christopher)`); nothing is guessed, so most items show \"-\" until owners are written that way.",
+        "",
+        f"**Totals:** {total} open items in {len({r['repo'] for r in rows}) + len(private)} task lists · "
+        f"{len(mine)} name Christopher as owner · {len(named)} name someone else · " +
+        (f"{sum(c for _, _, c in private)} in repositories shown as counts only." if private else "every title shown."),
+        "",
+        "## Named for Christopher",
+        "",
+    ]
+
+    def table(items):
+        if not items:
+            return ["None written that way.", ""]
+        t = ["| Date | Item | Owner | Where |", "|---|---|---|---|"]
+        for r in sorted(items, key=lambda r: (r["date"] or "0000", r["repo"]), reverse=True):
+            link = f"[`{r['repo']}`]({'file://' + absolute(r['repo']) + '/' + r['file']})"
+            t.append(f"| {r['date'] or '-'} | {esc(r['title'])} | {esc(r['owner'] or '-')} | {link} |")
+        return t + [""]
+
+    out += table(mine)
+    out += ["## Named for someone else", ""] + table(named)
+    out += ["## Every repository", "", "| Repository | Open | Owner written | Newest dated item |", "|---|---|---|---|"]
+    by = {}
+    for r in rows:
+        by.setdefault(r["repo"], []).append(r)
+    for repo in sorted(by):
+        items = by[repo]
+        dated = sorted((r for r in items if r["date"]), key=lambda r: r["date"], reverse=True)
+        newest = f"{dated[0]['date']} {esc(dated[0]['title'])}" if dated else "-"
+        out.append(f"| `{repo}` | {len(items)} | {sum(1 for r in items if r['owner'])} | {newest} |")
+    if private:
+        out += ["", "## Counts only", "", "| Repository | Open |", "|---|---|"]
+        out += [f"| `{p}` | {c} |" for p, _, c in sorted(private)]
+    return "\n".join(out) + "\n"
+
+
+def main(argv):
+    ap = argparse.ArgumentParser(description="One page of the fleet's open items.")
+    ap.add_argument("--clone-map", help="clone-map.sh --json output: a file, or - for stdin")
+    ap.add_argument("--out", required=True, help="the page to write")
+    ap.add_argument("--extra", action="append", default=[], help="a folder to read besides clone-map's list")
+    ap.add_argument("--counts-only", help="regex: repositories whose path matches show a count, no titles")
+    ap.add_argument("--generator", default="open-loops.py", help="the name the page's header gives as its maker")
+    a = ap.parse_args(argv)
+    try:
+        if a.clone_map == "-":
+            cm = json.load(sys.stdin)
+        elif a.clone_map:
+            with open(a.clone_map, encoding="utf-8") as fh:
+                cm = json.load(fh)
+        else:
+            cm = json.loads(subprocess.run(["sh", CLONE_MAP, "--json"], capture_output=True, text=True, check=True).stdout)
+    except Exception as exc:
+        print(f"open-loops: could not read the clone map ({type(exc).__name__})", file=sys.stderr)
+        return 1
+    paths = [absolute(r["path"]) for r in cm if r.get("path")]
+    for extra in a.extra:
+        extra = os.path.abspath(absolute(extra))
+        if extra not in paths:
+            paths.append(extra)
+    page = build(paths, re.compile(a.counts_only, re.I) if a.counts_only else None, a.generator)
+    old = open(a.out, encoding="utf-8").read() if os.path.exists(a.out) else None
+    if page != old:
+        with open(a.out, "w", encoding="utf-8") as fh:
+            fh.write(page)
+    first = page.split("**Totals:** ", 1)[1].split("\n", 1)[0]
+    print(f"open-loops: {'wrote' if page != old else 'unchanged'} {tilde(a.out)}: {first}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

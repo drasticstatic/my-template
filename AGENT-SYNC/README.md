@@ -127,6 +127,18 @@ python3 ~/code/my-template/scripts/agent-sync-health.py
 It prints ✓ or ✗ per lane with the reason: files only on this machine, uncommitted or unpushed, a private lane
 committable in a public repo, an unexpected folder, or a missing README. It exits 1 when any lane needs attention.
 
+**Open loops.** A handoff says what one desk passed to another; the task lists say what is still open. One page
+holds every open item (`- [ ]`) from every repository's `PENDING-TASKS.md`, with the owner where the item writes one
+(`**Owner: X**`, `**X (prep)**`, a closing `(Christopher)`):
+
+```sh
+python3 -I ~/code/my-template/scripts/open-loops.py --out <private place>/OPEN-LOOPS.md
+```
+
+Write an owner that way when you add a task, and it shows under that person's name. The page links to local files,
+so it goes in a private place, never a public lane; `--counts-only REGEX` shows a count instead of titles for
+repositories a reader should not see. Self-test: `sh scripts/test-open-loops.sh`.
+
 ## Doorbells: telling a live session there is a handoff
 
 The lane is the record. A Claude Code session may also ring another live session to say a new handoff exists: push
