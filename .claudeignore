@@ -108,3 +108,32 @@ typechain-types/
 # ============================================================
 # Add paths unique to this project below.
 # Remove sections above that don't apply to your stack.
+
+# ========================================
+# APPLE / XCODE / SWIFT (added 2026-11-16)
+# ========================================
+# Keeps agents out of build products and each person's Xcode state. Source files, project.pbxproj,
+# shared schemes (xcshareddata/), Package.swift and Package.resolved stay readable.
+# (build/ is already listed above.) Why: walkthroughs/XCODE-PROJECTS-IN-GIT.md in my-template.
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+*.xccheckout
+DerivedData/
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+*.xcarchive
+.build/
+.swiftpm/
+timeline.xctimeline
+playground.xcworkspace
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/
+fastlane/test_output/
+*.mobileprovision
+*.provisionprofile
+# CocoaPods sources: uncomment to keep agents out of Pods/ even where it is committed
+# Pods/

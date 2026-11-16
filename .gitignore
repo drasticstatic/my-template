@@ -293,3 +293,45 @@ graphify-out/cost.json
 graphify-out/cache/
 graphify-out/.graphify_analysis.json
 graphify-out/.graphify_labels.json
+
+
+# -----------------------------------------------
+# Apple / Xcode / Swift (added 2026-11-16)
+# Never committed: each person's Xcode workspace
+# state, build products, SwiftPM caches, signed
+# packages and provisioning profiles. Stays
+# tracked: *.xcodeproj/project.pbxproj, shared
+# schemes (xcshareddata/), Package.swift and
+# Package.resolved (no rule here hides it).
+# Why: walkthroughs/XCODE-PROJECTS-IN-GIT.md
+# -----------------------------------------------
+# Per-person workspace state: window layout, open tabs, breakpoints, scheme choice
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+*.xccheckout
+# Build products (build/ is already ignored above)
+DerivedData/
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+*.xcarchive
+# Swift Package Manager: build cache, and the Xcode workspace state it keeps for a package
+.build/
+.swiftpm/
+# Playgrounds
+timeline.xctimeline
+playground.xcworkspace
+# Asset catalogues describe each image set in Contents.json, which the *.json rule above would hide
+!**/*.xcassets/**/Contents.json
+# CocoaPods: commit Pods/ or not, per project. Uncomment to keep it out:
+# Pods/
+# fastlane output
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output/
+# Signing: provisioning profiles stay out of git (certificates and keys: *.p12, *.key above)
+*.mobileprovision
+*.provisionprofile
