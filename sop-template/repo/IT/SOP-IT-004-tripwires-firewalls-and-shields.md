@@ -2,10 +2,10 @@
 
 ![SOP](https://img.shields.io/badge/SOP-IT--004-d9a441?style=flat-square)
 ![Status](https://img.shields.io/badge/Status-draft-334155?style=flat-square)
-![Changed](https://img.shields.io/badge/Changed-2026--11--06-8a6a2a?style=flat-square)
+![Changed](https://img.shields.io/badge/Changed-2026--11--16-8a6a2a?style=flat-square)
 ![For](https://img.shields.io/badge/For-Anyone_who_commits%2C_merges_or_clones-64748b?style=flat-square)
 
-**Department:** IT · **ID:** 004 · **Status:** draft (approved when tagged) · **Owner:** the organisation's stewards · **Last changed:** 2026-11-06
+**Department:** IT · **ID:** 004 · **Status:** draft (approved when tagged) · **Owner:** the organisation's stewards · **Last changed:** 2026-11-16 (a proposed section, *What leaves the Mac*)
 
 > [!NOTE]
 > Written for a newcomer who has heard the words *tripwire*, *allowlist*, *attestation*, *deploy key* and *hook* and wants one page that says what each one catches, where it sits, and what it cannot do. Nothing here needs a terminal to understand. The pages it points to say how to run each piece.
@@ -34,7 +34,7 @@ flowchart LR
 
 | # | Guard | Where it sits | What it catches | What it cannot do | Its page |
 |---|---|---|---|---|---|
-| 1 | <img src="../assets/icons/shield-check.svg" width="16" height="16" alt=""> **ggshield** (secret scan) | the `pre-commit` hook on your own machine | API keys, tokens, private keys about to be committed | run on a machine that never installed the hooks; see #10 | `my-template/walkthroughs/SECRET-SCAN.md` |
+| 1 | <img src="../assets/icons/shield-check.svg" width="16" height="16" alt=""> **ggshield** (secret scan) | the `pre-commit` hook on your own machine | API keys, tokens, private keys about to be committed | run on a machine that never installed the hooks (see #10); keep the change on the Mac, since the scan is hosted (see *What leaves the Mac*) | `my-template/walkthroughs/SECRET-SCAN.md` |
 | 2 | <img src="../assets/icons/user-round.svg" width="16" height="16" alt=""> **Commit attribution hook** | the `commit-msg` hook | a commit without the two trailers (who wrote it, which session) | prove the trailer is true; it checks shape | `my-template/AGENT-SYNC/README.md` |
 | 3 | <img src="../assets/icons/files.svg" width="16" height="16" alt=""> **Image guard** | the same `pre-commit` hook, and `image-size-check.yml` on pull requests | a picture over 15 MB (refused), over 2 MB (warned, with the shrink command) | judge whether a picture should be public at all; that is #6 | `my-template/.claude/skills/compress-images.md` |
 | 4 | <img src="../assets/icons/git-pull-request.svg" width="16" height="16" alt=""> **The merge rule** | GitHub, per repository: squash and rebase turned off | history rewritten by a squash; a merge by a helper (helpers stop at the merge) | force a review on a private repository without a paid plan (see *Safe to merge*) | SOP-OPS-002 |
@@ -74,6 +74,66 @@ flowchart LR
 | "a legal lane … appears in the history" | the tripwire | the folder's old name is still in history; the lane renames it in the published history (`--path-rename`) or holds the path |
 | "secret … is not set, skipping push" | the lane | the deploy key was never minted; run the lane's `setup-lane-keys.sh` as the owner |
 | a grey merge button | GitHub | you are not an owner on this repository, or a check is red; read the checks |
+
+## <img src="../assets/icons/cloud.svg" width="24" height="24" alt=""> What leaves the Mac, and where it goes (added 2026-11-16 · status: proposed)
+
+> [!IMPORTANT]
+> **TL;DR.** The secret scan (#1) is a hosted service. ggshield does not judge a file on the Mac. It sends what it scans to GitGuardian and reads back the answer. That happens on three roads, and one of them starts at GitHub, not at the Mac. For most repositories this is the right trade. For a repository with legal or tax material, the owner should choose it on purpose. The options at the end are proposed, not adopted.
+
+```mermaid
+flowchart LR
+  M["The Mac"] -->|"1. commit hook:<br/>the staged change"| G["GitGuardian's<br/>hosted service"]
+  M -->|"2. scan by hand:<br/>every file named"| G
+  M -->|"git push"| GH["GitHub"]
+  GH -->|"3. the GitGuardian app:<br/>each push and pull request,<br/>once the whole history"| G
+  GH -->|"the same push"| O["Every other<br/>installed app"]
+```
+
+### <img src="../assets/icons/route.svg" width="20" height="20" alt=""> The three roads
+
+| Road | What is sent | When | Sent from | How we know (read 2026-11-16) |
+|---|---|---|---|---|
+| 1. The commit hook | the staged change of each commit | every commit in a clone with the fleet's hooks: `.githooks/pre-commit` runs `ggshield secret scan pre-commit`. A clone without them still runs ggshield's own global hook, where ggshield installed one | the Mac | this template's `.githooks/pre-commit`; on the lab's Mac, `git config --global core.hooksPath` names ggshield's own hook folder |
+| 2. A scan by hand | every file under the folder named | when a person or a helper runs `ggshield secret scan path …` | the Mac | the lab ran one over rebuilt session transcripts on 2026-11-12 and 13; some came from sessions about legal matters |
+| 3. The GitGuardian GitHub app | each pushed commit and pull request; on first connection, the whole history of each repository it watches | whenever GitHub tells the app about a push | GitHub's servers | a "GitGuardian Security Checks" run on pull requests; GitGuardian check suites on recent commits of every private repository of the lab's account that we checked |
+
+An organisation's desk may add a fourth: the Guardrails workflow sends each pushed change from GitHub's runner, where the repository holds `GITGUARDIAN_API_KEY` (`my-template/walkthroughs/SECRET-SCAN.md`).
+
+`ggshield api-status` on the lab's Mac answers `API URL: https://dashboard.gitguardian.com`, `Instance source: default` and `Token scopes: scan`. Every road above ends at GitGuardian's hosted service, not at a copy we run.
+
+Road 1 runs in every repository that installed the fleet's hooks. That includes repositories with legal or tax material. On 2026-11-13 two such repositories had 52 and 48 commits since October 1, and the hook sent each one to be scanned.
+
+### <img src="../assets/icons/quote.svg" width="20" height="20" alt=""> What the vendor says (their words; we cannot check them)
+
+- ggshield's README: *"Only metadata such as call time, request size and scan mode is stored from scans using `ggshield`, therefore secrets will not be displayed on your dashboard and **your files and secrets won't be stored**."* Read it closely: it is about what is **kept**, not what is **sent**. The content is sent to be scanned.
+- The same README: the `pre-commit`, `pre-push` and `ai-hook` scans *"also send the machine hostname, from which GitGuardian registers the users of these hooks."* It names an opt-out: `endpoint_registration: false` in `.gitguardian.yaml`, or the environment variable `GGSHIELD_NO_ENDPOINT_REGISTRATION`. The lab's Mac runs ggshield 1.49.0. Whether that version already sends the hostname is unverified.
+- The same README: on macOS, *"upgrading to 1.54.0 triggers a Keychain prompt"*. Warn the person before an upgrade.
+- GitGuardian's GitHub integration page: on first connection *"GitGuardian performs a comprehensive scan of your entire content history"*, within the repositories it monitors. Unselect a repository and *"GitGuardian will no longer fetch the content of its commits."* Removing the integration *"preserves your incident history"*. The page does not say how long content is kept.
+
+### <img src="../assets/icons/eye.svg" width="20" height="20" alt=""> Other apps read the same pushes
+
+A push reaches every app installed on the repository. On 2026-11-16 Augment Code's GitHub app also had a check suite on recent commits of every private repository we checked. Its docs list read-only access to repository contents. An issue tracker (Linear) left no check suite and no comment, yet it listed pull-request titles from a private repository in its Reviews page. Linear's docs say Reviews works through each person's own GitHub connection, even without code access. So a pull-request title, a branch name and a commit message travel further than the code. Write them as you would a public sentence: the kind of change, never a case fact, a figure or a person's name.
+
+### <img src="../assets/icons/list-checks.svg" width="20" height="20" alt=""> The options (proposed; the owner chooses)
+
+| Option | What changes | What it costs | Suits |
+|---|---|---|---|
+| **A. Keep hosted** (today) | nothing | the content of each commit goes to GitGuardian; we rely on their storage statement | most repositories: code, procedures, public pages |
+| **B. A local-only scanner** for private-class repositories (legal, tax, health or family material) | the hook runs gitleaks or trufflehog there instead of ggshield | a second tool to pin, review and update; its rules differ from GitGuardian's | repositories with legal or tax material; by-hand scans of private folders |
+| **C. Limit the GitHub app** | github.com/settings/installations → GitGuardian → **Configure** → *Repository access* → **Only select repositories**, leaving private-class repositories out. Or take them out of the monitored perimeter in GitGuardian's dashboard | a new repository is not added on its own; add it when it should be | the same repositories. Review every other installed app the same way |
+| **D. No hosted scan by hand** of a private folder | scan those folders with option B's tool | none | rebuilt transcripts, case folders |
+
+Option C stops road 3 only; road 1 keeps sending until option B is in place. What was sent before stays under GitGuardian's own statement.
+
+If option B is chosen:
+
+1. Pin one version and its checksum. Read it under SOP-IT-900 (bringing in outside code), in the evaluation VM, before its first run.
+2. gitleaks runs on the Mac. Its README names no network step (read 2026-11-16). Confirm that once, at review, by watching the network.
+3. trufflehog checks a found key by trying it: *"A verified result means TruffleHog confirmed the credential is valid by testing it against the service's API."* In a private-class repository, run it with `--no-verification`. Its licence is AGPL-3.0.
+4. The hook decides by a setting in the clone (for example `git config fleet.secretScan local`), never by the repository's name, and prints which scanner ran.
+5. Nothing is removed: ggshield stays for every other repository.
+
+*Sources for this section, read 2026-11-16: ggshield's README (github.com/GitGuardian/ggshield, main branch); GitGuardian's [Integrate GitHub](https://docs.gitguardian.com/internal-monitoring/integrate-sources/vcs-integrations/github) page; Linear's [GitHub](https://linear.app/docs/github) and [Reviews](https://linear.app/docs/diffs) pages; Augment Code's [Install the GitHub App](https://docs.augmentcode.com/setup-augment/install-github-app) page (as summarised by a search; its exact wording is unverified); the READMEs of [gitleaks](https://github.com/gitleaks/gitleaks) and [trufflehog](https://github.com/trufflesecurity/trufflehog); `ggshield api-status` and the GitHub check-suites API, run read-only on the lab's Mac. Proposed by Alfred (a helper); not approved.*
 
 ## <img src="../assets/icons/users.svg" width="24" height="24" alt=""> Roles
 | Role | Does |
