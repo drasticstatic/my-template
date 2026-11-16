@@ -16,7 +16,7 @@ guessed: an item with no written owner shows "-".
 Every title is shown by default. With --counts-only, repositories whose path matches the pattern show a count only,
 for a page that will be read by someone who should not see those titles. The page links to local files, so it belongs
 in a private place (a personal vault, a private lane), never a public one. It is generated: never edit it by hand.
-Idempotent; no network. Used by the personal vault's refresh; see AGENT-SYNC/README.md, "Open loops".
+Idempotent; no network. Used by the personal vault's refresh.
 """
 
 import argparse
