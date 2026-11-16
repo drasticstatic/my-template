@@ -7,14 +7,16 @@
 #
 # The fork in the road:
 #   synced (iCloud)  ordinary drafts, command lists, small backups; follows you to every device
-#   local (~/Archive) anything that looks like a secret, anything over 1 GB, or --local;
-#                     never synced, and Time Machine picks it up
+#   local (~/AI-Archive_Fleet/claude-scratch) anything that looks like a secret, anything over 1 GB, or --local;
+#                     never synced, and Time Machine picks it up (the folder was ~/Archive/claude-scratch until
+#                     2026-11-16; a link with the old name still points there)
 # Nothing is ever deleted: `done` moves a folder to done/YYYY/MM/. Copies never overwrite.
+# Self-test: sh scripts/keep-scratch.selftest.sh (a fake home in a temporary folder; never your iCloud Drive).
 
 set -eu
 
 SYNCED="${KEEP_SCRATCH_SYNCED:-$HOME/Library/Mobile Documents/com~apple~CloudDocs/__Scratchpad-4-Claude__}"
-LOCAL="${KEEP_SCRATCH_LOCAL:-$HOME/Archive/claude-scratch}"
+LOCAL="${KEEP_SCRATCH_LOCAL:-$HOME/AI-Archive_Fleet/claude-scratch}"
 LIMIT_KB="${KEEP_SCRATCH_LIMIT_KB:-1048576}"
 
 usage() { sed -n '2,8p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }

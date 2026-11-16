@@ -124,7 +124,7 @@ Two more reasons to move them: the fork's `.gitignore` lists `server.log` but no
 **Delete nothing: move them.** Run these yourself:
 
 ```sh
-mkdir -p ~/Archive/free-claude-code-logs && mv -n ~/code-forked/free-claude-code/server.2026-*.log ~/Archive/free-claude-code-logs/
+mkdir -p ~/AI-Archive_Fleet/free-claude-code-logs && mv -n ~/code-forked/free-claude-code/server.2026-*.log ~/AI-Archive_Fleet/free-claude-code-logs/   # the folder was ~/Archive until Nov 16, 2026
 mkdir -p ~/Library/Logs/free-claude-code      # then start tab 1 with LOG_FILE set (below), or put LOG_FILE= in .env
 LOG_FILE="$HOME/Library/Logs/free-claude-code/server.log" uv run uvicorn server:app --host 127.0.0.1 --port 8082
 printf '%s\n' 'server.*.log' >> ~/code-forked/free-claude-code/.gitignore   # then commit it in that repository
