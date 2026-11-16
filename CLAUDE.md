@@ -237,6 +237,8 @@ attribution survives. Procedure: `SOP-OPS-002` in each organisation's `ops-stand
 (template: `my-template/sop-template/`); the road itself is `SOP-OPS-001`.
 Commit subjects start with one gitmoji and a type, `:sparkles: feat(scope): subject` (warn-only hint; the twelve
 and why the alias form are in [`my-template/GITMOJI.md`](https://github.com/drasticstatic/my-template/blob/main/GITMOJI.md)).
+A pull request names its issue per [`my-template/PR-CLOSING-KEYWORDS.md`](https://github.com/drasticstatic/my-template/blob/main/PR-CLOSING-KEYWORDS.md)
+(proposed Nov 16): `ref KEY-12` into `preview`; closing words only on the Promote into `main`, which names every issue again.
 Run `sh ~/code/my-template/scripts/sync-local.sh` when the iMac may be behind GitHub (VS Code reads local files).
 A main README follows [`my-template/README-STANDARD.md`](https://github.com/drasticstatic/my-template/blob/main/README-STANDARD.md): its own banner (`scripts/make-banner.py`), *You are here*, badges, TL;DR, Lucide icons, *Suggest a change*.
 <!-- fleet:pull-requests-and-promotes:end -->
