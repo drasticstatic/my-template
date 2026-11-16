@@ -26,6 +26,7 @@ sh runbook-tray.selftest.sh --with-applet                      # 251: also draws
 | [`build.sh`](build.sh) | fills the applet's six paths, compiles it with `osacompile`, marks it as having no Dock icon, and signs it for this Mac only |
 | [`config.example.json`](config.example.json), [`status.example.py`](status.example.py) | a config and a status command to start from |
 | [`runbook-tray.selftest.sh`](runbook-tray.selftest.sh) | the proof, with a made-up home, status command, entries and opener |
+| [`DESIGN-NATIVE-SHELLS.md`](DESIGN-NATIVE-SHELLS.md), [`CHANGELOG.md`](CHANGELOG.md) | a proposed design for native shells on macOS, Windows and Linux around the same helper; what changed, newest first |
 
 ## The rules it keeps
 

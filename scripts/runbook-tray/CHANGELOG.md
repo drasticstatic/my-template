@@ -10,7 +10,10 @@ its commit. From now on, a change to this folder adds its entry here in the same
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+- `DESIGN-NATIVE-SHELLS.md`, PROPOSED: one Python core, whose `render` already writes `menu.json`, and a thin shell
+  per system (SwiftUI `MenuBarExtra` on macOS, `pystray` or .NET `NotifyIcon` on Windows, AppIndicator on Linux), the
+  steps for a dedicated Xcode session, and a phone companion. Nothing built; no Xcode tool run.
 
 ## 2026-11-13 · `3aaac74`: folding groups, rows not counted, and *unknown*
 
