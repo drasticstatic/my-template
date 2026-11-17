@@ -492,6 +492,10 @@ option, each run decides, in this order:
 So a quiet month costs nothing, a busy one costs only what changed, and a restore never needs more than the last full and
 about half its size again in incrementals. `CLAUDE_ARCHIVE_FULL_PCT` (50) and `CLAUDE_ARCHIVE_FULL_MONTHS` (12) change
 the two limits. Leave the option off the Claude chain: its daily incrementals would pass half a full within days.
+Leave it off any **working folder** too, where files are moved or renamed as part of normal work (a scratch folder
+closed from `open/` to `done/`, say): every move is a removal, so each run would make a full, which is worse than the
+monthly rhythm. It suits a folder that is filed and left alone, such as an archive of finished exports. (Nov 17: the
+option was taken off a busy archive folder's weekly schedule for this reason, before its first week.)
 
 ```sh
 sh ~/code/my-template/scripts/claude-projects-archive.sh --if-due --full-when-needed --source ~/AI-Archive_manual --name ai-archive-manual
