@@ -1,7 +1,8 @@
 # PR closing keywords: how a pull request names an issue
 
-**Proposed 2026-11-16, for Christopher's approval. Until he approves it, this page is a draft. No Linear or GitHub
-setting has been changed because of it.**
+**Approved by Christopher on 2026-11-17** ("yes I approve: PR-CLOSING-KEYWORDS.md"); proposed 2026-11-16. It is the
+fleet's rule from that day. No Linear or GitHub setting was changed because of it; each team's own settings are written
+down as described below.
 
 A pull request into `preview` names its Linear issue with `ref`. Only the Promote, from `preview` into `main`, uses a
 closing word, and it names every issue again:
