@@ -11,6 +11,12 @@ its commit. From now on, a change to this folder adds its entry here in the same
 ## [Unreleased]
 
 ### Added
+- Fixtures for native shells: `RUNBOOK_TRAY_FIXTURES=DIR sh runbook-tray.selftest.sh` writes the self-test's made-up
+  menus into `DIR`: `01-good` … `06-folded` (the applet's six; `03-broken` is not JSON, on purpose) plus
+  `07-family`, a group inside a group. Nothing is started and nothing appears on screen. The six are written by one
+  function, `write_fixtures`, which the `--with-applet` round now calls too, unchanged in what it draws. First reader:
+  the macOS shell's decoding tests (`runbook-tray-macos`, a repository of its own). Self-test: 236 checks as before, 238
+  with `RUNBOOK_TRAY_FIXTURES`, 265 with `--with-applet`.
 - Families: a status row may carry `"family": "Name"`. Rows of one group with the same family sit in a submenu of
   their own, `Name (n)`, at the place of the first of them, marked with their worst state and counting each state.
   It works inside a folded group (a submenu in a submenu) and in the main menu. A family of one row, and rows without

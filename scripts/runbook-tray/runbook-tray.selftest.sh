@@ -5,6 +5,8 @@
 #   sh runbook-tray.selftest.sh --with-applet   also start the built applet in its self-test mode: an item appears in the
 #                                               menu bar for about a second. It starts no helper and opens nothing.
 #   RUNBOOK_TRAY_KEEP=DIR sh ... --with-applet  also copy the applet's report and its pictures of each menu into DIR
+#   RUNBOOK_TRAY_FIXTURES=DIR sh ...            also write the menu.json fixtures (01-good … 07-family) into DIR, for a
+#                                               native shell's tests to decode. Nothing is started; nothing appears.
 #
 # Everything happens in a temporary folder with a made-up home; the status command, the entries and the opener are
 # small scripts written there. It never reads your config, your jobs or ~/Applications. The folder is removed afterwards.
@@ -521,6 +523,21 @@ else
   echo "skip  the live reading of this machine (it needs macOS)"
 fi
 
+# ---- the menu.json fixtures: made-up menus, as the core renders them, for the applet's self-test and native shells ----
+# write_fixtures DIR writes 01-good … 06-folded into DIR; 03-broken is not JSON, on purpose.
+write_fixtures() {
+  mkdir -p "$1" || return 1
+  printf '%s\n' "$good_status" > "$HOME/bin/status.out"
+  run render --config "$cfg" --state "$work/state" >/dev/null 2>&1; cp "$work/state/menu.json" "$1/01-good.json"
+  printf '%s\n' '{"rows": [{"name": "b", "state": "look", "detail": "slow", "group": "Checks"}, {"name": "c", "state": "bad", "detail": "stopped", "group": "Checks"}, {"name": "d", "state": "off", "detail": "not set up", "group": "Checks"}]}' > "$HOME/bin/status.out"
+  run render --config "$cfg" --state "$work/state" >/dev/null 2>&1; cp "$work/state/menu.json" "$1/02-trouble.json"
+  printf 'not json\n' > "$1/03-broken.json"
+  cp "$work/machine-fixture.json" "$1/04-machine.json"
+  cp "$work/machine-calm-fixture.json" "$1/05-machine-calm.json"
+  printf '%s\n' "$side_status" > "$HOME/bin/status.out"
+  run render --config "$foldcfg" --state "$work/state" >/dev/null 2>&1; cp "$work/state/menu.json" "$1/06-folded.json"
+}
+
 # ---- on macOS: the applet compiles, and the build makes a signed app without touching ~/Applications ----
 if [ "$(uname)" = Darwin ] && [ -x /usr/bin/osacompile ]; then
   /usr/bin/osacompile -s -o "$work/Compile Check.app" "$stamped" >"$work/compile.out" 2>&1
@@ -546,16 +563,7 @@ if [ "$(uname)" = Darwin ] && [ -x /usr/bin/osacompile ]; then
   out="$(sh "$here/build.sh" --config "$badcfg" --out "$work/out" 2>&1)"; check "build: a config with a problem is exit 2" "$?" 2
 
   if [ "$WITH_APPLET" = 1 ]; then
-    fx="$work/fixtures"; mkdir -p "$fx"
-    printf '%s\n' "$good_status" > "$HOME/bin/status.out"
-    run render --config "$cfg" --state "$work/state" >/dev/null 2>&1; cp "$work/state/menu.json" "$fx/01-good.json"
-    printf '%s\n' '{"rows": [{"name": "b", "state": "look", "detail": "slow", "group": "Checks"}, {"name": "c", "state": "bad", "detail": "stopped", "group": "Checks"}, {"name": "d", "state": "off", "detail": "not set up", "group": "Checks"}]}' > "$HOME/bin/status.out"
-    run render --config "$cfg" --state "$work/state" >/dev/null 2>&1; cp "$work/state/menu.json" "$fx/02-trouble.json"
-    printf 'not json\n' > "$fx/03-broken.json"
-    cp "$work/machine-fixture.json" "$fx/04-machine.json"
-    cp "$work/machine-calm-fixture.json" "$fx/05-machine-calm.json"
-    printf '%s\n' "$side_status" > "$HOME/bin/status.out"
-    run render --config "$foldcfg" --state "$work/state" >/dev/null 2>&1; cp "$work/state/menu.json" "$fx/06-folded.json"
+    fx="$work/fixtures"; write_fixtures "$fx"
     report="$work/applet-report.txt"
     "$app/Contents/MacOS/applet" --selftest "$fx" "$report" >"$work/applet.out" 2>&1 &
     ap=$!
@@ -598,6 +606,16 @@ if [ "$(uname)" = Darwin ] && [ -x /usr/bin/osacompile ]; then
   fi
 else
   echo "skip  the compile and the build (they need macOS)"
+fi
+
+# ---- for native shells: RUNBOOK_TRAY_FIXTURES=DIR writes the fixtures there, plus a family (a group in a group) ----
+if [ -n "${RUNBOOK_TRAY_FIXTURES:-}" ]; then
+  write_fixtures "$RUNBOOK_TRAY_FIXTURES"
+  printf '%s\n' "$family_status" > "$HOME/bin/status.out"
+  run render --config "$foldcfg" --state "$work/state" >/dev/null 2>&1; cp "$work/state/menu.json" "$RUNBOOK_TRAY_FIXTURES/07-family.json"
+  check "fixtures: the seven files are written for native shells" "$(cd "$RUNBOOK_TRAY_FIXTURES" && ls 01-good.json 02-trouble.json 03-broken.json 04-machine.json 05-machine-calm.json 06-folded.json 07-family.json 2>/dev/null | wc -l | tr -d ' ')" "7"
+  check "fixtures: the family file holds a group inside a group" "$("$PY" -I -c 'import json,sys; m=json.load(open(sys.argv[1])); print(next((j["title"] for i in m["items"] if i.get("kind") == "group" for j in i.get("items", []) if j.get("kind") == "group"), "none"))' "$RUNBOOK_TRAY_FIXTURES/07-family.json")" "Kin (3)"
+  echo "kept  the menu.json fixtures in $RUNBOOK_TRAY_FIXTURES"
 fi
 
 echo
