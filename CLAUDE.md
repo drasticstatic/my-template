@@ -216,7 +216,8 @@ template, don't let this get silently skipped.
    `my-template/scripts/rename-local-repo.py` (`SOP-IT-006`).
 2. **Warn first.** "Anything that mounts a disk or pops a prompt on your screen gets a warning first" (Christopher,
    Nov 5). Say so before running such a command: disk images, Time Machine, VirusBarrier/Intego scans, system
-   dialogs, keychain prompts. Xcode tools are never run.
+   dialogs, keychain prompts. Xcode tools may be run where the owner has allowed it, each Xcode project in its own
+   repository and session, with a warning before anything that installs, downloads or prompts.
 3. **Attestation** (Christopher's policy of Nov 5). In repositories Christopher owns, Claude may do the line-by-line
    review of files the public-lane scanner (`scripts/scan-public-lane.sh`) flags and record it in
    `PUBLIC-ALLOWLIST-ATTESTED.txt`. The officer field names the actual reviewer (e.g.
