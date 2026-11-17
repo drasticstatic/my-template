@@ -426,7 +426,7 @@ settings block in its header. Neither is installed by default: [`walkthroughs/CL
 ## `claude-projects-archive.sh` — a nightly sealed copy of `~/.claude/projects`
 
 ```sh
-sh scripts/claude-projects-archive.selftest.sh                 # a fake home in a temporary folder; 346 checks
+sh scripts/claude-projects-archive.selftest.sh                 # a fake home in a temporary folder; 409 checks
 sh scripts/claude-projects-archive.sh --init                   # once, by you: the passphrase file (never shown)
 sh scripts/claude-projects-archive.sh --run                    # full on the first run of a month, else what changed
 sh scripts/claude-projects-archive.sh --list                   # archives, sizes, total
@@ -434,6 +434,7 @@ sh scripts/claude-projects-archive.sh --restore-latest ~/claude-restore   # into
 sh scripts/claude-projects-archive.sh --install                # by you: a LaunchAgent at 00:40 nightly (--if-due)
 sh scripts/claude-projects-archive.sh --run --source ~/Notes --name notes # another folder, its own chain
 sh scripts/claude-projects-archive.sh --run --source ~/Notes --name notes --exclude private   # less a part of it
+sh scripts/claude-projects-archive.sh --if-due --full-when-needed --source ~/Notes --name notes   # no monthly full; quiet = nothing
 ```
 
 `tar`, `gzip` and `openssl enc -aes-256-cbc -pbkdf2 -iter 600000` over `~/.claude/projects`, and `~/.claude/CLAUDE.md`,
@@ -446,7 +447,7 @@ with `--dest`. A chain begun before any of these were added carries on: the next
 that gives others. `--source DIR --name NAME` seals another folder
 the same way, with every mode but `--install`/`--uninstall`: archives named `NAME_…_full.tar.gz.enc` under
 `<dest>/NAME/YYYY/`, paths relative to DIR's parent, and a state folder of its own, so it never shares a stamp with the
-Claude chain. It refuses a NAME other than letters, digits, `-` and `_`, and a DIR inside `~/.claude` or overlapping the destination. Each archive is written as `.partial`,
+Claude chain. It refuses a NAME other than letters, digits, `-` and `_`, and a DIR inside `~/.claude` or overlapping the destination. DIR and `--dest` are taken in the case the disk keeps, so two spellings of one folder are one chain; an older chain folder keyed by another spelling is shown as ORPHANED by `--status` and `--list`, never touched. `--full-when-needed` (with `--run`/`--if-due`, for a slow-moving chain) drops the monthly full: a quiet run makes no archive (a `none` row, "unchanged since"), a changed one an incremental, and a full comes only when a path is gone, the incrementals pass half the last full, or that full is a year old. `--status` and `--list` show each chain's last full and why its last run did or did not make an archive. Each archive is written as `.partial`,
 decrypted again and counted, given a `.sha256`, then renamed; the stamp for the next incremental moves only after that. It
 refuses a destination inside `~/.claude`, a passphrase file that is missing or not mode 600, and a restore into anything but
 a new, empty folder outside `~/.claude`. It deletes no archive (`--prune-plan` only prints a plan). Setup lines, restore

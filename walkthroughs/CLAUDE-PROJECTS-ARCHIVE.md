@@ -9,7 +9,7 @@
 *The live `~/.claude` stays where it is. Only finished, sealed archives of it travel.*
 
 ![Walkthrough](https://img.shields.io/badge/Walkthrough-projects_archive-800020?style=flat-square)
-![Changed](https://img.shields.io/badge/Changed-2026--11--16-5c1a2b?style=flat-square)
+![Changed](https://img.shields.io/badge/Changed-2026--11--17-5c1a2b?style=flat-square)
 ![Status](https://img.shields.io/badge/Status-tested_not_yet_scheduled-1a1a2e?style=flat-square)
 ![For](https://img.shields.io/badge/For-Claude_Code_on_a_Mac-64748b?style=flat-square)
 
@@ -22,7 +22,7 @@
 1. <img src="../assets/icons-phosphor/files.svg" width="16" height="16" alt=""> **`~/.claude/projects` holds every session you have had,** and your agents' memory. It is not in git and it should never go to GitHub. Until now it lived on one disk. The archive also takes your prompt history (`history.jsonl`), your plans, the snapshots behind checkpoint restore, and each project's `.claude/settings.local.json` (its allow rules, which git ignores).
 2. <img src="../assets/icons-phosphor/lock.svg" width="16" height="16" alt=""> **One script seals a copy each night.** `tar`, `gzip`, then `openssl` AES-256 with a passphrase that lives in a file on this Mac and in your password manager.
 3. <img src="../assets/icons-phosphor/cloud.svg" width="16" height="16" alt=""> **It lands in iCloud Drive by default,** as finished files only. Advanced Data Protection covers it there; the passphrase covers it everywhere else.
-4. <img src="../assets/icons-phosphor/layers.svg" width="16" height="16" alt=""> **A full copy once a month, then only what changed.** Each archive is checked after it is written. Nothing is ever deleted.
+4. <img src="../assets/icons-phosphor/layers.svg" width="16" height="16" alt=""> **A full copy once a month, then only what changed.** For a folder that rarely changes, `--full-when-needed` makes a full only when one is needed, and a quiet month nothing at all ([below](#-our-own-time-machine-what-goes-to-icloud-and-how-it-never-piles-up)). Each archive is checked after it is written. Nothing is ever deleted.
 5. <img src="../assets/icons-phosphor/history.svg" width="16" height="16" alt=""> **Restoring is one line,** into a new, empty folder. Never over the live `~/.claude`.
 6. <img src="../assets/icons-phosphor/wrench.svg" width="16" height="16" alt=""> **You set it up with four lines,** below. A helper may not: two of them show something on your screen.
 7. <img src="../assets/icons-phosphor/folder-lock.svg" width="16" height="16" alt=""> **Another folder can be sealed the same way,** in a chain of its own: `--source DIR --name NAME` ([below](#-sealing-another-folder)).
@@ -50,7 +50,7 @@ flowchart TD
 | **What goes in** | everything under `~/.claude/projects` (transcripts, `memory/` folders, tool results, the manifest and session logs), and, when they exist, `~/.claude/CLAUDE.md`, `~/.claude/history.jsonl`, `~/.claude/plans/` and `~/.claude/file-history/` ([below](#-what-the-archive-holds-and-why-the-history-file-matters)), and every project's `.claude/settings.local.json` under your home ([below](#-each-projects-settingslocaljson)). Nothing inside them is left out: all of it is wanted back. |
 | **What stays out** | the rest of `~/.claude`: `settings.json`, credentials, caches, plugins, debug logs. Those are not yours to lose in the same way, and some hold tokens. A project's `settings.json` stays out too: git keeps it. |
 | **The script** | [`scripts/claude-projects-archive.sh`](../scripts/claude-projects-archive.sh), plain `/bin/sh` and the tools macOS ships with |
-| **The proof** | [`scripts/claude-projects-archive.selftest.sh`](../scripts/claude-projects-archive.selftest.sh): a fake home in a temporary folder and a stand-in `curl`, 346 checks. Your real `~/.claude` is never read by it, and nothing goes over the network |
+| **The proof** | [`scripts/claude-projects-archive.selftest.sh`](../scripts/claude-projects-archive.selftest.sh): a fake home in a temporary folder and a stand-in `curl`, 409 checks. Your real `~/.claude` is never read by it, and nothing goes over the network |
 | **Names** | `claude-projects_20261107-004012_full.tar.gz.enc`, then `..._incr.tar.gz.enc`, each with a `.sha256` beside it. A plain sort of the names is the order they were made, and the order to restore them |
 | **The seal** | `openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -md sha256 -salt`. The passphrase is read from its file (`-pass file:`), never typed on a command line. LibreSSL (in macOS) and OpenSSL 3 open each other's archives; the self-test checks it |
 | **Where the passphrase lives** | `~/.config/claude-archive/passphrase`, mode 600, in a folder of mode 700. The script refuses to run if the file is missing or anyone else can read it |
@@ -375,6 +375,12 @@ sh ~/code/my-template/scripts/claude-projects-archive.sh --status --source ~/Not
 - **`--exclude REL` leaves part of it out,** as often as you need: a folder (with everything under it) or one file,
   `REL` relative to `DIR` (`--exclude private --exclude logs/server.log`). No leading `/`, no `..`; a trailing `/` is
   dropped. Use it for whatever must not leave the Mac even sealed: key material, case files, large scratch.
+- **One folder, one chain, however it is spelled.** `DIR` (and `--dest`) is taken in the case the disk keeps, links
+  followed, so `~/AI-Archive_Manual` and `~/AI-Archive_manual` on a Mac are the same chain. Before Nov 17, 2026 they were
+  two (the shell kept the case as typed). A chain folder keyed by such an older spelling is shown by `--status` and
+  `--list` as **ORPHANED**, with the chain its spelling now resolves to; the script never changes or removes it, and its
+  archives stay in the same `<destination>/NAME/YYYY/` folder, where they restore by name like any others. Retire the
+  folder by moving it out of `~/.config/claude-archive/sources/NAME/` once you no longer want it listed.
 - **A chain keeps the excludes of its first run.** A later `--run` or `--if-due` that gives other excludes, or none, is
   refused (exit 2, recorded as that chain's failure, so `--status` says STALE): a hand run that forgot them would
   otherwise seal what was meant to stay out. To change them, begin a new chain under a new `--name`; the old chain's
@@ -405,8 +411,9 @@ folder's full path, `--name`, `notes`, then each `--exclude` and its path; add `
 other than iCloud). The `post-commit` line below works the same way with `--source` and `--name` added.
 
 **Weekly is often enough** for a folder you add to by hand (exports, finished work): a missed week costs at most a week
-of additions, and the first run of each month is a full copy whatever the schedule, so a nightly job buys little more
-than log lines. A weekly plist, Sundays at 01:10 (replace `YOU` with your user name; `plutil -lint` checks it):
+of additions, so a nightly job buys little more than log lines. Without `--full-when-needed` the first run of each month
+is a full copy whatever the schedule; with it (add `<string>--full-when-needed</string>` after `--if-due`), a quiet
+month makes nothing ([below](#-our-own-time-machine-what-goes-to-icloud-and-how-it-never-piles-up)). A weekly plist, Sundays at 01:10 (replace `YOU` with your user name; `plutil -lint` checks it):
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -458,6 +465,52 @@ It runs in the background, so the commit does not wait, and `--if-due` makes it 
 the last success. It is opt-in: no fleet hook carries it. In a repository whose hooks are version-controlled (`.githooks/`),
 keep it out of the shared file: it would then run for everyone who clones it.
 
+## <img src="../assets/icons-phosphor/cloud.svg" width="24" height="24" alt=""> Our own Time Machine: what goes to iCloud, and how it never piles up
+
+**One working copy, on the Mac.** `~/.claude`, `~/AI-Archive_manual`, `~/AI-Archive_Fleet` and any other folder you seal
+stay where they are, and you work in them as usual. Nothing in iCloud is a working copy: iCloud holds only **sealed
+copies**, encrypted before they leave the Mac, each with a `.sha256` beside it. Nothing syncs back, and nothing in
+iCloud is opened in place.
+
+**A chain is a full and the incrementals after it.** A full holds every file; each incremental holds only the files that
+changed or are new since the run before. `--restore-latest` unpacks the newest full and every incremental after it, in
+name order, into a new folder. Like Time Machine, any day can be had back: stop the restore at that day's incremental.
+
+**`--full-when-needed`: for a folder that rarely changes.** Without it, the first run of each calendar month makes a new
+full, whatever changed. For `~/.claude` that is right: its incrementals are large, and a monthly full keeps restores
+short. For a folder of exports you add to by hand, it means a near-identical full copy in iCloud every month. With the
+option, each run decides, in this order:
+
+| | The run makes |
+|---|---|
+| The chain's first run, or `--full` | a full, as always |
+| A path the chain has sealed is gone (removed, or renamed away) | a full: an incremental cannot record a removal, and without a full `--restore-latest` would bring the file back. A run without the option remembers the removal, so the next run with it still makes this full |
+| Nothing changed, nothing gone | **nothing.** No file at the destination; `history.tsv` gets a `none` row, *unchanged since* the last archive, and `--status` and `--list` say so |
+| Something changed, and the incrementals since the last full already add up to more than **half** its sealed size, or the last full is **12 or more months** old | a full |
+| Something changed, otherwise | an incremental, whatever the date |
+
+So a quiet month costs nothing, a busy one costs only what changed, and a restore never needs more than the last full and
+about half its size again in incrementals. `CLAUDE_ARCHIVE_FULL_PCT` (50) and `CLAUDE_ARCHIVE_FULL_MONTHS` (12) change
+the two limits. Leave the option off the Claude chain: its daily incrementals would pass half a full within days.
+
+```sh
+sh ~/code/my-template/scripts/claude-projects-archive.sh --if-due --full-when-needed --source ~/AI-Archive_manual --name ai-archive-manual
+sh ~/code/my-template/scripts/claude-projects-archive.sh --status --source ~/AI-Archive_manual --name ai-archive-manual
+```
+
+`--status` and `--list` now show, for each chain, its last full (name, date, size, the incrementals since and their share
+of it) and its last run: what it made, or that it made nothing, and why.
+
+**It never piles up, and nothing is deleted.** The script deletes no archive. When iCloud should hold less,
+`--prune-plan KEEP` prints what keeping the newest `KEEP` chains would move aside, and `--move-old KEEP DIR` moves the
+older chains, each with its `.sha256` and checked after the move, into `DIR`: the Time Machine drive, once it exists
+(`--move-old 3 /Volumes/<drive>/claude-archives`). The moved chains restore from there with `--dest`, and the newest
+chains stay in iCloud and restore on their own. Moving is a person's choice, made by hand.
+
+**The key is in 1Password.** Every chain is sealed with the one passphrase in `~/.config/claude-archive/passphrase`
+(mode 600), and its copy in 1Password is the only other key ([setup, step 2](#-set-it-up-four-lines-in-this-order)).
+Without one of the two, no archive in iCloud or on a drive can be opened, by you or anyone.
+
 ## <img src="../assets/icons-phosphor/cloud.svg" width="24" height="24" alt=""> What it costs in iCloud space
 
 Measured Nov 6, 2026 on this iMac, into a scratch folder (not iCloud), with a scratch passphrase:
@@ -495,6 +548,9 @@ fills, iPhone backups and photo uploads stop too, so leave room.
   that moment. The next night's archive has the rest. If a session is running when you restore, read its last line with care.
 - **A file deleted from `~/.claude/projects` comes back in a restore** that starts from an older full, because an incremental
   records what changed, not what was removed. Transcripts are kept for ten years (`cleanupPeriodDays: 3650`), so this rarely matters.
+  With `--full-when-needed` a removal makes the next run a full, so `--restore-latest` is exact.
+- **Change is found by modification time and by new paths.** A file replaced by an older copy of itself at the same
+  path, with its old time kept (`cp -p`), is not seen as changed until the next full.
 - **A renamed project folder is caught.** `rename-local-repo.py` keeps the files' old modification times, so the time test alone would miss them; each run also keeps the list of every path it saw and adds any path that is new since the last run. The old folder name still comes back in a restore from an older full: archives remember, they do not forget.
 - **A run that fails writes nothing and is retried the next night,** or the next time `--if-due` is called. A file that
   vanishes between the listing and the archive (a project folder moved mid-run, or a checkpoint snapshot that a running
@@ -516,9 +572,10 @@ fills, iPhone backups and photo uploads stop too, so leave room.
 | `--init` | make `~/.config/claude-archive/` (700) and the passphrase (600) if missing; print the `pbcopy` line, never the passphrase |
 | `--run` | full or incremental, as above; prints the sizes and the destination's total |
 | `--run --full` | a full archive whatever the date |
+| `--full-when-needed` | with `--run` or `--if-due`: no monthly full; a full only when a path is gone, the incrementals pass half the last full, or it is a year old; a quiet run makes nothing ([the rule](#-our-own-time-machine-what-goes-to-icloud-and-how-it-never-piles-up)) |
 | `--if-due` | `--run` only if the last success is over 20 hours old |
-| `--status` | did it work? reads only the state: exit 1 when the newest success is over 36 h old or a failure came after it |
-| `--list` | every archive at the destination, oldest first, with sizes; flags an unfinished `.partial` left by a crash |
+| `--status` | did it work? reads only the state: exit 1 when the newest success is over 36 h old or a failure came after it. For each chain, its last full and what its last run did, and why; an orphaned chain folder is named |
+| `--list` | every archive at the destination, oldest first, with sizes; flags an unfinished `.partial` left by a crash; then the chain's last full and its last run, and why |
 | `--verify FILE` | check the `.sha256`, decrypt to a pipe, read the tar; write nothing |
 | `--restore FULL [INCR ...] DIR` | unpack those, in that order, into a new or empty `DIR` |
 | `--restore-latest DIR` | the newest full and every incremental after it |
@@ -556,6 +613,7 @@ helper, in your own words.
 ## <img src="../assets/icons-phosphor/history.svg" width="24" height="24" alt=""> Change log
 | Date | Change |
 |---|---|
+| 2026-11-17 | `--full-when-needed` for slow-moving chains: no monthly full; a full only when a path is gone, the incrementals since the last full pass half its size, or it is a year old; a quiet run makes no archive and records `none`, "unchanged since". `--status` and `--list` show each chain's last full and why its last run did or did not make an archive. `DIR` and `--dest` are taken in the case the disk keeps, so two spellings of one folder are one chain; an older chain folder keyed by another spelling is shown as ORPHANED, never touched. history.tsv rows gain a sixth column, why. New section: *Our own Time Machine*. The self-test grows to 409 checks. |
 | 2026-11-16 | Each project's `.claude/settings.local.json` under the home joins the Claude chain (found afresh each run, six levels deep at most, skipping Library, the Trash, the folders macOS guards, archive and restore folders, `node_modules` and `.git`; only the count is printed). `--exclude REL` for a `--source` chain, remembered by the chain, which refuses a run with other excludes. A weekly LaunchAgent example for a second chain, and the fleet's archive folder's new name. The self-test grows to 346 checks. |
 | 2026-11-13 | The log's "destination total" line is counted from file sizes, not disk blocks: the scheduled runs of Nov 12 and 13 printed "0 B" although the sealed files were in place and verified. If the total still cannot be read, the line says so instead of printing a zero. One more check in the self-test (298). |
 | 2026-11-12 | The archive also takes `history.jsonl`, `plans/` and `file-history/` when they exist; an existing chain carries on with an ordinary incremental. `--source DIR --name NAME` seals another folder in a chain of its own (`<dest>/NAME/YYYY/`, its own state; scheduling it is your own LaunchAgent). New sections: what the archive holds, *When a transcript is already gone*, *Sessions that ran through a gateway*, *Sealing another folder*, and the sources. The self-test grows to 297 checks. |
