@@ -540,6 +540,105 @@ done
 ok "$(count "$D/fleet" '*.enc')" "$((fl_n + 1))" "no refusal wrote an archive"
 ok "$(frun --status)" 0 "and none marked the chain as failed"
 
+# 12l. --full-when-needed: a quiet month makes nothing, a changed month an incremental, a full only when one is needed
+# (a path gone, the incrementals past half the full, or a full a year old), and restore-latest stays exact
+MS="$R/src/Manual"; mkdir -p "$MS/exports/a" "$MS/exports/b"
+head -c 120000 /dev/urandom > "$MS/exports/a/photo.bin"         # incompressible, so the full is ~120 KB sealed
+printf 'one\n' > "$MS/exports/a/one.md"; printf 'two\n' > "$MS/exports/b/two.md"; printf 's\n' > "$MS/with space.md"
+mrun() { run "$@" --source "$MS" --name manual --dest "$D"; }
+sums() { (cd "$1" && find . -type f | LC_ALL=C sort | while IFS= read -r f; do shasum -a 256 "$f"; done) | shasum -a 256 | cut -c1-64; }
+exact() { rm_into="$R/manual-r$1"; mrun --restore-latest "$rm_into" >/dev/null; [ "$(sums "$MS")" = "$(sums "$rm_into/Manual")" ] && echo same || echo differ; }
+mlast() { tail -n 1 "$MSD/history.tsv" | cut -f"$1"; }
+ok "$(mrun --list --full-when-needed)" 2 "--full-when-needed with --list is refused"
+ok "$(mrun --run --full-when-needed)" 0 "the first run with --full-when-needed"
+ok "$(grep -c '^full archive (first run' "$R/out")" 1 "is a full, as without it"
+MSD="$(ls -d "$CFG"/sources/manual/*/ | head -n 1)"; MSD="${MSD%/}"
+m_files="$(count "$D/manual" '*')"
+echo 202001 > "$MSD/last-full"                                   # the calendar month has turned
+ok "$(mrun --run --full-when-needed)" 0 "a quiet month"
+ok "$(grep -c '^Nothing changed since the last success; no archive written (unchanged since manual_.*_full.tar.gz.enc' "$R/out")" 1 "makes no archive, and says unchanged since the full"
+ok "$(count "$D/manual" '*')" "$m_files" "not one file more at the destination"
+ok "$(find "$D/manual" -type f -size 0 | wc -l | tr -d ' ')" 0 "and no empty file"
+ok "$(mlast 2)/$(mlast 5)" "none/-" "history.tsv records a none row"
+ok "$(mlast 6 | grep -c '^unchanged since manual_')" 1 "unchanged since the last archive"
+ok "$(mrun --status)" 0 "--status after a quiet month is ok"
+ok "$(grep -c '^  last full: manual_.*_full.tar.gz.enc (.*), .* sealed; since then 0 incremental(s)' "$R/out")" 1 "--status names the last full"
+ok "$(grep -c '^  last run: .* none: no archive: unchanged since manual_' "$R/out")" 1 "and why the last run made no archive"
+ok "$(mrun --list)" 0 "--list after a quiet month"
+ok "$(grep -c '^  last full: manual_' "$R/out")/$(grep -c '^  last run: .*unchanged since' "$R/out")" 1/1 "shows the same two lines"
+printf 'more\n' >> "$MS/exports/a/one.md"; echo 202001 > "$MSD/last-full"
+ok "$(mrun --run --full-when-needed)" 0 "a changed month"
+ok "$(grep -c '^incr archive (files changed since the last success; no monthly full' "$R/out")" 1 "makes an incremental, not a full"
+ok "$(count "$D/manual" 'manual_*_full.tar.gz.enc')" 1 "still one full"
+echo $(( $(date +%s) - 21 * 3600 )) > "$MSD/last-success"; printf 'new\n' > "$MS/exports/b/three.md"
+ok "$(mrun --if-due --full-when-needed)" 0 "--if-due with --full-when-needed"
+ok "$(grep -c '^incr archive' "$R/out")" 1 "makes an incremental too"
+ok "$(exact 1)" same "restore-latest over a full and two incrementals matches the folder (sha256 of every file)"
+head -c 100000 /dev/urandom > "$MS/exports/b/video.bin"           # the incrementals now pass half the full
+ok "$(mrun --run --full-when-needed)" 0 "a large addition"
+ok "$(grep -c '^incr archive' "$R/out")" 1 "travels as an incremental"
+printf 'x\n' >> "$MS/with space.md"
+ok "$(mrun --run --full-when-needed)" 0 "the next change"
+ok "$(grep -c '^full archive (the 3 incremental(s) since the last full add up to more than 50% of it)' "$R/out")" 1 "makes a full: the threshold"
+ok "$(count "$D/manual" 'manual_*_full.tar.gz.enc')" 2 "two fulls now"
+ok "$(mlast 2)/$(mlast 6 | grep -c 'more than 50%')" full/1 "history.tsv records why"
+ok "$(exact 2)" same "restore-latest from the new full matches"
+ok "$(mrun --run --full-when-needed)" 0 "nothing changed, mid-month"
+ok "$(grep -c '^Nothing changed' "$R/out")" 1 "no archive"
+mv "$MS/exports/b/two.md" "$R/two.md.moved-out"                  # a path gone from the folder
+ok "$(mrun --run --full-when-needed)" 0 "a removal and nothing else"
+ok "$(grep -c '^full archive (1 path(s) gone since the last full' "$R/out")" 1 "makes a full: an incremental cannot carry a removal"
+ok "$(exact 3)" same "so restore-latest matches exactly, without the removed file"
+mv "$MS/exports/a" "$MS/exports/a-renamed"
+ok "$(mrun --run)" 0 "a rename seen by a run without the option"
+ok "$(grep -c '^incr archive' "$R/out")" 1 "is an incremental, as before"
+ok "$(cat "$MSD/gone-since-full")" 2 "and the two old names are remembered"
+ok "$(mrun --status)" 0 "--status"
+ok "$(grep -c '^  2 path(s) gone since the last full' "$R/out")" 1 "says so"
+ok "$(mrun --run --full-when-needed)" 0 "the next run with the option, nothing else changed"
+ok "$(grep -c '^full archive (2 path(s) gone' "$R/out")" 1 "makes the full the removal needs"
+ok "$(test -s "$MSD/gone-since-full" && echo set || echo clear)" clear "and the count is cleared"
+ok "$(exact 4)" same "restore-latest matches exactly"
+awk -F'\t' 'BEGIN { OFS = "\t" } $2 == "full" { $1 = "20240101-000000" } { print }' "$MSD/history.tsv" > "$MSD/history.tsv.new" \
+  && mv "$MSD/history.tsv.new" "$MSD/history.tsv"                # the last full, as if made in Jan 2024
+ok "$(mrun --run --full-when-needed)" 0 "nothing changed, the last full long ago"
+ok "$(grep -c '^Nothing changed' "$R/out")" 1 "still no archive: age alone never makes one"
+printf 'y\n' >> "$MS/with space.md"
+ok "$(mrun --run --full-when-needed)" 0 "a change, the last full long ago"
+ok "$(grep -c '^full archive (the last full is [0-9]* months old' "$R/out")" 1 "makes a full: a year at most between fulls"
+ok "$(CLAUDE_ARCHIVE_FULL_PCT=abc mrun --run --full-when-needed)" 2 "a bad CLAUDE_ARCHIVE_FULL_PCT is refused"
+m_full="$(count "$D/manual" 'manual_*_full.tar.gz.enc')"
+echo 202001 > "$MSD/last-full"
+ok "$(mrun --run)" 0 "without the option, the month turning over"
+ok "$(grep -c '^full archive (first run of ' "$R/out")" 1 "still makes the monthly full (the default unchanged)"
+ok "$(count "$D/manual" 'manual_*_full.tar.gz.enc')" "$((m_full + 1))" "one more full"
+c_n="$(count "$D/$(date +%Y)" 'claude-projects_*.enc')"; echo 202001 > "$(statedir "$D")/last-full"
+ok "$(run --run --dest "$D" --full-when-needed)" 0 "the Claude chain takes the option too"
+ok "$(grep -c '^Nothing changed' "$R/out")" 1 "a quiet month there makes no archive either"
+ok "$(count "$D/$(date +%Y)" 'claude-projects_*.enc')" "$c_n" "(none written)"
+echo "$(date +%Y%m)" > "$(statedir "$D")/last-full"
+
+# 12m. two spellings of one folder on a case-insensitive disk are one chain (Nov 17: AI-Archive_Manual and
+# AI-Archive_manual became two); a chain folder keyed by an old spelling is shown as ORPHANED and left alone
+CD="$R/src/CaseDir"; mkdir -p "$CD"; printf 'c\n' > "$CD/c.md"
+if [ -d "$R/src/casedir" ]; then
+  ok "$(run --run --source "$R/src/casedir" --name cased --dest "$D")" 0 "a chain begun with one spelling"
+  ok "$(run --run --source "$R/src/CASEDIR" --name cased --dest "$D")" 0 "a run with another spelling"
+  ok "$(grep -c '^Nothing changed' "$R/out")" 1 "is the same chain: nothing changed"
+  ok "$(ls -d "$CFG"/sources/cased/*/ | wc -l | tr -d ' ')" 1 "one chain folder"
+  ok "$(cat "$CFG"/sources/cased/*/source)" "$CD" "recorded in the case the disk keeps"
+  ok "$(entries "$(find "$D/cased" -name 'cased_*_full.tar.gz.enc')" | cut -d/ -f1)" CaseDir "and archived under the on-disk name"
+  OR="$CFG/sources/cased/1234567"; mkdir -p "$OR"                   # a chain folder as an older script keyed it
+  printf '%s\n' "$D" > "$OR/dest"; printf '%s\n' "$R/src/casedir" > "$OR/source"; date +%s > "$OR/last-success"
+  ok "$(run --list --source "$CD" --name cased --dest "$D")" 0 "--list beside an orphaned chain folder"
+  ok "$(grep -c '^ORPHANED chain folder 1234567: recorded as .*/casedir, which now resolves to chain [0-9]*' "$R/out")" 1 "names it as orphaned"
+  ok "$(run --status --source "$CD" --name cased)" 0 "--status beside it is ok"
+  ok "$(grep -c 'ORPHANED' "$R/out")" 2 "and shows it as orphaned"
+  ok "$(test -f "$OR/dest" && echo kept || echo gone)" kept "the orphan is left as it is"
+else
+  echo "skip 12m: $R is on a case-sensitive file system"
+fi
+
 # 13. install and uninstall render only (no launchctl in the self-test)
 ok "$(run --install)" 0 "install renders the plist"
 PL="$H/Library/LaunchAgents/com.drasticstatic.claude-projects-archive.plist"

@@ -8,6 +8,7 @@
 #     sh scripts/claude-projects-archive.sh --init              once: make the passphrase file (never shown)
 #     sh scripts/claude-projects-archive.sh --run               archive now: full, or incremental since the last success
 #     sh scripts/claude-projects-archive.sh --run --full        archive now, a full one whatever the date
+#     sh scripts/claude-projects-archive.sh --run --full-when-needed   no monthly full: a full only when one is needed (below)
 #     sh scripts/claude-projects-archive.sh --if-due            --run, but only if the last success is over 20 hours old
 #     sh scripts/claude-projects-archive.sh --status            did the last run work? exit 1 if stale (36 h) or it failed
 #     sh scripts/claude-projects-archive.sh --list              every archive at the destination, with sizes and the total
@@ -43,7 +44,25 @@
 # --exclude REL (with --source, repeatable) leaves DIR/REL out: a folder (and all under it) or one file, REL relative to
 # DIR, no leading /, no .. (a find -path pattern, so * matches too). A chain remembers the excludes of its first run and
 # refuses a --run or --if-due that gives others (a hand run without them would seal what was meant to stay out); to
-# change them, begin a new chain under a new --name.
+# change them, begin a new chain under a new --name. DIR and --dest are taken in the case the disk keeps, symlinks
+# followed, so ~/Notes and ~/notes on a Mac's disk are one chain. A chain folder keyed by an older spelling (before Nov
+# 17, 2026) is shown by --status and --list as ORPHANED; it is never changed or removed by the script.
+#
+# --full-when-needed (with --run or --if-due; meant for a slow-moving --source chain, such as a folder of exports you
+# add to by hand) drops the monthly full, so a quiet month puts nothing new in iCloud. Each run decides, in this order:
+#   1. A full, as without the option, on the chain's first run and with --full.
+#   2. A full when a path the chain has sealed is gone (removed, or renamed: the old name is gone): an incremental
+#      cannot carry a removal, so only a full keeps --restore-latest exact. A run without the option remembers a
+#      removal it saw (state gone-since-full), so the next run with it still makes that full.
+#   3. Nothing changed and nothing gone: no archive at all. history.tsv gets a "none" row, "unchanged since" the last
+#      archive, and --status and --list say so. No file is written at the destination.
+#   4. Something changed: a full when the incrementals sealed since the last full already add up to more than 50% of
+#      its sealed size (CLAUDE_ARCHIVE_FULL_PCT), or when the last full is 12 or more calendar months old
+#      (CLAUDE_ARCHIVE_FULL_MONTHS); otherwise an incremental, whatever the date. So a restore needs the last full
+#      and incrementals that pass half its size, together, by one incremental at most.
+# Without the option nothing changes: the first run of each calendar month is a full. On the Claude chain, whose
+# incrementals are large, the option would make a full every few days; leave it to the --source chains. --status and
+# --list show, for each chain, its last full and what its last run did and why.
 #
 # How a run works:
 #   - Full on the first run for a destination, on the first run of each calendar month (the 1st, or the first night the
@@ -74,6 +93,8 @@
 #   - Keep everything: no archive is ever deleted. --prune-plan only prints a plan.
 #   - The only files the script ever removes are ones it made in the same run: a failed run's NAME.partial. The lock is
 #     a pid file that is emptied, not removed.
+#   - history.tsv has one row per successful run: the time, full, incr or none, the file count, the sealed bytes, the
+#     archive's name (or -) and, from Nov 17, 2026, why. last-run holds the newest row's time, kind and why.
 #   - State (the stamp, the last success, the last full's month, a history.tsv) lives in ~/.config/claude-archive/state/,
 #     one folder per destination, so switching destinations starts a fresh chain with a full. A --source chain's lives
 #     in ~/.config/claude-archive/sources/NAME/, one folder per destination and DIR, with its own last-failure.
@@ -150,12 +171,17 @@ dir_bytes() {
     2>/dev/null | awk '{ s += $1 } END { printf "%.0f\n", s + 0 }'
 }
 
-# The physical path of $1, following symlinks, even when its last parts do not exist yet.
+# The physical path of $1, following symlinks, even when its last parts do not exist yet, in the case the disk keeps.
+# /bin/pwd -P asks the system (getcwd), which answers in the on-disk case; the shell's own pwd -P keeps the case as
+# typed, so on a Mac's case-insensitive disk ~/AI-Archive_Manual and ~/AI-Archive_manual were two chains of one folder
+# (Nov 17, 2026). Parts that do not exist yet keep the case they were given.
+if [ -x /bin/pwd ]; then SYS_PWD=/bin/pwd; else SYS_PWD=""; fi
 physpath() {
   _p="$1"; _rest=""
   case "$_p" in /*) ;; *) _p="$(pwd -P)/$_p" ;; esac
   while [ ! -d "$_p" ]; do _rest="/$(basename "$_p")$_rest"; _p="$(dirname "$_p")"; done
-  _p="$(cd "$_p" && pwd -P)"; [ "$_p" = / ] && _p=""
+  if [ -n "$SYS_PWD" ]; then _p="$(cd "$_p" && "$SYS_PWD" -P)"; else _p="$(cd "$_p" && pwd -P)"; fi
+  [ "$_p" = / ] && _p=""
   printf '%s%s\n' "$_p" "$_rest"
 }
 # True when name $1 sorts strictly before name $2 (byte order; POSIX test has no string less-than).
@@ -306,6 +332,103 @@ retire() {
 
 last_success() { [ -s "$STATE/last-success" ] && cat "$STATE/last-success" || echo 0; }
 
+# ------------------------------------------------------------------------------------------------ chains, from state
+# chain_since_full STATEDIR: from its history.tsv, the last full and what came after it, as one line
+#   FULLTIME FULLBYTES INCRBYTES INCRCOUNT FULLNAME     (nothing when the history holds no full)
+chain_since_full() {
+  [ -f "$1/history.tsv" ] || return 0
+  awk -F'\t' '$2 == "full" && $4 > 0 { ft = $1; fb = $4; fn = $5; ib = 0; ni = 0; next }
+              $2 == "incr" && $4 > 0 && fn != "" { ib += $4; ni++ }
+              END { if (fn != "") printf "%s %.0f %.0f %d %s\n", ft, fb, ib, ni, fn }' "$1/history.tsv"
+}
+# last_archive STATEDIR: "NAME (YYYY-MM-DD HH:MM)" of the newest archive its history records, or nothing
+last_archive() {
+  [ -f "$1/history.tsv" ] || return 0
+  awk -F'\t' '$4 > 0 { t = $1; n = $5 }
+              END { if (n != "") printf "%s (%s-%s-%s %s:%s)\n", n, substr(t,1,4), substr(t,5,2), substr(t,7,2), substr(t,10,2), substr(t,12,2) }' "$1/history.tsv"
+}
+# note_last_run KIND WHY: what this run did, for --status and --list
+note_last_run() { printf '%s  %s: %s\n' "$(date '+%Y-%m-%d %H:%M')" "$1" "$2" > "$STATE/last-run"; }
+# chain_key STATEDIR: the folder name its recorded dest (and source) would be given now, case and links resolved.
+# A folder whose name differs is an orphan: it was keyed by a spelling that now resolves to another chain.
+chain_key() {
+  _ckd="$(physpath "$(cat "$1/dest")")"
+  if [ -f "$1/source" ]; then printf '%s\n%s' "$_ckd" "$(physpath "$(cat "$1/source")")" | cksum | awk '{ print $1 }'
+  else printf '%s' "$_ckd" | cksum | awk '{ print $1 }'; fi
+}
+# describe_chain STATEDIR: two lines, the last full (and the incrementals since) and what the last run did, and why
+describe_chain() {
+  _dc="$1"; _cs="$(chain_since_full "$_dc")"
+  if [ -n "$_cs" ]; then
+    printf '%s\n' "$_cs" | awk -v h1="$(human "$(printf '%s' "$_cs" | cut -d' ' -f2)")" -v h2="$(human "$(printf '%s' "$_cs" | cut -d' ' -f3)")" \
+      '{ t = $1; printf "  last full: %s (%s-%s-%s %s:%s), %s sealed; since then %d incremental(s), %s (%d%% of it)\n",
+           $5, substr(t,1,4), substr(t,5,2), substr(t,7,2), substr(t,10,2), substr(t,12,2), h1, $4, h2, ($2 > 0 ? $3 * 100 / $2 : 0) }'
+  else
+    say "  last full: none recorded in this chain's history"
+  fi
+  if [ -s "$_dc/last-run" ]; then say "  last run: $(cat "$_dc/last-run")"
+  elif [ -s "$_dc/history.tsv" ]; then
+    say "  last run: $(tail -n 1 "$_dc/history.tsv" | awk -F'\t' '{ printf "%s %s, %s file(s)%s", $1, $2, $3, ($5 != "-" ? ", " $5 : ", no archive (nothing changed)") }')"
+  fi
+  _gsf="$(cat "$_dc/gone-since-full" 2>/dev/null)"
+  [ -n "$_gsf" ] && [ "$_gsf" != 0 ] && say "  $_gsf path(s) gone since the last full (a restore brings them back until the next full is made)"
+  return 0
+}
+# orphans_note STATEROOT: one line for each chain folder there that is an orphan (see chain_key). Never changes one.
+orphans_note() {
+  for _o in "$1"/*/; do
+    _o="${_o%/}"; [ -f "$_o/dest" ] || continue
+    _ok="$(chain_key "$_o")"; [ "$_ok" = "$(basename "$_o")" ] && continue
+    _osrc="$(cat "$_o/source" 2>/dev/null || cat "$_o/dest")"
+    say "ORPHANED chain folder $(basename "$_o"): recorded as $_osrc, which now resolves to chain $_ok (case or a link). No run uses it; its archives stay where they are. Retire it by hand when ready: mv it out of $1."
+  done
+  return 0
+}
+
+# build_list full|incr: this run's file list into $_list (NUL-separated), and its _count and _srcbytes. Run from do_run.
+build_list() {
+  (
+    cd "$ROOT" || exit 1
+    if [ "$1" = full ]; then
+      find_inputs \( -type f -o -type l \) -print0
+    else
+      {
+        find_inputs \( -type f -o -type l \) -newer "$STATE/stamp" -print
+        # paths new since the last run's listing (renamed or moved folders keep old modification times, and so do the
+        # files of an input this script began to archive after the chain began)
+        [ -f "$STATE/paths" ] && comm -13 "$STATE/paths" "$STATE/work/paths.now"
+        true
+      } | sort -u | tr '\n' '\000'
+    fi
+    true
+  ) > "$_list" || fail "cannot list $_what"
+  _count="$(tr -cd '\000' < "$_list" | wc -c | tr -d ' ')"
+  _srcbytes="$( (cd "$ROOT" && xargs -0 sh -c 'for f; do [ -f "$f" ] && { stat -f %z "$f" 2>/dev/null || stat -c %s "$f"; }; done' sh) < "$_list" | awk '{ s += $1 } END { print s + 0 }')"
+}
+
+# when_needed: --full-when-needed's rule (the header, steps 2 and 4) for a run that would otherwise be an incremental.
+# Sets _kind=full and _why when a full is needed; leaves an incremental, or a run with nothing to seal, as it is.
+FULL_PCT="${CLAUDE_ARCHIVE_FULL_PCT:-50}"; FULL_MONTHS="${CLAUDE_ARCHIVE_FULL_MONTHS:-12}"
+when_needed() {
+  if [ "$_gone_all" -gt 0 ]; then
+    _kind=full; _why="$_gone_all path(s) gone since the last full, and an incremental cannot carry a removal"; return 0
+  fi
+  [ "$_count" -gt 0 ] || return 0
+  _cs="$(chain_since_full "$STATE")"
+  if [ -z "$_cs" ]; then _kind=full; _why="no full in this chain's history"; return 0; fi
+  set -- $_cs
+  _ft="$1"; _fb="$2"; _ib="$3"; _ni="$4"
+  _age=$(( ($(date +%Y) - $(printf '%s' "$_ft" | cut -c1-4)) * 12 + $(date +%m | sed 's/^0//') - $(printf '%s' "$_ft" | cut -c5-6 | sed 's/^0//') ))
+  if [ $((_ib * 100)) -gt $((_fb * FULL_PCT)) ]; then
+    _kind=full; _why="the $_ni incremental(s) since the last full add up to more than ${FULL_PCT}% of it"
+  elif [ "$_age" -ge "$FULL_MONTHS" ]; then
+    _kind=full; _why="the last full is $_age months old (a full every $FULL_MONTHS at least)"
+  else
+    _why="files changed since the last success; no monthly full (--full-when-needed)"
+  fi
+  return 0
+}
+
 # ---------------------------------------------------------------------------------------------------------------- init
 do_init() {
   mkdir -p "$CONFIG" && chmod 700 "$CONFIG" || fail "cannot make $CONFIG"
@@ -406,7 +529,7 @@ do_run() {
   _t0="$(date +%s)"; _now="$(date +%Y%m%d-%H%M%S)"; _month="$(date +%Y%m)"; _year="$(date +%Y)"
   _kind=incr; _why="files changed since the last success"
   if [ ! -e "$STATE/stamp" ]; then _kind=full; _why="first run for this destination"
-  elif [ "$(cat "$STATE/last-full" 2>/dev/null)" != "$_month" ]; then _kind=full; _why="first run of $_month"
+  elif [ "$OPT_WHEN_NEEDED" != 1 ] && [ "$(cat "$STATE/last-full" 2>/dev/null)" != "$_month" ]; then _kind=full; _why="first run of $_month"
   elif [ "$OPT_FULL" = 1 ]; then _kind=full; _why="--full"; fi
 
   touch "$STATE/stamp.next" || fail "cannot write $STATE/stamp.next"
@@ -415,28 +538,31 @@ do_run() {
   (cd "$ROOT" && { find_inputs \( -type f -o -type l \) -print; true; } | sort -u) \
     > "$STATE/work/paths.now" || fail "cannot list $_what"
   _list="$STATE/work/files.list"
-  (
-    cd "$ROOT" || exit 1
-    if [ "$_kind" = full ]; then
-      find_inputs \( -type f -o -type l \) -print0
-    else
-      {
-        find_inputs \( -type f -o -type l \) -newer "$STATE/stamp" -print
-        # paths new since the last run's listing (renamed or moved folders keep old modification times, and so do the
-        # files of an input this script began to archive after the chain began)
-        [ -f "$STATE/paths" ] && comm -13 "$STATE/paths" "$STATE/work/paths.now"
-        true
-      } | sort -u | tr '\n' '\000'
-    fi
-    true
-  ) > "$_list" || fail "cannot list $_what"
-  _count="$(tr -cd '\000' < "$_list" | wc -c | tr -d ' ')"
-  _srcbytes="$( (cd "$ROOT" && xargs -0 sh -c 'for f; do [ -f "$f" ] && { stat -f %z "$f" 2>/dev/null || stat -c %s "$f"; }; done' sh) < "$_list" | awk '{ s += $1 } END { print s + 0 }')"
+  build_list "$_kind"
+  # paths in the last listing that are gone now (removed, or renamed away): an incremental cannot carry them, so they
+  # are remembered until the next full (gone-since-full), and --full-when-needed makes that full
+  _gone=0; [ -f "$STATE/paths" ] && _gone="$(comm -23 "$STATE/paths" "$STATE/work/paths.now" | grep -c .)"
+  _gone_prev="$(cat "$STATE/gone-since-full" 2>/dev/null)"; case "$_gone_prev" in ''|*[!0-9]*) _gone_prev=0 ;; esac
+  _gone_all=$((_gone_prev + _gone))
+  if [ "$OPT_WHEN_NEEDED" = 1 ] && [ "$_kind" = incr ]; then
+    when_needed
+    [ "$_kind" = full ] && build_list full
+  fi
 
   if [ "$_count" = 0 ]; then
     mv "$STATE/stamp.next" "$STATE/stamp"; mv "$STATE/work/paths.now" "$STATE/paths"; date +%s > "$STATE/last-success"
-    printf '%s\t%s\t0\t0\t-\n' "$_now" "$_kind" >> "$STATE/history.tsv"
-    say "Nothing changed since the last success; no archive written. Destination: $ARCH_DIR"
+    [ "$_gone_all" -gt 0 ] && printf '%s\n' "$_gone_all" > "$STATE/gone-since-full"
+    _last="$(last_archive "$STATE")"; _hk="$_kind"; _hw="nothing changed since the last success"
+    if [ "$OPT_WHEN_NEEDED" = 1 ]; then
+      _hk=none; _hw="unchanged since ${_last:-the last success} (--full-when-needed: no full is needed)"
+    fi
+    printf '%s\t%s\t0\t0\t-\t%s\n' "$_now" "$_hk" "$_hw" >> "$STATE/history.tsv"
+    note_last_run none "no archive: $_hw"
+    if [ "$OPT_WHEN_NEEDED" = 1 ]; then
+      say "Nothing changed since the last success; no archive written (unchanged since ${_last:-the last success}). Destination: $ARCH_DIR"
+    else
+      say "Nothing changed since the last success; no archive written. Destination: $ARCH_DIR"
+    fi
     return 0
   fi
 
@@ -469,9 +595,15 @@ do_run() {
   mv "$STATE/stamp.next" "$STATE/stamp"
   mv "$STATE/work/paths.now" "$STATE/paths"
   date +%s > "$STATE/last-success"
-  [ "$_kind" = full ] && printf '%s\n' "$_month" > "$STATE/last-full"
+  if [ "$_kind" = full ]; then
+    printf '%s\n' "$_month" > "$STATE/last-full"
+    [ -e "$STATE/gone-since-full" ] && : > "$STATE/gone-since-full"
+  elif [ "$_gone_all" -gt 0 ]; then
+    printf '%s\n' "$_gone_all" > "$STATE/gone-since-full"
+  fi
   _bytes="$(size_of "$_final")"
-  printf '%s\t%s\t%s\t%s\t%s\n' "$_now" "$_kind" "$_count" "$_bytes" "$_name" >> "$STATE/history.tsv"
+  printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$_now" "$_kind" "$_count" "$_bytes" "$_name" "$_why" >> "$STATE/history.tsv"
+  note_last_run "$_kind" "$_name ($_why)"
   _t1="$(date +%s)"
   say "  done in $((_t1 - _t0)) s: $(human "$_bytes") sealed, verified ($_seen entries), sha256 written"
   _tot="$(dir_bytes "$ARCH_DIR")"
@@ -508,9 +640,15 @@ do_status() {
     [ -f "$_s/dest" ] || continue
     _sd="$(cat "$_s/dest")"; [ -f "$_s/source" ] && _sd="$(cat "$_s/source") -> $_sd/$OPT_NAME"
     _ls="$( [ -s "$_s/last-success" ] && cat "$_s/last-success" || echo 0)"
+    if [ "$(chain_key "${_s%/}")" != "$(basename "$_s")" ]; then
+      say "$_sd: ORPHANED (no run uses this chain folder any more; see below), last success $( [ "$_ls" -gt 0 ] && echo "$(( (_now - _ls) / 3600 )) h ago" || echo never)"
+      continue
+    fi
     [ "$_ls" -gt "$_best" ] && _best="$_ls"
     if [ "$_ls" -gt 0 ]; then say "$_sd: last success $(( (_now - _ls) / 3600 )) h ago"; else say "$_sd: no success yet"; fi
+    describe_chain "${_s%/}"
   done
+  orphans_note "$STATE_ROOT"
   _lf="$( [ -s "$STATE_ROOT/last-failure" ] && cat "$STATE_ROOT/last-failure" || echo 0)"
   [ "$_lf" -gt 0 ] && say "last failure $(( (_now - _lf) / 3600 )) h ago: $(tail -n 1 "$STATE_ROOT/failures.tsv" 2>/dev/null | cut -f3)"
   ntfy_load; case $? in
@@ -551,6 +689,10 @@ do_list() {
   IFS="$_ifs"; set +f
   say "$_n file(s); destination total $(human "$(dir_bytes "$ARCH_DIR")")."
   [ -s "$STATE/last-success" ] && say "Last success: $(date -r "$(cat "$STATE/last-success")" '+%Y-%m-%d %H:%M' 2>/dev/null || cat "$STATE/last-success")"
+  [ -f "$STATE/dest" ] && describe_chain "$STATE"
+  # A --source chain's folder of chains may hold one keyed by another spelling of DIR (two chains, one folder, before
+  # Nov 17, 2026); the Claude chain's holds one per destination, and only an orphan among them is named.
+  orphans_note "${STATE%/*}"
   return 0
 }
 
@@ -810,7 +952,7 @@ do_notify_test() {
 
 # ---------------------------------------------------------------------------------------------------------------- main
 usage() { sed -n '2,/^# How a run works:/p' "$SELF" | sed '$d' | sed 's/^# \{0,1\}//'; }
-OPT_DEST="${CLAUDE_ARCHIVE_DEST:-}"; OPT_FULL=0; MODE=""; POS_N=0; SRC_GIVEN=0
+OPT_DEST="${CLAUDE_ARCHIVE_DEST:-}"; OPT_FULL=0; OPT_WHEN_NEEDED=0; MODE=""; POS_N=0; SRC_GIVEN=0
 # Options may come anywhere; what is left, in order, are the mode's own arguments.
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -824,6 +966,7 @@ while [ $# -gt 0 ]; do
                EXCL_N=$((EXCL_N + 1)); eval "EXCL_$EXCL_N=\$2"; shift 2; continue ;;
     --exclude=*) EXCL_N=$((EXCL_N + 1)); eval "EXCL_$EXCL_N=\${1#--exclude=}" ;;
     --full) OPT_FULL=1 ;;
+    --full-when-needed) OPT_WHEN_NEEDED=1 ;;
     -h|--help) usage; exit 0 ;;
     --init|--run|--if-due|--status|--list|--verify|--restore|--restore-latest|--prune-plan|--move-old|--install|--uninstall|--notify-test)
       [ -z "$MODE" ] || refuse "one mode at a time ($MODE and $1)"; MODE="$1" ;;
@@ -835,6 +978,13 @@ while [ $# -gt 0 ]; do
 done
 set --
 _k=1; while [ "$_k" -le "$POS_N" ]; do eval "set -- \"\$@\" \"\$POS_$_k\""; _k=$((_k + 1)); done
+
+# --full-when-needed: with --run or --if-due only; its two limits, when set, are whole numbers.
+if [ "$OPT_WHEN_NEEDED" = 1 ]; then
+  case "$MODE" in --run|--if-due) ;; *) STATE_ROOT=""; refuse "--full-when-needed goes with --run or --if-due." ;; esac
+fi
+case "$FULL_PCT" in ''|*[!0-9]*|0) STATE_ROOT=""; refuse "CLAUDE_ARCHIVE_FULL_PCT=$FULL_PCT: a whole number, 1 or more." ;; esac
+case "$FULL_MONTHS" in ''|*[!0-9]*|0) STATE_ROOT=""; refuse "CLAUDE_ARCHIVE_FULL_MONTHS=$FULL_MONTHS: a whole number, 1 or more." ;; esac
 
 # --source DIR --name NAME: another folder's chain. Checked here, before any mode runs; nothing is written until it passes.
 if [ "$SRC_GIVEN" = 1 ]; then
