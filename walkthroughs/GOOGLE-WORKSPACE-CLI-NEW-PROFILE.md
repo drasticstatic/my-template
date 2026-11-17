@@ -7,7 +7,7 @@
 *Connect one Google account to the `gws` command-line tool so an agent can read that account's Drive and Docs, and nothing else.*
 
 ![Kind](https://img.shields.io/badge/Kind-Walkthrough-800020?style=flat-square)
-![Changed](https://img.shields.io/badge/Changed-2026--11--12-800020?style=flat-square)
+![Changed](https://img.shields.io/badge/Changed-2026--11--17-800020?style=flat-square)
 ![For](https://img.shields.io/badge/For-Anyone_connecting_a_Google_account_to_a_helper-64748b?style=flat-square)
 
 <img src="../assets/icons-phosphor/map-pin.svg" width="16" height="16" alt=""> **You are here:** drasticstatic lab › [`my-template`](../README.md) › [`walkthroughs`](README.md) › `GOOGLE-WORKSPACE-CLI-NEW-PROFILE.md` · public · `main` is the working branch
@@ -177,6 +177,22 @@ What differs, as far as this page records it (both profiles, read and write, fol
 | **Audience** (step 4) | **External**, and `ACCOUNT` added under **Audience → Test users**, even if you own the project; without that, `Error 403: access_denied` at sign-in | **Internal**: the app is limited to your organization |
 | **How long a sign-in lasts** | External apps in Testing expire after about a week; then `invalid_grant` or 401, and step 5 again | this page records no such limit for an Internal app |
 | **Creating the project** (step 2) | this page records no restriction | if you lack permission, a Workspace administrator creates it for you or grants the Project Creator role |
+
+#### Example: a personal Gmail account whose writer only makes filters
+
+`gwsds` is a personal account's profile (folders `~/.config/gws-ds` and `~/.config/gws-ds-write`). It needs its own
+Cloud project, because a Workspace project's **Internal** client will not admit a personal account, and step 3 enables
+**Gmail API** beside Drive and Docs. The reader adds Gmail to its read-only login; the writer asks for only the two
+scopes a Gmail filter needs, named in full with `--scopes`, instead of whole services:
+
+```sh
+gwsds auth login --readonly -s gmail,drive,docs
+gwsds-write auth login --scopes https://www.googleapis.com/auth/gmail.settings.basic,https://www.googleapis.com/auth/gmail.labels
+```
+
+`gmail.settings.basic` is the scope Google names for creating a filter, and `gmail.labels` is one of those it accepts
+for creating a label. Check a request before sending it with `--dry-run`, for example
+`gwsds-write gmail users settings filters create --params '{"userId":"me"}' --json '{...}' --dry-run`.
 
 ## <img src="../assets/icons-phosphor/triangle-alert.svg" width="24" height="24" alt=""> If something goes wrong
 
