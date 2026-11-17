@@ -180,7 +180,14 @@ physpath() {
   _p="$1"; _rest=""
   case "$_p" in /*) ;; *) _p="$(pwd -P)/$_p" ;; esac
   while [ ! -d "$_p" ]; do _rest="/$(basename "$_p")$_rest"; _p="$(dirname "$_p")"; done
-  if [ -n "$SYS_PWD" ]; then _p="$(cd "$_p" && "$SYS_PWD" -P)"; else _p="$(cd "$_p" && pwd -P)"; fi
+  # /bin/pwd gives the on-disk case, but under launchd macOS may refuse it inside iCloud Drive ("pwd: .: Operation not
+  # permitted", Nov 17); then the shell's own pwd -P stands in, which keeps the case as typed (the plists name each
+  # folder in its on-disk case, so the chain key comes out the same). Nothing at all prints nothing and returns 1.
+  _q=""
+  if [ -n "$SYS_PWD" ]; then _q="$(cd "$_p" 2>/dev/null && "$SYS_PWD" -P 2>/dev/null)"; fi
+  [ -n "$_q" ] || _q="$(cd "$_p" 2>/dev/null && pwd -P 2>/dev/null)"
+  [ -n "$_q" ] || return 1
+  _p="$_q"
   [ "$_p" = / ] && _p=""
   printf '%s%s\n' "$_p" "$_rest"
 }
@@ -212,8 +219,8 @@ resolve_dest() {
     [ -d "$ICLOUD" ] || refuse "iCloud Drive is not at $ICLOUD. Pass --dest DIR (an external drive, any folder)."
     [ "$1" = create ] && { mkdir -p "$DEST_BASE" || fail "cannot make $DEST_BASE"; }
   fi
-  DEST_PHYS="$(physpath "$DEST_BASE")"
-  CLAUDE_PHYS="$(physpath "$CLAUDE_DIR")"
+  DEST_PHYS="$(physpath "$DEST_BASE")" || refuse "could not read the destination $DEST_BASE from here (no permission?); nothing archived."
+  CLAUDE_PHYS="$(physpath "$CLAUDE_DIR")" || refuse "could not read $CLAUDE_DIR from here (no permission?); nothing archived."
   if inside "$DEST_PHYS" "$CLAUDE_PHYS"; then refuse "the destination $DEST_BASE is inside ~/.claude ($CLAUDE_PHYS)."; fi
   if inside "$CLAUDE_PHYS" "$DEST_PHYS"; then refuse "the destination $DEST_BASE contains ~/.claude; an archive would archive itself."; fi
   STATE="$CONFIG/state/$(printf '%s' "$DEST_PHYS" | cksum | awk '{ print $1 }')"
@@ -1011,7 +1018,7 @@ if [ "$SRC_GIVEN" = 1 ]; then
     --run|--if-due|--status) [ -d "$OPT_SOURCE" ] || refuse "--source $OPT_SOURCE does not exist (or is not a folder)." ;;
     *) [ ! -e "$OPT_SOURCE" ] || [ -d "$OPT_SOURCE" ] || refuse "--source $OPT_SOURCE is not a folder." ;;
   esac
-  SRC_PHYS="$(physpath "$OPT_SOURCE")"
+  SRC_PHYS="$(physpath "$OPT_SOURCE")" || refuse "could not read --source $OPT_SOURCE from here (no permission?); nothing archived."
   case "$(basename "$SRC_PHYS")" in -*) refuse "--source $OPT_SOURCE: a folder whose name begins with - is not supported (find would read it as an option)." ;; esac
   [ "$SRC_PHYS" = "" ] && refuse "--source /: the whole disk holds the destination."
   _cl="$(physpath "$CLAUDE_DIR")"
