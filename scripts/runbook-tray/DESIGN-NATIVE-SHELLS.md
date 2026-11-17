@@ -40,7 +40,9 @@ and renders again a second later, as the applet does.
 
 Item kinds a shell draws: `info`, `header`, `separator`, `meter` (`value` 0 to 1, `tint`), `spark` (`values`),
 `parts` (split bar, each part with `light` and `dark` colours), `swatch`, `group` (a submenu with `items`, sometimes
-`parts` or a state), and `action` (`id`, `enabled`, `symbol`). Rules for every shell:
+`parts` or a state), and `action` (`id`, `enabled`, `symbol`). A `group`'s `items` may hold a `group` of their own
+(a family of rows inside a folded group, added 2026-11-16, still version 1): a shell fills a submenu the way it fills
+the menu, by the same code, to any depth. The applet already does. Rules for every shell:
 
 - **A kind it does not know, it skips.** A key it does not know, it ignores. A `version` above the one it knows, it
   shows as a problem row and still offers *Refresh now* and *Quit*.

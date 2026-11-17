@@ -196,6 +196,32 @@ printf '%s\n' "$side_status" > "$HOME/bin/status.out"
 run render --config "$cfg" --state "$work/state" >/dev/null 2>&1
 check "fold: without fold in the config the same rows stay in the main menu, under their header" "$(q '[i["title"] for i in items if i["kind"] == "header"]')" "['Jobs', 'Side list', 'Jobs']"
 check "fold: and a row that is not counted is still not counted there" "$(q 'repr(m["bar"]["text"])')" "''"
+family_status='{"rows": [
+ {"name": "a", "state": "good", "detail": "fine", "group": "Jobs", "family": "Pair"},
+ {"name": "b", "state": "good", "detail": "fine", "group": "Jobs"},
+ {"name": "c", "state": "look", "detail": "slow", "group": "Jobs", "family": "Pair"},
+ {"name": "s0", "state": "good", "detail": "ready", "group": "Side list", "counted": false},
+ {"name": "k1", "state": "good", "detail": "ready", "group": "Side list", "counted": false, "family": "Kin"},
+ {"name": "k2", "state": "look", "detail": "its file is gone", "group": "Side list", "counted": false, "family": "Kin"},
+ {"name": "k3", "state": "unknown", "detail": "remote", "group": "Side list", "counted": false, "family": "Kin"},
+ {"name": "lone", "state": "off", "detail": "not started", "group": "Side list", "counted": false, "family": "Solo"},
+ {"name": "odd", "state": "good", "detail": "fine", "group": "Side list", "counted": false, "family": ["not", "words"]}]}'
+printf '%s\n' "$family_status" > "$HOME/bin/status.out"
+out="$(run render --config "$foldcfg" --state "$work/state" --print 2>&1)"; check "family: rows of a family render, and c's look is counted" "$?" 1
+q2() { q "next(i for i in item(\"Side list\")[\"items\"] if i.get(\"title\") == \"Kin (3)\")$1"; }
+check "family: in a folded group, a family of three is one submenu among its rows, in place" "$(q '[(i["kind"], i["title"]) for i in item("Side list")["items"]]')" "[('info', 's0'), ('group', 'Kin (3)'), ('info', 'lone'), ('info', 'odd')]"
+check "family: the submenu holds its three rows, in order, each with its own mark" "$(q 'list((i["title"], i["mark"]) for i in item("Side list")["items"][1]["items"])')" "[('k1', '✓'), ('k2', '!'), ('k3', '?')]"
+check "family: its mark is the worst of its rows" "$(q2 '["state"]')" "look"
+check "family: and it counts each state" "$(q2 '["subtitle"]')" "1 good · 1 to look at · 1 not checked"
+check "family: its mark carries shape and colour" "$(q2 '["symbol"]')|$(q2 '["tint"]')|$(q2 '["mark"]')" "exclamationmark.triangle.fill|amber|!"
+check "family: the folded group still counts every row, the family's too" "$(q 'item("Side list")["subtitle"] + "|" + item("Side list")["state"]')" "3 good · 1 off · 1 to look at · 1 not checked|look"
+check "family: a family of one row stays a row" "$(q 'sum(1 for i in item("Side list")["items"] if i.get("title", "").startswith("Solo"))')" "0"
+check "family: in the main menu too, at the place of its first row" "$(q '[(i["kind"], i.get("title")) for i in items[1:4]]')" "[('header', 'Jobs'), ('group', 'Pair (2)'), ('info', 'b')]"
+check "family: and the main menu's family carries its worst row" "$(q 'item("Pair (2)")["state"] + "|" + item("Pair (2)")["subtitle"]')" "look|1 good · 1 to look at"
+has "family: --print shows the submenu inside the folded group" "$out" "    ▾ ! Kin (3)  ·  1 good · 1 to look at · 1 not checked"
+has "family: --print shows its rows one level further in" "$out" "        ? k3  ·  remote"
+check "family: the status keeps the family, and leaves it out where none is set" "$("$PY" -I -c 'import json,sys; r=json.load(open(sys.argv[1]))["rows"]; print([x.get("family") for x in r])' "$work/state/status.json")" "['Pair', None, 'Pair', None, 'Kin', 'Kin', 'Kin', 'Solo', None]"
+check "family: the menu is still version 1" "$(q 'm["version"]')" "1"
 
 printf '%s\n' '{"rows": [{"name": "x", "state": "look", "detail": "slow"}]}' > "$HOME/bin/status.out"
 run render --config "$cfg" --state "$work/state" >/dev/null 2>&1

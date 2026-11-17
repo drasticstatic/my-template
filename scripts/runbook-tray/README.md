@@ -13,8 +13,8 @@ python3 -I runbook-tray.py doctor --config YOUR.json           # check a config;
 python3 -I runbook-tray.py render --config YOUR.json --state /tmp/tray-try --print   # the menu, as text
 sh build.sh --config YOUR.json --print                         # what a build would do; writes nothing
 sh build.sh --config YOUR.json                                 # builds ~/Applications/Runbook Tray.app; starts nothing
-sh runbook-tray.selftest.sh                                    # 222 checks in a temporary folder
-sh runbook-tray.selftest.sh --with-applet                      # 251: also draws every menu (an item shows for a second)
+sh runbook-tray.selftest.sh                                    # 236 checks in a temporary folder
+sh runbook-tray.selftest.sh --with-applet                      # 265: also draws every menu (an item shows for a second)
 ```
 
 ## What is here
@@ -42,6 +42,10 @@ sh runbook-tray.selftest.sh --with-applet                      # 251: also draws
   sit in a submenu, under one row that carries their worst state and counts them. A row your status command marks
   `"counted": false` is shown with its state and never raises the mark in the menu bar: for things worth seeing
   that are not the machine's own jobs, such as the tools a session needs before it starts.
+- **A family folds one level further in.** Rows of one group that carry the same `"family"` (from your status
+  command) sit in a submenu of their own, `Family (n)`, at the place of the first of them, with the worst of their
+  states as its mark: in a folded group and in the main menu alike. A family of one row, and rows with no family,
+  stay where they are. Nothing is guessed from names.
 - **Its files** are in `~/Library/Application Support/<name>/`, readable by you alone: `menu.json`, `status.json`,
   `history.json` (six hours of samples), `processes.json`, `tray.log`, `actions/` with each entry's last output,
   and `days/<date>.csv`, one line a minute of the Mac's memory, swap and processor, which nothing removes.

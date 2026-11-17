@@ -11,6 +11,15 @@ its commit. From now on, a change to this folder adds its entry here in the same
 ## [Unreleased]
 
 ### Added
+- Families: a status row may carry `"family": "Name"`. Rows of one group with the same family sit in a submenu of
+  their own, `Name (n)`, at the place of the first of them, marked with their worst state and counting each state.
+  It works inside a folded group (a submenu in a submenu) and in the main menu. A family of one row, and rows without
+  a family, are drawn as before; `status.json` keeps the family only where one is set. `menu.json` stays version 1:
+  a `group` may now hold a `group`, which the applet's `fillMenu` already draws, since it fills a submenu by calling
+  itself. The applet is unchanged, so no rebuild is needed for this. First use: the eight Linear MCP servers, one row
+  under *MCP servers* (asked for by the owner on 2026-11-16).
+- Self-test: 236 checks (265 with `--with-applet`); the new ones are the family fixture. The applet's own dump still
+  reads one level of submenu, so the applet round adds no check of the second level.
 - `DESIGN-NATIVE-SHELLS.md`, PROPOSED: one Python core, whose `render` already writes `menu.json`, and a thin shell
   per system (SwiftUI `MenuBarExtra` on macOS, `pystray` or .NET `NotifyIcon` on Windows, AppIndicator on Linux), the
   steps for a dedicated Xcode session, and a phone companion. Nothing built; no Xcode tool run.

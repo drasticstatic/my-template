@@ -18,6 +18,10 @@ A row's state is good, look, bad, off or unknown. "off" means not running and no
 check cannot tell from where it runs. Both are shown and never counted. A row with "counted": false is shown with its
 state and never raises the mark in the menu bar. With "fold": ["A group's name"] beside the status command in the
 config, that group's rows sit in a submenu of their own, under one row that carries their worst state and counts them.
+Rows of one group that carry the same "family" (say "family": "Linear") sit one level further in, in a submenu of
+their own titled with the family and how many it holds ("Linear (8)"), at the place of the first of them, with the
+worst state of its rows as its mark. That works in a folded group and in the main menu alike. A family of one row,
+and a row with no family, stay where they are.
 
 With "machine": true in the config, the menu also carries a section on this Mac itself: memory, swap, processor and
 disk as meters, the last hour of memory as a small line, and which apps hold the most memory. It reads sysctl,
@@ -310,8 +314,12 @@ def read_status(cfg):
         state, detail = row.get("state"), one_line(row.get("detail", ""), 300)
         if state not in STATES:
             detail, state = one_line(f"state {state!r} is not one the tray knows; {detail}", 300), "look"
-        rows.append({"name": one_line(row["name"], 80), "state": state, "detail": detail,
-                     "group": one_line(row.get("group", ""), 60), "counted": row.get("counted") is not False})
+        tidy = {"name": one_line(row["name"], 80), "state": state, "detail": detail,
+                "group": one_line(row.get("group", ""), 60), "counted": row.get("counted") is not False}
+        family = one_line(row.get("family", ""), 60) if isinstance(row.get("family"), str) else ""
+        if family:
+            tidy["family"] = family
+        rows.append(tidy)
     need = [r for r in rows if r["counted"] and r["state"] in ("bad", "look")]
     if need:
         line = f"{len(need)} need{'s' if len(need) == 1 else ''} a look: " + ", ".join(r["name"] for r in need)
@@ -670,14 +678,34 @@ def entry_note(rec, running, now):
     return " · ".join(bits), True
 
 
-def fold_group(title, rows):
-    """One row for a folded group: the worst state among its rows as its mark, and how many rows are in each state."""
+def fold_group(title, rows, items=None):
+    """One row for a folded group: the worst state among its rows as its mark, and how many rows are in each state.
+    items are what sits under it; by default one row each, in order."""
     worst = next(s for s in ("bad", "look", "good", "off", "unknown") if any(r["state"] == s for r in rows))
     symbol, tint, mark = LOOKS[worst]
     counts = [(sum(1 for r in rows if r["state"] == state), word) for state, word in FOLD_WORDS]
     return {"kind": "group", "title": title, "subtitle": " · ".join(f"{n} {word}" for n, word in counts if n),
             "state": worst, "symbol": symbol, "tint": tint, "mark": mark,
-            "items": [info(r["name"], r["detail"], r["state"]) for r in rows]}
+            "items": items if items is not None else [info(r["name"], r["detail"], r["state"]) for r in rows]}
+
+
+def with_families(rows):
+    """The rows of one group as menu items. Rows that share a family sit in one submenu, "Family (n)", at the place
+    of the first of them; a family of one row, and a row with no family, stay as they are."""
+    families = {}
+    for r in rows:
+        if r.get("family"):
+            families.setdefault(r["family"], []).append(r)
+    items, placed = [], set()
+    for r in rows:
+        family = r.get("family")
+        if family and len(families[family]) > 1:
+            if family not in placed:
+                placed.add(family)
+                items.append(fold_group(f"{family} ({len(families[family])})", families[family]))
+        else:
+            items.append(info(r["name"], r["detail"], r["state"]))
+    return items
 
 
 def build_model(cfg, status, problem, state_dir, now, machine=None):
@@ -698,18 +726,20 @@ def build_model(cfg, status, problem, state_dir, now, machine=None):
         head = status["result"][:1].upper() + status["result"][1:]
         items.append(info(head, checked, worst))
         fold = (cfg.get("status") or {}).get("fold", [])
-        previous = None
+        runs = []   # the main menu's rows, as (group, rows) for each run of rows in one group
         for row in status["rows"]:
             if row["group"] in fold:
                 continue
-            if row["group"] != previous:
-                items.append({"kind": "header", "title": row["group"]} if row["group"] else {"kind": "separator"})
-                previous = row["group"]
-            items.append(info(row["name"], row["detail"], row["state"]))
+            if not runs or runs[-1][0] != row["group"]:
+                runs.append((row["group"], []))
+            runs[-1][1].append(row)
+        for group, rows in runs:
+            items.append({"kind": "header", "title": group} if group else {"kind": "separator"})
+            items += with_families(rows)
         folded = [(name, [r for r in status["rows"] if r["group"] == name]) for name in fold]
         if any(rows for _, rows in folded):
             items.append({"kind": "separator"})
-        items += [fold_group(name, rows) for name, rows in folded if rows]
+        items += [fold_group(name, rows, with_families(rows)) for name, rows in folded if rows]
     more, gauge = machine if machine is not None else read_machine(cfg, state_dir, now)
     items += more
     if gauge:
