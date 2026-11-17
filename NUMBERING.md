@@ -9,7 +9,7 @@
 
 ![Standard](https://img.shields.io/badge/Standard-Numbering-800020?style=flat-square)
 ![Status](https://img.shields.io/badge/Status-recommended-5c1a2b?style=flat-square)
-![Updated](https://img.shields.io/badge/Updated-2026--11--05-1a1a2e?style=flat-square)
+![Updated](https://img.shields.io/badge/Updated-2026--11--16-1a1a2e?style=flat-square)
 [![Licence: MIT](https://img.shields.io/badge/Licence-MIT-1a1a2e?style=flat-square)](./LICENSE)
 ![For](https://img.shields.io/badge/For-Anyone_who_writes_a_procedure_or_a_proposal-64748b?style=flat-square)
 
@@ -17,13 +17,13 @@
 
 </div>
 
-> 🟢 new · 🟡 changed: the proposal of Nov 16, 2026 ([`KEY-n` belongs to Linear](#-proposed-nov-16-key-n-belongs-to-linear)). The marks stay until Christopher approves or declines it.
+> **Nov 16, 2026:** Christopher approved [`KEY-n` belongs to Linear](#-decided-nov-16-key-n-belongs-to-linear). A lab desk's proposal is now cited `THEF-D-018`, and the desk's front-matter ids were corrected once. The review marks are gone because the change is approved.
 
 ## <img src="assets/icons-phosphor/compass.svg" width="24" height="24" alt=""> TL;DR
 
 1. <img src="assets/icons-phosphor/key-round.svg" width="16" height="16" alt=""> **A number is a name.** Once given, it stays with that page for life and goes to nobody else, even after the page is retired. The title and the words in the file name may change. The number may not.
 2. <img src="assets/icons-phosphor/layers.svg" width="16" height="16" alt=""> **Procedures have three ranges,** `DEPT-NNN`: **001 to 099** are universal (only this template issues them, and they mean the same in every organisation); **100 to 899** are the organisation's own; **900 and up** are experiments and old pages parked out of the way. A template number can never land on an organisation's page, because they do not draw from the same range.
-3. <img src="assets/icons-phosphor/book-marked.svg" width="16" height="16" alt=""> **Proposals number per desk,** and you name the desk when you cite one: **THEF-018**. A lab desk's number is not the organisation's number; a crosswalk maps one to the other. 🟡 *Proposed Nov 16: `THEF-18` is now a Linear issue, so cite the desk, the folder and the title, or `THEF-D-018` ([below](#-proposed-nov-16-key-n-belongs-to-linear)).*
+3. <img src="assets/icons-phosphor/book-marked.svg" width="16" height="16" alt=""> **Proposals number per desk,** and you name the desk when you cite one: the desk, the folder and the title, or **THEF-D-018** (D for desk). A lab desk's number is not the organisation's number; a crosswalk maps one to the other. `THEF-18`, with a digit after the hyphen, is a Linear issue ([decided Nov 16](#-decided-nov-16-key-n-belongs-to-linear)).
 4. <img src="assets/icons-phosphor/tags.svg" width="16" height="16" alt=""> **Each page says who it is at the top,** in eight lines of front matter, so a library can give it a stable address and an index without renaming anything.
 5. <img src="assets/icons-phosphor/scan-search.svg" width="16" height="16" alt=""> **`catalog-docs.py --check` enforces it** across every local clone: a universal number used for two different things, a number the template never issued, a retired number reused.
 6. <img src="assets/icons-phosphor/history.svg" width="16" height="16" alt=""> **Nothing has been renumbered.** [The migration](#-the-migration-only-on-christophers-word) is a table waiting for Christopher's word. No procedure has been approved by a tag yet, so this is the cheapest moment there will ever be to settle it.
@@ -70,8 +70,8 @@ flowchart LR
 3. <img src="assets/icons-phosphor/octagon.svg" width="16" height="16" alt=""> **A retired page keeps its number.** It stays where it is with `status: retired`, and nothing is deleted. Its number is finished. "900 and up" is not where retired pages go in the ordinary way, because moving one there would change its ID and break rule 1. The parked range exists only for the one-time clean-up below.
 4. <img src="assets/icons-phosphor/landmark.svg" width="16" height="16" alt=""> **Only the template issues 001 to 099.** An organisation that writes something every organisation needs writes it as its own (`IT-104`) and proposes it here. If the template takes it, it gets the next universal number and the organisation's page records `status: superseded` and `supersededBy: IT-007`. Numbers do not travel between ranges.
 5. <img src="assets/icons-phosphor/building-2.svg" width="16" height="16" alt=""> **Departments are a short list:** OPS, IT, GOV, FIN and COM, issued by the template. A lane the template does not carry (the lab's `ARB`, `PERPS`) belongs wholly to its owner and has no universal range, so its `ARB-001` stays as it is.
-6. <img src="assets/icons-phosphor/book-marked.svg" width="16" height="16" alt=""> **Proposals are `NNN` per desk.** A desk's counter covers its root and its child folders (`bushido-code/010` is THEF-010). `000` is *Start here* on every desk. A draft has no number until it leaves `drafts/`.
-7. <img src="assets/icons-phosphor/quote.svg" width="16" height="16" alt=""> **Name the desk when you cite a proposal:** THEF-018. Without the desk, "018" means nothing to anyone outside the room you are standing in. 🟡 *Proposed Nov 16: the desk is still named, but not in the `<KEY>-<n>` shape a Linear issue uses ([below](#-proposed-nov-16-key-n-belongs-to-linear)).*
+6. <img src="assets/icons-phosphor/book-marked.svg" width="16" height="16" alt=""> **Proposals are `NNN` per desk.** A desk's counter covers its root and its child folders (`bushido-code/010` is THEF-D-010). `000` is *Start here* on every desk. A draft has no number until it leaves `drafts/`.
+7. <img src="assets/icons-phosphor/quote.svg" width="16" height="16" alt=""> **Name the desk when you cite a proposal:** THEF-D-018. Without the desk, "018" means nothing to anyone outside the room you are standing in. The desk's code always has a letter after its first hyphen (`-D`, `-P`), never digits, because `<KEY>-<n>` is a Linear issue ([decided Nov 16](#-decided-nov-16-key-n-belongs-to-linear)).
 8. <img src="assets/icons-phosphor/git-merge.svg" width="16" height="16" alt=""> **A lab desk's number is not the organisation's.** When a draft is offered to an organisation's own `proposals` repository it takes that repository's next number, and a crosswalk records both.
 9. <img src="assets/icons-phosphor/file-check.svg" width="16" height="16" alt=""> **Every new page carries [front matter](#-front-matter-eight-lines-at-the-top).** An older page gets it the next time someone edits it, with no hurry.
 10. <img src="assets/icons-phosphor/scroll-text.svg" width="16" height="16" alt=""> **A finished number goes in the ledger.** `RETIRED-NUMBERS.txt` at the root of the repository, one line each: `NUMBER | slug | date | why`. The template's is `sop-template/RETIRED-NUMBERS.txt` and binds everyone.
@@ -87,39 +87,43 @@ flowchart LR
 
 ## <img src="assets/icons-phosphor/book-marked.svg" width="24" height="24" alt=""> Proposals: the series, and the crosswalk
 
-Each place that gives out proposal numbers is a **series**, with one short code. A code with no suffix is the lab's desk; `-P` is the organisation's own `proposals` repository.
+Each place that gives out proposal numbers is a **series**, with one short code. `-D` is the lab's desk (since Nov 16, 2026; before that the desk's code had no suffix); `-P` is the organisation's own `proposals` repository.
 
 | Series | Where | Numbers on Nov 5, 2026 | Cited as |
 |---|---|---|---|
-| `THEF` | `drasticstatic/proposals-thef`, the lab's desk | 000 to 023 | THEF-018 |
+| `THEF-D` | `drasticstatic/proposals-thef`, the lab's desk | 000 to 023 | THEF-D-018 |
 | `THEF-P` | `theholyearthfoundation/proposals` | 000 to 014 | THEF-P-010 |
-| `PIR` · `PIR-P` | `pir`, the lab's desk · `psychedelicsinrecovery/proposals` | 000 to 003 · 000 to 004 | PIR-002 · PIR-P-004 |
+| `PIR-D` · `PIR-P` | `pir`, the lab's desk · `psychedelicsinrecovery/proposals` | 000 to 003 · 000 to 004 | PIR-D-002 · PIR-P-004 |
 | `PIR-TECH` · `PIR-PR` · `PIR-LIT` | the committees' own `proposals/` folders | 000 to 005 · 000 to 002 · 000 | PIR-TECH-005 |
-| `ORG` · `ORG-P` | `O-R-G`, the lab's desk · `Octagon-Religious-Research-Group-ORG/proposals` | 000 to 001 · 000 to 008 | ORG-P-008 |
-| `PSAN` · `PSAN-P` | `psanctuary`, the lab's desk · `psanctuary/proposals` | 000 to 001 · 000 to 005 | PSAN-P-005 |
-| `DAPPU` | `proposals-dappu`, the lab's desk for Ethereal Offering | 000 to 002 | DAPPU-002 |
-| `CHURCH` · `CHURCH-P` | the lab's desk · `psanctuarychurch/proposals` | 000 to 006 · 000 to 006 | CHURCH-P-006 |
-| `TAYLOR` · `TAYLOR-P` | `taylordwraps`, the lab's desk · `taylordwraps/proposals` | 001 to 003 · 000 to 001 | TAYLOR-P-001 |
+| `ORG-D` · `ORG-P` | `O-R-G`, the lab's desk · `Octagon-Religious-Research-Group-ORG/proposals` | 000 to 001 · 000 to 008 | ORG-P-008 |
+| `PSAN-D` · `PSAN-P` | `psanctuary`, the lab's desk · `psanctuary/proposals` | 000 to 001 · 000 to 005 | PSAN-P-005 |
+| `DAPPU-D` | `proposals-dappu`, the lab's desk for Ethereal Offering | 000 to 002 | DAPPU-D-002 |
+| `CHURCH-D` · `CHURCH-P` | the lab's desk · `psanctuarychurch/proposals` | 000 to 006 · 000 to 006 | CHURCH-P-006 |
+| `TAYLOR-D` · `TAYLOR-P` | `taylordwraps`, the lab's desk · `taylordwraps/proposals` | 001 to 003 · 000 to 001 | TAYLOR-P-001 |
 | `LAWN-P` | `WILSONSLAWNMAINTENANCE/proposals` | 000 | LAWN-P-000 |
 
-Any other desk chooses a code the first time one of its proposals is cited, and adds a row. A reading room holds copies, so it is not a series: a page there keeps the number of the desk it came from.
+Any other desk chooses a code the first time one of its proposals is cited, and adds a row; a lab desk's code ends in `-D`. A committee's own series (`PIR-TECH`) already has letters after its hyphen and keeps its code. A reading room holds copies, so it is not a series: a page there keeps the number of the desk it came from.
 
-The **crosswalk** is a table in the desk, one row per proposal: the desk's number, the organisation's number if it has one, the public twin's if it has one, and the title. THEF's already exists as `PUBLISH-MAP.md`, and it does the job, so nobody needs to rename it. It shows why the rule matters: **THEF-005** is **THEF-P-010**, and THEF-P-005 is a different page altogether. A proposal's front matter can carry the same fact in an optional `offeredAs: THEF-P-010`.
+The **crosswalk** is a table in the desk, one row per proposal: the desk's number, the organisation's number if it has one, the public twin's if it has one, and the title. THEF's already exists as `PUBLISH-MAP.md`, and it does the job, so nobody needs to rename it. It shows why the rule matters: **THEF-D-005** is **THEF-P-010**, and THEF-P-005 is a different page altogether. A proposal's front matter can carry the same fact in an optional `offeredAs: THEF-P-010`.
 
-🟡 *Proposed Nov 16: the `-P` series already cannot be mistaken for a Linear issue, because a letter follows the hyphen. The unsuffixed desk series can. The proposal below gives the desk a letter too.*
+The `-P` series could never be mistaken for a Linear issue, because a letter follows the hyphen. Since Nov 16 the desk series has a letter too (`-D`), [below](#-decided-nov-16-key-n-belongs-to-linear).
 
-## <img src="assets/icons-phosphor/square-kanban.svg" width="24" height="24" alt=""> Proposed, Nov 16: KEY-n belongs to Linear
+<a id="-proposed-nov-16-key-n-belongs-to-linear"></a>
 
-🟢 **Status: proposed, not approved.** Nothing has been renumbered or renamed, and nothing in the table below has
-been done. It waits for Christopher's word.
+## <img src="assets/icons-phosphor/square-kanban.svg" width="24" height="24" alt=""> Decided, Nov 16: KEY-n belongs to Linear
+
+**Status: decided.** Proposed on Nov 16, 2026 and approved by Christopher the same evening ("I approve and trust
+your call with the THEF-D recommendations"). Nothing has been renumbered and no folder renamed. The changes are in
+[the table below](#what-changed-nov-16), and the [one-time correction](#the-one-time-correction-nov-16-2026) of
+front-matter ids is recorded under it.
 
 **Why now.** In November 2026 the fleet set up Linear: Christopher's personal workspace, and one workspace for each
 GitHub organisation, each with one main team (Christopher, Nov 16; a helper has seen only the personal one). A GitHub
 organisation can reach only one workspace: "It is not possible to connect multiple Linear workspaces to a single
 GitHub organization" ([Linear's GitHub page](https://linear.app/docs/github), read
 2026-11-16). The foundation's team identifier is `THEF`, which Christopher chose and which stays. A Linear issue is
-written `<KEY>-<n>` with no zero padding, so `THEF-18` is a Linear issue. The lab desk's proposal is cited `THEF-018`
-(rule 7). Read aloud, or typed in a hurry, they are the same name. So this proposal changes how proposals are cited,
+written `<KEY>-<n>` with no zero padding, so `THEF-18` is a Linear issue. The lab desk's proposal was cited `THEF-018`
+(rule 7, before this change). Read aloud, or typed in a hurry, they are the same name. So this proposal changes how proposals are cited,
 and leaves Linear alone.
 
 **How much the old form is used.** Proposals are normally cited by their numbered folder and title, such as
@@ -134,7 +138,7 @@ ID". Whether it reads `THEF-018` as issue 18 is not documented (**unverified**).
 settle it. Any other desk whose code equals a Linear team key would collide the same way. The other workspaces' keys
 are not recorded here.
 
-**The proposed rules**
+**The rules, approved Nov 16**
 
 1. **`<KEY>-<n>` is a Linear issue.** Where `KEY` is one of the fleet's Linear team identifiers, `KEY-` followed by
    digits names a Linear issue and nothing else. That covers prose, pull request titles and descriptions, branch names
@@ -144,31 +148,57 @@ are not recorded here.
 3. **A short form puts a letter after the first hyphen:** `THEF-D-018` for the lab desk (D for desk), beside the
    existing `THEF-P-010` for the foundation's own repository. A proposal citation then has a letter where a Linear ID
    has a digit.
-4. **Nothing is renumbered.** Folder names keep their numbers. An `id:` already written in front matter stays as
-   written until Christopher decides question 2 below. Rule 1 says an id never changes, and a front-matter id is read
-   by machines; nobody types it into a pull request.
+4. **Nothing is renumbered.** Folder names keep their numbers. The `id:` values already written on the THEF desk
+   were [corrected once](#the-one-time-correction-nov-16-2026) to `THEF-D-0NN` (question 2). After that, rule 1
+   holds again: an id never changes.
 5. **The crosswalk keeps its job.** The THEF desk's `PUBLISH-MAP.md` still maps desk numbers to the foundation's. Its
-   first column would read `THEF-D-NNN`. That one-line change is made on the desk, after approval.
+   first column reads `THEF-D-NNN`, changed on the desk on Nov 16.
 6. **The checker could watch for it.** `catalog-docs.py --check` could flag a bare `<CODE>-NNN` citation in prose
    where `CODE` is also a Linear team key. Proposed, not built.
 
-**What would change, only on Christopher's word**
+<a id="what-changed-nov-16"></a>
 
-| Today | Where | Would become |
+**What changed, Nov 16** (on this page, and on the THEF desk and procedures desk by pull request, each waiting for
+a person to merge it)
+
+| Before | Where | Now |
 |---|---|---|
 | TL;DR 3 and rule 7: *cite THEF-018* | this page | *cite the desk, folder and title, or `THEF-D-018`* |
-| The series table's THEF row: *Cited as THEF-018* | this page | `THEF-D-018` |
+| The series table: *THEF, PIR, ORG, PSAN, DAPPU, CHURCH, TAYLOR*, cited *THEF-018* | this page | every lab desk takes `-D`: `THEF-D-018`, `PIR-D-002`, `DAPPU-D-002` (question 3) |
 | `PUBLISH-MAP.md`: *the first column is THEF-NNN* | the THEF lab desk | *the first column is THEF-D-NNN* |
-| Open decision 3 of the experimental Linear procedure (OPS-901): *a team called THEF would clash* | the THEF lab desk's procedures | refreshed Nov 16 on its open pull request: *decided, THEF stays for Linear; the citation rule is proposed here* |
-| `id: THEF-0NN` in three proposals, and the examples in BUSHIDO-ADR-002 | the THEF lab desk | question 2 |
+| Open decision 3 of the experimental Linear procedure (OPS-901): *the citation rule is proposed* | the THEF lab desk's procedures | *decided Nov 16*, on its open pull request |
+| `id: THEF-0NN` in the desk's proposals, and the examples in BUSHIDO-ADR-002 | the THEF lab desk | `THEF-D-0NN`, [below](#the-one-time-correction-nov-16-2026) |
+| *THEF-018* and *THEF-008* cited in [`tutorials/README.md`](./tutorials/README.md) and [`AGENT-ONBOARDING.md`](./AGENT-ONBOARDING.md) | this template | `THEF-D-018`, `THEF-D-008` |
 
-**Questions for Christopher**
+The other lab desks were searched on Nov 16 (their local clones' tracked Markdown and text) and cite none of their
+proposals in the bare `CODE-NNN` form, so only this page's table changed for them.
 
-1. Approve rules 1 to 3? Is `D` the letter, or would another read better?
+<a id="the-one-time-correction-nov-16-2026"></a>
+
+**The one-time correction, Nov 16, 2026.** Rule 1 says an id never changes. These ids changed once, on Christopher's
+word, for one reason: a front-matter id is read by machines (a library's addresses, `catalog-docs.py`, Linear's
+linking), and `THEF-022` would be read as the foundation's Linear issue `THEF-22`. It was possible only because no
+proposal had been approved by a tag, the same reasoning [the migration](#-the-migration-only-on-christophers-word)
+uses. No folder was renamed and no number moved.
+
+| Old id | New id | Where it stood |
+|---|---|---|
+| `THEF-022`, `THEF-023`, `THEF-025` | `THEF-D-022`, `THEF-D-023`, `THEF-D-025` | the desk's working branch |
+| `THEF-026`, `THEF-027`, `THEF-028`, `THEF-029` | `THEF-D-026` to `THEF-D-029` | proposals still in open pull requests, corrected with them so the desk names one series |
+
+Copies of 022 and 023 already in a reading room keep the old id until that room is next refreshed from the desk.
+From here on, a desk's new proposal is born `<CODE>-D-NNN`, and its id never changes again.
+
+**Questions for Christopher, answered Nov 16**
+
+1. Approve rules 1 to 3? Is `D` the letter, or would another read better? **Approved; the letter is D**, for desk,
+   beside the existing `THEF-P-010`.
 2. The three `id: THEF-0NN` values: leave them as written (rule 1), or correct them once to `THEF-D-0NN` now? A
    one-time correction is possible only while no proposal has been approved by a tag, the same reasoning
-   [the migration](#-the-migration-only-on-christophers-word) uses.
-3. Should every lab desk take `-D` at once, or only a desk whose code equals a Linear team key?
+   [the migration](#-the-migration-only-on-christophers-word) uses. **Corrected once**, [above](#the-one-time-correction-nov-16-2026).
+3. Should every lab desk take `-D` at once, or only a desk whose code equals a Linear team key? **Every lab desk, at
+   once,** so the rule never depends on which Linear team keys exist (Christopher has Linear workspaces for seven
+   organisations).
 
 ## <img src="assets/icons-phosphor/file-text.svg" width="24" height="24" alt=""> Front matter: eight lines at the top
 
@@ -187,7 +217,7 @@ tags: [security, public-lane]
 
 | Field | Means | Rule |
 |---|---|---|
-| `id` | the permanent name | must match the number in the file or folder name; `--check` compares them. A proposal's includes its series: `THEF-022`. 🟡 *Proposed Nov 16: see [question 2](#-proposed-nov-16-key-n-belongs-to-linear) for ids already written* |
+| `id` | the permanent name | must match the number in the file or folder name; `--check` compares them. A proposal's includes its series: `THEF-D-022` |
 | `title` | what people call it | free to change |
 | `status` | where it stands | `draft`, `approved`, `experimental`, `superseded`, `retired`; proposals also `asking`, `decided`, `reference` |
 | `department` | the folder it lives in | procedures only; a proposal leaves it out |
@@ -200,7 +230,7 @@ tags: [security, public-lane]
 - **Astro:** the `glob()` loader takes a `generateId` function that receives the entry's data ([Astro's content loader reference](https://docs.astro.build/en/reference/content-loader-reference/), read 2026-11-05), so it can return the `id` above.
 - **Docusaurus:** a document's address comes from its `slug`, which defaults to the file path; `id` is a separate identifier ([Docusaurus's docs plugin reference](https://docusaurus.io/docs/api/plugins/@docusaurus/plugin-content-docs), read 2026-11-05). A Docusaurus library adds `slug: it-004` as a ninth line.
 
-On GitHub the block shows as a small table above the page ([a public example, GitHub's own docs repository](https://github.com/github/docs/blob/main/content/get-started/index.md), opened 2026-11-05). `md-to-pdf`, which renders our PDFs, leaves it out of the print: THEF-022 and THEF-023 are the first pages to carry it, and were rendered that way on Nov 5, 2026.
+On GitHub the block shows as a small table above the page ([a public example, GitHub's own docs repository](https://github.com/github/docs/blob/main/content/get-started/index.md), opened 2026-11-05). `md-to-pdf`, which renders our PDFs, leaves it out of the print: THEF-D-022 and THEF-D-023 (then written THEF-022 and THEF-023) are the first pages to carry it, and were rendered that way on Nov 5, 2026.
 
 ## <img src="assets/icons-phosphor/tags.svg" width="24" height="24" alt=""> Tags and git tags, which are different things
 
@@ -213,7 +243,7 @@ On GitHub the block shows as a small table above the page ([a public example, Gi
 | The idea | What is good about it | Why not here |
 |---|---|---|
 | **Dates**, `SOP-2026-11-05-…` | no authority needed; never collides by accident | it says *when*, not *what*. Two pages on one day need a tiebreak anyway. A universal procedure would carry a different date in each organisation that adopted it, or a date that looks wrong in all but one. You cannot say it aloud in a meeting |
-| **Longer prefixes**, `SOP-THEF-IT-004` or `DRASTIC-IT-0004` | a citation carries its owner everywhere | it breaks the very thing we want, the same number everywhere. Copying a procedure to another organisation would mean renaming it and rewriting every link to it. And the owner is already in the address: the repository says whose it is. Where the owner does matter, for 100 and up and for proposals, we say so when citing (*PIR's FIN-101*, *THEF-018*), and the file stays short |
+| **Longer prefixes**, `SOP-THEF-IT-004` or `DRASTIC-IT-0004` | a citation carries its owner everywhere | it breaks the very thing we want, the same number everywhere. Copying a procedure to another organisation would mean renaming it and rewriting every link to it. And the owner is already in the address: the repository says whose it is. Where the owner does matter, for 100 and up and for proposals, we say so when citing (*PIR's FIN-101*, *THEF-D-018*), and the file stays short |
 | **Everyone counts on their own** (what we had) | nothing to learn | it is how OPS-002 came to mean two things |
 | **Random IDs or hashes** | collisions become impossible | nobody can remember, say or sort them, and they say nothing about what the page is |
 | **Renumber when things tidy up** | a neat list | every link, PDF, citation and memory breaks, and the first person to trust an old PDF is misled. A gap in a list costs nothing |
@@ -258,4 +288,4 @@ A different slug under one universal number is printed as a note and not a probl
 
 Noticed a better way, or a case these rules get wrong? Open an [issue](https://github.com/drasticstatic/my-template/issues) or a pull request against `main`; Christopher reads them and a person with the role merges. Not on GitHub? Tell a steward of your organisation in your own words. It is yours to copy for your own organisation, with no need to ask.
 
-<sub>Follows the living [README standard](./README-STANDARD.md) and [`LUCID.md`](./LUCID.md). Icons: Phosphor (MIT). Written Nov 5, 2026 by Alfred (Claude Code CLI) at Christopher's word.</sub>
+<sub>Follows the living [README standard](./README-STANDARD.md) and [`LUCID.md`](./LUCID.md). Icons: Phosphor (MIT). Written Nov 5, 2026 by Alfred (Claude Code CLI) at Christopher's word; the Linear citation rule added Nov 16, 2026, on his approval.</sub>

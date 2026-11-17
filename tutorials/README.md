@@ -25,7 +25,7 @@
 | Shelf | What it is | The reader is… | Numbered? | Here |
 |---|---|---|---|---|
 | <img src="../assets/icons-phosphor/list-checks.svg" width="16" height="16" alt=""> **SOP** | a numbered, repeatable procedure: how an approved thing is done, every time, by the people whose job it is | doing their job | yes, `SOP-DEPT-NNN` ([`NUMBERING.md`](../NUMBERING.md)) | [`sop-template/`](../sop-template/) |
-| <img src="../assets/icons-phosphor/scroll-text.svg" width="16" height="16" alt=""> **Proposal** | an ask: a decision someone is being asked to make | deciding | yes, per desk (`THEF-018`) | [`proposals-template/`](../proposals-template/) |
+| <img src="../assets/icons-phosphor/scroll-text.svg" width="16" height="16" alt=""> **Proposal** | an ask: a decision someone is being asked to make | deciding | yes, per desk (`THEF-D-018`) | [`proposals-template/`](../proposals-template/) |
 | <img src="../assets/icons-phosphor/route.svg" width="16" height="16" alt=""> **Walkthrough** | a one-time setup: get from nothing to done, once | setting something up | no | [`walkthroughs/`](../walkthroughs/) |
 | <img src="../assets/icons-phosphor/sprout.svg" width="16" height="16" alt=""> **Tutorial** | learn by doing: one task start to finish, with what you should see at each step, so the reader can do the next one alone | learning | no | this folder |
 

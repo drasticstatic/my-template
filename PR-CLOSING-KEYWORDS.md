@@ -133,8 +133,8 @@ written down with the date someone looked (below), and no helper switches one on
 7. **One GitHub organisation, one Linear workspace.** Linear says: "It is not possible to connect multiple Linear
    workspaces to a single GitHub organization." So each organisation's issues live in that organisation's workspace,
    and a pull request names only issues from the workspace its repository is connected to.
-8. **`<KEY>-<n>` means a Linear issue.** Proposals are not cited in that form (see the proposed change in
-   [`NUMBERING.md`](./NUMBERING.md#-proposed-nov-16-key-n-belongs-to-linear)).
+8. **`<KEY>-<n>` means a Linear issue.** Proposals are not cited in that form: a lab desk's is `THEF-D-018` (decided Nov 16 in
+   [`NUMBERING.md`](./NUMBERING.md#-decided-nov-16-key-n-belongs-to-linear)).
 
 ### A Promote's description
 
