@@ -15,6 +15,7 @@ sh build.sh --config YOUR.json --print                         # what a build wo
 sh build.sh --config YOUR.json                                 # builds ~/Applications/Runbook Tray.app; starts nothing
 sh runbook-tray.selftest.sh                                    # 236 checks in a temporary folder
 sh runbook-tray.selftest.sh --with-applet                      # 265: also draws every menu (an item shows for a second)
+RUNBOOK_TRAY_NATIVE=APP sh runbook-tray.selftest.sh           # 264: the macOS native shell draws every menu (a few seconds)
 ```
 
 ## What is here

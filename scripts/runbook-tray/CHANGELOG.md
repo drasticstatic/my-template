@@ -11,6 +11,14 @@ its commit. From now on, a change to this folder adds its entry here in the same
 ## [Unreleased]
 
 ### Added
+- The native shell's self-test, in this one: `RUNBOOK_TRAY_NATIVE=APP sh runbook-tray.selftest.sh` writes the seven
+  fixtures, starts the macOS native shell (`Runbook Tray Native.app`, built in `runbook-tray-macos`) in its own
+  self-test mode, waits for it to quit by itself, and checks its report: 28 checks that mirror `--with-applet`'s, written
+  for what AppKit holds after SwiftUI draws (`[title] sub=[…] picture=WxH`), from the bar's count and tooltip to a
+  family three levels in. Every entry is chosen the way a click does; the shell writes down what it would run and
+  runs nothing. An item shows in the menu bar for a few seconds. The family fixture is now written by
+  `write_family`, shared with `RUNBOOK_TRAY_FIXTURES`. Self-test: 236 checks as before, 238 with
+  `RUNBOOK_TRAY_FIXTURES`, 264 with `RUNBOOK_TRAY_NATIVE`.
 - Fixtures for native shells: `RUNBOOK_TRAY_FIXTURES=DIR sh runbook-tray.selftest.sh` writes the self-test's made-up
   menus into `DIR`: `01-good` … `06-folded` (the applet's six; `03-broken` is not JSON, on purpose) plus
   `07-family`, a group inside a group. Nothing is started and nothing appears on screen. The six are written by one

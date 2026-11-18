@@ -7,6 +7,10 @@
 #   RUNBOOK_TRAY_KEEP=DIR sh ... --with-applet  also copy the applet's report and its pictures of each menu into DIR
 #   RUNBOOK_TRAY_FIXTURES=DIR sh ...            also write the menu.json fixtures (01-good … 07-family) into DIR, for a
 #                                               native shell's tests to decode. Nothing is started; nothing appears.
+#   RUNBOOK_TRAY_NATIVE=APP sh ...              also start a native shell in its self-test mode on the same fixtures
+#                                               (the macOS one is built in runbook-tray-macos: Runbook Tray Native.app).
+#                                               An item appears in the menu bar for a few seconds; it runs and opens
+#                                               nothing. RUNBOOK_TRAY_KEEP=DIR keeps its report and pictures too.
 #
 # Everything happens in a temporary folder with a made-up home; the status command, the entries and the opener are
 # small scripts written there. It never reads your config, your jobs or ~/Applications. The folder is removed afterwards.
@@ -609,13 +613,68 @@ else
 fi
 
 # ---- for native shells: RUNBOOK_TRAY_FIXTURES=DIR writes the fixtures there, plus a family (a group in a group) ----
+write_family() {
+  printf '%s\n' "$family_status" > "$HOME/bin/status.out"
+  run render --config "$foldcfg" --state "$work/state" >/dev/null 2>&1; cp "$work/state/menu.json" "$1/07-family.json"
+}
 if [ -n "${RUNBOOK_TRAY_FIXTURES:-}" ]; then
   write_fixtures "$RUNBOOK_TRAY_FIXTURES"
-  printf '%s\n' "$family_status" > "$HOME/bin/status.out"
-  run render --config "$foldcfg" --state "$work/state" >/dev/null 2>&1; cp "$work/state/menu.json" "$RUNBOOK_TRAY_FIXTURES/07-family.json"
+  write_family "$RUNBOOK_TRAY_FIXTURES"
   check "fixtures: the seven files are written for native shells" "$(cd "$RUNBOOK_TRAY_FIXTURES" && ls 01-good.json 02-trouble.json 03-broken.json 04-machine.json 05-machine-calm.json 06-folded.json 07-family.json 2>/dev/null | wc -l | tr -d ' ')" "7"
   check "fixtures: the family file holds a group inside a group" "$("$PY" -I -c 'import json,sys; m=json.load(open(sys.argv[1])); print(next((j["title"] for i in m["items"] if i.get("kind") == "group" for j in i.get("items", []) if j.get("kind") == "group"), "none"))' "$RUNBOOK_TRAY_FIXTURES/07-family.json")" "Kin (3)"
   echo "kept  the menu.json fixtures in $RUNBOOK_TRAY_FIXTURES"
+fi
+
+# ---- a native shell's own self-test: RUNBOOK_TRAY_NATIVE=APP draws every fixture with it, as --with-applet does ----
+# Its report is what AppKit holds after SwiftUI drew each menu: "[title] sub=[…] picture=WxH enabled", one line an item,
+# four spaces deeper for each submenu. Every entry is chosen the way a click does; the shell writes down what it would
+# run ("would run: …", "would quit") and runs nothing.
+if [ -n "${RUNBOOK_TRAY_NATIVE:-}" ]; then
+  nat="$RUNBOOK_TRAY_NATIVE"
+  [ -d "$nat" ] && nat="$nat/Contents/MacOS/RunbookTray"
+  if [ "$(uname)" != Darwin ]; then
+    echo "skip  the native shell's self-test (the macOS shell needs macOS)"
+  elif [ ! -x "$nat" ]; then
+    bad "native: the program is there and can run" "not found: $nat"
+  else
+    nfx="$work/native-fixtures"; write_fixtures "$nfx"; write_family "$nfx"
+    nrep="$work/native-report.txt"
+    "$nat" --selftest "$nfx" "$nrep" >"$work/native.out" 2>&1 &
+    np=$!
+    n=0; while kill -0 "$np" 2>/dev/null && [ $n -lt 300 ]; do n=$((n+1)); "$PY" -I -c 'import time; time.sleep(0.1)'; done
+    if kill -0 "$np" 2>/dev/null; then kill "$np"; bad "native: it quits by itself after its self-test"; else ok "native: it quits by itself after its self-test"; fi
+    rep="$(cat "$nrep" 2>/dev/null)"
+    has "native: the self-test ran to its end" "$rep" "selftest: done"
+    hasnt "native: with no error" "$rep" "SELFTEST ERROR"
+    hasnt "native: every picture it was asked for could be drawn" "$rep" "SHEET ERROR"
+    has "native: all good, the bar is a template picture with no count" "$rep" "bar: title=[] picture="
+    has "native: and its tooltip says so" "$rep" " template tooltip=[Runbook: all good, checked "
+    has "native: the first line, with its mark" "$rep" "[All good] sub=[checked "
+    has "native: a group header is a line that cannot be chosen" "$rep" "[Scheduled jobs] picture=none disabled"
+    has "native: a row has its detail and its mark" "$rep" "[watcher] sub=[running, pid 41] picture="
+    has "native: an entry has its picture and its last result" "$rep" "[Run the job, first line] sub="
+    has "native: Refresh now is always there" "$rep" "[Refresh now] picture="
+    has "native: Quit is always there" "$rep" "[Quit "
+    has "native: choosing an entry would ask the helper to do that entry" "$rep" "act runbook --config "
+    has "native: choosing Refresh now would ask the helper to render" "$rep" "render --config "
+    has "native: choosing Quit is written down, not done" "$rep" "would quit"
+    has "native: trouble shows as a count beside the picture" "$rep" "bar: title=[2] picture="
+    has "native: a file that is not JSON is not drawn" "$rep" "== 03-broken.json loaded=false"
+    has "native: and the menu says it is waiting, with Quit still there" "$rep" "[Waiting for the first check] picture="
+    has "native: a meter row has its bar and its words" "$rep" "[Memory] sub=[14.0 of 32 GB used · pressure warning] picture="
+    has "native: memory's parts are a submenu with their own small picture" "$rep" "[Memory, part by part] sub=[app 8.0 · wired 2.0 · compressed 4.0 · cached 4.0 GB] picture="
+    has "native: under it, the bar split into its parts" "$rep" "    [] picture="
+    has "native: and a line for each part, with its colour" "$rep" "    [Compressed] sub=[4.0 GB · holding 20.0 GB of app data, squeezed] picture="
+    has "native: the hour's line is drawn" "$rep" "[Memory, last hour] sub=[between 62% and 69% · down 6.0 GB in the last hour] picture="
+    has "native: the apps sit in a submenu, each with its bar" "$rep" "    [Example Browser × 2] sub=[1.5 GB] picture="
+    has "native: a folded group is one row with its mark and its count" "$rep" "[Side list] sub=[1 good · 1 off · 1 to look at · 1 not checked] picture="
+    has "native: and its rows are under it, each with its mark" "$rep" "    [s4] sub=[cannot be told from here] picture="
+    has "native: a family sits a level further in" "$rep" "        [k3] sub=[remote] picture="
+    check "native: a picture of each menu is saved for a person to look at" "$(ls "$nrep".*.png 2>/dev/null | wc -l | tr -d ' ')" "6"
+    if [ -n "${RUNBOOK_TRAY_KEEP:-}" ]; then
+      mkdir -p "$RUNBOOK_TRAY_KEEP" && cp "$nrep" "$nrep".*.png "$RUNBOOK_TRAY_KEEP/" && echo "kept  the native shell's report and pictures in $RUNBOOK_TRAY_KEEP"
+    fi
+  fi
 fi
 
 echo
