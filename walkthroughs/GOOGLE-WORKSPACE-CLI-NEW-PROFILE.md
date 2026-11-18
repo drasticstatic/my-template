@@ -165,6 +165,20 @@ wrapper, when a person meant it to.
 4. **Prove both, every time you set one up:** run step 6 with `gwsNAME-write` (the address must be `ACCOUNT`), and
    check that `gwsNAME auth status` still points only at `~/.config/gws-NAME`.
 
+### <img src="../assets/icons-phosphor/history.svg" width="20" height="20" alt=""> Older profiles that do both
+
+You may meet a profile that has only `gwsNAME` and no `-write` twin, yet writes. That is an **older, one-profile
+setup**: it was signed in with a bare `gwsNAME auth login` (no `--readonly`, no `-s`), which opens the CLI's scope
+picker, and whatever was ticked there, writing included, sits in one token. Two things follow for anyone reading the
+fleet's logic:
+
+- **Don't judge a profile by its name.** A missing `-write` twin does not make an older profile read-only. Ask its
+  owner, or look at what it has actually done.
+- **`auth status` won't tell you.** It shows whether a token exists and is valid, not which scopes it holds.
+
+Such a profile keeps working as it is; splitting it is a choice, not a repair. New profiles always follow the two-folder
+shape above.
+
 Taking writing away later is one wrapper and one folder: revoke the grant at
 <https://myaccount.google.com/permissions> and move `~/.config/gws-NAME-write` aside. The reader is untouched.
 
@@ -199,6 +213,7 @@ for creating a label. Check a request before sending it with `--dry-run`, for ex
 | What you see | What it means |
 |---|---|
 | `invalid_grant` or 401 | The login expired. Run step 5 again. External apps in Testing expire after about a week. |
+| `auth status` shows `"token_valid": false` with `Bad Request` or `Token has been expired or revoked` | The same weekly expiry, on any profile, old or new: an External app in **Testing** gets a refresh token that lasts 7 days. Sign in again, or set the app to **In production** to stop the weekly sign-in. |
 | `Error 403: access_denied` at sign-in | `ACCOUNT` is not listed as a test user (step 4). |
 | `403` on a Drive or Docs call | That API is not enabled in this project (step 3). |
 | A password box when opening the console | Google wants you to confirm it is you. Type it yourself. |
