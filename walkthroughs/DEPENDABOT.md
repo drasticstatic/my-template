@@ -194,6 +194,24 @@ breaks the wallet. Both are memory or slowness problems in the visitor's own bro
 the repository's `AGENTS.md`: which advisory, why it's tolerable, what would break, and when to look
 again. The next person, or AI helper, then won't "fix" it into an outage.
 
+## <img src="../assets/icons-phosphor/bell.svg" width="24" height="24" alt=""> Who sees the alerts, and who gets the email
+
+- <img src="../assets/icons-phosphor/users.svg" width="16" height="16" alt=""> **Seeing them:** anyone with Write, Maintain or Admin on the repository (every organisation owner
+  included) can open its **Security** tab. Read-only members and outside collaborators can't, and get no mail.
+- <img src="../assets/icons-phosphor/mail.svg" width="16" height="16" alt=""> **Getting the email:** GitHub mails only people who have Write or more **and** watch the repository
+  with security alerts (or all activity) turned on. An admin who never pressed **Watch** sees alerts but gets no mail.
+- <img src="../assets/icons-phosphor/shield-alert.svg" width="16" height="16" alt=""> **No backlog mail:** when alerts are first switched on, what is already vulnerable shows in the
+  Security tab at once, without a burst of email. Open the tab once and work through it.
+- <img src="../assets/icons-phosphor/link.svg" width="16" height="16" alt=""> **Routing and billing:** send each organisation's notifications to a plus-address
+  (`<name>+ghalerts@gmail.com`) with **Custom routing**, and list a second one (`<name>+ghbilling@gmail.com`) as the
+  organisation's **Additional billing recipient**, so an invoice never sinks among alerts. The longer page, with
+  GitHub's own wording and a checklist for a new house, is in the organisation template:
+  [`docs/GITHUB-ALERTS-AND-BILLING-MAIL.md`](https://github.com/drasticstatic/org-repo-template/blob/main/docs/GITHUB-ALERTS-AND-BILLING-MAIL.md)
+  (stewards of the houses can open it).
+
+Source: GitHub, [About Dependabot alerts](https://docs.github.com/en/code-security/dependabot/dependabot-alerts/about-dependabot-alerts)
+and [Configuring notifications for Dependabot alerts](https://docs.github.com/en/code-security/dependabot/dependabot-alerts/configuring-notifications-for-dependabot-alerts), read 2026-11-18.
+
 ## <img src="../assets/icons-phosphor/bot.svg" width="24" height="24" alt=""> For the AI helper
 
 - <img src="../assets/icons-phosphor/hand-helping.svg" width="16" height="16" alt=""> **Testing is yours; merging to a live branch is your person's call** unless they've said otherwise.
