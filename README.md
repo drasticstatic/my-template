@@ -11,7 +11,7 @@
 
 [![Use this template](https://img.shields.io/badge/Use_this_template-2ea44f?style=flat-square)](https://github.com/drasticstatic/my-template/generate)
 [![License: MIT](https://img.shields.io/badge/License-MIT-1a1a2e?style=flat-square)](https://github.com/drasticstatic/.github)
-![Updated](https://img.shields.io/badge/Updated-2026--11--05-1a1a2e?style=flat-square)
+![Updated](https://img.shields.io/badge/Updated-2026--11--18-1a1a2e?style=flat-square)
 [![Lucid](https://img.shields.io/badge/Standard-Lucid-5c1a2b?style=flat-square)](./LUCID.md)
 [![README standard](https://img.shields.io/badge/Standard-README-5c1a2b?style=flat-square)](./README-STANDARD.md)
 [![Walkthrough deck](https://img.shields.io/badge/Walkthrough-deck-800020?style=flat-square)](./decks/my-template-walkthrough.marp.pdf)
@@ -39,8 +39,9 @@
 
 1. <img src="assets/icons-phosphor/route.svg" width="16" height="16" alt=""> **What this is.** Everything a new repository needs to begin well: hooks that sign every commit, coordination lanes, private-to-public sync, proposals, procedures, walkthroughs.
 2. <img src="assets/icons-phosphor/users-round.svg" width="16" height="16" alt=""> **Who it is for.** Anyone starting a repository, on their own or with an AI helper. Press **Use this template**, or copy only the parts you want.
-3. <img src="assets/icons-phosphor/footprints.svg" width="16" height="16" alt=""> **Do this first.** In a fresh clone, `sh scripts/install-hooks.sh` and then `sh scripts/scaffold-agent-sync.sh`. Then [walk the path](#-the-path), one stop at a time.
-4. <img src="assets/icons-phosphor/door-open.svg" width="16" height="16" alt=""> **Writing a README?** [`README-STANDARD.md`](./README-STANDARD.md) is the living standard: a boilerplate to copy, a banner generator, a check.
+3. <img src="assets/icons-phosphor/door-open.svg" width="16" height="16" alt=""> **New to GitHub, the terminal or Claude Code?** Start at [**`START-HERE.md`**](./START-HERE.md): the road from a chat connector to your own computer, the rules for day one, and a first evening in ten steps, on Windows or macOS.
+4. <img src="assets/icons-phosphor/footprints.svg" width="16" height="16" alt=""> **Do this first.** In a fresh clone, `sh scripts/install-hooks.sh` and then `sh scripts/scaffold-agent-sync.sh`. Then [walk the path](#-the-path), one stop at a time.
+5. <img src="assets/icons-phosphor/pencil-line.svg" width="16" height="16" alt=""> **Writing a README?** [`README-STANDARD.md`](./README-STANDARD.md) is the living standard: a boilerplate to copy, a banner generator, a check.
 
 ---
 
@@ -99,6 +100,7 @@ Copy [`proposals-template/repo/`](./proposals-template/repo/) into a private `pr
 
 | File / folder | What it does |
 |---|---|
+| `START-HERE.md` | The front door for a newcomer: the road from a chat connector to Claude Code in the terminal, the day-one safety rules, and the first evening in ten steps |
 | `.githooks/commit-msg` | Enforces the commit-attribution footer; inert until `scripts/install-hooks.sh` runs |
 | `.githooks/gitmoji-check.sh` | Warn-only hint for the commit subject (`:sparkles: feat(scope): subject`), called by `commit-msg`; the convention is [`GITMOJI.md`](./GITMOJI.md) |
 | `AGENT-SYNC/` | Cross-agent coordination lanes — **private repos only** |
@@ -145,6 +147,7 @@ Copy [`proposals-template/repo/`](./proposals-template/repo/) into a private `pr
 
 | You are… | Start at |
 |---|---|
+| **brand new to GitHub, a terminal or Claude Code**, or the steward sitting beside someone who is | [`START-HERE.md`](./START-HERE.md), then [`walkthroughs/SET-UP-YOUR-COMPUTER.md`](./walkthroughs/SET-UP-YOUR-COMPUTER.md) (Windows and macOS, every command sourced) |
 | **starting a new repo** | the two commands above, then the checklist |
 | **a person joining an organisation we serve**, or their AI helper | [`walkthroughs/`](./walkthroughs/) (joining, connecting tools, keeping an org healthy) and [`org-onboarding/`](./org-onboarding/) (the kit every org's `.github` carries, the hook-in note, the `legal` repo) |
 | **writing a proposal** | [`proposals-template/`](./proposals-template/): the shape, the 000 Start-here page, [`TONES.md`](./proposals-template/TONES.md) (one colour family per organisation, four shades each), and [why the markdown travels with the PDF](./walkthroughs/MARKDOWN-BESIDE-PDF.md) |

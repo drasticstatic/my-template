@@ -7,7 +7,7 @@
 *The few ways of starting things that you set up once and then forget. One page each, a copy-paste block at the top.*
 
 ![Kind](https://img.shields.io/badge/Kind-Start--up_procedures-800020?style=flat-square)
-![Changed](https://img.shields.io/badge/Changed-2026--11--06-5c1a2b?style=flat-square)
+![Changed](https://img.shields.io/badge/Changed-2026--11--18-5c1a2b?style=flat-square)
 ![For](https://img.shields.io/badge/For-Claude_Code_on_a_Mac-64748b?style=flat-square)
 
 <img src="../assets/icons-phosphor/map-pin.svg" width="16" height="16" alt=""> **You are here:** drasticstatic lab › [`my-template`](../README.md) › `startup/` · public · `main` is the working branch
@@ -20,7 +20,7 @@
 2. <img src="../assets/icons-phosphor/list-checks.svg" width="16" height="16" alt=""> **Each page opens with a copy-paste block.** The explanation comes after, for the day the block stops working.
 3. <img src="../assets/icons-phosphor/book-open.svg" width="16" height="16" alt=""> **Why things are set up the way they are** lives in [`walkthroughs/`](../walkthroughs/README.md). This folder only says how to start.
 
-**Which one do I need?** Never used Claude Code (coming from ChatGPT)? [New to Claude Code](NEW-TO-CLAUDE-CODE.md) first. An ordinary Claude session: [Start a Claude session](CLAUDE-SESSION-START.md). Alfred on NVIDIA NIM through the local proxy: [Alfred-NIM](ALFRED-NIM-FREE-CLAUDE-CODE.md).
+**Which one do I need?** Nothing installed yet, or new to GitHub and the terminal? [`START-HERE.md`](../START-HERE.md) first, with [Set up your computer](../walkthroughs/SET-UP-YOUR-COMPUTER.md) for Windows or macOS. Never used Claude Code (coming from ChatGPT)? [New to Claude Code](NEW-TO-CLAUDE-CODE.md) first. An ordinary Claude session: [Start a Claude session](CLAUDE-SESSION-START.md). Alfred on NVIDIA NIM through the local proxy: [Alfred-NIM](ALFRED-NIM-FREE-CLAUDE-CODE.md).
 
 ## <img src="../assets/icons-phosphor/route.svg" width="24" height="24" alt=""> The procedures
 
@@ -34,6 +34,7 @@
 
 | Date | Change |
 |---|---|
+| 2026-11-18 | *Which one do I need?* points a newcomer with nothing installed to `START-HERE.md` and *Set up your computer*. |
 | 2026-11-06 | *New to Claude Code*, for people arriving from ChatGPT. |
 | 2026-11-06 | First version: the folder, the session start-up and the Alfred-NIM start-up, written from the installed scripts and the proxy's own code. |
 

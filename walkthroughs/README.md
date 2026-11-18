@@ -7,7 +7,7 @@
 *Plain-language guides for joining one of our GitHub organizations and connecting your AI helpers. Follow one yourself, or hand it to your helper.*
 
 ![Kind](https://img.shields.io/badge/Kind-Walkthroughs-800020?style=flat-square)
-![Changed](https://img.shields.io/badge/Changed-2026--11--16-800020?style=flat-square)
+![Changed](https://img.shields.io/badge/Changed-2026--11--18-800020?style=flat-square)
 ![For](https://img.shields.io/badge/For-Members_and_their_AI_helpers-800020?style=flat-square)
 
 <img src="../assets/icons-phosphor/map-pin.svg" width="16" height="16" alt=""> **You are here:** drasticstatic lab › [`my-template`](../README.md) › `walkthroughs/` · public · `main` is the working branch
@@ -20,11 +20,16 @@
 2. <img src="../assets/icons-phosphor/hand-helping.svg" width="16" height="16" alt=""> Each is written so **you can follow it yourself, or hand it to your AI helper** ("read this and walk me through it").
 3. <img src="../assets/icons-phosphor/file-text.svg" width="16" height="16" alt=""> **Every guide has a PDF beside it** in [`pdf/`](pdf/), rendered from the markdown; the markdown stays the source ([why both](MARKDOWN-BESIDE-PDF.md)).
 
+> **Brand new to GitHub or the terminal?** Begin at [`START-HERE.md`](../START-HERE.md): the road from a chat
+> connector to Claude Code, and a first evening in ten steps. Its hands-on half is
+> [Set up your computer](SET-UP-YOUR-COMPUTER.md), Windows and macOS side by side.
+
 ## <img src="../assets/icons-phosphor/door-open.svg" width="24" height="24" alt=""> Joining, and connecting your helpers
 
 | | Guide | For when you want to… | PDF |
 |---|---|---|---|
 | <img src="../assets/icons-phosphor/gift.svg" width="16" height="16" alt=""> | [Opening your gift](OPENING-YOUR-GIFT.md) | understand what you were given, if someone set you up on GitHub and you have never heard of it: what to expect, the first ten minutes, what it could become | [PDF](pdf/OPENING-YOUR-GIFT.pdf) |
+| <img src="../assets/icons-phosphor/wrench.svg" width="16" height="16" alt=""> | [Set up your computer](SET-UP-YOUR-COMPUTER.md) | install Git, the GitHub CLI, VS Code and Claude Code (Codex and Antigravity optional) on Windows with PowerShell and `winget`, or on macOS with Homebrew; sign in, set your commit email, lay out the three homes, clone, and put your own app in a private repository; every command checked against its maker's page | — |
 | <img src="../assets/icons-phosphor/door-open.svg" width="16" height="16" alt=""> | [Join an organization](JOIN-AN-ORGANIZATION.md) | accept an invitation, turn on two-factor login, connect Claude, Codex, ChatGPT, Littlebird or Cosmos, and start building in plain words | [PDF](pdf/JOIN-AN-ORGANIZATION.pdf) |
 | <img src="../assets/icons-phosphor/fingerprint.svg" width="16" height="16" alt=""> | [Secure two-factor](SECURE-TWO-FACTOR.md) | move from text-message codes to an authenticator app, a passkey or a security key, before an organisation requires secure methods only | [PDF](pdf/SECURE-TWO-FACTOR.pdf) |
 | <img src="../assets/icons-phosphor/shield-check.svg" width="16" height="16" alt=""> | [The secret scan (GitGuardian)](SECRET-SCAN.md) | set up the one check that stops a commit, and **help someone who forgot** (written for AI helpers too) | [PDF](pdf/SECRET-SCAN.pdf) |
