@@ -1,0 +1,8 @@
+# .gitattributes: line endings that work on Windows, macOS and Linux alike.
+#
+# Git for Windows often checks text files out with Windows (CRLF) line endings. Bash then refuses a shell script or
+# a git hook that has them ("bad interpreter", "$'\r': command not found"), so these always keep Unix (LF) endings.
+# Everything Git sees as text is stored with LF in the repository; binary files are left alone.
+* text=auto
+*.sh text eol=lf
+.githooks/* text eol=lf
