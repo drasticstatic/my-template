@@ -124,7 +124,7 @@ out; tell it to leave them alone on checkout and tidy them on commit:
 git config --global core.autocrlf input
 ```
 
-<sub>`input` "convert[s] CRLF to LF on commit but not the other way around" ([Pro Git, Git Configuration](https://git-scm.com/book/en/v2/Customizing-Git-Git-Configuration), checked 2026-11-18). Pro Git suggests `true` for Windows in general; `input` is this page's choice because the lab's repositories do not yet carry a `.gitattributes` that pins scripts to LF ([GitHub on `eol=lf`](https://docs.github.com/en/get-started/git-basics/configuring-git-to-handle-line-endings)). **Untested on Windows in this lab so far.** Set it before your first clone.</sub>
+<sub>`input` "convert[s] CRLF to LF on commit but not the other way around" ([Pro Git, Git Configuration](https://git-scm.com/book/en/v2/Customizing-Git-Git-Configuration), checked 2026-11-18). Pro Git suggests `true` for Windows in general; `input` is this page's choice as a second belt: since 2026-11-18 the template and the first house repositories carry a `.gitattributes` that pins `*.sh` and `.githooks/*` to LF ([GitHub on `eol=lf`](https://docs.github.com/en/get-started/git-basics/configuring-git-to-handle-line-endings)), but older repositories may not. **Untested on Windows in this lab so far.** Set it before your first clone.</sub>
 
 ## <img src="../assets/icons-phosphor/git-pull-request.svg" width="24" height="24" alt=""> 4 · The GitHub CLI, `gh`
 
